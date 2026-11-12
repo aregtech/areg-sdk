@@ -24,6 +24,7 @@
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadAddress.hpp"
 #include "areg/component/DispatcherThread.hpp"
@@ -34,6 +35,11 @@
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/persist/ConfigListener.hpp"
 #include "areg/persist/ConfigManager.hpp"
+#if AREG_LOGGING
+    #include "areglogger/client/LogObserverApi.h"
+    #include "areglogger/client/LogObserverBase.hpp"
+    #include "areglogger/client/private/LoggerClient.hpp"
+#endif  // AREG_LOGGING
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -42,9 +48,12 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <atomic>
 #include <chrono>
 #include <cstring>
+#include <string>
 #include <thread>
+#include <vector>
 
 namespace
 {
@@ -376,6 +385,187 @@ TEST( FaultInjectTest, client_connects_again_when_the_system_refuses_its_handsha
         areg::Application::release( );
     );
 }
+
+#if AREG_LOGGING
+
+namespace
+{
+    //!< What the log observer reported to the application.
+    struct ObserverSink
+    {
+        std::atomic_uint32_t    failed      { 0u };     //!< Calls of the messaging failed notification.
+        std::atomic_uint32_t    stopped     { 0u };     //!< Calls of the logging started notification with false.
+        std::atomic_uint32_t    connected   { 0u };     //!< Calls of the service connected notification with true.
+        areg::SyncEvent         evFailed    { true, true };     //!< Signaled by the messaging failed notification.
+        areg::SyncEvent         evStopped   { true, true };     //!< Signaled when the logging is reported as stopped.
+        areg::SyncEvent         evConnected { true, true };     //!< Signaled when the connection is reported as established.
+    };
+
+    ObserverSink    gSink;
+
+    void sink_failed( )
+    {
+        gSink.failed.fetch_add( 1u );
+        gSink.evFailed.set_signaled( );
+    }
+
+    void sink_started( bool isStarted )
+    {
+        if ( isStarted == false )
+        {
+            gSink.stopped.fetch_add( 1u );
+            gSink.evStopped.set_signaled( );
+        }
+    }
+
+    void sink_connected( bool isConnected, const char * /*address*/, uint16_t /*port*/ )
+    {
+        if ( isConnected )
+        {
+            gSink.connected.fetch_add( 1u );
+            gSink.evConnected.set_signaled( );
+        }
+    }
+
+    //!< Takes the notifications of the observer as an object.
+    class SinkObserver final : public areg::logger::LogObserverBase
+    {
+    public:
+        SinkObserver( ) = default;
+        ~SinkObserver( ) = default;
+
+    protected:
+        void on_log_observer_configured( bool, const std::string &, uint16_t ) override { }
+        void on_log_db_configured( bool, const std::string &, const std::string &, const std::string & ) override { }
+        void on_log_service_connected( bool isConnected, const std::string & address, uint16_t port ) override { sink_connected( isConnected, address.c_str( ), port ); }
+        void on_log_observer_started( bool isStarted ) override { sink_started( isStarted ); }
+        void on_log_db_created( const std::string & ) override { }
+        void on_log_messaging_failed( ) override { sink_failed( ); }
+        void on_log_instances_connect( const std::vector< areg::ConnectedInstance > & ) override { }
+        void on_log_instances_disconnect( const std::vector< areg::ConnectedInstance > & ) override { }
+        void on_log_service_disconnected( ) override { }
+        void on_log_register_scopes( ITEM_ID, const ScopeInfo *, int32_t ) override { }
+        void on_log_update_scopes( ITEM_ID, const ScopeInfo *, int32_t ) override { }
+        void on_log_message( const areg::MessageEnvelope & ) override { }
+        void on_log_source_state( ITEM_ID, areg::LogSourceState, ITEM_ID ) override { }
+        void on_log_configuration_restored( ITEM_ID ) override { }
+    };
+
+    //!< Waits for the event up to the router timeout.
+    bool wait_event( areg::SyncEvent & event )
+    {
+        return event.lock( static_cast<uint32_t>( IO_WAIT_S ) * 1000u );
+    }
+
+    //!< The message the router receives next is a query of the instances sent from the cookie.
+    bool receive_instances_query( TestRouter & router, ITEM_ID cookie )
+    {
+        areg::MessageEnvelope message;
+        return router.receive( message )
+            && ( message.message_id( ) == areg::message_query_instances( ).messageId )
+            && ( message.source( ) == cookie );
+    }
+
+    //!< The system refuses a request of the log observer: it reports the failure and the lost connection, then connects again.
+    void observer_reports_refused_send( bool asObject )
+    {
+        constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 131u };
+        TestRouter collector;
+        AREG_CHILD_CHECK( collector.open( ) );
+
+        ObserverEvents events{ };
+        events.evtMessagingFailed   = &sink_failed;
+        events.evtLoggingStarted    = &sink_started;
+        events.evtServiceConnected  = &sink_connected;
+        SinkObserver object;
+        AREG_CHILD_CHECK( asObject ? object.initialize( ) : log_observer_initialize( &events, nullptr ) );
+        AREG_CHILD_CHECK( log_observer_connect_logger( nullptr, "127.0.0.1", collector.port ) );
+        AREG_CHILD_CHECK( collector.answer( COOKIE, areg::COOKIE_LOGGER ) && wait_event( gSink.evConnected ) );
+        AREG_CHILD_CHECK( receive_instances_query( collector, COOKIE ) );
+        AREG_CHILD_CHECK( gSink.failed.load( ) == 0u );
+
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, ECONNRESET ) );
+            AREG_CHILD_CHECK( log_observer_request_instances( ) );
+            AREG_CHILD_CHECK( wait_event( gSink.evFailed ) );
+            AREG_CHILD_CHECK( wait_event( gSink.evStopped ) );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u );
+        }
+
+        AREG_CHILD_CHECK( gSink.failed.load( ) >= 1u );
+        AREG_CHILD_CHECK( gSink.stopped.load( ) >= 1u );
+
+        AREG_CHILD_CHECK( collector.answer( COOKIE + 1u, areg::COOKIE_LOGGER ) && wait_event( gSink.evConnected ) );
+        AREG_CHILD_CHECK( gSink.connected.load( ) == 2u );
+        AREG_CHILD_CHECK( receive_instances_query( collector, COOKIE + 1u ) );
+        AREG_CHILD_CHECK( gSink.failed.load( ) <= 2u );
+
+        log_observer_disconnect_logger( );
+        asObject ? object.release( ) : log_observer_release( );
+    }
+}
+
+/**
+ * \brief   The system refuses to send a request of the log observer on its live connection, and the
+ *          observer reports the failure through the callback (the send, and the receive that the closed connection ends) and the loss of the connection. It
+ *          connects again with a new cookie, and its next request reaches the collector.
+ **/
+TEST( FaultInjectTest, log_observer_reports_the_failure_and_connects_again_when_the_system_refuses_a_request_with_callbacks )
+{
+    AREG_EXPECT_IN_CHILD( observer_reports_refused_send( false ); );
+}
+
+/**
+ * \brief   The same, when the application takes the notifications as an object.
+ **/
+TEST( FaultInjectTest, log_observer_reports_the_failure_and_connects_again_when_the_system_refuses_a_request_with_object )
+{
+    AREG_EXPECT_IN_CHILD( observer_reports_refused_send( true ); );
+}
+
+/**
+ * \brief   The dispatcher thread of the logger client cannot be created: the connection is refused.
+ *          After an attempt refused by the configuration the next request opens the
+ *          connection, and a request on a live connection reports success.
+ **/
+TEST( FaultInjectTest, logger_client_connects_on_a_later_request_after_a_thread_or_the_configuration_refused )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 141u };
+        TestRouter collector;
+        AREG_CHILD_CHECK( collector.open( ) );
+        ObserverEvents events{ };
+        events.evtServiceConnected = &sink_connected;
+        AREG_CHILD_CHECK( log_observer_initialize( &events, nullptr ) );
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance( ) };
+        const areg::String address( "127.0.0.1" );
+
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, EAGAIN ) );
+            AREG_CHILD_CHECK( client.start_logger_client( areg::String( ), areg::InvalidPort ) == false );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u );
+        }
+
+        areg::ConnectionConfiguration config( areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip );
+        config.set_connection_enable( false );
+        AREG_CHILD_CHECK( client.start_logger_client( areg::String( ), areg::InvalidPort ) == false );
+
+        config.set_connection_enable( true );
+        AREG_CHILD_CHECK( client.start_logger_client( address, collector.port ) );
+        AREG_CHILD_CHECK( collector.answer( COOKIE, areg::COOKIE_LOGGER ) && wait_event( gSink.evConnected ) );
+        AREG_CHILD_CHECK( gSink.connected.load( ) == 1u );
+        AREG_CHILD_CHECK( client.start_logger_client( address, collector.port ) );
+        AREG_CHILD_CHECK( gSink.connected.load( ) == 1u );
+
+        client.stop_logger_client( );
+        client.close_logging_database( );
+        log_observer_release( );
+    );
+}
+
+#endif  // AREG_LOGGING
 
 #else   // defined(__linux__)
 

@@ -305,7 +305,6 @@ inline constexpr const char* as_string( areg::ext::ServiceOption cmdService ) no
     case areg::ext::ServiceOption::CMD_Custom:
         return "areg::ext::ServiceOption::CMD_Custom";
     default:
-        ASSERT( false );
         return "ERR: Unexpected areg::ext::ServiceOption value!";
     }
 }
@@ -329,7 +328,6 @@ inline constexpr const char * as_string( areg::ext::ServicePhase serviceState ) 
     case areg::ext::ServicePhase::Paused:
         return "areg::ext::ServicePaused";
     default:
-        ASSERT( false );
         return "ERR: Undefined areg::ext::ServicePhase value!!!";
     }
 }

@@ -59,6 +59,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     EnvelopeCacheTest.cpp
     EventEnvelopeTest.cpp
     EventQueueTest.cpp
+    RouterClientMoreTest.cpp
     FatalErrorTest.cpp
     WatchdogTest.cpp
     RemainingSmallFilesCoverageTest.cpp
@@ -202,14 +203,19 @@ target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE
     "${AREG_FRAMEWORK}/mtrouter/service/private/ServiceStub.cpp"
 )
 
+# The tests of private POSIX classes are built where the areg library exposes them.
+if (NOT WIN32 AND (AREG_LIB_TYPE STREQUAL "static" OR (NOT CYGWIN AND NOT AREG_BUILD_OPTIMIZED)))
+    target_compile_definitions("${AREG_UNIT_TEST_PROJECT}" PRIVATE AREG_TEST_PRIVATE_POSIX)
+endif()
+
 # Private logging helpers are not exported by the shared library.
 if (AREG_LIB_TYPE STREQUAL "shared")
     target_sources("${AREG_UNIT_TEST_PROJECT}" PRIVATE
-        "${CMAKE_CURRENT_LIST_DIR}/../../framework/areg/logging/private/Layouts.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/../../framework/areg/logging/private/LayoutManager.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/../../framework/areg/logging/private/ScopeController.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/../../framework/areg/logging/private/ScopeNodeBase.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/../../framework/areg/logging/private/ScopeNodes.cpp"
-        "${CMAKE_CURRENT_LIST_DIR}/../../framework/areg/logging/private/LoggingEvent.cpp"
+        "${AREG_FRAMEWORK}/areg/logging/private/Layouts.cpp"
+        "${AREG_FRAMEWORK}/areg/logging/private/LayoutManager.cpp"
+        "${AREG_FRAMEWORK}/areg/logging/private/ScopeController.cpp"
+        "${AREG_FRAMEWORK}/areg/logging/private/ScopeNodeBase.cpp"
+        "${AREG_FRAMEWORK}/areg/logging/private/ScopeNodes.cpp"
+        "${AREG_FRAMEWORK}/areg/logging/private/LoggingEvent.cpp"
     )
 endif()

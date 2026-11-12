@@ -580,7 +580,7 @@ namespace
     }
 
     //!< The name of the scope that writes the rows.
-    constexpr char ROW_SCOPE[]  { "areg_unit_tests_ApplicationRestart.session_rows" };
+    [[maybe_unused]] constexpr char ROW_SCOPE[]  { "areg_unit_tests_ApplicationRestart.session_rows" };
 
     //!< The configuration line that enables the scope that writes the rows.
     constexpr char ROW_SCOPE_ON[]{ "log::*::scope::areg_unit_tests_ApplicationRestart.session_rows = DEBUG\n" };

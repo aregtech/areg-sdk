@@ -29,7 +29,7 @@ DEF_LOG_SCOPE(areg_base_Thread, _report_refused_name);
 namespace
 {
     //!< Logs that the thread name gives an invalid number, or the number of the thread holderName.
-    void _report_refused_name(const areg::String & name, const areg::String & holderName)
+    void _report_refused_name([[maybe_unused]] const areg::String & name, const areg::String & holderName)
     {
         LOG_SCOPE(areg_base_Thread, _report_refused_name);
         if (holderName.is_empty())

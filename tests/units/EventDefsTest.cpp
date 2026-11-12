@@ -173,12 +173,10 @@ TEST(EventDefsTest, connection_event_type_names)
     }
 }
 
-#ifndef DEBUG
 TEST(EventDefsTest, undefined_event_type_name)
 {
     EXPECT_EQ(std::strncmp(areg::as_string(static_cast<EventType>(0x7FFFFFFFu)), "ERR:", 4), 0);
 }
-#endif
 
 TEST(EventDefsTest, event_type_is_valid)
 {
@@ -337,9 +335,7 @@ TEST(EventDefsTest, event_priority_names_and_order)
     EXPECT_LT(static_cast<uint32_t>(areg::EventPriority::CriticalPrio), static_cast<uint32_t>(areg::EventPriority::ExitPrio));
     EXPECT_EQ(areg::DefaultPriority, areg::EventPriority::NormalPrio);
 
-#ifndef DEBUG
     EXPECT_EQ(std::strncmp(areg::as_string(static_cast<areg::EventPriority>(3u)), "ERR:", 4), 0);
-#endif
 }
 
 TEST(EventDefsTest, event_call_type_names)
@@ -352,9 +348,7 @@ TEST(EventDefsTest, event_call_type_names)
     EXPECT_STREQ(areg::as_string(areg::EventCallType::CallServiceLocal), "areg::EventCallType::CallServiceLocal");
     EXPECT_STREQ(areg::as_string(areg::EventCallType::CallServiceRemote), "areg::EventCallType::CallServiceRemote");
 
-#ifndef DEBUG
     EXPECT_EQ(std::strncmp(areg::as_string(static_cast<areg::EventCallType>(0x7Fu)), "ERR:", 4), 0);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -49,6 +49,7 @@
     <ClCompile Include="units\ConfigManagerTest.cpp" />
     <ClCompile Include="units\DateTimeTest.cpp" />
     <ClCompile Include="units\EventQueueTest.cpp" />
+    <ClCompile Include="units\RouterClientMoreTest.cpp" />
     <ClCompile Include="units\GUnitTest.cpp" />
     <ClCompile Include="units\FileBufferTest.cpp" />
     <ClCompile Include="units\FileTest.cpp" />
@@ -193,6 +194,7 @@
   <ItemGroup>
     <ClInclude Include="units\ChildProcess.hpp" />
     <ClInclude Include="units\GUnitTest.hpp" />
+    <ClInclude Include="units\LogCollectorFake.hpp" />
     <ClInclude Include="units\UnitTestUtilities.hpp" />
   </ItemGroup>
   <ItemGroup>

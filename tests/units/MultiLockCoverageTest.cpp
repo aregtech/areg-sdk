@@ -2,9 +2,13 @@
 #include "units/ThreadCoverageHelpers.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
+#if defined(AREG_TEST_PRIVATE_POSIX)
+    #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
+#endif  // defined(AREG_TEST_PRIVATE_POSIX)
 
 #include <array>
 #include <atomic>
+#include <memory>
 #include <thread>
 
 namespace
@@ -348,3 +352,61 @@ TEST(MultiLockCoverageTest, single_object_wait_all_reports_all)
     EXPECT_FALSE(event.lock(areg::DO_NOT_WAIT));
     EXPECT_TRUE(multi.unlock());
 }
+
+#if !defined(_WIN32)
+
+TEST(MultiLockCoverageTest, wait_all_with_an_object_without_handle_reports_an_invalid_index_and_keeps_the_others)
+{
+    areg::SyncEvent pending(true, true);
+    areg::SyncEvent hollow(areg::NullTag{});
+    areg::SyncObject* objects[]{ &pending, &hollow };
+    areg::MultiLock multi(objects, 2, false);
+    EXPECT_EQ(multi.lock(COVERAGE_WAIT_MS, true), areg::MultiLock::LOCK_INDEX_INVALID);
+    EXPECT_TRUE(pending.set_signaled());
+    EXPECT_TRUE(pending.lock(areg::DO_NOT_WAIT));
+    EXPECT_FALSE(pending.lock(areg::DO_NOT_WAIT));
+}
+
+TEST(MultiLockCoverageTest, wait_all_with_a_leading_object_without_handle_does_not_report_all)
+{
+    areg::SyncEvent hollow(areg::NullTag{});
+    areg::SyncEvent pending(true, false);
+    areg::SyncObject* objects[]{ &hollow, &pending };
+    areg::MultiLock multi(objects, 2, false);
+    EXPECT_NE(multi.lock(areg::DO_NOT_WAIT, true), areg::MultiLock::LOCK_INDEX_ALL);
+    EXPECT_FALSE(pending.lock(areg::DO_NOT_WAIT));
+}
+
+#endif  // !defined(_WIN32)
+
+#if defined(AREG_TEST_PRIVATE_POSIX)
+
+TEST(MultiLockCoverageTest, wait_all_released_by_a_destroyed_object_reports_an_invalid_index)
+{
+    CoverageDeadline deadline;
+    auto doomed{ std::make_unique<areg::SyncEvent>(true, false) };
+    areg::SyncEvent other(true, false);
+    areg::os::WaitablePosix* waitable{ reinterpret_cast<areg::os::WaitablePosix*>(doomed->handle()) };
+    CoverageGate registered;
+    int32_t index{ areg::MultiLock::LOCK_INDEX_TIMEOUT };
+    std::thread waiter([&]()
+        {
+            areg::SyncObject* objects[]{ doomed.get(), &other };
+            areg::MultiLock multi(objects, 2, false);
+            registered.arrive();
+            index = multi.lock(COVERAGE_WAIT_MS, true);
+        });
+
+    ASSERT_TRUE(registered.wait());
+    while (!areg::os::SyncLockAndWaitPosix::is_waitable_registered(*waitable))
+    {
+        std::this_thread::yield();
+    }
+
+    doomed.reset();
+    waiter.join();
+    EXPECT_EQ(index, areg::MultiLock::LOCK_INDEX_INVALID);
+    EXPECT_FALSE(other.lock(areg::DO_NOT_WAIT));
+}
+
+#endif  // defined(AREG_TEST_PRIVATE_POSIX)

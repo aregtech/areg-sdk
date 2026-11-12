@@ -194,9 +194,11 @@ void ServiceManagerEventProcessor::process_service_event( ServiceManagerEventDat
         }
         break;
 
+    // GCOVR_EXCL_START: the switch lists only the commands this processor receives
     default:
         ASSERT( false );
         break;
+    // GCOVR_EXCL_STOP
     }
 }
 

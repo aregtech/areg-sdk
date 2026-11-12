@@ -21,6 +21,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/persist/ConfigListener.hpp"
 #include "areg/persist/ConfigManager.hpp"
+#include "areg/base/DateTime.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/StringDefs.hpp"
 #include "areg/logging/private/LoggingEvent.hpp"
@@ -778,6 +779,46 @@ TEST(LoggingCoreTest, scope_update_rejects_unknown_endpoints)
     EXPECT_FALSE(areg::message_update_scope(1001u, areg::COOKIE_UNKNOWN, "scope", 1u, 1u).is_valid());
 }
 
+// Every log protocol message that names an endpoint is refused when that endpoint is unknown.
+TEST(LoggingCoreTest, protocol_messages_reject_an_unknown_source_or_target)
+{
+    constexpr ITEM_ID SRC{ 1001u };
+    constexpr ITEM_ID DST{ 1002u };
+    constexpr ITEM_ID NONE{ areg::COOKIE_UNKNOWN };
+    for (const auto& ends : { std::pair<ITEM_ID, ITEM_ID>{ NONE, DST }, std::pair<ITEM_ID, ITEM_ID>{ SRC, NONE } })
+    {
+        EXPECT_FALSE(areg::message_query_instances(ends.first, ends.second).is_valid());
+        EXPECT_FALSE(areg::message_query_scopes(ends.first, ends.second).is_valid());
+        EXPECT_FALSE(areg::message_save_configuration(ends.first, ends.second).is_valid());
+        EXPECT_FALSE(areg::message_restore_configuration(ends.first, ends.second).is_valid());
+        EXPECT_FALSE(areg::message_update_source_state(ends.first, ends.second, areg::LogSourceState::Paused).is_valid());
+        EXPECT_FALSE(areg::message_source_state_updated(ends.first, ends.second, areg::LogSourceState::Paused, 1003u).is_valid());
+    }
+
+    EXPECT_TRUE(areg::message_query_scopes(SRC, DST).is_valid());
+    EXPECT_TRUE(areg::message_source_state_updated(SRC, DST, areg::LogSourceState::Active, 1003u).is_valid());
+}
+
+// The NOTSET bit beside a real level is not listed: the list names only the enabled levels.
+TEST(LoggingCoreTest, notset_bit_beside_a_level_is_not_listed)
+{
+    const uint32_t prios{ static_cast<uint32_t>(areg::LogPriority::PrioDebug) | static_cast<uint32_t>(areg::LogPriority::PrioNotset) };
+    const areg::StringArray names{ areg::priority_to_string_list(prios) };
+    ASSERT_EQ(names.size(), 1u);
+    EXPECT_EQ(names[0u], areg::String(areg::PRIO_DEBUG_STR));
+}
+
+// The duration of a scope exit entry is the time since the scope was entered; other entries have none.
+TEST(LoggingCoreTest, scope_exit_entry_measures_the_time_since_enter)
+{
+    const TIME64 entered{ static_cast<TIME64>(areg::DateTime::now()) };
+    const areg::LogEntry exitEntry(areg::LogMessageType::ScopeExit, 1u, 1u, entered, areg::LogPriority::PrioScope, "scope", 5u);
+    EXPECT_GE(exitEntry.logTimestamp, entered);
+    EXPECT_EQ(exitEntry.logDuration, static_cast<uint32_t>(exitEntry.logTimestamp - entered));
+    const areg::LogEntry plain(areg::LogMessageType::MessageText, 1u, 1u, 0u, areg::LogPriority::PrioInfo, "row", 3u);
+    EXPECT_EQ(plain.logDuration, 0u);
+}
+
 // Reading a truncated scope entry stays within the available bytes.
 TEST(LoggingCoreTest, truncated_scope_entry_never_reads_beyond_available_data)
 {
@@ -839,6 +880,71 @@ TEST(LoggingCoreTest, controller_exact_and_group_changes_affect_only_matching_sc
     controller.unregister_scope(first);
     EXPECT_FALSE(controller.is_scope_registered(first.id()));
     EXPECT_EQ(controller.scope_list().size(), 2u);
+}
+
+// A group name ends in '*', in the scope separator or in the leaf separator; '*' alone is every scope; an exact name is no group.
+TEST(LoggingCoreTest, controller_group_names_select_by_separator_or_every_scope)
+{
+    const uint32_t info{ static_cast<uint32_t>(areg::LogPriority::PrioInfo) };
+    const uint32_t warn{ static_cast<uint32_t>(areg::LogPriority::PrioWarning) };
+    const uint32_t fatal{ static_cast<uint32_t>(areg::LogPriority::PrioFatal) };
+    const uint32_t scopeBit{ static_cast<uint32_t>(areg::LogPriority::PrioScope) };
+    areg::LogScope first{ "loggingcore_sep_node.first", areg::LogPriority::PrioInfo };
+    areg::LogScope second{ "loggingcore_sep_node.second", areg::LogPriority::PrioInfo };
+    areg::LogScope other{ "loggingcore_sepother.first", areg::LogPriority::PrioInfo };
+    areg::ScopeController controller;
+    for (areg::LogScope* scope : { &first, &second, &other })
+    {
+        controller.register_scope(*scope);
+    }
+
+    EXPECT_EQ(controller.set_group_priority("loggingcore_sep_node.", warn), 2);
+    EXPECT_EQ(first.priority(), warn);
+    EXPECT_EQ(second.priority(), warn);
+    EXPECT_EQ(other.priority(), info);
+    EXPECT_EQ(controller.set_group_priority("loggingcore_sep_", fatal), 2);
+    EXPECT_EQ(first.priority(), fatal);
+    EXPECT_EQ(other.priority(), info);
+
+    EXPECT_EQ(controller.add_group_priority("loggingcore_sep_node.", areg::LogPriority::PrioScope), 2);
+    EXPECT_EQ(first.priority(), fatal | scopeBit);
+    EXPECT_EQ(controller.remove_group_priority("loggingcore_sep_", areg::LogPriority::PrioScope), 2);
+    EXPECT_EQ(first.priority(), fatal);
+    EXPECT_EQ(controller.add_group_priority("loggingcore_sep_", areg::LogPriority::PrioScope), 2);
+    EXPECT_EQ(controller.remove_group_priority("loggingcore_sep_node.", areg::LogPriority::PrioScope), 2);
+    EXPECT_EQ(second.priority(), fatal);
+    EXPECT_EQ(other.priority(), info);
+
+    EXPECT_EQ(controller.set_group_priority("*", warn), 3);
+    EXPECT_EQ(controller.add_group_priority("*", areg::LogPriority::PrioScope), 3);
+    EXPECT_EQ(other.priority(), warn | scopeBit);
+    EXPECT_EQ(controller.remove_group_priority("*", areg::LogPriority::PrioScope), 3);
+    for (const areg::LogScope* scope : { &first, &second, &other })
+    {
+        EXPECT_EQ(scope->priority(), warn);
+    }
+
+    EXPECT_EQ(controller.set_group_priority("loggingcore_sep_node.first", fatal), 0);
+    EXPECT_EQ(controller.add_group_priority("loggingcore_sep_node.first", areg::LogPriority::PrioScope), 0);
+    EXPECT_EQ(controller.remove_group_priority("loggingcore_sep_node.first", areg::LogPriority::PrioScope), 0);
+    EXPECT_EQ(controller.add_group_priority("loggingcore_sep_node*", areg::LogPriority::PrioScope), 0);
+    EXPECT_EQ(controller.remove_group_priority("loggingcore_sep_node*", areg::LogPriority::PrioScope), 0);
+    EXPECT_EQ(first.priority(), warn);
+}
+
+// A configured path group gives its priority to a scope name that has no method part.
+TEST(LoggingCoreTest, configured_path_group_applies_to_a_name_without_a_method)
+{
+    areg::LogScope pathOnly{ "loggingcore_nodot_call" };
+    areg::LogScope outside{ "loggingcore_other_call" };
+    areg::ScopeController controller;
+    controller.register_scope(pathOnly);
+    controller.register_scope(outside);
+    controller.configure_scopes("loggingcore_nodot_*", static_cast<uint32_t>(areg::LogPriority::PrioWarning), areg::ScopeLayer::Process);
+    controller.activate_scope(pathOnly, static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    controller.activate_scope(outside, static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    EXPECT_EQ(pathOnly.priority(), static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    EXPECT_EQ(outside.priority(), static_cast<uint32_t>(areg::LogPriority::PrioNotset));
 }
 
 // Configured priorities resolve exact names and wildcard prefixes in the intended order.
@@ -1041,6 +1147,30 @@ TEST(LoggingCoreTest, logging_event_data_copy_and_move_preserve_actions)
     original = std::move(empty);
     EXPECT_EQ(original.logging_action(), Data::LogAction::QueryScopes);
     EXPECT_STREQ(Data::as_string(original.logging_action()), "LoggingEventData::LogAction::QueryScopes");
+}
+
+// Each logging action has its own name, and a value outside the enumeration is reported as undefined.
+TEST(LoggingCoreTest, logging_action_names_are_distinct_and_outside_value_is_reported)
+{
+    using Action = areg::LoggingEventData::LogAction;
+    const std::vector<std::pair<Action, std::string>> names{
+          { Action::Undefined,    "LoggingEventData::LogAction::Undefined" }
+        , { Action::StartLogs,    "LoggingEventData::LogAction::StartLogs" }
+        , { Action::StopLogs,     "LoggingEventData::LogAction::StopLogs" }
+        , { Action::EnableLogs,   "LoggingEventData::LogAction::EnableLogs" }
+        , { Action::DisableLogs,  "LoggingEventData::LogAction::DisableLogs" }
+        , { Action::SaveScopes,   "LoggingEventData::LogAction::SaveScopes" }
+        , { Action::UpdateScopes, "LoggingEventData::LogAction::UpdateScopes" }
+        , { Action::QueryScopes,  "LoggingEventData::LogAction::QueryScopes" }
+        , { Action::OpenRemote,   "LoggingEventData::LogAction::OpenRemote" } };
+    for (const auto& entry : names)
+    {
+        EXPECT_EQ(std::string(areg::LoggingEventData::as_string(entry.first)), entry.second);
+    }
+
+    volatile uint32_t outside{ 0x7Fu };
+    EXPECT_STREQ(areg::LoggingEventData::as_string(static_cast<Action>(outside)),
+                 "ERR: Undefined LoggingEventData::LogAction value!");
 }
 
 // A serialized log entry retains its metadata and message text.
@@ -1308,6 +1438,116 @@ TEST(LoggingCoreTest, scope_priority_is_added_and_removed_by_name)
     EXPECT_EQ(scope.priority(), warning);
     scope.remove_priority(areg::String("WARN"));
     EXPECT_EQ(scope.priority(), 0u);
+}
+
+/**
+ * \brief   Reproduces the defect: a priority list or an unknown name given by name switched every
+ *          log level of the scope on, because the text was taken as one name.
+ **/
+TEST(LoggingCoreTest, scope_priority_by_name_takes_lists_and_skips_unknown_names)
+{
+    const uint32_t debug{ static_cast<uint32_t>(areg::LogPriority::PrioDebug) };
+    const uint32_t warning{ static_cast<uint32_t>(areg::LogPriority::PrioWarning) };
+    const uint32_t error{ static_cast<uint32_t>(areg::LogPriority::PrioError) };
+    const uint32_t scopes{ static_cast<uint32_t>(areg::LogPriority::PrioScope) };
+    areg::LogScope scope{ "loggingcore_priority_lists.method", areg::LogPriority::PrioError };
+
+    scope.set_priority("DEBUG | SCOPE");
+    EXPECT_EQ(scope.priority(), debug | scopes);
+    scope.set_priority(areg::String("WARN"));
+    EXPECT_EQ(scope.priority(), warning);
+    scope.set_priority("VERBOSE");
+    EXPECT_EQ(scope.priority(), warning);
+    scope.set_priority(areg::String());
+    EXPECT_EQ(scope.priority(), warning);
+    scope.set_priority("NOTSET");
+    EXPECT_EQ(scope.priority(), static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+
+    scope.set_priority(warning);
+    scope.add_priority("VERBOSE");
+    EXPECT_EQ(scope.priority(), warning);
+    scope.add_priority(areg::String("SCOPE | ERROR"));
+    EXPECT_EQ(scope.priority(), warning | scopes | error);
+    scope.remove_priority("SCOPE | ERROR");
+    EXPECT_EQ(scope.priority(), warning);
+    scope.remove_priority(areg::String("VERBOSE"));
+    EXPECT_EQ(scope.priority(), warning);
+
+    areg::ScopeMessage message{ scope };
+    EXPECT_TRUE(message.is_warn_enabled());
+    EXPECT_FALSE(message.is_info_enabled());
+    EXPECT_FALSE(message.is_dbg_enabled());
+}
+
+// The controller takes priority lists by name and leaves scopes unchanged for unknown names.
+TEST(LoggingCoreTest, controller_priority_by_name_takes_lists_and_skips_unknown_names)
+{
+    const uint32_t info{ static_cast<uint32_t>(areg::LogPriority::PrioInfo) };
+    const uint32_t scopes{ static_cast<uint32_t>(areg::LogPriority::PrioScope) };
+    areg::LogScope first{ "loggingcore_names.first", areg::LogPriority::PrioInfo };
+    areg::LogScope second{ "loggingcore_names.second", areg::LogPriority::PrioInfo };
+    areg::ScopeController controller;
+    controller.register_scope(first);
+    controller.register_scope(second);
+
+    controller.set_scope_priority(first.id(), areg::String("VERBOSE"));
+    EXPECT_EQ(first.priority(), info);
+    controller.add_scope_priority(first.id(), areg::String("VERBOSE"));
+    EXPECT_EQ(first.priority(), info);
+    EXPECT_EQ(controller.set_group_priority("loggingcore_names.*", "VERBOSE"), 0);
+    EXPECT_EQ(second.priority(), info);
+
+    EXPECT_EQ(controller.set_group_priority("loggingcore_names.*", "INFO | SCOPE"), 2);
+    EXPECT_EQ(first.priority(), info | scopes);
+    EXPECT_EQ(second.priority(), info | scopes);
+    controller.remove_scope_priority(areg::String(first.name().data()), areg::String("SCOPE"));
+    EXPECT_EQ(first.priority(), info);
+    controller.add_scope_priority(areg::String(first.name().data()), areg::String("SCOPE"));
+    EXPECT_EQ(first.priority(), info | scopes);
+    controller.remove_scope_priority(first.id(), areg::String("SCOPE | INFO"));
+    EXPECT_EQ(first.priority(), 0u);
+    controller.unregister_scope(first);
+    controller.unregister_scope(second);
+}
+
+// The queries of a scope message follow the priority the scope had when the message was made.
+TEST(LoggingCoreTest, scope_message_queries_follow_the_scope_priority)
+{
+    areg::LogScope scope{ "loggingcore_message_queries.method", areg::LogPriority::PrioInvalid };
+    {
+        areg::ScopeMessage none{ scope };
+        EXPECT_FALSE(none.is_log_enabled());
+        EXPECT_FALSE(none.is_scope_enabled());
+        EXPECT_FALSE(none.is_fatal_enabled());
+        EXPECT_FALSE(none.is_prio_enabled(areg::LogPriority::PrioScope));
+    }
+
+    scope.set_priority(static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    {
+        areg::ScopeMessage notset{ scope };
+        EXPECT_FALSE(notset.is_log_enabled());
+        EXPECT_FALSE(notset.is_scope_enabled());
+    }
+
+    scope.set_priority(static_cast<uint32_t>(areg::LogPriority::PrioScope));
+    {
+        areg::ScopeMessage onlyScope{ scope };
+        EXPECT_TRUE(onlyScope.is_log_enabled());
+        EXPECT_TRUE(onlyScope.is_scope_enabled());
+        EXPECT_TRUE(onlyScope.is_prio_enabled(areg::LogPriority::PrioScope));
+        EXPECT_FALSE(onlyScope.is_prio_enabled(areg::LogPriority::PrioFatal));
+    }
+
+    scope.set_priority(static_cast<uint32_t>(areg::LogPriority::PrioError));
+    {
+        areg::ScopeMessage errors{ scope };
+        EXPECT_TRUE(errors.is_log_enabled());
+        EXPECT_FALSE(errors.is_scope_enabled());
+        EXPECT_FALSE(errors.is_prio_enabled(areg::LogPriority::PrioScope));
+        EXPECT_TRUE(errors.is_prio_enabled(areg::LogPriority::PrioFatal));
+        EXPECT_TRUE(errors.is_prio_enabled(areg::LogPriority::PrioError));
+        EXPECT_FALSE(errors.is_prio_enabled(areg::LogPriority::PrioWarning));
+    }
 }
 
 // The session of a scope that has not logged yet is zero.

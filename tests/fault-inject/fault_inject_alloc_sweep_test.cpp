@@ -23,6 +23,7 @@
 #include "fault-inject/FaultInject.hpp"
 
 #include "areg/appbase/Application.hpp"
+#include "areg/base/FixedArray.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/Component.hpp"
@@ -30,13 +31,25 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/WorkerThread.hpp"
 #include "areg/component/WorkerThreadConsumer.hpp"
+#include "areg/component/Event.hpp"
+#include "areg/component/EventDefs.hpp"
+#include "areg/component/private/EventQueue.hpp"
 #include "areg/component/private/Watchdog.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadAddress.hpp"
 #include "aregextend/service/SystemServiceDefs.hpp"
+#include "units/ServiceTestServer.hpp"
+
+#if AREG_LOGGING
+    #include "areg/ipc/RemoteServiceDefs.hpp"
+    #include "areglogger/client/LogObserverApi.h"
+    #include "areglogger/client/private/LoggerClient.hpp"
+    #include "areglogger/client/private/ObserverMessageProcessor.hpp"
+#endif  // AREG_LOGGING
 
 #include <atomic>
 #include <cerrno>
+#include <cstdio>
 #include <cstring>
 #include <string>
 
@@ -820,6 +833,434 @@ namespace
 TEST( FaultInjectSweepTest, argument_conversion_that_cannot_allocate_returns_null )
 {
     AREG_EXPECT_IN_CHILD( _refused_argument_conversion_returns_null( ) );
+}
+
+#endif  // defined(AREG_FAULT_SWEEP_TESTS)
+
+namespace
+{
+#if defined(AREG_FAULT_SWEEP_TESTS)
+    //!< Publishes the address of an object so the compiler cannot elide its allocation.
+    template<typename OBJECT>
+    inline void _keep_allocation( const OBJECT & obj )
+    {
+        asm volatile( "" : : "r"( &obj ) : "memory" );
+    }
+
+    //!< Fails every nothrow allocation while a fixed array is resized and copied.
+    void _fixed_array_survives_failed_allocation( )
+    {
+        areg_fault::FaultScope faults;
+        const int32_t source[]{ 1, 2, 3 };
+        const int32_t longer[]{ 9, 8, 7, 6, 5 };
+        areg::FixedArray<int32_t> values( source, 3u );
+        const areg::FixedArray<int32_t> other( longer, 5u );
+
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        const bool resized{ values.resize( 8u ) };
+        _keep_allocation( values );
+        AREG_CHILD_CHECK( resized == false );
+        const bool copied{ values.copy( other ) };
+        _keep_allocation( values );
+        AREG_CHILD_CHECK( copied == false );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 2u );
+        AREG_CHILD_CHECK( values.size( ) == 3u && values[ 0 ] == 1 && values[ 1 ] == 2 && values[ 2 ] == 3 );
+
+        AREG_CHILD_CHECK( values.resize( 2u ) );
+        AREG_CHILD_CHECK( areg_fault::calls( areg_fault::FaultPoint::Allocation ) == 2u );
+        AREG_CHILD_CHECK( values.size( ) == 2u && values[ 1 ] == 2 );
+
+        const areg::FixedArray<int32_t> failedCopy( other );
+        const areg::FixedArray<int32_t> failedList( longer, 5u );
+        const areg::FixedArray<int32_t> failedCount( 4u );
+        _keep_allocation( failedCopy );
+        _keep_allocation( failedList );
+        _keep_allocation( failedCount );
+        AREG_CHILD_CHECK( failedCopy.size( ) == 0u && failedList.size( ) == 0u && failedCount.size( ) == 0u );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 5u );
+
+        ::areg_fault_disarm_all( );
+        AREG_CHILD_CHECK( values.resize( 4u ) && values.size( ) == 4u && values[ 1 ] == 2 );
+        AREG_CHILD_CHECK( values.copy( other ) && values == other );
+    }
+
+    //!< Fails one aligned allocation of the setup and the load, then lets the system stop; a thread without a queue cannot be stopped.
+    void _setup_with_failed_aligned_allocation( uint32_t index )
+    {
+        ::alarm( CHILD_ALARM_S );
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::AlignedAllocation, 0, index, 1u ) );
+        areg::Application::setup( false, true, false, true, false );
+        static_cast<void>( areg::Application::load_model( _sweepModel, true ) );
+        ::areg_fault_disarm_all( );
+        static_cast<void>( areg::Application::unload_model( _sweepModel ) );
+        areg::Application::release( );
+    }
+
+    //!< Starts a pool server and checks that every pair of the pool runs and stops with the server.
+    void _pool_server_starts_every_pair( )
+    {
+        constexpr uint32_t pairs{ 2u };
+        areg::Application::setup( false, false, false, true, false );
+        service_test::TestServer server( service_test::Policy::Accept, pairs );
+        server.apply_connection_data( areg::String( "127.0.0.1" ), static_cast<uint16_t>( 21000u + (static_cast<uint32_t>( ::getpid( ) ) % 3000u) ) );
+
+        AREG_CHILD_CHECK( server.connect_service_host( ) && server.wait_started( 1u ) );
+        AREG_CHILD_CHECK( server.active_client_pair_count( ) == pairs );
+
+        server.disconnect_service_host( );
+        server.wait_to_complete( );
+        AREG_CHILD_CHECK( server.active_client_pair_count( ) == 0u );
+        areg::Application::release( );
+    }
+#endif  // defined(AREG_FAULT_SWEEP_TESTS)
+}
+
+/**
+ * \brief   A pool server starts every pair of its pool and stops them with the server.
+ **/
+#if defined(AREG_FAULT_SWEEP_TESTS)
+TEST( FaultInjectSweepTest, pool_server_starts_and_stops_every_pair )
+{
+    AREG_EXPECT_IN_CHILD( _pool_server_starts_every_pair( ) );
+}
+#endif  // defined(AREG_FAULT_SWEEP_TESTS)
+
+#if defined(AREG_FAULT_SWEEP_TESTS)
+/**
+ * \brief   A fixed array whose allocation fails reports it and keeps its previous contents.
+ **/
+TEST( FaultInjectSweepTest, fixed_array_that_cannot_allocate_stays_unchanged )
+{
+    AREG_EXPECT_IN_CHILD( _fixed_array_survives_failed_allocation( ) );
+}
+#endif  // defined(AREG_FAULT_SWEEP_TESTS)
+
+#if defined(AREG_FAULT_SWEEP_TESTS) && AREG_LOGGING
+
+namespace
+{
+    uint32_t    gConnectCalls   { 0u };     //!< Calls of the instances connected callback.
+    uint32_t    gConnectCount   { 0u };     //!< The instances of the last call of the callback.
+    ITEM_ID     gConnectFirst   { 0u };     //!< The cookie of the first instance of the last call.
+
+    void _on_instances_connected( const LogInstance * instances, uint32_t count )
+    {
+        ++ gConnectCalls;
+        gConnectCount = count;
+        gConnectFirst = count != 0u ? instances[ 0 ].liCookie : 0u;
+    }
+
+    //!< Returns the notification of the collector that two sources are connected.
+    areg::MessageEnvelope _connected_sources( ITEM_ID first )
+    {
+        static constexpr areg::EventHeader header{ areg::message_notify_instances( ) };
+        areg::MessageEnvelope message;
+        AREG_CHILD_CHECK( message.init_envelope( header, 512u ) != nullptr );
+        message << areg::RemoteConnectionState::Connected;
+        message << 2u;
+        for ( ITEM_ID cookie = first; cookie < first + 2u; ++ cookie )
+        {
+            areg::ConnectedInstance instance;
+            instance.ciSource   = areg::MessageSource::SourceClient;
+            instance.ciBitness  = areg::InstanceBitness::Bitness64;
+            instance.ciCookie   = cookie;
+            instance.ciTimestamp= 1u;
+            instance.ciInstance = "sweep_instance";
+            instance.ciLocation = "/sweep/location";
+            message << instance;
+        }
+
+        message.move_to_begin( );
+        return message;
+    }
+
+    //!< Fails the allocations of a notification of connected sources in turn.
+    void _refused_instance_list_drops_only_the_notification( )
+    {
+        ObserverEvents events{ };
+        events.evtInstConnected = &_on_instances_connected;
+        areg::logger::LoggerClient::instance( ).set_callbacks( &events );
+        areg::logger::ObserverMessageProcessor processor( areg::logger::LoggerClient::instance( ) );
+
+        uint32_t dropped{ 0u };
+        bool completed{ false };
+        for ( uint32_t skip = 0u; ( skip < REQUEST_COUNT ) && ( completed == false ); ++ skip )
+        {
+            const ITEM_ID first{ 100u + skip * 10u };
+            const areg::MessageEnvelope message{ _connected_sources( first ) };
+            gConnectCalls = 0u;
+            {
+                areg_fault::FaultScope faults;
+                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+                processor.notify_connected_clients( message );
+                completed = ( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 0u );
+            }
+
+            AREG_CHILD_CHECK( gConnectCalls <= 1u );
+            if ( gConnectCalls == 1u )
+            {
+                AREG_CHILD_CHECK( gConnectCount == 2u );
+                AREG_CHILD_CHECK( gConnectFirst == first );
+            }
+            else if ( completed == false )
+            {
+                ++ dropped;
+            }
+            else
+            {
+                AREG_CHILD_CHECK( gConnectCalls == 1u );
+            }
+        }
+
+        AREG_CHILD_CHECK( dropped != 0u );
+        AREG_CHILD_CHECK( completed );
+        AREG_CHILD_CHECK( gConnectCalls == 1u && gConnectCount == 2u );
+    }
+}
+
+/**
+ * \brief   The list of connected sources for the callback cannot be allocated: the notification is
+ *          dropped without a crash, a notification that follows is delivered whole.
+ **/
+TEST( FaultInjectSweepTest, instance_list_that_cannot_be_allocated_drops_only_the_notification )
+{
+    AREG_EXPECT_IN_CHILD( _refused_instance_list_drops_only_the_notification( ); );
+}
+
+#endif  // defined(AREG_FAULT_SWEEP_TESTS) && AREG_LOGGING
+
+#if defined(AREG_FAULT_SWEEP_TESTS)
+
+namespace
+{
+    constexpr char const    _alignedModel[]     { "FaultAlignedHostModel" };
+    constexpr char const    _alignedThread[]    { "FaultAlignedHostThread" };
+    constexpr char const    _alignedWorker[]    { "FaultAlignedWorker" };
+
+    //!< Signaled when the component that creates the worker with a failing allocation is done.
+    areg::SyncEvent         gAlignedDone        { true, false };
+
+    //!< An event that carries a tag.
+    struct TagEvent : public areg::Event
+    {
+        explicit TagEvent( uint32_t tag )
+            : areg::Event( areg::EventType::EventCustomExternal, areg::EventPriority::NormalPrio )
+        {
+            set_event_id( tag );
+        }
+    };
+
+    //!< A worker consumer of the component below.
+    class AlignedConsumer final : public areg::WorkerThreadConsumer
+    {
+    public:
+        AlignedConsumer( )
+            : areg::WorkerThreadConsumer( areg::String( _alignedWorker ) )
+        { }
+    };
+
+    //!< A component that creates a worker whose first aligned allocation fails.
+    class AlignedHostComponent : public areg::Component
+    {
+    public:
+        AlignedHostComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+            : areg::Component( entry, owner )
+        { }
+
+    protected:
+        void startup_component( areg::ComponentThread & comThread ) override
+        {
+            areg::Component::startup_component( comThread );
+            const areg::String name( _alignedWorker );
+            const areg::ThreadAddress address( name );
+            {
+                areg_fault::FaultScope faults;
+                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::AlignedAllocation, 0, 0u, 1u ) );
+                AREG_CHILD_CHECK( create_worker_thread( name, mConsumer, comThread ) == nullptr );
+                AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::AlignedAllocation ) == 1u );
+            }
+
+            AREG_CHILD_CHECK( areg::Thread::find_by_address( address ) == nullptr );
+            areg::WorkerThread * const worker{ create_worker_thread( name, mConsumer, comThread ) };
+            AREG_CHILD_CHECK( worker != nullptr );
+            AREG_CHILD_CHECK( worker->is_ready( ) );
+            AREG_CHILD_CHECK( areg::Thread::find_by_address( address ) == worker );
+            AREG_CHILD_CHECK( create_worker_thread( name, mConsumer, comThread ) == worker );
+            delete_worker_thread( name );
+            AREG_CHILD_CHECK( areg::Thread::find_by_address( address ) == nullptr );
+            gAlignedDone.set_signaled( );
+        }
+
+    private:
+        AlignedConsumer mConsumer;
+    };
+
+    bool _register_aligned_host_model( )
+    {
+        static const bool _registered{ _add_single_model( _alignedModel, _alignedThread, "FaultAlignedHostRole", &_create_component<AlignedHostComponent>, 0u, areg::FailurePolicy::Exit ) };
+        return _registered;
+    }
+
+    //!< A queue whose ring cannot be allocated holds no lanes and can acquire them again.
+    void _queue_without_ring_acquires_it_later( )
+    {
+        areg::EventQueue queue( 32u );
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::AlignedAllocation, 0, 0u, 1u ) );
+        AREG_CHILD_CHECK( queue.acquire_lanes( ) == false );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::AlignedAllocation ) == 1u );
+
+        areg::Event event{ TagEvent( 7u ) };
+        AREG_CHILD_CHECK( queue.push_event( event ) == false );
+        AREG_CHILD_CHECK( event.is_valid( ) );
+        AREG_CHILD_CHECK( queue.has_pending( ) == false );
+        AREG_CHILD_CHECK( queue.pop_event( ).is_valid( ) == false );
+
+        queue.exit_queue( true );
+        AREG_CHILD_CHECK( queue.pop_event( ).is_exit_prio( ) );
+        queue.reset_exit( );
+
+        AREG_CHILD_CHECK( queue.acquire_lanes( ) );
+        AREG_CHILD_CHECK( queue.push_event( event ) );
+        AREG_CHILD_CHECK( queue.pop_event( ).event_id( ) == 7u );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::AlignedAllocation ) == 1u );
+    }
+
+    constexpr char const    _guardedModel[]     { "FaultGuardedModel" };
+    constexpr char const    _guardedThread[]    { "FaultGuardedThread" };
+
+    //!< Registers once the model of one component thread with a watchdog.
+    bool _register_guarded_model( )
+    {
+        static const bool _registered{ [] {
+            const areg::String thread( _guardedThread );
+            areg::ComponentThreadEntry entry{ thread };
+            entry.mWatchdogTimeout = WORKER_WATCH_MS;
+            entry.add_component( areg::ComponentEntry( thread, areg::String( "FaultGuardedRole" ), &_create_sweep, &_delete_sweep ) );
+            areg::Model model( _guardedModel );
+            model.add_thread( entry );
+            return areg::ComponentLoader::add_model_unique( model );
+        }() };
+        return _registered;
+    }
+
+    //!< Fails each allocation of the point in the load of a model in turn: the load fails with no thread left, or succeeds, and the next load works.
+    void _single_load_survives( areg_fault::FaultPoint point, const char * modelName, const char * threadName )
+    {
+        areg::Application::setup( false, true, false, true, true );
+        areg_fault::FaultScope faults;
+        const areg::ThreadAddress address( threadName );
+        uint32_t refused{ 0u };
+        bool finished{ false };
+        for ( uint32_t skip = 0u; ( skip < ATTEMPT_COUNT ) && ( finished == false ); ++ skip )
+        {
+            AREG_CHILD_CHECK( areg_fault::arm( point, 0, skip, 1u ) );
+            const bool loaded{ areg::Application::load_model( modelName, true ) };
+            const uint32_t failed{ areg_fault::failed( point ) };
+            ::areg_fault_disarm_all( );
+            finished = ( failed == 0u );
+            if ( loaded )
+            {
+                AREG_CHILD_CHECK( areg::Application::model_state( modelName ) == areg::ModelState::Loaded );
+                AREG_CHILD_CHECK( areg::Application::unload_model( modelName ) );
+            }
+            else
+            {
+                AREG_CHILD_CHECK( finished == false );
+                AREG_CHILD_CHECK( areg::Application::model_state( modelName ) == areg::ModelState::Unloaded );
+                AREG_CHILD_CHECK( areg::Thread::find_by_address( address ) == nullptr );
+                ++ refused;
+            }
+
+            AREG_CHILD_CHECK( areg::Application::load_model( modelName, true ) );
+            AREG_CHILD_CHECK( areg::Application::unload_model( modelName ) );
+            AREG_CHILD_CHECK( areg::Application::model_state( modelName ) == areg::ModelState::Unloaded );
+        }
+
+        AREG_CHILD_CHECK( finished );
+        AREG_CHILD_CHECK( refused != 0u );
+        areg::Application::release( );
+    }
+}
+
+/**
+ * \brief   A queue whose ring cannot be allocated reports it, holds no lanes (refuses an event
+ *          and keeps it, ends its consumer on exit) and acquires the lanes on the next call.
+ **/
+TEST( FaultInjectSweepTest, event_queue_that_cannot_allocate_its_ring_acquires_it_later )
+{
+    AREG_EXPECT_IN_CHILD( _queue_without_ring_acquires_it_later( ) );
+}
+
+/**
+ * \brief   A worker thread object that cannot be allocated is not created and not registered; the
+ *          next creation of the same name starts a ready worker, and deleting it frees the name.
+ **/
+TEST( FaultInjectSweepTest, worker_thread_that_cannot_be_allocated_is_not_created )
+{
+    ASSERT_TRUE( _register_aligned_host_model( ) );
+    AREG_EXPECT_IN_CHILD(
+        areg::Application::setup( false, true, false, true, false );
+        AREG_CHILD_CHECK( areg::Application::load_model( _alignedModel, true ) );
+        AREG_CHILD_CHECK( gAlignedDone.lock( WAIT_MS ) );
+        AREG_CHILD_CHECK( areg::Application::unload_model( _alignedModel ) );
+        areg::Application::release( );
+    );
+}
+
+/**
+ * \brief   Each nothrow allocation of the load of a model fails in turn: a failed load leaves the
+ *          model unloaded and no thread of it running, and the next load succeeds.
+ **/
+TEST( FaultInjectSweepTest, every_failed_allocation_of_a_single_thread_load_leaves_nothing_running )
+{
+    ASSERT_TRUE( _register_model( ) );
+    AREG_EXPECT_IN_CHILD( _single_load_survives( areg_fault::FaultPoint::Allocation, _sweepModel, _sweepThread ) );
+}
+
+/**
+ * \brief   Each aligned allocation of the load of a model fails in turn, with the same outcome.
+ **/
+TEST( FaultInjectSweepTest, every_failed_aligned_allocation_of_a_single_thread_load_leaves_nothing_running )
+{
+    ASSERT_TRUE( _register_model( ) );
+    AREG_EXPECT_IN_CHILD( _single_load_survives( areg_fault::FaultPoint::AlignedAllocation, _sweepModel, _sweepThread ) );
+}
+
+/**
+ * \brief   The same sweep for a model whose thread has a watchdog: the watchdog that cannot be built
+ *          fails the load, and nothing of the thread stays running.
+ **/
+TEST( FaultInjectSweepTest, every_failed_allocation_of_a_guarded_thread_load_leaves_nothing_running )
+{
+    ASSERT_TRUE( _register_guarded_model( ) );
+    AREG_EXPECT_IN_CHILD( _single_load_survives( areg_fault::FaultPoint::Allocation, _guardedModel, _guardedThread ) );
+}
+
+TEST( FaultInjectSweepTest, every_failed_aligned_allocation_of_a_guarded_thread_load_leaves_nothing_running )
+{
+    ASSERT_TRUE( _register_guarded_model( ) );
+    AREG_EXPECT_IN_CHILD( _single_load_survives( areg_fault::FaultPoint::AlignedAllocation, _guardedModel, _guardedThread ) );
+}
+
+/**
+ * \brief   A dispatcher whose ring cannot be allocated must not run without a queue: after any
+ *          one failed aligned allocation the system must stop and the child must exit with 0.
+ *          Reproduces the defect: such a thread reported started, and its stop never arrived.
+ **/
+TEST( FaultInjectSweepTest, bug_902_setup_with_a_failed_ring_allocation_must_stop )
+{
+    ASSERT_TRUE( _register_model( ) );
+    for ( uint32_t index = 0u; index < REQUEST_COUNT; ++ index )
+    {
+        SCOPED_TRACE( "failed aligned allocation " + std::to_string( index ) );
+        ::testing::GTEST_FLAG( death_test_style ) = "threadsafe";
+        EXPECT_EXIT( {
+            _setup_with_failed_aligned_allocation( index );
+            ::areg_child::pass( );
+        }, _controlled_exit, "" );
+    }
 }
 
 #endif  // defined(AREG_FAULT_SWEEP_TESTS)

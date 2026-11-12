@@ -17,7 +17,8 @@
 #include "areg/appbase/private/configure.hpp"
 #include "areg/base/areg_macros.h"
 
-#ifdef DEBUG
+// Clang reports every pragma message as a warning, so the messages are printed by GCC and MSVC only.
+#if defined(DEBUG) && !defined(__clang__)
 
     #if !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
         #ifdef MS_VISUAL_CPP
@@ -62,7 +63,7 @@
     #endif // AREG_LOGGING
 
 
-#endif // DEBUG
+#endif // defined(DEBUG) && !defined(__clang__)
 
 #ifdef  _MSC_VER
 

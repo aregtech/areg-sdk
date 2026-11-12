@@ -28,6 +28,7 @@
 #include "areg/base/IOStream.hpp"
 
 #include <algorithm>
+#include <new>
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -247,8 +248,10 @@ public:
      * \brief   Copies all elements from source array, replacing existing contents.
      *
      * \param   src     Source array to copy from.
+     * \return  True if the array holds a copy of the source. False if the memory allocation failed;
+     *          the array is unchanged then.
      **/
-    void copy(const FixedArray< VALUE >& src);
+    bool copy(const FixedArray< VALUE >& src);
 
     /**
      * \brief   Moves all elements from source array, leaving source empty.
@@ -270,9 +273,11 @@ public:
     /**
      * \brief   Resizes the array to new length and preserves existing elements.
      *
-     * \param   newLength       New array size.
+     * \param   newLength       New array size. A smaller size keeps the first elements and does not allocate.
+     * \return  True if the array has the new size. False if the memory allocation failed;
+     *          the array is unchanged then.
      **/
-    inline void resize(uint32_t newLength );
+    inline bool resize(uint32_t newLength );
 
     /**
      * \brief   Returns const reference to first element. Array must not be empty.
@@ -333,14 +338,14 @@ protected:
 
 template< typename VALUE >
 FixedArray<VALUE>::FixedArray(uint32_t elemCount /*= 0*/ )
-    : mValueList( elemCount != 0 ? new VALUE[elemCount] : nullptr )
+    : mValueList( elemCount != 0 ? new (std::nothrow) VALUE[elemCount] : nullptr )
     , mElemCount( mValueList != nullptr ? elemCount : 0 )
 {
 }
 
 template< typename VALUE >
 FixedArray<VALUE>::FixedArray( const FixedArray<VALUE>& src )
-    : mValueList( src.mElemCount != 0 ? new VALUE[src.mElemCount] : nullptr )
+    : mValueList( src.mElemCount != 0 ? new (std::nothrow) VALUE[src.mElemCount] : nullptr )
     , mElemCount( mValueList != nullptr ? src.mElemCount : 0 )
 {
     areg::copy_elems<VALUE>(mValueList, src.mValueList, mElemCount);
@@ -357,7 +362,7 @@ FixedArray<VALUE>::FixedArray( FixedArray<VALUE> && src ) noexcept
 
 template<typename VALUE>
 FixedArray<VALUE>::FixedArray(const VALUE* list, uint32_t count)
-    : mValueList(count ? new VALUE[count] : nullptr)
+    : mValueList(count ? new (std::nothrow) VALUE[count] : nullptr)
     , mElemCount(mValueList != nullptr ? count : 0)
 {
     areg::copy_elems<VALUE>(mValueList, list, mElemCount);
@@ -468,19 +473,27 @@ inline const VALUE* FixedArray<VALUE>::values() const noexcept
 }
 
 template< typename VALUE >
-void FixedArray<VALUE>::copy(const FixedArray< VALUE >& src)
+bool FixedArray<VALUE>::copy(const FixedArray< VALUE >& src)
 {
     if (static_cast<const FixedArray<VALUE> *>(this) != &src)
     {
         if (mElemCount != src.size())
         {
+            VALUE * newList = src.size() > 0 ? new (std::nothrow) VALUE[src.size()] : nullptr;
+            if ((newList == nullptr) && (src.size() > 0))
+            {
+                return false;
+            }
+
             clear();
-            mValueList = src.size() > 0 ? new VALUE[src.size()] : nullptr;
-            mElemCount = mValueList != nullptr ? src.size() : 0;
+            mValueList = newList;
+            mElemCount = src.size();
         }
 
         areg::copy_elems<VALUE>(mValueList, src.mValueList, mElemCount);
     }
+
+    return true;
 }
 
 template< typename VALUE >
@@ -511,14 +524,31 @@ inline int32_t FixedArray<VALUE>::find(const VALUE& elemSearch, uint32_t startAt
 
 
 template< typename VALUE >
-void FixedArray<VALUE>::resize(uint32_t newLength)
+bool FixedArray<VALUE>::resize(uint32_t newLength)
 {
-    VALUE * newList = newLength != 0 ? new VALUE[newLength] : nullptr;
-    uint32_t count = std::min(newLength, mElemCount);
-    areg::copy_elems<VALUE>(newList, mValueList, count);
+    if (newLength == 0)
+    {
+        clear();
+        return true;
+    }
+
+    if (newLength <= mElemCount)
+    {
+        mElemCount = newLength;
+        return true;
+    }
+
+    VALUE * newList = new (std::nothrow) VALUE[newLength];
+    if (newList == nullptr)
+    {
+        return false;
+    }
+
+    areg::copy_elems<VALUE>(newList, mValueList, mElemCount);
     delete [] mValueList;
     mValueList = newList;
     mElemCount = newLength;
+    return true;
 }
 
 template<typename VALUE>
@@ -579,7 +609,7 @@ const InStream & operator >> ( const InStream & stream, FixedArray<V> & input )
     uint32_t size = 0;
     stream >> size;
     input.clear();
-    input.resize(stream.bounded_count(size));
+    static_cast<void>(input.resize(stream.bounded_count(size)));
 
     for (uint32_t i = 0; i < input.mElemCount; ++ i )
     {

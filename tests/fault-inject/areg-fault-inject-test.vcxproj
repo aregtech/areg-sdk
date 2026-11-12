@@ -26,7 +26,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(AregSdkRoot)tests;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;_CONSOLE;GTEST_HAS_PTHREAD=0;_HAS_EXCEPTIONS=1;STRICT;IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;_CONSOLE;GTEST_HAS_PTHREAD=0;_HAS_EXCEPTIONS=1;STRICT;IMPORT_SHARED_SYMBOLS;IMP_LOGGER_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -41,8 +41,15 @@
   <ItemGroup>
     <ClCompile Include="fault_inject_test.cpp" />
     <ClCompile Include="fault_inject_router_client_test.cpp" />
+    <ClCompile Include="fault_inject_ipc_more_test.cpp" />
+    <ClCompile Include="fault_inject_posix_base_test.cpp" />
     <ClCompile Include="fault_inject_os_test.cpp" />
     <ClCompile Include="fault_inject_alloc_sweep_test.cpp" />
+    <ClCompile Include="..\..\framework\logcollector\service\private\LogCollectorDatabase.cpp" />
+    <ClCompile Include="..\..\framework\areglogger\client\private\LogObserverApi.cpp" />
+    <ClCompile Include="..\..\framework\areglogger\client\private\LogObserverBase.cpp" />
+    <ClCompile Include="..\..\framework\areglogger\client\private\LoggerClient.cpp" />
+    <ClCompile Include="..\..\framework\areglogger\client\private\ObserverMessageProcessor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\units\ChildProcess.hpp" />
@@ -54,6 +61,10 @@
     </ProjectReference>
     <ProjectReference Include="areg-fault-inject.vcxproj">
       <Project>{bee59ad7-9d23-42c4-922c-10251a155ba1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(AregSdkRoot)thirdparty\sqlite3.vcxproj">
+      <Project>{a19d14e3-19fe-46fe-91ca-0bad1cdb91c5}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

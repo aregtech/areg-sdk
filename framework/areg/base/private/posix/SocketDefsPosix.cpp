@@ -290,6 +290,7 @@ void _os_close_socket(SOCKETHANDLE hSocket)
     areg::thread_rx_cache_release(hSocket);
 }
 
+// GCOVR_EXCL_START: no caller on POSIX, only SocketDefsWin32.cpp calls it
 int32_t _os_send_data_window(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength)
 {
     ASSERT(areg::is_valid_socket(hSocket));
@@ -323,6 +324,7 @@ int32_t _os_send_data_window(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, in
 
     return total;
 }
+// GCOVR_EXCL_STOP
 
 int32_t _os_send_data(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength)
 {

@@ -17,10 +17,31 @@
     <ClCompile Include="fault_inject_router_client_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fault_inject_ipc_more_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fault_inject_posix_base_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="fault_inject_os_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fault_inject_alloc_sweep_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\framework\logcollector\service\private\LogCollectorDatabase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\framework\areglogger\client\private\LogObserverApi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\framework\areglogger\client\private\LogObserverBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\framework\areglogger\client\private\LoggerClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\framework\areglogger\client\private\ObserverMessageProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

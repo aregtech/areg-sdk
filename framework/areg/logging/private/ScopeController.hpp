@@ -491,7 +491,11 @@ inline bool ScopeController::is_scope_registered( const char * scopeName ) const
 
 inline void ScopeController::set_scope_priority( uint32_t scopeId, const String & newPrio ) noexcept
 {
-    set_scope_priority( scopeId, static_cast<uint32_t>(areg::string_to_priority( newPrio )) );
+    const uint32_t prio{ areg::make_priorities( newPrio ) };
+    if (prio != static_cast<uint32_t>(areg::LogPriority::PrioInvalid))
+    {
+        set_scope_priority( scopeId, prio );
+    }
 }
 
 inline void ScopeController::set_scope_priority( const String & scopeName, uint32_t newPrio ) noexcept
@@ -501,12 +505,12 @@ inline void ScopeController::set_scope_priority( const String & scopeName, uint3
 
 inline void ScopeController::set_scope_priority( const String & scopeName, const String & newPrio ) noexcept
 {
-    set_scope_priority( areg::make_id( scopeName ), static_cast<uint32_t>(areg::string_to_priority( newPrio )) );
+    set_scope_priority( areg::make_id( scopeName ), newPrio );
 }
 
 inline void ScopeController::add_scope_priority( uint32_t scopeId, const String & addPrio )
 {
-    add_scope_priority( scopeId, areg::string_to_priority( addPrio ) );
+    add_scope_priority( scopeId, static_cast<areg::LogPriority>(areg::make_priorities( addPrio )) );
 }
 
 inline void ScopeController::add_scope_priority( const String & scopeName, areg::LogPriority addPrio )
@@ -516,12 +520,12 @@ inline void ScopeController::add_scope_priority( const String & scopeName, areg:
 
 inline void ScopeController::add_scope_priority( const String & scopeName, const String & addPrio )
 {
-    add_scope_priority( areg::make_id( scopeName ), areg::string_to_priority( addPrio ) );
+    add_scope_priority( areg::make_id( scopeName ), static_cast<areg::LogPriority>(areg::make_priorities( addPrio )) );
 }
 
 inline void ScopeController::remove_scope_priority( uint32_t scopeId, const String & remPrio )
 {
-    remove_scope_priority( scopeId, areg::string_to_priority( remPrio ) );
+    remove_scope_priority( scopeId, static_cast<areg::LogPriority>(areg::make_priorities( remPrio )) );
 }
 
 inline void ScopeController::remove_scope_priority( const String & scopeName, areg::LogPriority remPrio )
@@ -531,22 +535,23 @@ inline void ScopeController::remove_scope_priority( const String & scopeName, ar
 
 inline void ScopeController::remove_scope_priority( const String & scopeName, const String & remPrio )
 {
-    remove_scope_priority( areg::make_id( scopeName ), areg::string_to_priority( remPrio ) );
+    remove_scope_priority( areg::make_id( scopeName ), static_cast<areg::LogPriority>(areg::make_priorities( remPrio )) );
 }
 
 inline int32_t ScopeController::set_group_priority( const String & scopeGroupName, const String & newPrio ) noexcept
 {
-    return set_group_priority( scopeGroupName, static_cast<uint32_t>(areg::string_to_priority( newPrio )) );
+    const uint32_t prio{ areg::make_priorities( newPrio ) };
+    return (prio != static_cast<uint32_t>(areg::LogPriority::PrioInvalid) ? set_group_priority( scopeGroupName, prio ) : 0);
 }
 
 inline int32_t ScopeController::add_group_priority( const String & scopeGroupName, const String & addPrio )
 {
-    return add_group_priority( scopeGroupName, areg::string_to_priority( addPrio ) );
+    return add_group_priority( scopeGroupName, static_cast<areg::LogPriority>(areg::make_priorities( addPrio )) );
 }
 
 inline int32_t ScopeController::remove_group_priority( const String & scopeGroupName, const String & remPrio )
 {
-    return remove_group_priority( scopeGroupName, areg::string_to_priority( remPrio ) );
+    return remove_group_priority( scopeGroupName, static_cast<areg::LogPriority>(areg::make_priorities( remPrio )) );
 }
 
 inline void ScopeController::clear_config_scopes()

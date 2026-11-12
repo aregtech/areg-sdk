@@ -364,3 +364,42 @@ TEST(FixedArrayTest, test_empty_list_and_empty_sort)
     empty.sort([](int a, int b) { return a < b; });
     EXPECT_TRUE(empty.is_empty());
 }
+
+// A smaller size keeps the leading elements, a larger size keeps all of them, and both report success.
+TEST(FixedArrayTest, resize_keeps_leading_elements_and_reports_success)
+{
+    const int32_t source[]{ 1, 2, 3, 4 };
+    areg::FixedArray<int32_t> values(source, 4u);
+
+    EXPECT_TRUE(values.resize(2u));
+    ASSERT_EQ(values.size(), 2u);
+    EXPECT_EQ(values[0], 1);
+    EXPECT_EQ(values[1], 2);
+
+    EXPECT_TRUE(values.resize(5u));
+    ASSERT_EQ(values.size(), 5u);
+    EXPECT_EQ(values[0], 1);
+    EXPECT_EQ(values[1], 2);
+
+    EXPECT_TRUE(values.resize(5u));
+    EXPECT_EQ(values.size(), 5u);
+
+    EXPECT_TRUE(values.resize(0u));
+    EXPECT_TRUE(values.is_empty());
+}
+
+// Copying reports success for a different size, the same size and an empty source.
+TEST(FixedArrayTest, copy_reports_success_and_replaces_contents)
+{
+    const int32_t source[]{ 7, 8, 9 };
+    const areg::FixedArray<int32_t> src(source, 3u);
+    const areg::FixedArray<int32_t> empty;
+    areg::FixedArray<int32_t> target(1u);
+
+    EXPECT_TRUE(target.copy(src));
+    EXPECT_EQ(target, src);
+    EXPECT_TRUE(target.copy(src));
+    EXPECT_EQ(target, src);
+    EXPECT_TRUE(target.copy(empty));
+    EXPECT_TRUE(target.is_empty());
+}

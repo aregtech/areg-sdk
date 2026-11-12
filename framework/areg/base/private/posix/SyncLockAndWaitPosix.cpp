@@ -519,15 +519,25 @@ void SyncLockAndWaitPosix::event_remove( WaitablePosix & syncWaitable ) noexcept
     {
         SyncLockAndWaitPosix * lockAndWait = waitList->value_at(pos);
         ASSERT(lockAndWait != nullptr);
-        if (syncWaitable.check_signaled(lockAndWait->mContext) == false)
-            break;
 
-        int32_t index = lockAndWait->_waitable_index( syncWaitable );
-        lockAndWait->mFiredEntry.store( index != areg::INVALID_INDEX
-                                        ? (index + static_cast<int32_t>(areg::os::SyncSignal::FirstError))
-                                        : static_cast<int32_t>(areg::os::SyncSignal::Interrupted)
-                                        , std::memory_order_release );
-        lockAndWait->_notify_event();
+        const int32_t index{ lockAndWait->_waitable_index( syncWaitable ) };
+        int32_t expected{ static_cast<int32_t>(areg::os::SyncSignal::Invalid) };
+        if (index != areg::INVALID_INDEX)
+        {
+            // The waiter forgets the removed waitable and never touches it again.
+            lockAndWait->mWaitingList[static_cast<uint32_t>(index)] = nullptr;
+        }
+
+        // A result the waiter already has is kept.
+        if (lockAndWait->mFiredEntry.compare_exchange_strong( expected
+                                        , index != areg::INVALID_INDEX
+                                            ? (index + static_cast<int32_t>(areg::os::SyncSignal::FirstError))
+                                            : static_cast<int32_t>(areg::os::SyncSignal::Interrupted)
+                                        , std::memory_order_acq_rel
+                                        , std::memory_order_relaxed ))
+        {
+            lockAndWait->_notify_event();
+        }
     }
 
     mapResource.unregister_resource(&syncWaitable);
@@ -564,8 +574,14 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
         SyncResourceMapIX & mapResources { SyncLockAndWaitPosix::_map_sync_resources() };
         mapResources.lock();
         count = std::min(areg::MAXIMUM_WAITING_OBJECTS, count);
+        const bool listOk{ mWaitingList.size() >= static_cast<uint32_t>(count) };
+        if ( !listOk )
+        {
+            mFiredEntry.store(static_cast<int32_t>(areg::os::SyncSignal::FirstError), std::memory_order_relaxed);
+            count = 0;
+        }
 
-        bool eventFired{ true };
+        bool eventFired{ listOk };
         for ( uint32_t i = 0; i < static_cast<uint32_t>(count); ++i, ++listWaitables )
         {
             WaitablePosix * syncWaitable = *listWaitables;
@@ -580,6 +596,7 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
             }
             else
             {
+                eventFired = false;
                 mFiredEntry.store(static_cast<int32_t>(i + static_cast<int32_t>(areg::os::SyncSignal::FirstError)), std::memory_order_relaxed);
                 mWaitingList.resize(i);
                 break;
@@ -601,8 +618,9 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
 
 SyncLockAndWaitPosix::~SyncLockAndWaitPosix()
 {
-    // Remove from global map first, then decrement per-waitable counters.
-    SyncLockAndWaitPosix::_map_sync_resources().remove_resource_object(this, true);
+    SyncResourceMapIX & mapResources { SyncLockAndWaitPosix::_map_sync_resources() };
+    Lock rcLock(mapResources.lockable());
+    // The entry of a waitable removed while waited is null.
     for (uint32_t i = 0; i < mWaitingList.size(); ++i)
     {
         if (mWaitingList[i] != nullptr)
@@ -610,6 +628,8 @@ SyncLockAndWaitPosix::~SyncLockAndWaitPosix()
             mWaitingList[i]->remove_wait_all_registration();
         }
     }
+
+    mapResources.remove_resource_object(this, true);
 }
 
 inline bool SyncLockAndWaitPosix::_no_event_fired() const noexcept
@@ -681,8 +701,7 @@ int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_check_event_fired( Waitable
         for ( ; i < mWaitingList.size(); ++i)
         {
             WaitablePosix * waitable = mWaitingList.value_at(i);
-            ASSERT(waitable != nullptr);
-            if (!waitable->check_signaled(mContext))
+            if ((waitable == nullptr) || !waitable->check_signaled(mContext))
                 break;
         }
 
@@ -702,11 +721,13 @@ bool SyncLockAndWaitPosix::_request_ownership( int32_t firedEvent ) noexcept
     ASSERT(firedEvent >= static_cast<int32_t>(areg::os::SyncSignal::First) && firedEvent <= static_cast<int32_t>(areg::os::SyncSignal::All));
     if ( firedEvent != static_cast<int32_t>(areg::os::SyncSignal::All) )
     {
+        // GCOVR_EXCL_START: _check_event_fired returns only All or Invalid
         ASSERT(mWaitingList.size() > static_cast<uint32_t>(firedEvent));
         WaitablePosix *waitable = mWaitingList[static_cast<uint32_t>(firedEvent)];
         ASSERT(waitable != nullptr);
 
         result = waitable->notify_request_ownership(mContext);
+        // GCOVR_EXCL_STOP
     }
     else
     {

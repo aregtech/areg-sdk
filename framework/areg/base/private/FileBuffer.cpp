@@ -161,7 +161,7 @@ uint32_t FileBuffer::write(const uint8_t* buffer, uint32_t size) noexcept
 
 uint32_t FileBuffer::size_writable() const noexcept
 {
-    return (is_opened() ? mSharedBuffer.size_writable() : 0);
+    return (is_opened() && can_write() ? mSharedBuffer.size_writable() : 0u);
 }
 
 bool FileBuffer::remove()

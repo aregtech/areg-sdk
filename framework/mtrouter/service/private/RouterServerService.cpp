@@ -137,8 +137,8 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
                 break;
 
             default:
-                ASSERT(false);
-                break;  // do nothing
+                LOG_WARN("Ignoring registration request of unknown type [ %u ] from source [ %u ]", static_cast<uint32_t>(reqType), static_cast<uint32_t>(source));
+                break;
             }
         }
         break;
@@ -199,7 +199,6 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
                             , static_cast<uint32_t>(msgId)
                             , static_cast<uint32_t>(msgReceived.target())
                             , static_cast<uint32_t>(source));
-            ASSERT(false);
         }
         break;
     }

@@ -28,6 +28,7 @@
 #include <cstring>
 #include <fstream>
 #include <iterator>
+#include <limits>
 #include <string>
 #include <filesystem>
 
@@ -847,6 +848,31 @@ TEST( FileTest, ensure_size_extends_when_needed )
     EXPECT_TRUE( file.ensure_size( 10 ) );
     EXPECT_EQ( file.length( ), 10u );
     EXPECT_EQ( file.position( ), 0u );
+}
+
+/**
+ * \brief   ensure_size() refuses a size past the 32-bit file position and leaves the file as it is.
+ **/
+TEST( FileTest, ensure_size_refuses_a_size_past_the_position_limit )
+{
+    TempFolder tmp;
+    areg::File file( tmp.path( "ensure.bin" ), mode_of( OpenMode::Write, OpenMode::Create, OpenMode::Binary ) );
+    ASSERT_TRUE( file.open( ) );
+    ASSERT_EQ( file.write( reinterpret_cast<const uint8_t *>("abcd"), 4 ), 4u );
+
+    EXPECT_FALSE( file.ensure_size( (std::numeric_limits<uint32_t>::max)( ) ) );
+    EXPECT_EQ( file.length( ), 4u );
+    EXPECT_EQ( file.position( ), 4u );
+}
+
+/**
+ * \brief   A last dot followed by a character that is not a letter or a digit starts no extension.
+ **/
+TEST( FileTest, dot_before_a_non_alphanumeric_starts_no_extension )
+{
+    const areg::String path( "folder/archive.-v2" );
+    EXPECT_STREQ( areg::File::file_name( path ).as_string( ), "archive.-v2" );
+    EXPECT_TRUE( areg::File::file_extension( path ).is_empty( ) );
 }
 
 /**

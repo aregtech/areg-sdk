@@ -375,13 +375,18 @@ bool ServiceCommunicationBase::start_connection()
                 sendName.format("AregPoolSend_%u", i);
                 recvName.format("AregPoolRecv_%u", i);
 
-                auto pair = std::make_unique<ClientConnectionPair>(
+                std::unique_ptr<ClientConnectionPair> pair{ new (std::nothrow) ClientConnectionPair(
                                   static_cast<RemoteMessageHandler&>(self())
                                 , mServerConnection
                                 , mThreadSend
                                 , mThreadReceive
                                 , sendName.as_string()
-                                , recvName.as_string() );
+                                , recvName.as_string() ) };
+                if ( !pair )
+                {
+                    poolOk = false;
+                    break;
+                }
 
                 pair->send_thread().backlog().set_hold_counter(&mHeldTargets);
                 pair->send_thread().backlog().set_limits(mSendCapBytes, mSendRefusalMs, mKeepaliveMs, mCloseStalled);

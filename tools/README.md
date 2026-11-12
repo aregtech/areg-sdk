@@ -102,6 +102,7 @@ about this repository: whether the framework, the agent corpus and the CI still 
 | `run-all-examples.bat` | Python | Wrapper around the driver for Windows | [9](#9-running-the-examples-as-a-test-suite) |
 | `areg_benchmarks.py` | Python | Turns the console output of the benchmarks into numbers | [10](#10-measuring-throughput-and-latency) |
 | `report-ctest.py` | Python | Republishes failed ctest cases as build server annotations | [9](#9-running-the-examples-as-a-test-suite) |
+| `collect-warnings.py` | Python, `gh` | Collects the compiler and linker warnings of every GitHub Actions job of one commit into one Markdown and JSON report, one entry per warning with the jobs that printed it. Works for any repository; `--log` reads a local build log instead | -- |
 | `check-ascii.py` | Python | Checks the encoding of the text files, finds unwanted control characters | [11](#11-source-hygiene-check-asciipy) |
 | `footprint.py` | Python | Reports the flash size of the artefacts and the RAM of the running processes | [12](#12-flash-and-ram-footprint) |
 | `check_invariants.py` | Python | Seeds a defect per framework invariant, rebuilds, and asks whether the test suite notices. `--dry-run` is one second; `--restore` undoes a seed a killed run left | -- |

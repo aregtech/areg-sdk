@@ -117,6 +117,33 @@ EventQueue::~EventQueue()
 // EventQueue - lane lifecycle
 //////////////////////////////////////////////////////////////////////////
 
+bool EventQueue::reserve_lanes() noexcept
+{
+    return (mCapacity != 0u) && ((mRing.load(std::memory_order_relaxed) != nullptr) || _allocate_lanes(EventQueue::RING_CLOSED));
+}
+
+bool EventQueue::_allocate_lanes(size_t enqueuePos) noexcept
+{
+    Cell* const ring{ new (std::nothrow) Cell[mCapacity] };
+    if (ring == nullptr)
+        return false;
+
+    for (uint32_t i = 0u; i < mCapacity; ++i)
+        ring[i].sequence.store(i, std::memory_order_relaxed);
+
+    mEnqueuePos.store(enqueuePos, std::memory_order_relaxed);
+    mDequeuePos.store(0u, std::memory_order_relaxed);
+
+    {
+        Lock lock(mPrioLock);
+        mPrioQueue.emplace();
+        mPrioCount.store(0u, std::memory_order_relaxed);
+    }
+
+    mRing.store(ring, std::memory_order_release);
+    return true;
+}
+
 bool EventQueue::acquire_lanes() noexcept
 {
     if (mCapacity == 0u)
@@ -127,25 +154,9 @@ bool EventQueue::acquire_lanes() noexcept
         // The ring outlives a stop, so starting again only opens it for producers.
         static_cast<void>(mEnqueuePos.fetch_and(~EventQueue::RING_CLOSED, std::memory_order_acq_rel));
     }
-    else
+    else if (_allocate_lanes(0u) == false)
     {
-        Cell* const ring{ new (std::nothrow) Cell[mCapacity] };
-        if (ring == nullptr)
-            return false;
-
-        for (uint32_t i = 0u; i < mCapacity; ++i)
-            ring[i].sequence.store(i, std::memory_order_relaxed);
-
-        mEnqueuePos.store(0u, std::memory_order_relaxed);
-        mDequeuePos.store(0u, std::memory_order_relaxed);
-
-        {
-            Lock lock(mPrioLock);
-            mPrioQueue.emplace();
-            mPrioCount.store(0u, std::memory_order_relaxed);
-        }
-
-        mRing.store(ring, std::memory_order_release);
+        return false;
     }
 
     // A pending exit keeps the queue closed.
@@ -371,8 +382,10 @@ bool EventQueue::wait_push_event(Event& eventElem) noexcept
     Cell* const ring{ mRing.load(std::memory_order_acquire) };
     if (ring == nullptr)
     {
+        // GCOVR_EXCL_START: only misuse, wait_push_event without a prior try_push_event
         mProducersWaiting.fetch_sub(1u, std::memory_order_release);
         return false;
+        // GCOVR_EXCL_STOP
     }
 
     return _ring_wait_registered(ring, eventElem);
@@ -793,8 +806,10 @@ bool EventQueue::_ring_try_dequeue(Cell* ring, Event& result) noexcept
 
 uint32_t EventQueue::_round_up_pow2(uint32_t value) noexcept
 {
+    // GCOVR_EXCL_START: private, _calc_capacity clamps first
     if (value <= 1u)
         return 1u;
+    // GCOVR_EXCL_STOP
 
     --value;
     value |= value >> 1;

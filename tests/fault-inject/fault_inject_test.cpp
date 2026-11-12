@@ -22,7 +22,9 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
+#include "areg/base/FileBuffer.hpp"
 #include "areg/base/MessageEnvelope.hpp"
+#include "areg/base/Process.hpp"
 #include "areg/base/RingStack.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/SocketClient.hpp"
@@ -30,7 +32,18 @@
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/base/ThreadConsumer.hpp"
+
+#if AREG_LOGGING
+    #include "areglogger/client/LogObserverApi.h"
+    #include "areglogger/client/private/LoggerClient.hpp"
+    #include "logcollector/service/private/LogCollectorDatabase.hpp"
+
+    #include <filesystem>
+    #include <string>
+    #include <system_error>
+#endif  // AREG_LOGGING
 
 #include <errno.h>
 
@@ -41,6 +54,11 @@
     #include "areg/component/EventConsumer.hpp"
     #include "units/ServiceTestServer.hpp"
     #include "units/LogCapture.hpp"
+    #include "units/LogCollectorFake.hpp"
+    #include "areg/ipc/RemoteServiceDefs.hpp"
+    #include "areg/logging/LogDatabaseEngine.hpp"
+    #include "areg/logging/LogConfiguration.hpp"
+    #include "areg/persist/ConfigManager.hpp"
 
     #include <arpa/inet.h>
     #include <fcntl.h>
@@ -52,8 +70,12 @@
     #include <sys/socket.h>
     #include <unistd.h>
 
+    #include <algorithm>
     #include <chrono>
+    #include <cstring>
     #include <future>
+    #include <string>
+    #include <vector>
 #endif  // defined(__linux__)
 
 namespace
@@ -898,6 +920,90 @@ TEST( FaultInjectTest, write_invert_writes_nothing_and_a_later_write_succeeds_wh
     );
 }
 
+namespace
+{
+    constexpr uint32_t BUFFER_MODE{ static_cast<uint32_t>(areg::FileBase::OpenMode::Write)
+                                  | static_cast<uint32_t>(areg::FileBase::OpenMode::Read)
+                                  | static_cast<uint32_t>(areg::FileBase::OpenMode::Binary) };
+}
+
+//!< A search whose window cannot be allocated finds nothing; the next search finds the data.
+TEST( FaultInjectTest, file_search_finds_nothing_when_its_window_cannot_be_allocated )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::FileBuffer file( BUFFER_MODE );
+        AREG_CHILD_CHECK( file.open( ) );
+        constexpr char text[]{ "alpha-beta-gamma" };
+        constexpr uint32_t length{ static_cast<uint32_t>(sizeof( text ) - 1u) };
+        AREG_CHILD_CHECK( file.write( reinterpret_cast<const uint8_t *>(text), length ) == length );
+        const uint8_t * beta{ reinterpret_cast<const uint8_t *>("beta") };
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+            AREG_CHILD_CHECK( file.search_data( 0u, beta, 4u ) == areg::Cursor::INVALID_CURSOR_POSITION );
+            AREG_CHILD_CHECK( file.search_text( 0u, "gamma", true ) == areg::Cursor::INVALID_CURSOR_POSITION );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) >= 2u && NOT_REPLACED );
+        }
+
+        AREG_CHILD_CHECK( file.search_data( 0u, beta, 4u ) == 6u );
+        AREG_CHILD_CHECK( file.search_text( 0u, "gamma", true ) == 11u );
+    );
+}
+
+//!< A block read that cannot allocate its buffer reads nothing and keeps the cursor; the next read gets the block.
+TEST( FaultInjectTest, file_block_read_keeps_the_cursor_when_its_buffer_cannot_be_allocated )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::FileBuffer file( BUFFER_MODE );
+        AREG_CHILD_CHECK( file.open( ) );
+        areg::SharedBuffer block;
+        const uint8_t * bytes{ reinterpret_cast<const uint8_t *>("\x01\x02\x03\x04\x05") };
+        constexpr uint32_t count{ 5u };
+        AREG_CHILD_CHECK( block.write( bytes, count ) == count );
+        AREG_CHILD_CHECK( file.write( block ) == count + sizeof( int32_t ) );
+        AREG_CHILD_CHECK( file.move_to_begin( ) );
+
+        areg::SharedBuffer target;
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+            AREG_CHILD_CHECK( file.read( target ) == 0u );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) >= 1u && NOT_REPLACED );
+        }
+
+        AREG_CHILD_CHECK( file.position( ) == 0u );
+        AREG_CHILD_CHECK( target.is_valid( ) == false );
+        AREG_CHILD_CHECK( file.read( target ) == count + sizeof( int32_t ) );
+        AREG_CHILD_CHECK( target.size_used( ) == count );
+        AREG_CHILD_CHECK( ( target.buffer( )[0] == 1u ) && ( target.buffer( )[4] == 5u ) );
+    );
+}
+
+//!< A buffer that cannot grow reports the failure and keeps its data and cursor.
+TEST( FaultInjectTest, file_buffer_reserve_keeps_the_data_when_growth_fails )
+{
+    AREG_EXPECT_IN_CHILD(
+        areg::FileBuffer file( BUFFER_MODE );
+        AREG_CHILD_CHECK( file.open( ) );
+        const uint8_t * bytes{ reinterpret_cast<const uint8_t *>("\x07\x08\x09") };
+        constexpr uint32_t count{ 3u };
+        AREG_CHILD_CHECK( file.write( bytes, count ) == count );
+        const uint32_t cursor{ file.position( ) };
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+            AREG_CHILD_CHECK( file.reserve( 64u * 1024u ) == areg::INVALID_SIZE );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) >= 1u && NOT_REPLACED );
+        }
+
+        AREG_CHILD_CHECK( file.position( ) == cursor );
+        AREG_CHILD_CHECK( file.length( ) == count );
+        AREG_CHILD_CHECK( file.data_buffer( )[2] == 9u );
+        AREG_CHILD_CHECK( file.reserve( 64u * 1024u ) == cursor );
+        AREG_CHILD_CHECK( file.length( ) == count );
+    );
+}
+
 /**
  * \brief   Reproduces the defect: a failed growth released the block, so the bytes already written were lost.
  **/
@@ -1124,6 +1230,36 @@ TEST( FaultInjectTest, envelope_without_memory_is_invalid )
     );
 }
 
+//!< Every log protocol message built without memory is invalid, so no caller sends a half-made message.
+TEST( FaultInjectTest, log_protocol_messages_without_memory_are_invalid )
+{
+    AREG_EXPECT_IN_CHILD(
+        const areg::ScopeList scopes;
+        const areg::ScopeNames names;
+        const areg::LogEntry entry( areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioInfo, "fault", 5u );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        AREG_CHILD_CHECK( areg::message_register_scopes( 1001u, 1002u, scopes ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_update_scopes( 1001u, 1002u, names ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_update_scope( 1001u, 1002u, "scope", 1u, 1u ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_query_instances( 1001u, 1002u ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_query_scopes( 1001u, 1002u ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_scopes_updated( 1001u, 1002u, scopes ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_save_configuration( 1001u, 1002u ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_configuration_saved( ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_restore_configuration( 1001u, 1002u ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_configuration_restored( ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_update_source_state( 1001u, 1002u, areg::LogSourceState::Paused ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_source_state_updated( 1001u, 1002u, areg::LogSourceState::Paused, 1003u ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::create_log_message( entry, areg::LogDataType::Remote, 1001u ).is_valid( ) == false );
+#if AREG_LOGGING
+        AREG_CHILD_CHECK( areg::make_log_message( areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioInfo, "fault", 5u ).is_valid( ) == false );
+#endif  // AREG_LOGGING
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) >= 1u && NOT_REPLACED );
+    );
+}
+
 //!< A block goes back to the heap when the cache cannot get a magazine for it.
 TEST( FaultInjectTest, envelope_block_is_freed_when_the_cache_has_no_magazine )
 {
@@ -1279,3 +1415,318 @@ TEST( FaultInjectTest, ring_stack_copy_constructor_gives_an_empty_ring_when_allo
 }
 
 #endif  // defined(AREG_FAULT_ALLOC_TESTS)
+
+#if AREG_LOGGING
+
+namespace
+{
+    uint32_t    gDbCreated  { 0u };     //!< Calls of the database created notification.
+
+    void on_db_created( const char * /*dbLocation*/ )
+    {
+        ++ gDbCreated;
+    }
+
+    //!< Starts and stops a thread, so that a sanitizer creates its helper thread before a fault is armed.
+    void warm_up_threads( )
+    {
+        ReturningConsumer consumer;
+        areg::Thread warmup( consumer, "FaultInjectWarmupLogging" );
+        AREG_CHILD_CHECK( warmup.start( areg::WAIT_INFINITE ) );
+        static_cast<void>(warmup.shutdown( areg::WAIT_INFINITE ));
+    }
+
+    //!< Returns a database file in a private directory of the process.
+    std::filesystem::path private_database( const char * name )
+    {
+        std::filesystem::path dir{ std::filesystem::temp_directory_path( ) / ("areg-fault-logging-" + std::to_string( areg::Process::instance( ).id( ) )) };
+        std::error_code error;
+        std::filesystem::create_directories( dir, error );
+        return (dir / name);
+    }
+
+    //!< Removes the private directory of the process.
+    void remove_private_directory( const std::filesystem::path & file )
+    {
+        std::error_code error;
+        std::filesystem::remove_all( file.parent_path( ), error );
+    }
+}
+
+/**
+ * \brief   The writer thread of the log collector database cannot be created (the thread of the
+ *          checkpointer, created before it, passes). The start is refused, the
+ *          database stays inactive and has no path, and the next start works.
+ **/
+TEST( FaultInjectTest, log_collector_database_stays_stopped_when_its_writer_thread_cannot_start )
+{
+    AREG_EXPECT_IN_CHILD(
+        warm_up_threads( );
+        const std::filesystem::path file{ private_database( "writer.sqlog" ) };
+        {
+            LogCollectorDatabase database;
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, THREAD_ERROR, 1u ) );
+            AREG_CHILD_CHECK( database.start( areg::String( file.string( ).c_str( ) ) ) == false );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u && NOT_REPLACED );
+            AREG_CHILD_CHECK( database.is_active( ) == false );
+            AREG_CHILD_CHECK( database.database_path( ).is_empty( ) );
+            database.save_instance_disconnected( 1u );
+            database.stop( );
+
+            AREG_CHILD_CHECK( database.start( areg::String( file.string( ).c_str( ) ) ) );
+            AREG_CHILD_CHECK( database.is_active( ) );
+            AREG_CHILD_CHECK( database.database_path( ).is_empty( ) == false );
+            database.stop( );
+            AREG_CHILD_CHECK( database.is_active( ) == false );
+        }
+
+        remove_private_directory( file );
+    );
+}
+
+/**
+ * \brief   The writer thread of the database of the log observer cannot be created. The database is
+ *          refused and closed, no creation is reported, and opening it again works.
+ **/
+TEST( FaultInjectTest, log_observer_database_is_closed_when_its_writer_thread_cannot_start )
+{
+    AREG_EXPECT_IN_CHILD(
+        warm_up_threads( );
+        areg::Application::setup( false, true, false, true, false );
+        const std::filesystem::path file{ private_database( "observer.sqlog" ) };
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance( ) };
+        ObserverEvents events{ };
+        events.evtLogDbCreated = &on_db_created;
+        client.set_callbacks( &events );
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, THREAD_ERROR, 1u ) );
+            AREG_CHILD_CHECK( client.open_logging_database( file.string( ).c_str( ) ) == false );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u && NOT_REPLACED );
+            AREG_CHILD_CHECK( gDbCreated == 0u );
+        }
+
+        AREG_CHILD_CHECK( client.open_logging_database( file.string( ).c_str( ) ) );
+        AREG_CHILD_CHECK( gDbCreated == 1u );
+        client.close_logging_database( );
+        areg::Application::release( );
+        remove_private_directory( file );
+    );
+}
+
+#endif  // AREG_LOGGING
+
+#if defined(__linux__) && AREG_LOGGING
+
+namespace
+{
+    void write_remote_row( const char * text )
+    {
+        const areg::LogEntry entry( areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioInfo
+                                  , text, static_cast<uint32_t>(std::strlen( text )) );
+        areg::log_local( entry );
+    }
+
+    //!< A log database that keeps nothing and tells a waiting thread which row the logging thread handled.
+    class FenceDatabase final : public areg::LogDatabaseEngine
+    {
+    public:
+        bool is_operable( ) const noexcept override { return true; }
+        bool connect( const areg::String &, areg::DatabaseRole ) override { return true; }
+        void disconnect( ) override { }
+        bool execute( const areg::String & ) override { return true; }
+        bool begin( ) override { return true; }
+        bool commit( bool ) override { return true; }
+        bool rollback( ) override { return true; }
+        bool tables_initialized( ) const noexcept override { return true; }
+        bool log_instance_connected( const areg::ConnectedInstance &, const areg::DateTime & ) override { return true; }
+        bool log_instance_disconnected( const ITEM_ID &, const areg::DateTime & ) override { return true; }
+        bool log_scope_activate( const areg::ScopeEntry &, const ITEM_ID &, const areg::DateTime & ) override { return true; }
+        bool log_scope_activate( const areg::String &, uint32_t, uint32_t, const ITEM_ID &, const areg::DateTime & ) override { return true; }
+        uint32_t log_scopes_activate( const areg::ScopeNames &, const ITEM_ID &, const areg::DateTime & ) override { return 0u; }
+        bool log_scopes_deactivate( const ITEM_ID &, const areg::DateTime & ) override { return true; }
+        bool log_scope_deactivate( const ITEM_ID &, uint32_t, const areg::DateTime & ) override { return true; }
+
+        bool log_message( const areg::LogEntry & entry ) override
+        {
+            if ( std::string( entry.logMessage, areg::log_message_size( entry ) ) == "fence" )
+                mFence.set_value( );
+
+            return true;
+        }
+
+        //!< Returns true once the logging thread handled the row "fence".
+        bool wait_fence( )
+        {
+            return mFence.get_future( ).wait_for( std::chrono::seconds( CHILD_DEADLINE_SEC ) ) == std::future_status::ready;
+        }
+
+    private:
+        std::promise<void>  mFence;
+    };
+
+    //!< The rows written while the collector is not reachable; the last one is the fence.
+    std::vector<std::string> kept_rows( )
+    {
+        return { "kept-1", "kept-2", "kept-3", "kept-4", "kept-5", "kept-6", "fence" };
+    }
+}
+
+/**
+ * \brief   Reproduces the defect: a send that failed on a connected source was not reported, so the
+ *          source never connected again and the row was lost. The row is kept in the remote queue and
+ *          reaches the collector after the reconnect, before the later rows.
+ **/
+TEST( FaultInjectTest, remote_log_row_whose_send_fails_is_delivered_after_the_reconnect )
+{
+    AREG_EXPECT_IN_CHILD(
+        alarm( CHILD_DEADLINE_SEC );
+        log_fake::RuntimeCollector collector;
+        AREG_CHILD_CHECK( collector.open( ) );
+        areg::ConfigManager & manager{ areg::Application::config_manager( ) };
+        manager.set_configuration( areg::ListProperties( ), areg::ListProperties( ) );
+        manager.set_service_enable( areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, false, true );
+        areg::LogConfiguration config;
+        for ( const auto target : { areg::LogTarget::File, areg::LogTarget::Debug, areg::LogTarget::Database } )
+            config.set_log_enabled( target, false );
+        config.set_status( true );
+        config.set_log_enabled( areg::LogTarget::Remote, true );
+        config.set_tcp_enable( true, true );
+        config.set_tcp_address( "127.0.0.1", true );
+        config.set_tcp_port( collector.port( ), true );
+        config.set_stack_size( 8u );
+        areg::Application::setup( false, false, false, true, false );
+        AREG_CHILD_CHECK( areg::start_logging( ) );
+        AREG_CHILD_CHECK( collector.handshake( ) );
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, EPIPE ) );
+            write_remote_row( "send-fails" );
+            AREG_CHILD_CHECK( collector.handshake_next_source( ) );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u );
+        }
+
+        AREG_CHILD_CHECK( collector.next_row( "send-fails" ) );
+        write_remote_row( "after-reconnect" );
+        AREG_CHILD_CHECK( collector.next_row( "after-reconnect" ) );
+        areg::stop_logging( true );
+        areg::Application::release( );
+    );
+}
+
+/**
+ * \brief   Reproduces the defect: rows kept for a collector that was not reachable are sent by the send
+ *          thread after the connection, and when that send failed the send thread wrote the remote queue
+ *          while the logging thread read it, and gave back every row but the first without its text.
+ *          The first row always reaches the collector after the reconnect, every row that arrives has
+ *          its text, and the rows arrive once and in the order they were written.
+ **/
+TEST( FaultInjectTest, remote_log_rows_whose_replay_fails_are_delivered_whole_after_the_reconnect )
+{
+    AREG_EXPECT_IN_CHILD(
+        alarm( CHILD_DEADLINE_SEC );
+        log_fake::RuntimeCollector collector;
+        AREG_CHILD_CHECK( collector.open( false ) );
+        areg::ConfigManager & manager{ areg::Application::config_manager( ) };
+        manager.set_configuration( areg::ListProperties( ), areg::ListProperties( ) );
+        manager.set_service_enable( areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, false, true );
+        areg::LogConfiguration config;
+        for ( const auto target : { areg::LogTarget::File, areg::LogTarget::Debug } )
+            config.set_log_enabled( target, false );
+        FenceDatabase database;
+        areg::set_db_engine( &database );
+        config.set_log_enabled( areg::LogTarget::Database, true );
+        config.set_status( true );
+        config.set_log_enabled( areg::LogTarget::Remote, true );
+        config.set_tcp_enable( true, true );
+        config.set_tcp_address( "127.0.0.1", true );
+        config.set_tcp_port( collector.port( ), true );
+        config.set_stack_size( 16u );
+        areg::Application::setup( false, false, false, true, false );
+        AREG_CHILD_CHECK( areg::start_logging( ) );
+
+        const std::vector<std::string> written( kept_rows( ) );
+        for ( const std::string & row : written )
+            write_remote_row( row.c_str( ) );
+
+        AREG_CHILD_CHECK( database.wait_fence( ) );
+        {
+            // The connect request, the reply of the collector and the scopes of the source pass.
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, EPIPE, 3u, 0u ) );
+            AREG_CHILD_CHECK( collector.listen( ) );
+            AREG_CHILD_CHECK( collector.handshake_next_source( ) );
+            AREG_CHILD_CHECK( collector.wait_peer_closed( ) );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) != 0u );
+        }
+
+        AREG_CHILD_CHECK( collector.logs( ).empty( ) );
+        AREG_CHILD_CHECK( collector.handshake_next_source( ) );
+        write_remote_row( "after-reconnect" );
+        AREG_CHILD_CHECK( collector.read_until_row( "after-reconnect" ) );
+        AREG_CHILD_CHECK( collector.malformed_rows( ) == 0u );
+
+        const std::vector<std::string> & rows{ collector.logs( ) };
+        AREG_CHILD_CHECK( (rows.size( ) >= 2u) && (rows.front( ) == "kept-1") && (rows.back( ) == "after-reconnect") );
+        auto expected{ written.begin( ) };
+        for ( size_t i{ 0u }; (i + 1u) < rows.size( ); ++i )
+        {
+            expected = std::find( expected, written.end( ), rows[i] );
+            AREG_CHILD_CHECK( expected != written.end( ) );
+            ++expected;
+        }
+
+        areg::stop_logging( true );
+        areg::Application::release( );
+        areg::set_db_engine( nullptr );
+    );
+}
+
+/**
+ * \brief   Reproduces the defect: a message of the source that is not a log row, here its list of scopes,
+ *          was kept in the remote queue when its send failed, and was sent again after the reconnect as
+ *          a log row with a part of its data overwritten. The next connection sends the scopes once,
+ *          and the first message after them is the first row.
+ **/
+TEST( FaultInjectTest, remote_log_message_that_is_no_row_is_not_replayed_after_the_reconnect )
+{
+    AREG_EXPECT_IN_CHILD(
+        alarm( CHILD_DEADLINE_SEC );
+        log_fake::RuntimeCollector collector;
+        AREG_CHILD_CHECK( collector.open( ) );
+        areg::ConfigManager & manager{ areg::Application::config_manager( ) };
+        manager.set_configuration( areg::ListProperties( ), areg::ListProperties( ) );
+        manager.set_service_enable( areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, false, true );
+        areg::LogConfiguration config;
+        for ( const auto target : { areg::LogTarget::File, areg::LogTarget::Debug, areg::LogTarget::Database } )
+            config.set_log_enabled( target, false );
+        config.set_status( true );
+        config.set_log_enabled( areg::LogTarget::Remote, true );
+        config.set_tcp_enable( true, true );
+        config.set_tcp_address( "127.0.0.1", true );
+        config.set_tcp_port( collector.port( ), true );
+        config.set_stack_size( 8u );
+        {
+            // The connect request and the reply of the collector pass, the scopes of the source fail.
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, EPIPE, 2u, 1u ) );
+            areg::Application::setup( false, false, false, true, false );
+            AREG_CHILD_CHECK( areg::start_logging( ) );
+            AREG_CHILD_CHECK( collector.handshake( ) == false );
+            AREG_CHILD_CHECK( collector.wait_peer_closed( ) );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u );
+        }
+
+        AREG_CHILD_CHECK( collector.handshake_next_source( ) );
+        write_remote_row( "first-row" );
+        areg::MessageEnvelope message;
+        AREG_CHILD_CHECK( collector.read( message ) );
+        AREG_CHILD_CHECK( message.message_id( ) == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage) );
+        AREG_CHILD_CHECK( (collector.logs( ).size( ) == 1u) && (collector.logs( ).front( ) == "first-row") );
+        areg::stop_logging( true );
+        areg::Application::release( );
+    );
+}
+
+#endif  // defined(__linux__) && AREG_LOGGING

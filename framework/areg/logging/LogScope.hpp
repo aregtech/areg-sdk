@@ -106,13 +106,17 @@ public:
     /**
      * \brief   Sets scope log message priority level by name.
      *
-     * \param   newPrio     The name of the log priority level to add.
+     * \param   newPrio     A priority name or a list of names separated by '|', for example
+     *                      "DEBUG | SCOPE". Unknown names are skipped; a text with no known
+     *                      name leaves the priority unchanged.
      **/
     inline void set_priority( const char * newPrio ) noexcept;
     /**
      * \brief   Sets scope log message priority level by name.
      *
-     * \param   newPrio     The name of the log priority level to add.
+     * \param   newPrio     A priority name or a list of names separated by '|', for example
+     *                      "DEBUG | SCOPE". Unknown names are skipped; a text with no known
+     *                      name leaves the priority unchanged.
      **/
     inline void set_priority( const String & newPrio ) noexcept;
 
@@ -129,15 +133,16 @@ public:
      * \brief   Adds priority level to the existing priority level of the scope, where the priority
      *          level is added by name. The priority level is added bitwise.
      *
-     * \param   addPrio     The name of the log priority level to add.
+     * \param   addPrio     A priority name or a list of names separated by '|'. Unknown names
+     *                      add nothing.
      **/
     inline void add_priority( const char * addPrio ) noexcept;
     /**
      * \brief   Adds priority level to the existing priority level of the scope, where the priority
      *          level is added by name. The priority level is added bitwise.
      *
-     * \param   addPrio     The name of the log priority level to add.
-     * \note    Move overload. Takes ownership of the string.
+     * \param   addPrio     A priority name or a list of names separated by '|'. Unknown names
+     *                      add nothing.
      **/
     inline void add_priority( const String & addPrio ) noexcept;
 
@@ -154,15 +159,16 @@ public:
      * \brief   Removes priority level from the existing priority level of the scope, where the
      *          priority level is passed by name. The operation is made bitwise.
      *
-     * \param   remPrio     The name of the log priority level to remove.
+     * \param   remPrio     A priority name or a list of names separated by '|'. Unknown names
+     *                      remove nothing.
      **/
     inline void remove_priority( const char * remPrio ) noexcept;
     /**
      * \brief   Removes priority level from the existing priority level of the scope, where the
      *          priority level is passed by name. The operation is made bitwise.
      *
-     * \param   remPrio     The name of the log priority level to remove.
-     * \note    Move overload. Takes ownership of the string.
+     * \param   remPrio     A priority name or a list of names separated by '|'. Unknown names
+     *                      remove nothing.
      **/
     inline void remove_priority( const String & remPrio ) noexcept;
 
@@ -290,14 +296,28 @@ inline void LogScope::add_priority( areg::LogPriority addPrio ) noexcept
     mScopePrio.store(prio | static_cast<uint32_t>(addPrio), std::memory_order_relaxed);
 }
 
-void LogScope::add_priority( const char * addPrio ) noexcept
+inline void LogScope::set_priority( const char * newPrio ) noexcept
 {
-    add_priority( areg::string_to_priority(addPrio) );
+    set_priority( String(newPrio) );
 }
 
-void LogScope::add_priority( const String & addPrio ) noexcept
+inline void LogScope::set_priority( const String & newPrio ) noexcept
 {
-    add_priority( areg::string_to_priority(addPrio) );
+    const uint32_t prio{ areg::make_priorities(newPrio) };
+    if (prio != static_cast<uint32_t>(areg::LogPriority::PrioInvalid))
+    {
+        set_priority( prio );
+    }
+}
+
+inline void LogScope::add_priority( const char * addPrio ) noexcept
+{
+    add_priority( String(addPrio) );
+}
+
+inline void LogScope::add_priority( const String & addPrio ) noexcept
+{
+    add_priority( static_cast<areg::LogPriority>(areg::make_priorities(addPrio)) );
 }
 
 inline void LogScope::remove_priority( areg::LogPriority remPrio ) noexcept
@@ -306,14 +326,14 @@ inline void LogScope::remove_priority( areg::LogPriority remPrio ) noexcept
     mScopePrio.store(prio & ~static_cast<uint32_t>(remPrio), std::memory_order_relaxed);
 }
 
-void LogScope::remove_priority( const char * remPrio ) noexcept
+inline void LogScope::remove_priority( const char * remPrio ) noexcept
 {
-    remove_priority( areg::string_to_priority(remPrio) );
+    remove_priority( String(remPrio) );
 }
 
-void LogScope::remove_priority( const String & remPrio ) noexcept
+inline void LogScope::remove_priority( const String & remPrio ) noexcept
 {
-    remove_priority( areg::string_to_priority(remPrio) );
+    remove_priority( static_cast<areg::LogPriority>(areg::make_priorities(remPrio)) );
 }
 
 inline uint32_t LogScope::priority() const noexcept

@@ -506,6 +506,11 @@ bool ServiceClientConnectionBase::start_connection()
         mThreadSend.shutdown( areg::WAIT_INFINITE );
         mClientConnection.close_socket();
         created = mClientConnection.create_socket_fd();
+        if ( created )
+        {
+            // A send that fails on the new socket is reported.
+            mThreadSend.clear_closing();
+        }
     } while (false);
 
     if ( !created )

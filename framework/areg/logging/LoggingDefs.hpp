@@ -564,13 +564,14 @@ namespace areg {
     AREG_API bool force_start_logging();
 
     /**
-     * \brief   Loads logging configuration and starts logging, using default values if the
-     *          configuration file is unavailable.
+     * \brief   Loads the logging configuration from a file and starts logging.
      *
      * \param   fileConfig      Path to the logging configuration file. If nullptr or empty,
-     *                          attempts to load the default configuration file. If no configuration
-     *                          file is found, uses default values.
-     * \return  Returns true if succeeded to start logging.
+     *                          the default configuration file is loaded. If the file cannot be
+     *                          read, the default values are set.
+     * \param   force           If true, logging always starts: the file target and all scopes
+     *                          are forced on. If false, logging starts only if the file was read.
+     * \return  Returns true if logging started.
      **/
     AREG_API bool init_logging( const char * fileConfig = nullptr, bool force = false );
 
@@ -1001,7 +1002,6 @@ inline constexpr const char* areg::as_string(areg::LogPriority prio) noexcept
     case areg::LogPriority::PrioUndefined:
         return "areg::PrioUndefined";
     default:
-        ASSERT(false);
         return "ERR: Unexpected areg::LogPriority value";
     }
 }

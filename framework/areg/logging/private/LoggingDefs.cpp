@@ -288,6 +288,7 @@ AREG_API_IMPL areg::MessageEnvelope areg::make_log_message( areg::LogMessageType
         log->logScopeId     = scopeId;
         log->logSessionId   = sessionId;
         log->logModuleLen   = 0u;
+        log->logModule[0]   = String::EmptyChar;
         log->logModuleId    = 0u;
 
         const Thread * self{ Thread::current_thread() };

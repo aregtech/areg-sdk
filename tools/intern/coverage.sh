@@ -231,6 +231,8 @@ collect() {
       --gcov-suspicious-hits-threshold 281474976710656 \
       --exclude-unreachable-branches --exclude-throw-branches \
       --exclude-branches-by-pattern '^\s*ASSERT(_MSG)?\s*\(' \
+      --exclude-branches-by-pattern '^\s*static\s' \
+      --exclude-branches-by-pattern '^\s*delete\s' \
       --exclude-lines-by-pattern '^\s*ASSERT(_MSG)?\s*\(\s*false\b.*' \
       --json "$1" "$BUILD" ) || die "gcovr failed to collect $1"
 }

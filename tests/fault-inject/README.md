@@ -231,7 +231,7 @@ The CMake build on Windows defines the same targets; it has not been run yet.
 | macOS, AddressSanitizer | Built and run: 4 of 4 pass, the interposing pairs of the linked library apply |
 | macOS, ThreadSanitizer | The library is built without instrumentation, as on every POSIX platform. The runtime opens its suppressions file through the replaced `open` while it initializes, before its thread state exists, and an instrumented replacement crashes there |
 | Linux, GCC, Release, 32-bit x86 | Built and run: 4 of 4 pass |
-| Linux, GCC, ThreadSanitizer, Debug and RelWithDebInfo | Built and run: all pass. The replacement sits behind the sanitizer interceptor (found through `RTLD_NEXT`) and is not instrumented: a blocking interceptor switches off the guard interceptors, so the first-use statics of the replacements read as races. The library is also built without link-time optimization, because GCC applies the `-fsanitize=thread` of the link line to LTO objects and ignores the `-fno-sanitize=thread` of their compile. The sanitizer creates its own helper thread through `pthread_create` at the first thread creation of a process, so a test that arms `ThreadCreate` starts and stops one thread first |
+| Linux, GCC, ThreadSanitizer, Debug and RelWithDebInfo | Built and run: all pass. The replacement sits behind the sanitizer interceptor (found through `RTLD_NEXT`) and is not instrumented: a blocking interceptor switches off the guard interceptors, so the first-use statics of the replacements read as races. The library is also built without link-time optimization, because GCC applies the `-fsanitize=thread` of the link line to LTO objects and ignores the `-fno-sanitize=thread` of their compile. The sanitizer creates its own helper thread through `pthread_create` at the first thread creation of a process, so a test that arms `ThreadCreate` starts and stops one thread first. The fork case of `fault_inject_posix_base_test.cpp` is skipped: the sanitizer stops a child forked from a multithreaded process when it starts a thread |
 | Cygwin | Not built: Cygwin is neither ELF nor a native Win32 build, and no replacement is written for it. Patching the import tables of the Cygwin DLLs, as on Windows, is the way to add it |
 | Coverage | A passing child exits through `std::exit(0)`, which writes its coverage data; not yet confirmed in a coverage build |
 
@@ -261,6 +261,11 @@ made the call but the replacement did not see it. Check, in this order:
 6. **A runtime made the call first.** A sanitizer runtime calls the replaced function itself,
    for example ThreadSanitizer creates a helper thread at the first `pthread_create`. That call
    takes the armed failure. Make the same call once before arming.
+7. **The compiler removed the allocation.** A `new (std::nothrow)` whose memory the test never
+   reads may be omitted by an optimizing build, which then treats it as successful; the call is
+   missing from `objdump -dC` of the test function. Which allocation goes depends on the inlining
+   around it (a different googletest build is enough). Pass the object to `_keep_allocation()`
+   (`fault_inject_alloc_sweep_test.cpp`) right after the call and before its check.
 
 ---
 

@@ -45,6 +45,7 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
 
     , mScopeController  ( scopeController )
     , mFlags            ( NetTcpLogger::FLAG_NONE )
+    , mRingLock         ( )
     , mRingStack        ( 0, areg::OverlapPolicy::Shift )
     , mRingDropped      ( 0u )
 {
@@ -62,13 +63,16 @@ bool NetTcpLogger::open_logger()
         mFlags.store(NetTcpLogger::FLAG_NONE, std::memory_order_release);
         if (!mLogConfiguration.is_remote_logging_enabled())
         {
-            mRingStack.release();
-            mRingDropped = 0u;
+            release_pending();
             return false;
         }
 
         register_consumer_commands();
-        mRingStack.reserve(mLogConfiguration.stack_size());
+        do
+        {
+            Lock ring(mRingLock);
+            mRingStack.reserve(mLogConfiguration.stack_size());
+        } while (false);
 
         String host{ mLogConfiguration.remote_tcp_address() };
         uint16_t port{ mLogConfiguration.remote_tcp_port() };
@@ -90,8 +94,7 @@ void NetTcpLogger::notify_source_state(areg::LogSourceState previous, const ITEM
 
 void NetTcpLogger::close_logger()
 {
-    mRingStack.release();
-    mRingDropped = 0u;
+    release_pending();
     on_service_exit();
     // The stop is complete; a later open_logger() starts a new connection.
     set_connection_state(ConnectionPhase::ConnectionStopped);
@@ -108,13 +111,9 @@ void NetTcpLogger::forward_message(areg::MessageEnvelope&& msg)
     {
         send_message(std::move(msg), areg::EventPriority::NormalPrio);
     }
-    else if (mRingStack.capacity() != 0)
-    {
-        queue_pending(std::move(msg));
-    }
     else
     {
-        ++mRingDropped;
+        queue_pending(std::move(msg));
     }
 }
 
@@ -138,9 +137,10 @@ void NetTcpLogger::on_service_channel_connected(const Channel & channel)
     send_message(areg::message_register_scopes(cookie, areg::COOKIE_LOGGER, scopes));
     send_dropped_notice(cookie);
 
-    while (mRingStack.is_empty() == false)
+    // Only the rows queued before the replay are sent; a row that fails meanwhile waits for the next connection.
+    areg::MessageEnvelope msgLog;
+    for (uint32_t count{ pending_count() }; (count != 0u) && pop_pending(msgLog); --count)
     {
-        areg::MessageEnvelope msgLog{ mRingStack.pop() };
         msgLog.set_source(static_cast<uint32_t>(cookie));
         reinterpret_cast<areg::LogEntry*>(msgLog.buffer())->logCookie = cookie;
         send_message(std::move(msgLog), areg::EventPriority::NormalPrio);
@@ -166,7 +166,8 @@ void NetTcpLogger::failed_send_message(const MessageEnvelope & msgFailed, Socket
         return;
 
     ASSERT(is_enabled());
-    if (mLogConfiguration.stack_size() > 0)
+    // Only a log row is replayed; the other messages are sent again by the next connection.
+    if (msgFailed.is_valid() && (msgFailed.message_id() == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage)))
     {
         queue_pending(areg::MessageEnvelope(msgFailed));
     }
@@ -176,6 +177,13 @@ void NetTcpLogger::failed_send_message(const MessageEnvelope & msgFailed, Socket
 
 void NetTcpLogger::queue_pending(areg::MessageEnvelope && msg)
 {
+    Lock lock(mRingLock);
+    if (mRingStack.capacity() == 0u)
+    {
+        ++mRingDropped;
+        return;
+    }
+
     if (mRingStack.is_full())
     {
         ++mRingDropped;
@@ -184,18 +192,49 @@ void NetTcpLogger::queue_pending(areg::MessageEnvelope && msg)
     mRingStack.push(std::move(msg));
 }
 
+bool NetTcpLogger::pop_pending(areg::MessageEnvelope & msg)
+{
+    Lock lock(mRingLock);
+    if (mRingStack.is_empty())
+        return false;
+
+    msg = mRingStack.pop();
+    return true;
+}
+
+uint32_t NetTcpLogger::pending_count() const
+{
+    Lock lock(mRingLock);
+    return mRingStack.size();
+}
+
+void NetTcpLogger::release_pending()
+{
+    Lock lock(mRingLock);
+    mRingStack.release();
+    mRingDropped = 0u;
+}
+
+uint64_t NetTcpLogger::take_dropped()
+{
+    Lock lock(mRingLock);
+    const uint64_t dropped{ mRingDropped };
+    mRingDropped = 0u;
+    return dropped;
+}
+
 void NetTcpLogger::send_dropped_notice(const ITEM_ID & cookie)
 {
-    if (mRingDropped == 0u)
+    const uint64_t dropped{ take_dropped() };
+    if (dropped == 0u)
         return;
 
     areg::LogEntry log(areg::LogMessageType::MessageText, areg::LOG_SCOPE_ID_NONE, 0u, 0u, areg::LogPriority::PrioError, nullptr, 0u);
     const int32_t len{ String::format_string( log.logMessage
                                             , static_cast<int32_t>(areg::LOG_MSG_SIZE)
                                             , "Dropped [ %llu ] log messages, the application was not connected to the log collector and its remote log queue (log::*::remote::queue) was full."
-                                            , static_cast<unsigned long long>(mRingDropped)) };
+                                            , static_cast<unsigned long long>(dropped)) };
     log.logMessageLen = static_cast<uint32_t>(len > 0 ? len : 0);
-    mRingDropped = 0u;
 
     areg::MessageEnvelope msg{ areg::create_log_message(log, areg::LogDataType::Remote, cookie) };
     areg::finalize_log_message(msg, areg::LogDataType::Remote, cookie);
@@ -330,9 +369,7 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
     case areg::FuncIdRange::EmptyFunctionId:                  // fall through
     case areg::FuncIdRange::SystemServiceNotifyDuplicate:
     default:
-        // GCOVR_EXCL_START: unreachable default arm
-        ASSERT(false);
-        // GCOVR_EXCL_STOP
+        break;
     }
 }
 

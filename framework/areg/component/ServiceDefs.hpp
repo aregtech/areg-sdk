@@ -1441,7 +1441,6 @@ inline constexpr const char* areg::as_string(areg::ResultType value) noexcept
         return "areg::ResultType::ServiceRejected";
 
     default:
-        ASSERT(false);
         return "ERR: Undefined areg::ResultType value!";
     }
 }
@@ -1466,8 +1465,7 @@ inline constexpr const char* areg::as_string(areg::DataState value) noexcept
         return "areg::DataState::DataUnexpectedError";
 
     default:
-        ASSERT(false);
-        return "ERR: Undefined areg::DataState value!";
+    return "ERR: Undefined areg::DataState value!";
     }
 }
 
@@ -1492,7 +1490,6 @@ inline constexpr const char* areg::as_string( areg::RequestType value ) noexcept
     case    areg::RequestType::LoadComponent:
         return "areg::RequestType::LoadComponent";
     default:
-        ASSERT(false);
         return "ERR: Undefined areg::RequestType value!";
     }
 }
@@ -1513,7 +1510,6 @@ inline constexpr const char* areg::as_string( areg::MessageDataType value ) noex
         return "areg::MessageDataType::ServiceData";
 
     default:
-        ASSERT(false);
         return "ERR: Undefined areg::MessageDataType value!";
     }
 }
@@ -1539,7 +1535,6 @@ inline constexpr const char* areg::as_string( areg::ServiceConnectionState value
     case areg::ServiceConnectionState::Shutdown:
         return "areg::ServiceConnectionState::Shutdown";
     default:
-        ASSERT(false);
         return "ERR: Undefined areg::ServiceConnectionState value!";
     }
 }
@@ -1577,7 +1572,6 @@ inline constexpr const char* areg::as_string( areg::DisconnectReason reason ) no
     case areg::DisconnectReason::ProviderRestarting:
         return "areg::DisconnectReason::ProviderRestarting";
     default:
-        ASSERT( false );
         return "ERR: Undefined areg::DisconnectReason value!";
     }
 }

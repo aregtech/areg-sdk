@@ -124,6 +124,9 @@
     <ClInclude Include="units\ApplicationRestartTestSupport.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="units\LogCollectorFake.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClCompile Include="units\ApplicationSetupTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -347,6 +350,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\EventQueueTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\RouterClientMoreTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\MultiLockTest.cpp">
