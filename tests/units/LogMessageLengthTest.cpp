@@ -190,6 +190,25 @@ TEST(LogMessageLengthTest, test_stringsMustEnd)
         entry.logModule[entry.logModuleLen] = 'x';
         EXPECT_FALSE(areg::is_log_entry_valid(msg));
     }
+
+    {
+        areg::MessageEnvelope msg{ _make_sent("text") };
+        _entry(msg).logModuleLen = areg::LOG_NAME_SIZE;
+        EXPECT_FALSE(areg::is_log_entry_valid(msg));
+    }
+
+    {
+        areg::MessageEnvelope msg{ _make_sent("text") };
+        msg.invalidate();
+        EXPECT_FALSE(areg::is_log_entry_valid(msg));
+    }
+
+    {
+        areg::MessageEnvelope msg{ _make_sent("text") };
+        areg::LogEntry & entry{ _entry(msg) };
+        entry.logThread[entry.logThreadLen] = 'x';
+        EXPECT_FALSE(areg::is_log_entry_valid(msg));
+    }
 }
 
 namespace

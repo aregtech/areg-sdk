@@ -265,7 +265,7 @@ inline bool ScopeMessage::is_fatal_enabled() const noexcept
 
 inline bool ScopeMessage::is_log_enabled() const noexcept
 {
-    return (mScope.priority() != static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    return _can_log(mScope.priority());
 }
 
 inline bool ScopeMessage::is_prio_enabled(areg::LogPriority msgPrio) const noexcept

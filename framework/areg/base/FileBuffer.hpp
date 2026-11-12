@@ -283,6 +283,15 @@ public:
      **/
     uint32_t position() const noexcept override;
 
+    /**
+     * \brief   Returns the number of bytes that can be written into the reserved space without
+     *          growing the buffer.
+     *
+     * \return  Number of bytes available to write; 0 if the buffer is closed or cannot be written.
+     **/
+    [[nodiscard]]
+    uint32_t size_writable() const noexcept;
+
 protected:
 /************************************************************************/
 // IOStream interface overrides
@@ -297,14 +306,6 @@ protected:
     [[nodiscard]]
     uint32_t size_readable() const noexcept override;
 
-    /**
-     * \brief   Returns the number of bytes of available space remaining to write from the current
-     *          pointer position.
-     *
-     * \return  Number of bytes available to write.
-     **/
-    [[nodiscard]]
-    uint32_t size_writable() const noexcept;
 
     /**
      * \brief   Returns the address of 'size' bytes at the read position of the opened buffer and moves

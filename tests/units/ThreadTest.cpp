@@ -36,6 +36,7 @@
 #include <functional>
 #include <mutex>
 #include <string>
+#include <utility>
 #include <thread>
 #include <vector>
 
@@ -456,3 +457,25 @@ TEST(ThreadTest, DumpThreadsKeepsTheRegisteredThreads)
     EXPECT_EQ(areg::Thread::find_by_address(areg::ThreadAddress(areg::String("ThreadTestDumped"))), nullptr);
 }
 #endif  // DEBUG
+
+// Each thread priority has its own name, and a value outside the enumeration is reported as invalid.
+TEST(ThreadTest, PriorityNamesAreDistinctAndInvalidValueIsReported)
+{
+    using Prio = areg::Thread::ThreadPriority;
+    const std::vector<std::pair<Prio, std::string>> names{
+          { Prio::Undefined, "Thread::ThreadPriority::Undefined" }
+        , { Prio::Lowest,    "Thread::ThreadPriority::Lowest" }
+        , { Prio::Low,       "Thread::ThreadPriority::Low" }
+        , { Prio::Normal,    "Thread::ThreadPriority::Normal" }
+        , { Prio::High,      "Thread::ThreadPriority::High" }
+        , { Prio::Highest,   "Thread::ThreadPriority::Highest" } };
+
+    for (const auto& entry : names)
+    {
+        EXPECT_EQ(std::string(areg::Thread::as_string(entry.first)), entry.second);
+    }
+
+    volatile int32_t outside{ 7 };
+    EXPECT_STREQ(areg::Thread::as_string(static_cast<Prio>(outside)), "ERR: Invalid Thread::ThreadPriority value!");
+    static_assert(areg::Thread::as_string(Prio::Normal)[0] == 'T', "constexpr name");
+}

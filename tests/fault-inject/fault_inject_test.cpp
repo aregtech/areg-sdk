@@ -31,6 +31,7 @@
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 
 #if AREG_LOGGING
@@ -1132,6 +1133,36 @@ TEST( FaultInjectTest, envelope_without_memory_is_invalid )
         areg::EventHeader header{ };
         areg::MessageEnvelope built( header, 1024u * 1024u, 1024u * 1024u );
         AREG_CHILD_CHECK( built.is_valid( ) == false );
+    );
+}
+
+//!< Every log protocol message built without memory is invalid, so no caller sends a half-made message.
+TEST( FaultInjectTest, log_protocol_messages_without_memory_are_invalid )
+{
+    AREG_EXPECT_IN_CHILD(
+        const areg::ScopeList scopes;
+        const areg::ScopeNames names;
+        const areg::LogEntry entry( areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioInfo, "fault", 5u );
+
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        AREG_CHILD_CHECK( areg::message_register_scopes( 1001u, 1002u, scopes ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_update_scopes( 1001u, 1002u, names ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_update_scope( 1001u, 1002u, "scope", 1u, 1u ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_query_instances( 1001u, 1002u ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_query_scopes( 1001u, 1002u ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_scopes_updated( 1001u, 1002u, scopes ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_save_configuration( 1001u, 1002u ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_configuration_saved( ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_restore_configuration( 1001u, 1002u ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_configuration_restored( ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_update_source_state( 1001u, 1002u, areg::LogSourceState::Paused ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::message_source_state_updated( 1001u, 1002u, areg::LogSourceState::Paused, 1003u ).is_valid( ) == false );
+        AREG_CHILD_CHECK( areg::create_log_message( entry, areg::LogDataType::Remote, 1001u ).is_valid( ) == false );
+#if AREG_LOGGING
+        AREG_CHILD_CHECK( areg::make_log_message( areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioInfo, "fault", 5u ).is_valid( ) == false );
+#endif  // AREG_LOGGING
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) >= 1u && NOT_REPLACED );
     );
 }
 

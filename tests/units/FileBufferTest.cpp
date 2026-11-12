@@ -1353,3 +1353,71 @@ TEST( FileBufferTest, search_for_an_overlong_phrase_finds_nothing )
     EXPECT_EQ( file.search_data( 0u, phrase, 0x8000'0000u ), areg::Cursor::INVALID_CURSOR_POSITION );
     EXPECT_EQ( file.search_data( 0u, phrase, 3u ), 0u );
 }
+
+/**
+ * \brief   The writable space is reported only for a buffer that is opened for writing, and it
+ *          shrinks by what is written into the reserved space.
+ **/
+TEST( FileBufferTest, writable_space_follows_open_state_and_written_bytes )
+{
+    areg::FileBuffer file( MODE_BINARY );
+    EXPECT_EQ( file.size_writable( ), 0u );
+    ASSERT_TRUE( file.open( ) );
+    ASSERT_NE( file.reserve( 64u ), areg::INVALID_SIZE );
+    const uint32_t before{ file.size_writable( ) };
+    EXPECT_GE( before, 64u );
+
+    const uint8_t data[ 10 ]{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    ASSERT_EQ( file.write( data, 10u ), 10u );
+    EXPECT_EQ( file.size_writable( ), before - 10u );
+    file.close( );
+    EXPECT_EQ( file.size_writable( ), 0u );
+
+    areg::SharedBuffer origin;
+    ASSERT_EQ( origin.write( data, 10u ), 10u );
+    areg::SharedBuffer copy( origin );
+    areg::FileBuffer readOnly( copy );
+    ASSERT_TRUE( readOnly.open( ) );
+    ASSERT_FALSE( readOnly.can_write( ) );
+    EXPECT_EQ( readOnly.size_writable( ), 0u );
+}
+
+/**
+ * \brief   The stream views of an opened file write and read the same values, and the invalid
+ *          position is the cursor's invalid position.
+ **/
+TEST( FileBufferTest, stream_views_round_trip_values )
+{
+    EXPECT_EQ( areg::FileBase::invalid_position( ), areg::Cursor::INVALID_CURSOR_POSITION );
+    EXPECT_EQ( areg::FileBase::start_position( ), areg::Cursor::START_CURSOR_POSITION );
+
+    areg::FileBuffer file( MODE_BINARY );
+    ASSERT_TRUE( file.open( ) );
+    file.write_stream( ) << static_cast<uint32_t>(0xA5A5'0102u) << areg::String( "stream" );
+    ASSERT_TRUE( file.move_to_begin( ) );
+
+    uint32_t number{ 0u };
+    areg::String text;
+    file.read_stream( ) >> number >> text;
+    EXPECT_EQ( number, 0xA5A5'0102u );
+    EXPECT_EQ( text, "stream" );
+}
+
+/**
+ * \brief   A search that starts beyond the end finds nothing, wherever the cursor is; a search from
+ *          inside the data finds the first match after the start.
+ **/
+TEST( FileBufferTest, text_search_beyond_the_end_ignores_the_current_cursor )
+{
+    areg::FileBuffer file( MODE_BINARY );
+    ASSERT_TRUE( file.open( ) );
+    fill_text( file, "abcdefabc" );
+
+    ASSERT_TRUE( file.move_to_begin( ) );
+    EXPECT_EQ( file.search_text( 100u, "def", true ), areg::Cursor::INVALID_CURSOR_POSITION );
+    ASSERT_TRUE( file.move_to_begin( ) );
+    EXPECT_EQ( file.search_text( 100u, L"def", true ), areg::Cursor::INVALID_CURSOR_POSITION );
+    ASSERT_TRUE( file.move_to_begin( ) );
+    EXPECT_EQ( file.search_data( 100u, reinterpret_cast<const uint8_t *>("def"), 3u ), areg::Cursor::INVALID_CURSOR_POSITION );
+    EXPECT_EQ( file.search_text( 4u, "abc", true ), 6u );
+}

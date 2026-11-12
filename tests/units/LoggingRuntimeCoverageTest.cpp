@@ -717,10 +717,17 @@ TEST_F(LoggingRuntimeCoverageTest, debug_target_writes_rows_to_the_console_outpu
     testing::internal::CaptureStdout();
     ASSERT_TRUE(areg::start_logging());
     write_row("debug-target-row");
+    write_row("debug-scope", areg::LogMessageType::ScopeEnter);
+    write_row("debug-undefined", areg::LogMessageType::Undefined);
+    write_row("debug-scope", areg::LogMessageType::ScopeExit);
     areg::stop_logging(true);
     const std::string output{ testing::internal::GetCapturedStdout() };
 #if defined(OUTPUT_DEBUG) && defined(DEBUG) && !defined(_WIN32)
     EXPECT_NE(output.find("row:debug-target-row"), std::string::npos);
+    EXPECT_NE(output.find("enter:debug-scope"), std::string::npos);
+    EXPECT_NE(output.find("exit:debug-scope"), std::string::npos);
+    EXPECT_LT(output.find("enter:debug-scope"), output.find("exit:debug-scope"));
+    EXPECT_EQ(output.find("debug-undefined"), std::string::npos);
 #else
     EXPECT_EQ(output.find("debug-target-row"), std::string::npos);
 #endif
@@ -1246,6 +1253,121 @@ TEST_F(LoggingRuntimeCoverageTest, restart_has_no_flush_left_from_the_previous_s
     ASSERT_TRUE(areg::start_logging());
     EXPECT_FALSE(mDatabase.wait_commit(200u));
     areg::stop_logging(true);
+}
+
+// A log entry of an undefined type is skipped by the file target; the rows around it are kept in order.
+TEST_F(LoggingRuntimeCoverageTest, file_target_skips_entries_of_an_undefined_type)
+{
+    mConfig.set_log_enabled(areg::LogTarget::File, true);
+    setup();
+    ASSERT_TRUE(areg::start_logging());
+    write_row("before-undefined");
+    write_row("undefined-row", areg::LogMessageType::Undefined);
+    write_row("after-undefined");
+    areg::stop_logging(true);
+    const std::string text{ contents(mDirectory / "runtime.log") };
+    EXPECT_NE(text.find("row:before-undefined\nrow:after-undefined\n"), std::string::npos);
+    EXPECT_EQ(text.find("undefined-row"), std::string::npos);
+}
+
+// Messages a log source never handles are ignored: the connection stays and the next request is answered.
+TEST_F(LoggingRuntimeCoverageTest, remote_messages_the_source_does_not_handle_keep_the_connection)
+{
+    ASSERT_TRUE(start_remote());
+    for (const auto id : { areg::FuncIdRange::ServiceLogMessage
+                         , areg::FuncIdRange::SystemServiceNotifyDuplicate
+                         , areg::FuncIdRange::SystemServiceNotifyRegister
+                         , areg::FuncIdRange::ServiceLogScopesUpdated })
+    {
+        areg::MessageEnvelope ignored{ areg::message_query_scopes(OBSERVER_COOKIE, SOURCE_COOKIE) };
+        ASSERT_TRUE(ignored.is_valid());
+        ignored.set_message_id(static_cast<uint32_t>(id));
+        ASSERT_TRUE(mCollector->send(ignored));
+    }
+
+    ASSERT_TRUE(mCollector->send(areg::message_query_scopes(OBSERVER_COOKIE, SOURCE_COOKIE)));
+    areg::MessageEnvelope reply;
+    ASSERT_TRUE(mCollector->next(areg::FuncIdRange::ServiceLogRegisterScopes, reply));
+    EXPECT_EQ(areg::cookie(), SOURCE_COOKIE);
+    write_row("after-ignored");
+    expect_remote_row("after-ignored");
+    areg::stop_logging(true);
+}
+
+namespace
+{
+    //!< Writes a configuration file that logs to the given file with a plain layout and one scope at WARN.
+    void write_init_file(const fs::path& init, const fs::path& logFile)
+    {
+        std::ofstream out(init, std::ios::binary | std::ios::trunc);
+        out << "log::*::target = file\n"
+            << "log::*::enable = true\n"
+            << "log::*::enable::file = true\n"
+            << "log::*::enable::remote = false\n"
+            << "log::*::file::location = " << logFile.generic_string() << "\n"
+            << "log::*::file::append = false\n"
+            << "log::*::layout::enter = enter:%z%n\n"
+            << "log::*::layout::message = row:%m%n\n"
+            << "log::*::layout::exit = exit:%z%n\n"
+            << "log::*::scope::a15_init.method = WARN\n";
+    }
+}
+
+// An existing file passed to init_logging configures and starts logging, without force.
+TEST_F(LoggingRuntimeCoverageTest, init_logging_starts_with_the_configuration_of_the_given_file)
+{
+    std::error_code error;
+    fs::current_path(mDirectory, error);
+    ASSERT_FALSE(error) << error.message();
+    mManager.release_properties();
+    areg::LogScope scope("a15_init.method");
+    const fs::path init{ mDirectory / "custom.init" };
+    write_init_file(init, mDirectory / "from-file.log");
+    mConfig.set_log_file(path_string(mDirectory / "in-memory.log"));
+
+    ASSERT_TRUE(areg::init_logging(init.string().c_str(), false));
+    EXPECT_TRUE(areg::is_started());
+    EXPECT_EQ(scope.priority(), static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    write_row("init-from-file");
+    areg::stop_logging(true);
+    EXPECT_NE(contents(mDirectory / "from-file.log").find("row:init-from-file\n"), std::string::npos);
+    EXPECT_FALSE(fs::exists(mDirectory / "in-memory.log"));
+}
+
+// With force, logging always starts: the given file is loaded, then the file target and every scope are forced on.
+TEST_F(LoggingRuntimeCoverageTest, forced_init_logging_loads_the_file_and_forces_every_scope_on)
+{
+    std::error_code error;
+    fs::current_path(mDirectory, error);
+    ASSERT_FALSE(error) << error.message();
+    mManager.release_properties();
+    areg::LogScope scope("a15_init.method");
+    const fs::path init{ mDirectory / "custom.init" };
+    write_init_file(init, mDirectory / "from-file.log");
+
+    ASSERT_TRUE(areg::init_logging(init.string().c_str(), true));
+    EXPECT_TRUE(areg::is_started());
+    EXPECT_EQ(scope.priority(), static_cast<uint32_t>(areg::LogPriority::PrioDebug) | static_cast<uint32_t>(areg::LogPriority::PrioScope));
+    write_row("forced-from-file");
+    areg::stop_logging(true);
+    EXPECT_NE(contents(mDirectory / "from-file.log").find("row:forced-from-file\n"), std::string::npos);
+}
+
+// A missing file starts logging with the default settings only with force; without force nothing starts.
+TEST_F(LoggingRuntimeCoverageTest, init_logging_with_a_missing_file_starts_only_when_forced)
+{
+    std::error_code error;
+    fs::current_path(mDirectory, error);
+    ASSERT_FALSE(error) << error.message();
+    mManager.release_properties();
+    const std::string missing{ (mDirectory / "missing.init").string() };
+
+    EXPECT_FALSE(areg::init_logging(missing.c_str(), false));
+    EXPECT_FALSE(areg::is_started());
+    EXPECT_TRUE(areg::init_logging(missing.c_str(), true));
+    EXPECT_TRUE(areg::is_started());
+    areg::stop_logging(true);
+    EXPECT_FALSE(areg::is_started());
 }
 
 #endif // AREG_LOGGING
