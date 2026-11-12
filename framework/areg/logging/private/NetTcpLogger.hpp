@@ -253,10 +253,36 @@ private:
 
     /**
      * \brief   Queues a log message in the ring stack and counts the oldest one it overwrites.
+     *          A message that cannot be queued, because the ring stack has no capacity, is counted as lost.
+     *          Safe to call from any thread.
      *
      * \param   msg     The log message to queue.
      **/
     void queue_pending(areg::MessageEnvelope && msg);
+
+    /**
+     * \brief   Takes the oldest queued log message out of the ring stack. Safe to call from any thread.
+     *
+     * \param[out]   msg     On output, the oldest queued log message.
+     * \return  Returns true if a message was taken, false if the ring stack is empty.
+     **/
+    bool pop_pending(areg::MessageEnvelope & msg);
+
+    /**
+     * \brief   Returns the number of log messages queued in the ring stack. Safe to call from any thread.
+     **/
+    [[nodiscard]]
+    uint32_t pending_count() const;
+
+    /**
+     * \brief   Frees the ring stack and resets the count of lost log messages. Safe to call from any thread.
+     **/
+    void release_pending();
+
+    /**
+     * \brief   Returns the count of lost log messages and resets it. Safe to call from any thread.
+     **/
+    uint64_t take_dropped();
 
     /**
      * \brief   Sends one log row with the number of log messages lost before the connection, and resets the count.
@@ -273,7 +299,9 @@ private:
     ScopeController &   mScopeController;
     //!< The state of the network logger, held as NetTcpLogger::FLAG_* bits.
     std::atomic<uint32_t> mFlags;
-    //!< The ring stack to queue log messages if the connection setup did not complete yet.
+    //!< Guards the ring stack and the count of lost log messages.
+    mutable ResourceLock mRingLock;
+    //!< The ring stack to queue log messages while not connected or after a failed send.
     PendingQueue        mRingStack;
     //!< The log messages lost while not connected: overwritten in the ring stack or not queued.
     uint64_t            mRingDropped;

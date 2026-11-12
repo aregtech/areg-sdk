@@ -104,9 +104,16 @@ public:
      *          send that fails from here on is expected and must not be reported.
      *          Reporting it would ask for a reconnect and deliver failure events into
      *          a connection that is already going away. Set from the dispatcher thread
-     *          before the drain, read by this thread only when a send fails.
+     *          before the drain, read by a thread whose send failed.
      **/
     inline void set_closing() noexcept;
+
+    /**
+     * \brief   Tells the thread that the connection has a new socket, so a send that fails
+     *          from here on is reported again. Called under the lock that guards the start
+     *          of this thread, right after the socket is created.
+     **/
+    inline void clear_closing() noexcept;
 
     /**
      * \brief   Returns the gate of the send queue of this thread. A producer that wants to write
@@ -216,8 +223,8 @@ private:
      **/
     areg::Event                     mEvents[areg::DEFAULT_DRAIN_LIMIT];
     /**
-     * \brief   Set while the connection is closing on purpose. Suppresses the send
-     *          failure callback, which is off the successful send path.
+     * \brief   Set from a deliberate close until the next socket is created. Suppresses the
+     *          send failure callback, which is off the successful send path.
      **/
     std::atomic_bool                mIsClosing;
     /**
@@ -265,6 +272,11 @@ inline bool ClientSendThread::is_data_rate_enabled() const noexcept
 inline void ClientSendThread::set_closing() noexcept
 {
     mIsClosing.store(true, std::memory_order_relaxed);
+}
+
+inline void ClientSendThread::clear_closing() noexcept
+{
+    mIsClosing.store(false, std::memory_order_relaxed);
 }
 
 inline void ClientSendThread::accumulate_sent(uint64_t bytes, uint32_t msgs) noexcept

@@ -194,6 +194,7 @@
   <ItemGroup>
     <ClInclude Include="units\ChildProcess.hpp" />
     <ClInclude Include="units\GUnitTest.hpp" />
+    <ClInclude Include="units\LogCollectorFake.hpp" />
     <ClInclude Include="units\UnitTestUtilities.hpp" />
   </ItemGroup>
   <ItemGroup>

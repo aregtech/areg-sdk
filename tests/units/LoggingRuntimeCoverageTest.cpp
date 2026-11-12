@@ -24,6 +24,7 @@
 #include "areg/persist/ConfigManager.hpp"
 #include "aregextend/db/LogSqliteDatabase.hpp"
 #include "aregextend/db/SqliteStatement.hpp"
+#include "units/LogCollectorFake.hpp"
 
 #include <algorithm>
 #include <atomic>
@@ -52,8 +53,9 @@
 namespace
 {
     namespace fs = std::filesystem;
-    constexpr int32_t WAIT_MS{ 30'000 };
-    constexpr ITEM_ID SOURCE_COOKIE{ 380u };
+    using log_fake::RuntimeCollector;
+    using log_fake::SOURCE_COOKIE;
+    using log_fake::WAIT_MS;
     constexpr ITEM_ID OBSERVER_COOKIE{ 381u };
 
     areg::String path_string(const fs::path& path)
@@ -204,194 +206,6 @@ namespace
         uint32_t mClosedSessions;
         uint32_t mCommits;
         std::size_t mFlushedRows;
-    };
-
-    class RuntimeCollector
-    {
-    public:
-        RuntimeCollector()
-            : mInitialized(areg::socket_initialize())
-            , mListener(areg::InvalidSocketHandle)
-            , mPeer(areg::InvalidSocketHandle)
-            , mPoll()
-            , mPort(0u)
-            , mLogs()
-        {
-        }
-
-        ~RuntimeCollector()
-        {
-            close_peer();
-            if (areg::is_valid_socket(mListener))
-            {
-                mPoll->unregister_socket(mListener);
-                areg::socket_close(mListener);
-            }
-            mPoll.reset();
-            if (mInitialized)
-                areg::socket_release();
-        }
-
-        bool open(bool listenNow = true)
-        {
-            if (!mInitialized)
-                return false;
-
-            mPoll = std::make_unique<areg::SocketMultiplexer>();
-            mListener = areg::socket_create();
-            sockaddr_in address{};
-            address.sin_family = AF_INET;
-            address.sin_port = 0u;
-            ::inet_pton(AF_INET, "127.0.0.1", &address.sin_addr);
-            socklen_t length{ sizeof(address) };
-            if (!areg::is_valid_socket(mListener)
-                || (::bind(mListener, reinterpret_cast<sockaddr*>(&address), sizeof(address)) != 0)
-                || (::getsockname(mListener, reinterpret_cast<sockaddr*>(&address), &length) != 0))
-                return false;
-
-            mPort = ntohs(address.sin_port);
-            return !listenNow || listen();
-        }
-
-        uint16_t port() const { return mPort; }
-        const std::vector<std::string>& logs() const { return mLogs; }
-
-        bool listen()
-        {
-            return (::listen(mListener, 4) == 0) && mPoll->register_socket(mListener, true);
-        }
-
-        void close_peer()
-        {
-            if (areg::is_valid_socket(mPeer))
-            {
-                mPoll->unregister_socket(mPeer);
-                areg::socket_interrupt(mPeer);
-                areg::socket_close(mPeer);
-                mPeer = areg::InvalidSocketHandle;
-                mPoll->register_socket(mListener, true);
-            }
-        }
-
-        bool accept_source()
-        {
-            if (mPoll->wait(WAIT_MS) != mListener)
-                return false;
-
-            mPeer = static_cast<SOCKETHANDLE>(::accept(mListener, nullptr, nullptr));
-            if (!areg::is_valid_socket(mPeer))
-                return false;
-
-            mPoll->unregister_socket(mListener);
-            return mPoll->register_socket(mPeer, true)
-                && areg::set_send_timeout(mPeer, static_cast<uint32_t>(WAIT_MS));
-        }
-
-        bool send(const areg::MessageEnvelope& message)
-        {
-            if (!message.is_valid())
-                return false;
-
-            const auto& header{ *message.header() };
-            return areg::send_data(mPeer, areg::wire_data(header), areg::wire_size(header))
-                == static_cast<int32_t>(areg::wire_size(header));
-        }
-
-        bool read(areg::MessageEnvelope& message, std::chrono::steady_clock::time_point deadline
-            = std::chrono::steady_clock::now() + std::chrono::milliseconds(WAIT_MS))
-        {
-            areg::EventHeader header{};
-            if (!read_exact(areg::wire_header(header), areg::WIRE_HEADER_SIZE, deadline))
-                return false;
-
-            uint8_t* body{ areg::SocketConnectionBase::prepare_message(message, header) };
-            if ((body == nullptr) || !read_exact(body, header.bufHeader.biUsed, deadline))
-                return false;
-
-            message.set_size_used(header.bufHeader.biUsed);
-            message.move_to_begin();
-            if ((message.message_id() == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogMessage))
-                && (message.size_used() >= areg::log_entry_head() + 1u))
-            {
-                areg::LogEntry entry;
-                message >> entry;
-                mLogs.emplace_back(entry.logMessage, areg::log_message_size(entry));
-                message.move_to_begin();
-            }
-            return true;
-        }
-
-        bool next(areg::FuncIdRange id, areg::MessageEnvelope& message)
-        {
-            const auto deadline{ std::chrono::steady_clock::now() + std::chrono::milliseconds(WAIT_MS) };
-            for (uint32_t count = 0u; count < 256u; ++count)
-            {
-                if (!read(message, deadline))
-                    return false;
-                if (message.message_id() == static_cast<uint32_t>(id))
-                    return true;
-            }
-            return false;
-        }
-
-        bool handshake()
-        {
-            areg::MessageEnvelope message;
-            return accept_source() && read(message) && register_source(message);
-        }
-
-        /**
-         * \brief   Makes the handshake with the first source that stays connected. A source drops
-         *          a connection that completes after its connect timeout, and connects again.
-         **/
-        bool handshake_next_source()
-        {
-            const auto deadline{ std::chrono::steady_clock::now() + std::chrono::milliseconds(WAIT_MS) };
-            areg::MessageEnvelope message;
-            while (std::chrono::steady_clock::now() < deadline)
-            {
-                if (accept_source() && read(message, deadline))
-                    return register_source(message);
-
-                close_peer();
-            }
-            return false;
-        }
-
-    private:
-        bool register_source(areg::MessageEnvelope& message)
-        {
-            EXPECT_EQ(message.message_id(), static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect));
-            EXPECT_EQ(message.target(), static_cast<uint32_t>(areg::COOKIE_LOGGER));
-            return send(areg::create_connect_notify(areg::COOKIE_LOGGER, SOURCE_COOKIE))
-                && next(areg::FuncIdRange::ServiceLogRegisterScopes, message);
-        }
-
-        bool read_exact(uint8_t* bytes, uint32_t size, std::chrono::steady_clock::time_point deadline)
-        {
-            uint32_t done{ 0u };
-            while (done != size)
-            {
-                const auto remaining{ std::chrono::duration_cast<std::chrono::milliseconds>(
-                    deadline - std::chrono::steady_clock::now()).count() };
-                if ((remaining <= 0) || (mPoll->wait(static_cast<int32_t>(remaining)) != mPeer))
-                    return false;
-
-                const int32_t received{ static_cast<int32_t>(::recv(mPeer,
-                    reinterpret_cast<char*>(bytes + done), static_cast<int>(size - done), 0)) };
-                if (received <= 0)
-                    return false;
-                done += static_cast<uint32_t>(received);
-            }
-            return true;
-        }
-
-        const bool mInitialized;
-        SOCKETHANDLE mListener;
-        SOCKETHANDLE mPeer;
-        std::unique_ptr<areg::SocketMultiplexer> mPoll;
-        uint16_t mPort;
-        std::vector<std::string> mLogs;
     };
 
     class LoggingRuntimeCoverageTest : public testing::Test
@@ -1368,6 +1182,105 @@ TEST_F(LoggingRuntimeCoverageTest, init_logging_with_a_missing_file_starts_only_
     EXPECT_TRUE(areg::is_started());
     areg::stop_logging(true);
     EXPECT_FALSE(areg::is_started());
+}
+
+// Without a configuration, a forced start applies the default settings and writes the default log file.
+TEST_F(LoggingRuntimeCoverageTest, forced_start_without_configuration_applies_the_default_settings)
+{
+    std::error_code error;
+    fs::current_path(mDirectory, error);
+    ASSERT_FALSE(error) << error.message();
+    mManager.release_properties();
+    ASSERT_FALSE(areg::is_configured());
+
+    ASSERT_TRUE(areg::force_start_logging());
+    EXPECT_TRUE(areg::is_configured());
+    EXPECT_TRUE(areg::is_started());
+    EXPECT_TRUE(mConfig.is_file_logging_enabled());
+    EXPECT_EQ(mConfig.log_file(), areg::String(areg::DEFAULT_LOG_FILE.data()));
+    write_row("forced-default-row");
+    areg::stop_logging(true);
+
+    const fs::path logs{ mDirectory / "logs" };
+    ASSERT_TRUE(fs::is_directory(logs));
+    uint32_t found{ 0u };
+    for (const auto& entry : fs::directory_iterator(logs))
+    {
+        if (contents(entry.path()).find("forced-default-row") != std::string::npos)
+            ++found;
+    }
+    EXPECT_EQ(found, 1u);
+}
+
+// Logging started disabled before setup keeps the remote target closed when setup opens the remote targets.
+TEST_F(LoggingRuntimeCoverageTest, disabled_logging_before_setup_opens_no_remote_connection)
+{
+    use_database();
+    ASSERT_TRUE(configure_remote());
+    mConfig.set_status(false);
+    ASSERT_TRUE(areg::start_logging());
+    EXPECT_FALSE(areg::is_enabled());
+    setup(true);
+    write_row("disabled-row");
+    areg::stop_logging(true);
+    EXPECT_TRUE(mDatabase.mPaths.empty());
+
+    // The first connection the collector accepts is the one of the enabled session.
+    mConfig.set_status(true);
+    ASSERT_TRUE(areg::start_logging());
+    ASSERT_TRUE(mCollector->handshake());
+    write_row("enabled-row");
+    expect_remote_row("enabled-row");
+    areg::stop_logging(true);
+    EXPECT_EQ(mCollector->logs(), (std::vector<std::string>{ "enabled-row" }));
+    EXPECT_EQ(mDatabase.rows(), (std::vector<std::string>{ "enabled-row" }));
+}
+
+// A scope at ERROR hides warnings; a scope with only SCOPE writes its enter and exit rows and hides fatal rows.
+TEST_F(LoggingRuntimeCoverageTest, warning_below_error_and_fatal_of_a_scope_only_priority_are_hidden)
+{
+    areg::LogScope scope("a15_runtime.hidden");
+    mConfig.set_status(false);
+    setup();
+    ASSERT_TRUE(areg::force_start_logging());
+    areg::activate_scope(scope);
+    scope.set_priority(static_cast<uint32_t>(areg::LogPriority::PrioError));
+    {
+        areg::ScopeMessage message(scope);
+        message.log_warning("hidden-warning");
+        message.log_error("shown-error");
+    }
+
+    scope.set_priority(static_cast<uint32_t>(areg::LogPriority::PrioScope));
+    {
+        areg::ScopeMessage message(scope);
+        message.log_fatal("hidden-fatal");
+    }
+
+    areg::stop_logging(true);
+    const auto text{ contents(mDirectory / "runtime.log") };
+    EXPECT_NE(text.find("row:shown-error\nenter:a15_runtime.hidden\nexit:a15_runtime.hidden\n"), std::string::npos);
+    EXPECT_EQ(text.find("hidden-"), std::string::npos);
+}
+
+// A scope takes the priority of the first layer naming it: the entry of this module beats the entry of all modules.
+TEST_F(LoggingRuntimeCoverageTest, module_scope_entry_overrides_the_entry_of_all_modules)
+{
+    areg::LogScope moduleScope("a15_layer.module");
+    areg::LogScope sharedScope("a15_layer.shared");
+    const areg::String& module{ areg::Process::instance().app_name() };
+    areg::ListProperties readonly;
+    readonly.add(areg::Property(areg::String("log::*::scope::a15_layer.*"), areg::String("WARN")));
+    readonly.add(areg::Property(areg::String("log::") + module + "::scope::a15_layer.module", areg::String("ERROR")));
+    mManager.set_configuration(readonly, areg::ListProperties());
+    for (const auto target : { areg::LogTarget::File, areg::LogTarget::Remote, areg::LogTarget::Debug, areg::LogTarget::Database })
+        mConfig.set_log_enabled(target, false);
+    mConfig.set_status(true);
+
+    ASSERT_TRUE(areg::start_logging());
+    EXPECT_EQ(moduleScope.priority(), static_cast<uint32_t>(areg::LogPriority::PrioError));
+    EXPECT_EQ(sharedScope.priority(), static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    areg::stop_logging(true);
 }
 
 #endif // AREG_LOGGING

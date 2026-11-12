@@ -882,6 +882,71 @@ TEST(LoggingCoreTest, controller_exact_and_group_changes_affect_only_matching_sc
     EXPECT_EQ(controller.scope_list().size(), 2u);
 }
 
+// A group name ends in '*', in the scope separator or in the leaf separator; '*' alone is every scope; an exact name is no group.
+TEST(LoggingCoreTest, controller_group_names_select_by_separator_or_every_scope)
+{
+    const uint32_t info{ static_cast<uint32_t>(areg::LogPriority::PrioInfo) };
+    const uint32_t warn{ static_cast<uint32_t>(areg::LogPriority::PrioWarning) };
+    const uint32_t fatal{ static_cast<uint32_t>(areg::LogPriority::PrioFatal) };
+    const uint32_t scopeBit{ static_cast<uint32_t>(areg::LogPriority::PrioScope) };
+    areg::LogScope first{ "loggingcore_sep_node.first", areg::LogPriority::PrioInfo };
+    areg::LogScope second{ "loggingcore_sep_node.second", areg::LogPriority::PrioInfo };
+    areg::LogScope other{ "loggingcore_sepother.first", areg::LogPriority::PrioInfo };
+    areg::ScopeController controller;
+    for (areg::LogScope* scope : { &first, &second, &other })
+    {
+        controller.register_scope(*scope);
+    }
+
+    EXPECT_EQ(controller.set_group_priority("loggingcore_sep_node.", warn), 2);
+    EXPECT_EQ(first.priority(), warn);
+    EXPECT_EQ(second.priority(), warn);
+    EXPECT_EQ(other.priority(), info);
+    EXPECT_EQ(controller.set_group_priority("loggingcore_sep_", fatal), 2);
+    EXPECT_EQ(first.priority(), fatal);
+    EXPECT_EQ(other.priority(), info);
+
+    EXPECT_EQ(controller.add_group_priority("loggingcore_sep_node.", areg::LogPriority::PrioScope), 2);
+    EXPECT_EQ(first.priority(), fatal | scopeBit);
+    EXPECT_EQ(controller.remove_group_priority("loggingcore_sep_", areg::LogPriority::PrioScope), 2);
+    EXPECT_EQ(first.priority(), fatal);
+    EXPECT_EQ(controller.add_group_priority("loggingcore_sep_", areg::LogPriority::PrioScope), 2);
+    EXPECT_EQ(controller.remove_group_priority("loggingcore_sep_node.", areg::LogPriority::PrioScope), 2);
+    EXPECT_EQ(second.priority(), fatal);
+    EXPECT_EQ(other.priority(), info);
+
+    EXPECT_EQ(controller.set_group_priority("*", warn), 3);
+    EXPECT_EQ(controller.add_group_priority("*", areg::LogPriority::PrioScope), 3);
+    EXPECT_EQ(other.priority(), warn | scopeBit);
+    EXPECT_EQ(controller.remove_group_priority("*", areg::LogPriority::PrioScope), 3);
+    for (const areg::LogScope* scope : { &first, &second, &other })
+    {
+        EXPECT_EQ(scope->priority(), warn);
+    }
+
+    EXPECT_EQ(controller.set_group_priority("loggingcore_sep_node.first", fatal), 0);
+    EXPECT_EQ(controller.add_group_priority("loggingcore_sep_node.first", areg::LogPriority::PrioScope), 0);
+    EXPECT_EQ(controller.remove_group_priority("loggingcore_sep_node.first", areg::LogPriority::PrioScope), 0);
+    EXPECT_EQ(controller.add_group_priority("loggingcore_sep_node*", areg::LogPriority::PrioScope), 0);
+    EXPECT_EQ(controller.remove_group_priority("loggingcore_sep_node*", areg::LogPriority::PrioScope), 0);
+    EXPECT_EQ(first.priority(), warn);
+}
+
+// A configured path group gives its priority to a scope name that has no method part.
+TEST(LoggingCoreTest, configured_path_group_applies_to_a_name_without_a_method)
+{
+    areg::LogScope pathOnly{ "loggingcore_nodot_call" };
+    areg::LogScope outside{ "loggingcore_other_call" };
+    areg::ScopeController controller;
+    controller.register_scope(pathOnly);
+    controller.register_scope(outside);
+    controller.configure_scopes("loggingcore_nodot_*", static_cast<uint32_t>(areg::LogPriority::PrioWarning), areg::ScopeLayer::Process);
+    controller.activate_scope(pathOnly, static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    controller.activate_scope(outside, static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    EXPECT_EQ(pathOnly.priority(), static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+    EXPECT_EQ(outside.priority(), static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+}
+
 // Configured priorities resolve exact names and wildcard prefixes in the intended order.
 TEST(LoggingCoreTest, configured_exact_method_and_prefix_priorities_have_defined_precedence)
 {

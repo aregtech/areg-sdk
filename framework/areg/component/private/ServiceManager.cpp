@@ -517,11 +517,15 @@ bool ServiceManager::_process_router_command( const ServiceManagerEventData & da
 
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
         mDeferredStart.reset( );
-        mStopRequests.fetch_sub( 1u, std::memory_order_acq_rel );
         if ( mRouterStopping.load( std::memory_order_acquire ) || (mServiceClient.is_client_running( ) == false) )
+        {
+            mStopRequests.fetch_sub( 1u, std::memory_order_acq_rel );
             return true;
+        }
 
+        // The stop is marked before its request is counted off, so a reader never sees neither.
         mRouterStopping.store( true, std::memory_order_release );
+        mStopRequests.fetch_sub( 1u, std::memory_order_acq_rel );
         return false;
 
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
