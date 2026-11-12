@@ -47,6 +47,12 @@ if (AREG_LOGGING)
     )
 endif()
 
+# The consumer of a remote service uses the generated code of example 02.
+if (AREG_EXAMPLES AND TARGET 02_generated)
+    target_link_libraries(${AREG_FAULT_INJECT_TEST} PRIVATE 02_generated)
+    target_compile_definitions(${AREG_FAULT_INJECT_TEST} PRIVATE AREG_FAULT_HELLO)
+endif()
+
 if (CYGWIN AND CMAKE_BUILD_TYPE MATCHES "Release")
     target_compile_options(${AREG_FAULT_INJECT_TEST} PRIVATE -O1)
 endif()

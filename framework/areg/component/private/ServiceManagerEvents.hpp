@@ -71,6 +71,7 @@ public:
         , CMD_DeadlineExpired           //!< The lifecycle deadline guard expired.
         , CMD_UserState                 //!< Request to set the user state.
         , CMD_RouterClientStopped       //!< The router client thread reports that it stopped.
+        , CMD_Reconcile                 //!< Request to apply the unregisters whose events could not be built.
     };
 
     /**
@@ -194,6 +195,11 @@ public:
      * \brief   Creates event data of the router client thread that reports its stop.
      **/
     static ServiceManagerEventData router_client_stopped();
+
+    /**
+     * \brief   Creates event data to apply the pending unregisters of the service manager.
+     **/
+    static ServiceManagerEventData reconcile();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -367,6 +373,8 @@ inline constexpr const char * ServiceManagerEventData::as_string( ServiceManager
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_UserState";
     case ServiceManagerEventData::ServiceManagerCommand::CMD_RouterClientStopped:
         return "ServiceManagerEventData::ServiceManagerCommand::CMD_RouterClientStopped";
+    case ServiceManagerEventData::ServiceManagerCommand::CMD_Reconcile:
+        return "ServiceManagerEventData::ServiceManagerCommand::CMD_Reconcile";
     default:
         return "ERR: undefined ServiceManagerEventData::ServiceManagerCommand value!!!";
     }

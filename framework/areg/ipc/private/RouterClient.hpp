@@ -308,6 +308,11 @@ private:
      **/
     RouterClientOwner &         mOwner;
 
+    /**
+     * \brief   The exit command of the router client, built with the object.
+     **/
+    Event                       mExitEvent;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////

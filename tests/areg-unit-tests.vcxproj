@@ -169,6 +169,7 @@
     <ClCompile Include="units\NameNumberCollisionTest.cpp" />
     <ClCompile Include="units\ComponentLoaderContractTest.cpp" />
     <ClCompile Include="units\ComponentLifecycleFailureTest.cpp" />
+    <ClCompile Include="units\ComponentSelfLifecycleTest.cpp" />
     <ClCompile Include="units\ProxyBaseContractTest.cpp" />
     <ClCompile Include="units\ProxyStubLifecycleTest.cpp" />
     <ClCompile Include="units\StubBaseContractTest.cpp" />

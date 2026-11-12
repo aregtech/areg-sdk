@@ -35,6 +35,7 @@ DEF_LOG_SCOPE(areg_ipc_private_RouterClient, failed_send_message);
 DEF_LOG_SCOPE(areg_ipc_private_RouterClient, failed_receive_message);
 DEF_LOG_SCOPE(areg_ipc_private_RouterClient, failed_process_message);
 DEF_LOG_SCOPE(areg_ipc_private_RouterClient, report_duplicate_role);
+DEF_LOG_SCOPE(areg_ipc_private_RouterClient, report_invalid_notice);
 
 DEF_LOG_SCOPE(areg_ipc_private_RouterClient, process_request_event);
 DEF_LOG_SCOPE(areg_ipc_private_RouterClient, process_response_event);
@@ -66,7 +67,17 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
 
     , mRegisterConsumer     (registerConsumer)
     , mOwner                (owner)
+    , mExitEvent            ( )
 {
+    ServiceClientEvent exitEvent( ServiceEventData( ServiceEventData::ServiceCommand::CMD_ServiceExit )
+                                , static_cast<ServiceClientEventConsumer &>(mEventConsumer)
+                                , areg::EventPriority::CriticalPrio );
+    if ( exitEvent.is_valid() )
+    {
+        // The target is written once: the copies posted later share this header.
+        exitEvent.set_target_dispatcher( static_cast<DispatcherThread *>(this) );
+        mExitEvent = std::move( exitEvent );
+    }
 }
 
 bool RouterClient::connect_service_host()
@@ -99,7 +110,11 @@ void RouterClient::disconnect_service_host()
 {
     if (is_running())
     {
-        ServiceClientConnectionBase::disconnect_service_host();
+        Event exitEvent{ mExitEvent };
+        if ( (exitEvent.is_valid() == false) || (exitEvent.deliver_event() == false) )
+        {
+            ServiceClientConnectionBase::disconnect_service_host();
+        }
     }
 }
 
@@ -313,6 +328,15 @@ namespace
         }
 #endif  // AREG_LOGGING
     }
+
+    // Logs a registration notice of the router whose service address is not valid.
+    void _report_invalid_notice(const MessageEnvelope & msgReceived, areg::RegistrationAction action)
+    {
+        LOG_SCOPE( areg_ipc_private_RouterClient, report_invalid_notice );
+        LOG_WARN("Ignoring the registration notice [ %s ] from source [ %u ]: its service address is not valid"
+                    , areg::as_string(action)
+                    , static_cast<uint32_t>(msgReceived.source()));
+    }
 }
 
 void RouterClient::process_received_message( MessageEnvelope & msgReceived, Socket & whichSource )
@@ -364,7 +388,10 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
             ProxyAddress proxy(*msgReceived.header());
             proxy.set_source( source );
             proxy.set_name_check( msgReceived.header()->reserved );
-            mRegisterConsumer.on_consumer_registered(proxy);
+            if ( proxy.is_valid() )
+                mRegisterConsumer.on_consumer_registered(proxy);
+            else
+                _report_invalid_notice(msgReceived, reqType);
         }
         break;
 
@@ -373,7 +400,10 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
             StubAddress stub(*msgReceived.header());
             stub.set_source( source );
             stub.set_name_check( msgReceived.header()->reserved );
-            mRegisterConsumer.on_provider_registered( stub );
+            if ( stub.is_valid() )
+                mRegisterConsumer.on_provider_registered( stub );
+            else
+                _report_invalid_notice(msgReceived, reqType);
         }
         break;
 
@@ -381,7 +411,10 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         {
             ProxyAddress proxy(*msgReceived.header());
             proxy.set_source( source );
-            mRegisterConsumer.on_consumer_unregistered(proxy, reason, areg::COOKIE_ANY);
+            if ( proxy.is_valid() )
+                mRegisterConsumer.on_consumer_unregistered(proxy, reason, areg::COOKIE_ANY);
+            else
+                _report_invalid_notice(msgReceived, reqType);
         }
         break;
 
@@ -395,7 +428,10 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
                 stub.set_cookie( areg::COOKIE_LOCAL );
             }
 
-            mRegisterConsumer.on_provider_unregistered(stub, reason, areg::COOKIE_ANY);
+            if ( stub.is_valid() )
+                mRegisterConsumer.on_provider_unregistered(stub, reason, areg::COOKIE_ANY);
+            else
+                _report_invalid_notice(msgReceived, reqType);
         }
         break;
 
