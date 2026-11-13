@@ -30,11 +30,15 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
+#include "areg/ipc/ConnectionConsumer.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
+#include "areg/ipc/ServiceClientConnectionBase.hpp"
 #include "areg/ipc/SocketConnectionBase.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/persist/ConfigListener.hpp"
 #include "areg/persist/ConfigManager.hpp"
+#include "units/EventTestSupport.hpp"
 #if AREG_LOGGING
     #include "areglogger/client/LogObserverApi.h"
     #include "areglogger/client/LogObserverBase.hpp"
@@ -51,7 +55,9 @@
 
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <cstring>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -488,6 +494,178 @@ TEST( FaultInjectTest, remote_logger_reconnects_when_the_system_refuses_to_send_
 
         AREG_CHILD_CHECK( received );
         areg::Application::release( );
+    );
+}
+
+namespace
+{
+    //!< The first message id of the numbered messages of the batch test.
+    constexpr uint32_t BATCH_FIRST_ID{ 0x00007101u };
+
+    //!< Returns a message to the router with the id, whose data is the id.
+    areg::MessageEnvelope numbered_message( uint32_t id, ITEM_ID source )
+    {
+        areg::EventHeader hdr{ areg::message_hello_server( ) };
+        hdr.messageId   = id;
+        hdr.source      = static_cast<uint32_t>( source );
+        hdr.target      = static_cast<uint32_t>( areg::COOKIE_ROUTER );
+        areg::MessageEnvelope message;
+        if ( message.init_envelope( hdr, sizeof( uint32_t ) ) != nullptr )
+        {
+            message << id;
+        }
+
+        return message;
+    }
+
+    //!< Reports when the client connection is confirmed.
+    class BatchObserver final : public areg::ConnectionConsumer
+    {
+    public:
+        void on_service_channel_connected( const areg::Channel & /*channel*/ ) override
+        {
+            mConnected.set_signaled( );
+        }
+
+        void on_service_channel_disconnected( const areg::Channel & /*channel*/ ) override
+        { }
+
+        void on_service_channel_lost( const areg::Channel & /*channel*/ ) override
+        { }
+
+        bool wait_connected( )
+        {
+            return mConnected.lock( static_cast<uint32_t>( IO_WAIT_S ) * 1000u );
+        }
+
+    private:
+        areg::SyncEvent mConnected{ true, false };  //!< Signaled when the connection is confirmed.
+    };
+
+    //!< A client connection that queues the messages of the test and records every message reported as not sent.
+    class BatchClient final : private areg::RemoteMessageHandler, public areg::ServiceClientConnectionBase
+    {
+    public:
+        BatchClient( BatchObserver & observer, EventTestDispatcher & dispatcher )
+            : areg::RemoteMessageHandler( )
+            , areg::ServiceClientConnectionBase( areg::COOKIE_ROUTER, areg::RemoteServiceKind::Router, static_cast<uint32_t>( areg::ConnectionType::Tcpip )
+                                               , areg::MessageSource::SourceTest, observer, *this, dispatcher, areg::String( "FiBatch" ) )
+        { }
+
+        bool queue( const areg::MessageEnvelope & message )
+        {
+            return send_message( message );
+        }
+
+        //!< Waits until the count of messages are reported as not sent. Returns false on timeout.
+        bool wait_failed( std::size_t count )
+        {
+            std::unique_lock<std::mutex> lock( mLock );
+            return mChanged.wait_for( lock, std::chrono::seconds( IO_WAIT_S ), [this, count]( ) { return mFailed.size( ) >= count; } );
+        }
+
+        //!< The id and the data of every message reported as not sent, in the order of the reports.
+        std::vector<std::pair<uint32_t, uint32_t>> failed( )
+        {
+            std::lock_guard<std::mutex> lock( mLock );
+            return mFailed;
+        }
+
+    private:
+        bool is_connection_allowed( ) const override
+        {
+            return true;
+        }
+
+        void failed_send_message( const areg::MessageEnvelope & msgFailed, areg::Socket & /*whichTarget*/ ) override
+        {
+            uint32_t data{ 0u };
+            msgFailed.move_to_begin( );
+            msgFailed >> data;
+            {
+                std::lock_guard<std::mutex> lock( mLock );
+                mFailed.emplace_back( msgFailed.message_id( ), data );
+            }
+
+            mChanged.notify_all( );
+            notify_connection_lost( );
+        }
+
+        void failed_receive_message( areg::Socket & /*whichTarget*/ ) override
+        {
+            notify_connection_lost( );
+        }
+
+        void failed_process_message( const areg::MessageEnvelope & /*msgUnprocessed*/ ) override
+        { }
+
+        void process_received_message( areg::MessageEnvelope & msgReceived, areg::Socket & /*whichTarget*/ ) override
+        {
+            service_connection_event( msgReceived );
+        }
+
+        std::mutex                                  mLock;      //!< Guards the list of reports.
+        std::condition_variable                     mChanged;   //!< Signaled on every report.
+        std::vector<std::pair<uint32_t, uint32_t>>  mFailed;    //!< The id and the data of every reported message.
+    };
+}
+
+/**
+ * \brief   Reproduces the defect: a send of a batch of messages that the system refuses reported
+ *          only the first message as not sent, and the others were lost without a report. Every
+ *          message of the batch is reported once, with its data, and the message sent before is not.
+ **/
+TEST( FaultInjectTest, failed_batch_send_reports_every_message_of_the_batch )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 121u };
+        constexpr uint32_t BATCH{ 3u };
+        TestRouter router;
+        AREG_CHILD_CHECK( router.open( ) );
+        BatchObserver observer;
+        EventTestDispatcher dispatcher( "FiBatchDispatch" );
+        BatchClient client( observer, dispatcher );
+        auto & provider{ static_cast<areg::ConnectionProvider &>( client ) };
+        areg::Application::config_manager( ).set_configuration( areg::ListProperties( ), areg::ListProperties( ) );
+        areg::ConnectionConfiguration config( areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip );
+        config.set_connection_enable( true );
+        AREG_CHILD_CHECK( dispatcher.start_ready( ) );
+        client.register_consumer_commands( );
+        provider.apply_connection_data( areg::String( "127.0.0.1" ), router.port );
+        AREG_CHILD_CHECK( provider.connect_service_host( ) );
+        AREG_CHILD_CHECK( router.answer( COOKIE ) && observer.wait_connected( ) );
+
+        {
+            // The send of the first message waits while the batch is queued behind it, then the batch send fails.
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::hold( areg_fault::FaultPoint::SocketSend ) );
+            AREG_CHILD_CHECK( client.queue( numbered_message( BATCH_FIRST_ID, COOKIE ) ) );
+            AREG_CHILD_CHECK( areg_fault::wait_held( areg_fault::FaultPoint::SocketSend, 1u, static_cast<uint32_t>( IO_WAIT_S ) * 1000u ) );
+            for ( uint32_t i = 1u; i <= BATCH; ++i )
+            {
+                AREG_CHILD_CHECK( client.queue( numbered_message( BATCH_FIRST_ID + i, COOKIE ) ) );
+            }
+
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, ECONNRESET, 1u, 1u ) );
+            areg_fault::release( areg_fault::FaultPoint::SocketSend );
+            AREG_CHILD_CHECK( client.wait_failed( BATCH ) );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u );
+        }
+
+        const auto failed{ client.failed( ) };
+        AREG_CHILD_CHECK( failed.size( ) == BATCH );
+        for ( uint32_t i = 0u; i < failed.size( ); ++i )
+        {
+            AREG_CHILD_CHECK( ( failed[i].first == BATCH_FIRST_ID + 1u + i ) && ( failed[i].second == BATCH_FIRST_ID + 1u + i ) );
+        }
+
+        areg::MessageEnvelope sent;
+        AREG_CHILD_CHECK( router.receive( sent ) && ( sent.message_id( ) == BATCH_FIRST_ID ) );
+
+        provider.disconnect_service_host( );
+        AREG_CHILD_CHECK( dispatcher.barrier( ) );
+        client.unregister_consumer_commands( );
+        dispatcher.shutdown( static_cast<uint32_t>( IO_WAIT_S ) * 1000u );
     );
 }
 

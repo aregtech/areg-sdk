@@ -29,6 +29,8 @@ Select the integration cases:
 ctest --test-dir build --output-on-failure -R '^areg-router-io-test\.(registration-|duplicate-role\.|name-collision-|held-provider-|router-stop-registered\.)'
 ```
 
+With logging enabled, every registration case also runs as `<case>.log`.
+
 Select the pure unit suites separately:
 
 ```sh
@@ -45,6 +47,21 @@ the configured `config/areg.init`. A case reads that file, sets its own port, po
 size and logging, and loads the result from memory: it writes no configuration file,
 so cases run in parallel without sharing one. The `log` cases write the router log to
 `config/router-io-<case>-0.log` and remove it on exit.
+
+## I/O cases
+
+All names below have CTest prefix `areg-router-io-test.` and suffix `.0` / `.4`.
+
+| Case | Contract |
+|---|---|
+| `stale-cache` | A client that sends its disconnect and half of a message leaves nothing behind; the next client connects and gets its cookie |
+| `wrong-client` | A client connected right after another one left never gets the messages of that one |
+| `partial-header` | A client that stops after 10 bytes of a header does not stop the router from serving another client |
+| `partial-body` | A client that stops inside the body of a message does not stop the router from serving another client |
+| `invalid-type` | A message without an event type closes the connection of its sender, not the router |
+| `oversize` | A header announcing a 768 MB message closes that client without allocating it, and another client still connects (Linux, no sanitizer) |
+| `slow-reader` | A slow reader holds back only its own sender; a fast reader on the same send thread gets its messages at once, and the slow one loses none |
+| `stop-while-flooding` | The router restarts while its clients flood each other, and serves new clients after each restart |
 
 ## Registration cases
 
@@ -92,7 +109,7 @@ The separate suites distinguish the registry, its small classes and wire helpers
 |---|---|
 | `RouterServiceStubTest` | `copy_move_identity_and_connection_state`, `service_and_consumer_lookup_keys`, `invalid_and_unsourced_endpoints_do_not_connect` |
 | `RouterServiceProxyTest` | `copy_move_identity_and_target_lifecycle` |
-| `RouterServiceRegistryTest` | `missing_endpoints_leave_registry_empty`, `provider_first_lifecycle`, `consumer_first_lifecycle`, `removing_last_waiting_consumer_erases_placeholder`, `disconnect_and_reregister_preserve_sibling`, `cookie_and_source_filters_are_distinct` |
+| `RouterServiceRegistryTest` | `missing_endpoints_leave_registry_empty`, `provider_first_lifecycle`, `consumer_first_lifecycle`, `removing_last_waiting_consumer_erases_placeholder`, `disconnect_and_reregister_preserve_sibling`, `cookie_and_source_filters_are_distinct`, `source_wildcard_returns_all_endpoints`, `service_list_filters_by_cookie`, `unregister_of_an_unknown_provider_changes_nothing`, `disconnect_proxy_acts_only_on_a_registered_consumer`, `consumer_of_a_provider_that_is_not_connected_waits` |
 | `RouterListServiceProxiesTest` | `unique_endpoints_selection_copy_move_and_availability` |
 | `RouterRegistrationWireTest` | `factories_preserve_routing_identity_version_and_reason`, `local_sources_and_services_cannot_register_remotely` |
 
@@ -103,15 +120,5 @@ filters, list uniqueness and append/update counts. The wire cases check all eigh
 register/unregister request/notification factories, exact header fields,
 header-only wire size, address round trips and rejection of local-only services.
 
-`RouterServiceRegistryTest.DISABLED_source_wildcard_returns_all_endpoints` is an
-additional, disabled GoogleTest case for bug 809, also discovered as disabled by CTest.
-It asserts the documented `service_sources(COOKIE_ANY)` contract: one registered
-provider and consumer must both be returned with their original source IDs.
-The current implementation compares the wildcard as an ordinary source and
-returns neither. The case is compiled but not part of an enabled test run.
-
-Both executables compile in Release and Debug on WSL Ubuntu; their native
-Visual Studio Release x64 targets also compile. Dispatcher verification includes
-20 repetitions of the new registry and socket cases, all new socket cases on
-Windows and TSan, and all router I/O cases with ASan and UBSan.
-The disabled wildcard case reproduces the documented mismatch in two runs.
+`source_wildcard_returns_all_endpoints` asserts the `service_sources(COOKIE_ANY)` contract: one
+registered provider and consumer are both returned with their original source IDs.

@@ -62,6 +62,9 @@ namespace areg_fault
 
     bool     arm( FaultPoint point, int error, uint32_t skip = 0u, uint32_t count = 1u );
     uint32_t failed( FaultPoint point );
+    bool     hold( FaultPoint point );
+    void     release( FaultPoint point );
+    bool     wait_held( FaultPoint point, uint32_t count, uint32_t milliseconds );
     class    FaultScope;     // disarms every point when it goes out of scope
 }
 ```
@@ -70,6 +73,11 @@ namespace areg_fault
   pass again. `count = 0` fails every call until disarmed. Returns false if the point is not
   replaced on this platform.
 - `failed()`: how many calls the point failed since it was armed.
+- `hold()`: every later call of the point, passing or failing, waits before it runs, until
+  `release()` or a disarm. `wait_held()` waits until that many calls wait. A test holds a
+  thread inside the call and checks or changes what is true meanwhile, with no timing: for
+  example, it queues more messages while the send thread waits in `send`, so they leave in one
+  batch. Every point that can fail can be held; the hold is checked before the arming.
 - A disarmed point forwards every call to the system; its cost is one atomic load.
 
 ### The points

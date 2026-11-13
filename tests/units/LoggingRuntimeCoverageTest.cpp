@@ -12,6 +12,8 @@
 #include "areg/base/Process.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/SocketMultiplexer.hpp"
+#include "areg/base/Thread.hpp"
+#include "areg/base/ThreadAddress.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/Event.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
@@ -24,6 +26,7 @@
 #include "areg/persist/ConfigManager.hpp"
 #include "aregextend/db/LogSqliteDatabase.hpp"
 #include "aregextend/db/SqliteStatement.hpp"
+#include "units/ChildProcess.hpp"
 #include "units/LogCollectorFake.hpp"
 
 #include <algorithm>
@@ -1281,6 +1284,40 @@ TEST_F(LoggingRuntimeCoverageTest, module_scope_entry_overrides_the_entry_of_all
     EXPECT_EQ(moduleScope.priority(), static_cast<uint32_t>(areg::LogPriority::PrioError));
     EXPECT_EQ(sharedScope.priority(), static_cast<uint32_t>(areg::LogPriority::PrioWarning));
     areg::stop_logging(true);
+}
+
+/**
+ * \brief   Reproduces the defect: logging started without Application::setup() started the timer
+ *          manager, whose thread then outlived its object at exit. No start function of logging
+ *          starts it.
+ **/
+TEST_F(LoggingRuntimeCoverageTest, start_logging_without_setup_starts_no_timer_manager)
+{
+    AREG_EXPECT_IN_CHILD(
+        std::error_code error;
+        fs::current_path(mDirectory, error);
+        AREG_CHILD_CHECK(!error);
+        const areg::ThreadAddress timer{ areg::String("_AREG_TIMER_THREAD_NAME_") };
+        AREG_CHILD_CHECK(areg::Thread::find_by_address(timer) == nullptr);
+
+        mConfig.set_log_enabled(areg::LogTarget::File, true);
+        AREG_CHILD_CHECK(areg::start_logging());
+        write_row("started");
+        AREG_CHILD_CHECK(areg::Thread::find_by_address(timer) == nullptr);
+        areg::stop_logging(true);
+
+        AREG_CHILD_CHECK(areg::force_start_logging());
+        write_row("forced");
+        AREG_CHILD_CHECK(areg::Thread::find_by_address(timer) == nullptr);
+        areg::stop_logging(true);
+
+        const std::string missing{ (mDirectory / "missing.init").string() };
+        AREG_CHILD_CHECK(areg::init_logging(missing.c_str(), true));
+        write_row("initialized");
+        AREG_CHILD_CHECK(areg::Thread::find_by_address(timer) == nullptr);
+        areg::stop_logging(true);
+        fs::current_path(mWorkingDirectory, error);
+    );
 }
 
 #endif // AREG_LOGGING

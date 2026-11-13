@@ -6,11 +6,14 @@
 
 #include "units/ServiceConsoleHarness.hpp"
 #include "logcollector/app/LogCollector.hpp"
+#include "areg/logging/LoggingDefs.hpp"
 #include "areg/persist/ConfigManager.hpp"
 #include "logcollector/service/private/LogCollectorDatabase.hpp"
 
 #include <filesystem>
 #include <fstream>
+#include <iterator>
+#include <string>
 
 namespace
 {
@@ -374,6 +377,40 @@ TEST(LogCollectorApplicationTest, collected_log_database_is_configured_when_the_
         disabled.add(areg::Property("log::*::enable::db", "false"));
         manager.set_configuration(disabled, areg::ListProperties());
         AREG_CHILD_CHECK(LogCollectorDatabase::is_configured() == false);
+    );
+}
+
+namespace
+{
+    constexpr char OWN_ROW[]{ "collector-own-row" };
+
+    //!< Writes a fatal row through the logging of the process.
+    void write_own_row()
+    {
+#if AREG_LOGGING
+        areg::log_local(areg::LogEntry(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioFatal, OWN_ROW, sizeof(OWN_ROW) - 1u));
+#endif  // AREG_LOGGING
+    }
+}
+
+/**
+ * \brief   Reproduces the defect: a scope entry of the collector in its configuration file beat the
+ *          scope entry of all modules, so the collector wrote its own logs. Its own logging stays off.
+ **/
+TEST(LogCollectorApplicationTest, collector_writes_no_own_logs_when_its_configuration_enables_them)
+{
+    AREG_EXPECT_IN_CHILD(
+        PrivateConfig config(COLLECTOR, true);
+        auto& app = application();
+        AREG_CHILD_CHECK(parse(COLLECTOR, {"--console", "--load=" + config.path}));
+        AREG_CHILD_CHECK(app.service_initialize(ServiceOption::CMD_Console, nullptr, nullptr));
+        const auto& configuration = areg::Application::config_manager();
+        AREG_CHILD_CHECK(configuration.log_enabled(areg::LogTarget::Remote) == false);
+        write_own_row();
+        app.service_release();
+        std::ifstream input(config.log);
+        const std::string written((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+        AREG_CHILD_CHECK(written.find(OWN_ROW) == std::string::npos);
     );
 }
 

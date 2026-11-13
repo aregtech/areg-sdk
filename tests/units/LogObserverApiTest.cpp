@@ -29,6 +29,14 @@
 #include <thread>
 #include <vector>
 
+#if defined(_WIN32)
+    #include <WinSock2.h>
+#else
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <sys/socket.h>
+#endif
+
 #if AREG_LOGGING
 
 namespace
@@ -493,6 +501,93 @@ TEST(LogObserverApiTest, disconnect_reports_only_the_known_cookies)
 
         processor.notify_connected_clients(disconnected_message({ FIRST }));
         AREG_CHILD_CHECK(_seen.disconnected == std::vector<ITEM_ID>({ SECOND, THIRD, FIRST }));
+    );
+}
+
+namespace
+{
+    //!< True while the next disconnect callback also delivers the receive thread's disconnect of every source.
+    bool _receiveOnReport{ false };
+
+    //!< Records the disconnected instances; the first call delivers the disconnect of every source as the receive thread does.
+    void on_disconnected_while_receiving(const ITEM_ID * instances, uint32_t count)
+    {
+        on_disconnected(instances, count);
+        if (_receiveOnReport)
+        {
+            _receiveOnReport = false;
+            areg::logger::ObserverMessageProcessor processor(areg::logger::LoggerClient::instance());
+            processor.notify_connected_clients(disconnected_message({ FIRST, SECOND, THIRD }));
+        }
+    }
+
+    //!< A loopback socket that listens and never answers; the observer connects and waits for the handshake.
+    class SilentCollector
+    {
+    public:
+        SilentCollector()
+            : mInitialized(areg::socket_initialize())
+            , mSocket(areg::socket_create())
+            , mPort(0u)
+        {
+            AREG_CHILD_CHECK(mInitialized);
+            sockaddr_in address{};
+            address.sin_family = AF_INET;
+            address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+#if defined(_WIN32)
+            int size{ sizeof(address) };
+#else
+            socklen_t size{ sizeof(address) };
+#endif
+            AREG_CHILD_CHECK(areg::is_valid_socket(mSocket));
+            AREG_CHILD_CHECK(::bind(mSocket, reinterpret_cast<sockaddr *>(&address), sizeof(address)) == 0);
+            AREG_CHILD_CHECK(::listen(mSocket, 4) == 0);
+            AREG_CHILD_CHECK(::getsockname(mSocket, reinterpret_cast<sockaddr *>(&address), &size) == 0);
+            mPort = ntohs(address.sin_port);
+        }
+
+        ~SilentCollector()
+        {
+            areg::socket_close(mSocket);
+            areg::socket_release();
+        }
+
+        uint16_t port() const
+        {
+            return mPort;
+        }
+
+    private:
+        bool            mInitialized;   //!< True if the socket library is initialized.
+        SOCKETHANDLE    mSocket;        //!< The listening socket.
+        uint16_t        mPort;          //!< The port of the listening socket.
+    };
+}
+
+/**
+ * Reproduces the defect: the stop of the observer reported the instances from the map that the receive
+ * thread changes, without the lock. Each instance known at the stop is reported once, and the collector's
+ * disconnect of the same instances, delivered meanwhile, finds the map empty.
+ **/
+TEST(LogObserverApiTest, stop_reports_each_live_instance_once_and_leaves_the_map_empty_before_the_callbacks)
+{
+    AREG_EXPECT_IN_CHILD(
+        ConfiguredObserver observer;
+        SilentCollector collector;
+        AREG_CHILD_CHECK(log_observer_connect_logger(observer.path_of("stop.sqlog").c_str(), ADDRESS, collector.port()));
+        ObserverEvents events{ make_events() };
+        events.evtInstDisconnected = &on_disconnected_while_receiving;
+        areg::logger::ObserverMessageProcessor processor(areg::logger::LoggerClient::instance());
+        connect_three_sources(processor, events);
+
+        _receiveOnReport = true;
+        log_observer_disconnect_logger();
+        AREG_CHILD_CHECK(_seen.disconnected == std::vector<ITEM_ID>({ FIRST, SECOND, THIRD }));
+        AREG_CHILD_CHECK(log_observer_current_state() == ObserverState::ObserverDisconnected);
+
+        processor.notify_connected_clients(disconnected_message({ FIRST, SECOND, THIRD }));
+        AREG_CHILD_CHECK(_seen.disconnected.size() == 3u);
+        areg::logger::LoggerClient::instance().set_callbacks(nullptr);
     );
 }
 
