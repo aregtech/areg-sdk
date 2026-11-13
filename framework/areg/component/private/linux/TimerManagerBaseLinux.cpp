@@ -62,7 +62,9 @@ bool TimerManagerBase::run_dispatcher()
 
     if ((mEpollFd < 0) || (mCommandFd < 0) || (mExitFd < 0))
     {
+        // Releases the waiter of start_manager_thread() without the ready state.
         _close_descriptors();
+        mEventStarted.set_signaled();
         return false;
     }
 

@@ -126,6 +126,7 @@
     <ClCompile Include="units\StringTest.cpp" />
     <ClCompile Include="units\StringUtilsTest.cpp" />
     <ClCompile Include="units\SyncTimerTest.cpp" />
+    <ClCompile Include="units\SimpleEventTest.cpp" />
     <ClCompile Include="units\ThreadTest.cpp" />
     <ClCompile Include="units\ThreadLifecycleCoverageTest.cpp" />
     <ClInclude Include="units\LogCapture.hpp" />

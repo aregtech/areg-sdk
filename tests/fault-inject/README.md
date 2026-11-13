@@ -52,7 +52,10 @@ The library does not link areg. The test executable links the library, areg and 
 ```cpp
 namespace areg_fault
 {
-    enum class FaultPoint { ThreadCreate, SocketCreate, FileOpen, DirOpen, ProcessSpawn, SocketConnect, SocketSend, SocketRecv, SocketBind, SocketListen, EpollCtl, FileRead, FileWrite, Allocation, AlignedAllocation, PipeCreate, Poll, TermGet, TermSet, Count };
+    enum class FaultPoint { ThreadCreate, SocketCreate, FileOpen, DirOpen, ProcessSpawn, SocketConnect, SocketSend, SocketRecv, SocketBind, SocketListen, EpollCtl, FileRead, FileWrite, Allocation, AlignedAllocation, PipeCreate, Poll, TermGet, TermSet
+                          , Fcntl, SocketGetOption, SocketSetOption, SocketAccept, HostName, EpollCreate, EpollWait, EventCreate
+                          , MutexInit, MutexAttrInit, MutexAttrSetType, CondInit, CondAttrInit, CondAttrSetClock, ThreadAttrInit
+                          , TimerFdCreate, TimerFdSet, SignalAction, Count };
 
     bool     arm( FaultPoint point, int error, uint32_t skip = 0u, uint32_t count = 1u );
     uint32_t failed( FaultPoint point );
@@ -89,6 +92,11 @@ namespace areg_fault
 | `Poll` | `poll` | not replaced | not replaced | `errno`. The AddressSanitizer interceptor does not reach the replacement, so its tests are skipped in that build. `HostName` (`gethostname`) behaves the same |
 | `TermGet` | `tcgetattr` | not replaced | not replaced | `errno` |
 | `TermSet` | `tcsetattr` | not replaced | not replaced | `errno` |
+| `Fcntl`, `SocketGetOption`, `SocketSetOption`, `SocketAccept`, `HostName` | `fcntl` and `fcntl64`, `getsockopt`, `setsockopt`, `accept4`, `gethostname` | not replaced | not replaced | `errno` |
+| `EpollCreate`, `EpollWait`, `EventCreate` | `epoll_create1`, `epoll_wait`, `eventfd` | not replaced | not replaced | `errno` |
+| `MutexInit`, `MutexAttrInit`, `MutexAttrSetType`, `CondInit`, `CondAttrInit`, `CondAttrSetClock`, `ThreadAttrInit` | `pthread_mutex_init`, `pthread_mutexattr_init`, `pthread_mutexattr_settype`, `pthread_cond_init`, `pthread_condattr_init`, `pthread_condattr_setclock`, `pthread_attr_init` | not replaced | not replaced | return value |
+| `TimerFdCreate`, `TimerFdSet` | `timerfd_create`, `timerfd_settime` | not replaced | not replaced | `errno` |
+| `SignalAction` | `sigaction` | not replaced | not replaced | `errno` |
 
 Use the error the system really reports in that situation, for example `EMFILE` or
 `ERROR_TOO_MANY_OPEN_FILES` for an exhausted descriptor table. The tests keep one constant per
@@ -233,7 +241,7 @@ The CMake build on Windows defines the same targets; it has not been run yet.
 | Linux, GCC, Release, 32-bit x86 | Built and run: 4 of 4 pass |
 | Linux, GCC, ThreadSanitizer, Debug and RelWithDebInfo | Built and run: all pass. The replacement sits behind the sanitizer interceptor (found through `RTLD_NEXT`) and is not instrumented: a blocking interceptor switches off the guard interceptors, so the first-use statics of the replacements read as races. The library is also built without link-time optimization, because GCC applies the `-fsanitize=thread` of the link line to LTO objects and ignores the `-fno-sanitize=thread` of their compile. The sanitizer creates its own helper thread through `pthread_create` at the first thread creation of a process, so a test that arms `ThreadCreate` starts and stops one thread first. The fork case of `fault_inject_posix_base_test.cpp` is skipped: the sanitizer stops a child forked from a multithreaded process when it starts a thread |
 | Cygwin | Not built: Cygwin is neither ELF nor a native Win32 build, and no replacement is written for it. Patching the import tables of the Cygwin DLLs, as on Windows, is the way to add it |
-| Coverage | A passing child exits through `std::exit(0)`, which writes its coverage data; not yet confirmed in a coverage build |
+| Coverage | A passing child exits through `std::exit(0)`, which writes its coverage data. Confirmed on Linux, GCC, Debug with `tools/intern/coverage.sh`: lines reached only in a child count. macOS and Windows not yet confirmed. A child that dies (a signal, `abort`) writes nothing |
 
 Update this table when a platform is verified.
 

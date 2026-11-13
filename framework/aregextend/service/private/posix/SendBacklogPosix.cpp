@@ -56,9 +56,6 @@ struct SendBacklogWaitOs
 
 void SendBacklogWaitOsDelete::operator () (SendBacklogWaitOs * wait) const noexcept
 {
-    if (wait == nullptr)
-        return;
-
     if (wait->writeFd != wait->readFd)
     {
         static_cast<void>(::close(wait->writeFd));

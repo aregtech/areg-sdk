@@ -142,6 +142,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     StringDefsTest.cpp
     StringDefsTest2.cpp
     StringDefsTest3.cpp
+    SimpleEventTest.cpp
     StringDefsTest4.cpp 
     StringCommonTest.cpp
     StringTest.cpp

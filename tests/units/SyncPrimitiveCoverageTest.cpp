@@ -370,6 +370,17 @@ TEST(MutexCoverageTest, initially_owned_mutex_excludes_another_thread)
     EXPECT_TRUE(acquire_from_other_thread(mutex));
 }
 
+TEST(MutexCoverageTest, initially_owned_mutex_is_recursive_for_its_creator)
+{
+    CoverageDeadline deadline;
+    areg::Mutex mutex(true);
+    ASSERT_TRUE(mutex.lock(areg::DO_NOT_WAIT));
+    EXPECT_TRUE(mutex.unlock());
+    EXPECT_FALSE(acquire_from_other_thread(mutex));
+    EXPECT_TRUE(mutex.unlock());
+    EXPECT_TRUE(acquire_from_other_thread(mutex));
+}
+
 #if defined(AREG_TEST_PRIVATE_POSIX)
 
 namespace
@@ -390,11 +401,12 @@ namespace
     }
 }
 
-TEST(MutexPosixCoverageTest, initially_locked_mutex_is_owned_by_the_creator_and_recursive)
+TEST(MutexPosixCoverageTest, recursive_mutex_is_owned_by_the_locking_thread_until_its_last_unlock)
 {
     CoverageDeadline deadline;
-    areg::os::MutexPosix mutex(true);
+    areg::os::MutexPosix mutex(areg::os::SyncKind::SoMutex, true);
     ASSERT_TRUE(mutex.is_valid());
+    ASSERT_TRUE(mutex.lock(areg::DO_NOT_WAIT));
     EXPECT_FALSE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
     EXPECT_TRUE(mutex.try_lock());
     mutex.unlock();
@@ -428,9 +440,38 @@ TEST(MutexPosixCoverageTest, timed_lock_fails_while_another_thread_owns_the_mute
 TEST(MutexPosixCoverageTest, freeing_resources_releases_a_locked_mutex)
 {
     CoverageDeadline deadline;
-    areg::os::MutexPosix mutex(true);
+    areg::os::MutexPosix mutex(areg::os::SyncKind::SoMutex, true);
+    ASSERT_TRUE(mutex.lock(areg::DO_NOT_WAIT));
     EXPECT_FALSE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
     mutex.free_resources();
+    EXPECT_TRUE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+}
+
+TEST(ObjectLockPosixCoverageTest, lock_without_auto_lock_takes_the_mutex_only_when_asked)
+{
+    CoverageDeadline deadline;
+    areg::os::MutexPosix mutex(areg::os::SyncKind::SoMutex, false);
+    {
+        areg::os::ObjectLockPosix lock(mutex, false);
+        EXPECT_TRUE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+        ASSERT_TRUE(lock.lock(areg::DO_NOT_WAIT));
+        EXPECT_FALSE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+        lock.unlock();
+        EXPECT_TRUE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+    }
+
+    EXPECT_TRUE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+}
+
+TEST(ObjectLockPosixCoverageTest, auto_lock_holds_the_mutex_for_the_scope)
+{
+    CoverageDeadline deadline;
+    areg::os::MutexPosix mutex(areg::os::SyncKind::SoMutex, false);
+    {
+        areg::os::ObjectLockPosix lock(mutex);
+        EXPECT_FALSE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
+    }
+
     EXPECT_TRUE(lock_from_other_thread(mutex, areg::DO_NOT_WAIT));
 }
 

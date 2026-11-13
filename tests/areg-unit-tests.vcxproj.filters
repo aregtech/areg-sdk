@@ -232,6 +232,9 @@
     <ClCompile Include="units\SyncTimerTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\SimpleEventTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\ThreadTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

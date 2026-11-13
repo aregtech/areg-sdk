@@ -353,6 +353,16 @@ TEST(MultiLockCoverageTest, single_object_wait_all_reports_all)
     EXPECT_TRUE(multi.unlock());
 }
 
+TEST(MultiLockCoverageTest, single_object_wait_all_times_out_while_the_object_is_not_signaled)
+{
+    areg::SyncEvent event(true, true);
+    areg::SyncObject* objects[]{ &event };
+    areg::MultiLock multi(objects, 1, false);
+    EXPECT_EQ(multi.lock(areg::DO_NOT_WAIT, true), areg::MultiLock::LOCK_INDEX_TIMEOUT);
+    EXPECT_TRUE(event.set_signaled());
+    EXPECT_EQ(multi.lock(areg::DO_NOT_WAIT, true), areg::MultiLock::LOCK_INDEX_ALL);
+}
+
 #if !defined(_WIN32)
 
 TEST(MultiLockCoverageTest, wait_all_with_an_object_without_handle_reports_an_invalid_index_and_keeps_the_others)

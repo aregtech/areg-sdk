@@ -45,6 +45,7 @@
     <ClCompile Include="fault_inject_posix_base_test.cpp" />
     <ClCompile Include="fault_inject_os_test.cpp" />
     <ClCompile Include="fault_inject_alloc_sweep_test.cpp" />
+    <ClCompile Include="fault_inject_posix_sync_test.cpp" />
     <ClCompile Include="..\..\framework\logcollector\service\private\LogCollectorDatabase.cpp" />
     <ClCompile Include="..\..\framework\areglogger\client\private\LogObserverApi.cpp" />
     <ClCompile Include="..\..\framework\areglogger\client\private\LogObserverBase.cpp" />

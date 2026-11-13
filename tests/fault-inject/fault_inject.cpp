@@ -32,8 +32,10 @@
     #include <fcntl.h>
 #if defined(__linux__)
     #include <poll.h>
+    #include <signal.h>
     #include <sys/epoll.h>
     #include <sys/eventfd.h>
+    #include <sys/timerfd.h>
     #include <termios.h>
 #endif  // defined(__linux__)
     #include <pthread.h>
@@ -702,6 +704,48 @@ extern "C"
         using Func = int (*)( pthread_attr_t * );
         static const Func next{ _next<Func>( "pthread_attr_init" ) };
         return ( next != nullptr ) ? next( attr ) : ENOSYS;
+    }
+
+    AREG_FAULT_API int timerfd_create( clockid_t clock, int flags ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::TimerFdCreate, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( clockid_t, int );
+        static const Func next{ _next<Func>( "timerfd_create" ) };
+        return ( next != nullptr ) ? next( clock, flags ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int timerfd_settime( int fd, int flags, const struct itimerspec * value, struct itimerspec * old ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::TimerFdSet, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int, int, const struct itimerspec *, struct itimerspec * );
+        static const Func next{ _next<Func>( "timerfd_settime" ) };
+        return ( next != nullptr ) ? next( fd, flags, value, old ) : ( errno = ENOSYS, -1 );
+    }
+
+    AREG_FAULT_API int sigaction( int signum, const struct sigaction * action, struct sigaction * old ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( areg_fault::FaultPoint::SignalAction, error ) )
+        {
+            errno = error;
+            return -1;
+        }
+
+        using Func = int (*)( int, const struct sigaction *, struct sigaction * );
+        static const Func next{ _next<Func>( "sigaction" ) };
+        return ( next != nullptr ) ? next( signum, action, old ) : ( errno = ENOSYS, -1 );
     }
 }
 

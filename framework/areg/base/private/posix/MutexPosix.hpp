@@ -41,18 +41,6 @@ class MutexPosix final  : public SyncObjectPosix
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes a recursive POSIX mutex. If initLocked is true, the mutex is owned by
-     *          the calling thread.
-     *
-     * \param   initLocked      If true, the mutex is initially locked and owned by the calling thread.
-     *                          Other threads are blocked from acquiring it.
-     **/
-    explicit MutexPosix(bool initLocked = false);
-
-    virtual ~MutexPosix();
-
-public:
-    /**
      * \brief   Constructor. Sets the synchronization type, recursion flag, and name.
      *
      * \param   syncType        The type of synchronization object.
@@ -60,6 +48,8 @@ public:
      *                          without deadlock. If false, recursive locks block the thread.
      **/
     MutexPosix( areg::os::SyncKind syncType, bool isRecursive );
+
+    virtual ~MutexPosix();
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations

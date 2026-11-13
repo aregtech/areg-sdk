@@ -29,6 +29,9 @@
     <ClCompile Include="fault_inject_alloc_sweep_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fault_inject_posix_sync_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\framework\logcollector\service\private\LogCollectorDatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

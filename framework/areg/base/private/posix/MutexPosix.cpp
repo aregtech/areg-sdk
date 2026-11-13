@@ -31,21 +31,6 @@ namespace areg::os {
 // MutexPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 
-MutexPosix::MutexPosix( bool initLocked /*= false*/ )
-    : SyncObjectPosix( areg::os::SyncKind::SoMutex )
-
-    , mPosixMutex       ( )
-    , mMutexValid       ( false )
-    , mPosixMutexAttr   ( )
-    , mMutexAttrValid   ( false )
-{
-    _init_posix_mutex( true );
-    if (initLocked)
-    {
-        ::pthread_mutex_lock( &mPosixMutex );
-    }
-}
-
 MutexPosix::MutexPosix( areg::os::SyncKind syncType, bool isRecursive )
     : SyncObjectPosix( syncType )
 

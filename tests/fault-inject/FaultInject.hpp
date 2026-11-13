@@ -86,6 +86,9 @@ namespace areg_fault
         , CondAttrInit      //!< Linux pthread_condattr_init(). Not replaced elsewhere. Error: return value.
         , CondAttrSetClock  //!< Linux pthread_condattr_setclock(). Not replaced elsewhere. Error: return value.
         , ThreadAttrInit    //!< Linux pthread_attr_init(). Not replaced elsewhere. Error: return value.
+        , TimerFdCreate     //!< Linux timerfd_create(). Not replaced elsewhere. Error: errno value.
+        , TimerFdSet        //!< Linux timerfd_settime(). Not replaced elsewhere. Error: errno value.
+        , SignalAction      //!< Linux sigaction(). Not replaced elsewhere. Error: errno value.
         , Count             //!< The number of points.
     };
 }
