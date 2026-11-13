@@ -98,10 +98,9 @@ namespace areg {
  *                            Write operations will not go through any intermediate cache,
  *                            they will go directly to disk. 
  *
- *         15.CreateTemp    - Will create and open file for temporary storage.
- *                            File systems avoid writing data back to mass storage if sufficient cache memory is available,
- *                            because an application deletes a temporary file after a handle is closed.
- *                            In that case, the system can entirely avoid writing the data.
+ *         15.CreateTemp    - Creates and opens a file for temporary storage, with read and write access.
+ *                            The file is deleted when it is closed, as with Delete. File systems avoid
+ *                            writing the data back to mass storage if enough cache memory is available.
  *
  *         Wide text is stored as UTF-16LE on every platform: the text functions convert a
  *         4-byte wchar_t, and the stream operators use the stream string format of IOStream.
@@ -130,7 +129,7 @@ protected:
         , BitTruncate   = 256u  //!< 0000000100000000 <= truncate bit
         , BitDelete     = 2048u //!< 0000100000000000 <= delete on close bit
         , BitDirect     = 4096u //!< 0001000000000000 <= write direct on disk bit
-        , BitTemp       = 8192u //!< 0010000000000000 <= create temporary file bit, will be deleted on close.
+        , BitTemp       = 8192u //!< 0010000000000000 <= create temporary file bit, created on open and deleted on close.
         , BitOpenAlways = 16384u//!< 0100000000000000 <= open existing or create new.
     };
 
@@ -171,7 +170,7 @@ public:
         , Truncate      = (BIT_TRUNCATE | BIT_WRITE | BIT_READ)                     //!< 0000000100000011 <= truncate file, i.e. set initial size zero, "read" and "write" bits should be set
         , Delete        = (BIT_DELETE)                                              //!< 0000100000000000 <= delete on close. The file is deleted when the last handle is closed. For filesystem files the OS handles deletion; for memory buffers only the owner (sole-reference holder) may delete.
         , WriteDirect   = (BIT_DIRECT | BIT_WRITE | BIT_READ)                       //!< 0001000000000011 <= write operations will not go through any intermediate cache, they will go directly to disk. read and write flags are set automatically.
-        , CreateTemp    = (BIT_FILE | BIT_WRITE | BIT_READ)                         //!< 0010000000000011 <= The file is being used for temporary storage. File systems avoid writing data back to mass storage if sufficient cache memory is available, because an application deletes a temporary file after a handle is closed. In that case, the system can entirely avoid writing the data.
+        , CreateTemp    = (BIT_FILE | BIT_WRITE | BIT_READ)                         //!< 0010000000000011 <= The file is used for temporary storage: it is created on open and deleted on close. File systems avoid writing the data back to mass storage if enough cache memory is available.
         , OpenAlways    = (BIT_OPEN_ALWAYS)                                         //!< 0100000000000000 <= open existing or create new. If file does not exist, it will be created. If file exists, it will be opened.
     };
 

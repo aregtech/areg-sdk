@@ -70,9 +70,6 @@ struct SendBacklogWaitOs
 
 void SendBacklogWaitOsDelete::operator () (SendBacklogWaitOs * wait) const noexcept
 {
-    if (wait == nullptr)
-        return;
-
     static_cast<void>(::CloseHandle(wait->port));
     delete wait;
 }

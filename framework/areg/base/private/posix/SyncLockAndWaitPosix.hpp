@@ -41,6 +41,7 @@ namespace areg::os {
   * dependencies.
   ************************************************************************/
 class WaitablePosix;
+class SignalLockPosix;
 class SyncLockAndWaitPosix;
 
 //////////////////////////////////////////////////////////////////////////
@@ -172,9 +173,10 @@ public:
      * \brief   Called by waitable object to indicate it is in signaled state.
      *
      * \param   syncWaitable    The waitable object that is in signaled state.
+     * \param   signal          The signal lock of the waitable, held by the caller.
      * \return  Returns the number of threads notified.
      **/
-    static int32_t event_signaled( WaitablePosix & syncWaitable ) noexcept;
+    static int32_t event_signaled( WaitablePosix & syncWaitable, SignalLockPosix & signal ) noexcept;
 
     /**
      * \brief   Gives the signaled waitable object to the WaitAll waiters that can take it now.

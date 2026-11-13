@@ -110,6 +110,15 @@ TEST(RouterApplicationTest, metadata_is_available_through_public_base_interface)
     );
 }
 
+// The service is installed and started under the name of the router process, on every platform.
+TEST(RouterApplicationTest, service_name_is_the_name_of_the_router)
+{
+    const std::string ascii{ areg::ROUTER_SERVICE_NAME_ASCII };
+    const std::wstring wide{ areg::ROUTER_SERVICE_NAME_WIDE };
+    EXPECT_EQ(ascii, std::string(areg::DEFAULT_ROUTER_SERVICE_NAME) + ".service");
+    EXPECT_EQ(wide, std::wstring(ascii.begin(), ascii.end()));
+}
+
 TEST(RouterApplicationTest, option_table_accepts_all_advertised_spellings)
 {
     AREG_EXPECT_IN_CHILD(

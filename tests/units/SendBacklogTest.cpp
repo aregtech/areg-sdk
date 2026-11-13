@@ -356,6 +356,19 @@ namespace
     };
 }
 
+// A send thread that stops while its peer does not read releases the backlog and reports the
+// connection, whose first message was cut.
+TEST(SendBacklogTest, release_of_an_unread_backlog_reports_the_cut_connection)
+{
+    Fixture test;
+    ASSERT_TRUE(test.start());
+    std::deque<ITEM_ID> cut;
+    test.backlog.release_all(cut);
+    EXPECT_TRUE(test.backlog.is_empty());
+    ASSERT_EQ(cut.size(), 1u);
+    EXPECT_EQ(cut.front(), COOKIE);
+}
+
 // A paused peer: the waiting send thread does not pump, and it moves on once the peer reads.
 TEST(SendBacklogTest, wait_sleeps_while_paused_and_resumes_when_read)
 {
@@ -922,6 +935,39 @@ namespace
         pair.client = areg::InvalidSocketHandle;
     }
 }
+
+#if !defined(_WIN32)
+
+// A POSIX write completes when the call returns: it keeps no write state, nothing is in flight,
+// and a cancel with nothing in progress leaves it done.
+TEST(SendBacklogTest, posix_write_keeps_no_write_state_and_a_cancel_leaves_it_done)
+{
+    Pair pair{ };
+    ASSERT_TRUE(pair.open());
+    const areg::MessageEnvelope message{ make_message(100u) };
+    ASSERT_NE(message.header(), nullptr);
+    const uint32_t size{ areg::wire_size(*message.header()) };
+    const areg::IoBuffer buffer{ areg::wire_data(*message.header()), static_cast<std::size_t>(size) };
+
+    areg::ext::SendBacklogOsPtr os{ };
+    uint64_t started{ 0u };
+    EXPECT_EQ(areg::ext::backlog_os_start(os, pair.server, &buffer, 1u, 0u, started), static_cast<int64_t>(size));
+    EXPECT_EQ(started, static_cast<uint64_t>(size));
+    EXPECT_EQ(os, nullptr);
+    EXPECT_TRUE(areg::ext::backlog_os_done(os.get()));
+    EXPECT_EQ(areg::ext::backlog_os_in_flight(os.get()), 0u);
+    EXPECT_EQ(areg::ext::backlog_os_collect(os.get(), pair.server), 0);
+
+    areg::ext::backlog_os_cancel(os.get(), pair.server);
+    EXPECT_TRUE(areg::ext::backlog_os_done(os.get()));
+
+    std::vector<uint8_t> received(size);
+    ASSERT_EQ(areg::receive_data_window(pair.client, received.data(), size), static_cast<int32_t>(size));
+    EXPECT_EQ(std::memcmp(received.data(), areg::wire_data(*message.header()), size), 0);
+    pair.close();
+}
+
+#endif  // !defined(_WIN32)
 
 // A small message to a free socket leaves whole at once, nothing is kept, and the peer reads it
 // byte for byte.

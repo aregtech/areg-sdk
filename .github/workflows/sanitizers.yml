@@ -635,7 +635,9 @@ jobs:
 
       - name: Run the tests under asan
         shell: pwsh
+        # A service started by the service control manager finds the ASan runtime only beside it.
         run: |
+          Copy-Item -ErrorAction Stop "$env:VCToolsInstallDir\bin\Hostx64\x64\clang_rt.asan_dynamic-x86_64.dll" product/asan/product/bin/
           ctest --test-dir product/asan --timeout 600 --output-on-failure
           exit $LASTEXITCODE
 

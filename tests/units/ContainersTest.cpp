@@ -7,8 +7,10 @@
 
 #include "units/GUnitTest.hpp"
 #include "areg/base/Containers.hpp"
+#include "areg/base/TemplateBase.hpp"
 
 #include <utility>
+#include <vector>
 
 // Tokenization can retain empty tokens at both ends and between adjacent delimiters.
 TEST(ContainersTest, boundary_tokenizer_preserves_leading_adjacent_and_trailing_empty_tokens)
@@ -62,4 +64,24 @@ TEST(ContainersTest, boundary_tokenizer_copy_is_independent_and_move_transfers_t
     ASSERT_EQ(moved.list().size(), 2u);
     EXPECT_EQ(moved.list()[1], areg::String("b"));
     EXPECT_EQ(source.list()[0], areg::String("changed"));
+}
+
+/**
+ * \brief   A const iterator of a mutable container becomes an iterator at the same element, the
+ *          container is unchanged, and a mutable iterator is returned as it is.
+ **/
+TEST(ConstlessTest, iterator_of_a_mutable_container_points_to_the_same_element)
+{
+    std::vector<int> values{ 1, 2, 3 };
+    areg::Constless<std::vector<int>> helper;
+    std::vector<int>::const_iterator constPos{ values.cbegin() + 1 };
+    std::vector<int>::iterator pos{ helper.iter(values, constPos) };
+    ASSERT_EQ(values.size(), 3u);
+    EXPECT_EQ(*pos, 2);
+    *pos = 5;
+    EXPECT_EQ(values[1], 5);
+
+    std::vector<int>::iterator last{ values.begin() + 2 };
+    EXPECT_EQ(helper.iter(values, last), last);
+    EXPECT_EQ(values, (std::vector<int>{ 1, 5, 3 }));
 }

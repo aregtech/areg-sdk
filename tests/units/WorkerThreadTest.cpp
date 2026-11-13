@@ -59,6 +59,8 @@ namespace
     constexpr char const _consumer[]    { "WtConsumer" };
     //!< The worker thread name the model registers for every role.
     constexpr char const _worker[]      { "WtWorkerThread" };
+    //!< The watchdog timeout of the worker of the second role, in milliseconds.
+    constexpr uint32_t   _twinWatchdog  { 60'000u };
     //!< The model every test loads.
     constexpr char const _model[]       { "WtModel" };
     //!< How long a test waits for something to happen.
@@ -75,6 +77,7 @@ namespace
         int             processed{ 0 };
         std::thread::id componentThread{};
         std::thread::id workerThread{};
+        uint32_t        watchdog{ 0u };
     };
 
     //! What every component reports, by role.
@@ -192,10 +195,12 @@ namespace
                 mWorkerThread = &workerThread;
                 WtWorkEvent::add_listener(static_cast<WtWorkEventConsumer &>(mWorker), workerThread);
                 const std::string name{ workerThread.name().as_string() };
-                observed().update(mRole, [name](Seen & seen)
+                const uint32_t watchdog{ workerThread.watchdog_timeout() };
+                observed().update(mRole, [name, watchdog](Seen & seen)
                     {
                         seen.workerStarted = true;
                         seen.workerName = name;
+                        seen.watchdog = watchdog;
                     });
             }
         }
@@ -282,7 +287,7 @@ BEGIN_MODEL(_model)
     END_REGISTER_THREAD("WtEntryThread")
     BEGIN_REGISTER_THREAD("WtTwinThread")
         BEGIN_REGISTER_COMPONENT("WtTwin", WtHost)
-            REGISTER_WORKER_THREAD(_worker, "WtAnyRegisteredName")
+            REGISTER_WORKER_THREAD_EX(_worker, "WtAnyRegisteredName", _twinWatchdog)
         END_REGISTER_COMPONENT("WtTwin")
     END_REGISTER_THREAD("WtTwinThread")
     BEGIN_REGISTER_THREAD("WtQualifiedThread")
@@ -318,6 +323,7 @@ TEST(WorkerThreadTest, EntryNameStartsTheWorker)
         EXPECT_EQ(seen.askedName, "WtEntry:WtAnyRegisteredName");
         EXPECT_TRUE(seen.workerStarted);
         EXPECT_EQ(seen.workerName, "WtEntryThread:WtWorkerThread");
+        EXPECT_EQ(seen.watchdog, areg::WATCHDOG_IGNORE);
         EXPECT_NE(seen.workerThread, std::thread::id{});
         EXPECT_NE(seen.workerThread, seen.componentThread);
     }
@@ -327,7 +333,7 @@ TEST(WorkerThreadTest, EntryNameStartsTheWorker)
 
 /**
  * \brief   A second component of the same class, registering the same worker names under
- *          another role, gets a worker thread of its own.
+ *          another role, gets a worker thread of its own, with the watchdog timeout of its entry.
  **/
 TEST(WorkerThreadTest, SecondRoleGetsItsOwnWorker)
 {
@@ -340,6 +346,7 @@ TEST(WorkerThreadTest, SecondRoleGetsItsOwnWorker)
     const Seen second{ observed().copy("WtTwin") };
     EXPECT_EQ(second.askedName, "WtTwin:WtAnyRegisteredName");
     EXPECT_EQ(second.workerName, "WtTwinThread:WtWorkerThread");
+    EXPECT_EQ(second.watchdog, _twinWatchdog);
     EXPECT_NE(second.workerThread, first.workerThread);
 }
 
@@ -389,4 +396,25 @@ TEST(WorkerThreadTest, UnknownNameStartsNoWorker)
     EXPECT_EQ(seen.askedName, "WtUnknown:WtConsumer");
     EXPECT_FALSE(seen.workerStarted);
     EXPECT_EQ(seen.processed, 0);
+}
+
+/**
+ * \brief   The number of a worker consumer is the checksum of its name, the same for the same name;
+ *          a consumer without a name has the ignored checksum. Names compare exactly.
+ **/
+TEST(WorkerThreadTest, consumer_number_and_name_follow_its_name)
+{
+    const WtWorker first(areg::String("WtConsumerName"), areg::String("WtRoleA"));
+    const WtWorker same(areg::String("WtConsumerName"), areg::String("WtRoleB"));
+    const WtWorker other(areg::String("WtOtherName"), areg::String("WtRoleC"));
+    const WtWorker unnamed(areg::String(), areg::String("WtRoleD"));
+
+    EXPECT_EQ(static_cast<uint32_t>(first), areg::crc32_calculate("WtConsumerName"));
+    EXPECT_EQ(static_cast<uint32_t>(first), static_cast<uint32_t>(same));
+    EXPECT_NE(static_cast<uint32_t>(first), static_cast<uint32_t>(other));
+    EXPECT_EQ(static_cast<uint32_t>(unnamed), areg::CHECKSUM_IGNORE);
+
+    EXPECT_TRUE(first.is_equal_name(areg::String("WtConsumerName")));
+    EXPECT_FALSE(first.is_equal_name(areg::String("WtOtherName")));
+    EXPECT_FALSE(first.is_equal_name(areg::String("wtconsumername")));
 }

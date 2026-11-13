@@ -135,7 +135,7 @@ sudo systemctl start logcollector.service
 
 ```powershell
 .\logcollector.exe --install
-net start logcollector
+net start logger.service
 ```
 
 > [!TIP]

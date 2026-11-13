@@ -54,7 +54,8 @@
 #     AREG_COV_LOG_TESTS ctest regular expression of the tests the unit step runs a second
 #                        time with logging started and every scope at DEBUG | SCOPE, so the
 #                        log lines of the paths only those tests reach count (default: the
-#                        component, IPC and router tests; empty: no second run).
+#                        component, IPC, router, name collision and service tests; empty: no
+#                        second run).
 #     AREG_COV_LDFLAGS   link flags of executables and shared libraries (default: "--coverage";
 #                        clang-cl: the quoted full path of the clang_rt.profile library).
 #     GITHUB_STEP_SUMMARY  When set, the report is appended to it.
@@ -133,7 +134,7 @@ GCOV=${AREG_COV_GCOV:-}
 GENERATOR=${AREG_COV_GENERATOR:-}
 COV_FLAGS=${AREG_COV_FLAGS:---coverage -fprofile-update=atomic -fno-exceptions}
 COV_LDFLAGS=${AREG_COV_LDFLAGS:---coverage}
-LOG_TESTS=${AREG_COV_LOG_TESTS-^(ComponentLifecycleFailureTest|DispatcherLifecycleTest|ProxyBaseContractTest|StubBaseContractTest|IpcSocketCoverageTest|IpcClientCoverageTest|RouterApplicationTest|ServiceCommServerTest|ServiceCommConnectionTest|areg-system-lifecycle-test|areg-request-failure-test|areg-request-error-test|areg-stub-teardown-test)[.]}
+LOG_TESTS=${AREG_COV_LOG_TESTS-^(ComponentLifecycleFailureTest|DispatcherLifecycleTest|ProxyBaseContractTest|StubBaseContractTest|IpcSocketCoverageTest|IpcClientCoverageTest|RouterApplicationTest|ServiceCommServerTest|ServiceCommConnectionTest|NameNumber[A-Za-z]*Test|ServiceApplicationBaseTest|SystemServiceBaseTest|RouterServiceRegistryTest|areg-system-lifecycle-test|areg-request-failure-test|areg-request-error-test|areg-stub-teardown-test)[.]}
 
 # A Lock or ScopedLock that could not take its object ends the test process.
 export AREG_LOCK_FAILURE_FATAL=${AREG_LOCK_FAILURE_FATAL:-1}

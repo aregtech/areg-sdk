@@ -22,11 +22,13 @@
 
 #if !defined(_WIN32)
 
+#include "areg/appbase/Application.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 
 #include <errno.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -99,6 +101,29 @@ namespace
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u );
     }
 
+    //!< A segmentation fault handler of the host application.
+    void host_segmentation_fault_handler( int )
+    {
+    }
+
+    void segmentation_fault_handler_of_the_host_is_kept_through_setup_and_release( )
+    {
+        struct sigaction host{ };
+        host.sa_handler = &host_segmentation_fault_handler;
+        sigemptyset( &host.sa_mask );
+        AREG_CHILD_CHECK( ::sigaction( SIGSEGV, &host, nullptr ) == 0 );
+
+        areg::Application::setup( false, false, false, false, false );
+        struct sigaction during{ };
+        AREG_CHILD_CHECK( ::sigaction( SIGSEGV, nullptr, &during ) == 0 );
+        AREG_CHILD_CHECK( during.sa_handler == &host_segmentation_fault_handler );
+
+        areg::Application::release( );
+        struct sigaction after{ };
+        AREG_CHILD_CHECK( ::sigaction( SIGSEGV, nullptr, &after ) == 0 );
+        AREG_CHILD_CHECK( after.sa_handler == &host_segmentation_fault_handler );
+    }
+
     void timers_work_in_the_parent_and_in_a_forked_child( )
     {
         areg::SyncTimer armed( TIMER_NEVER_MS, true, true );
@@ -128,6 +153,11 @@ namespace
 TEST( FaultInjectPosixBaseTest, timer_is_not_armed_while_the_timer_thread_cannot_start_and_works_after )
 {
     AREG_EXPECT_IN_CHILD( timer_is_not_armed_while_the_timer_thread_cannot_start_and_works_after( ) );
+}
+
+TEST( FaultInjectPosixBaseTest, segmentation_fault_handler_of_the_host_is_kept_through_setup_and_release )
+{
+    AREG_EXPECT_IN_CHILD( segmentation_fault_handler_of_the_host_is_kept_through_setup_and_release( ) );
 }
 
 TEST( FaultInjectPosixBaseTest, timers_work_in_the_parent_and_in_a_forked_child )

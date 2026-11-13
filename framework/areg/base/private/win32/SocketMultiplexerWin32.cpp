@@ -197,7 +197,7 @@ bool areg::SocketMultiplexer::register_socket(SOCKETHANDLE hSocket, bool search)
         _drop_registrations();
     }
 
-    if (    (hSocket == areg::InvalidSocketHandle)
+    if (    !areg::is_valid_socket(hSocket)
          || (hSocket == mWakeupReadFd)
          || (hSocket == mWakeupWriteFd)
          || (static_cast<uint32_t>(mSockets.size()) >= mMaxCount) )

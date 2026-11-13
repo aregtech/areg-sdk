@@ -808,13 +808,12 @@ TEST(StringDefsTest3, make_string_edge_cases)
         EXPECT_EQ(buf[0], '\0');  // buffer not written
     }
 
-    // charCount == 2: writing path (2 > 1). Reserves 1 for null, writes 1 digit.
-    // Buffer must be non-empty (buf[0] != '\0') to avoid size-query path.
+    // charCount == 2: the number does not fit, the buffer gets an empty string.
     {
         char buf[4] = "XXX";
         int32_t n = areg::make_string<char, int>(buf, 2, 12345, areg::Radix::Decimal);
-        EXPECT_EQ(n, 1);      // one digit written
-        EXPECT_EQ(buf[1], '\0');
+        EXPECT_EQ(n, 0);
+        EXPECT_EQ(buf[0], '\0');
     }
 
     // Automatic radix acts as Decimal. Buffer must be non-empty.

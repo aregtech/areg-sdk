@@ -19,8 +19,11 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/RingStack.hpp"
 #include "areg/base/SharedBuffer.hpp"
+#include "areg/base/MessageEnvelope.hpp"
+#include "areg/component/EventDefs.hpp"
 
 #include <string>
+#include <vector>
 
 /**
  * \brief   Test RingStack constructors with Ring Stack type 'stop on overlap'.
@@ -1224,4 +1227,123 @@ TEST(RingStackTest, pop_of_ring_without_storage_returns_default_value)
     EXPECT_TRUE(stack.pop().empty());
     EXPECT_TRUE(stack.is_empty());
 #endif  // defined(DEBUG) && GTEST_HAS_DEATH_TEST
+}
+
+namespace
+{
+    //!< Returns a distinct element of the type for the number.
+    template<typename VALUE>
+    VALUE ring_value(uint32_t number);
+
+    template<>
+    std::string ring_value<std::string>(uint32_t number)
+    {
+        return std::string("ring element ") + std::to_string(number);
+    }
+
+    template<>
+    areg::MessageEnvelope ring_value<areg::MessageEnvelope>(uint32_t number)
+    {
+        areg::MessageEnvelope envelope(static_cast<uint16_t>(areg::EventType::EventCustomInternal), static_cast<uint8_t>(0u));
+        envelope.set_event_id(number);
+        return envelope;
+    }
+
+    //!< Returns the number the element was made from.
+    uint32_t ring_number(const std::string& value)
+    {
+        return static_cast<uint32_t>(std::stoul(value.substr(value.rfind(' ') + 1u)));
+    }
+
+    uint32_t ring_number(const areg::MessageEnvelope& value)
+    {
+        return value.event_id();
+    }
+
+    //!< Pushes the elements made from the numbers first to last.
+    template<typename VALUE>
+    void ring_push(areg::RingStack<VALUE>& stack, uint32_t first, uint32_t last)
+    {
+        for (uint32_t number = first; number <= last; ++number)
+            stack.push(ring_value<VALUE>(number));
+    }
+
+    //!< Pops every element and returns the numbers in the order they left.
+    template<typename VALUE>
+    std::vector<uint32_t> ring_drain(areg::RingStack<VALUE>& stack)
+    {
+        std::vector<uint32_t> result;
+        while (stack.is_empty() == false)
+            result.push_back(ring_number(stack.pop()));
+        return result;
+    }
+}
+
+template<typename VALUE>
+class RingStackOwningTest : public ::testing::Test
+{
+};
+
+using RingOwningTypes = ::testing::Types<std::string, areg::MessageEnvelope>;
+TYPED_TEST_SUITE(RingStackOwningTest, RingOwningTypes);
+
+/**
+ * \brief   A full ring of owning elements refuses a new one with Stop, drops the oldest with Shift, and
+ *          grows with Resize; the elements leave in the order they came.
+ **/
+TYPED_TEST(RingStackOwningTest, full_ring_follows_its_overlap_policy)
+{
+    using V = TypeParam;
+    areg::RingStack<V> stop(2u, areg::OverlapPolicy::Stop);
+    ring_push(stop, 1u, 3u);
+    EXPECT_EQ(stop.size(), 2u);
+    EXPECT_EQ(ring_drain(stop), (std::vector<uint32_t>{ 1u, 2u }));
+
+    areg::RingStack<V> shift(2u, areg::OverlapPolicy::Shift);
+    ring_push(shift, 1u, 4u);
+    EXPECT_EQ(shift.size(), 2u);
+    EXPECT_EQ(ring_drain(shift), (std::vector<uint32_t>{ 3u, 4u }));
+
+    areg::RingStack<V> resize(2u, areg::OverlapPolicy::Resize);
+    ring_push(resize, 1u, 5u);
+    EXPECT_EQ(resize.size(), 5u);
+    EXPECT_GE(resize.capacity(), 5u);
+    EXPECT_EQ(ring_drain(resize), (std::vector<uint32_t>{ 1u, 2u, 3u, 4u, 5u }));
+
+    areg::RingStack<V> empty(0u, areg::OverlapPolicy::Resize);
+    ring_push(empty, 1u, 1u);
+    EXPECT_EQ(ring_drain(empty), (std::vector<uint32_t>{ 1u }));
+}
+
+/**
+ * \brief   A wrapped ring of owning elements keeps its order when it is copied into a ring of another
+ *          capacity, when it grows, and when its extra space is freed.
+ **/
+TYPED_TEST(RingStackOwningTest, wrapped_ring_keeps_its_order_through_copy_growth_and_shrink)
+{
+    using V = TypeParam;
+    areg::RingStack<V> ring(3u, areg::OverlapPolicy::Stop);
+    ring_push(ring, 1u, 3u);
+    EXPECT_EQ(ring_number(ring.pop()), 1u);
+    ring_push(ring, 4u, 4u);
+
+    areg::RingStack<V> larger(6u, areg::OverlapPolicy::Stop);
+    ring_push(larger, 9u, 9u);
+    larger = ring;
+    EXPECT_EQ(ring_drain(larger), (std::vector<uint32_t>{ 2u, 3u, 4u }));
+
+    areg::RingStack<V> smaller(1u, areg::OverlapPolicy::Stop);
+    smaller = ring;
+    EXPECT_EQ(ring_drain(smaller), (std::vector<uint32_t>{ 2u, 3u, 4u }));
+
+    areg::RingStack<V> copied(ring);
+    EXPECT_EQ(ring_drain(copied), (std::vector<uint32_t>{ 2u, 3u, 4u }));
+
+    EXPECT_EQ(ring.reserve(8u), 8u);
+    EXPECT_EQ(ring.size(), 3u);
+    ring.free_extra();
+    EXPECT_EQ(ring.capacity(), 3u);
+    EXPECT_EQ(ring_drain(ring), (std::vector<uint32_t>{ 2u, 3u, 4u }));
+    ring.free_extra();
+    EXPECT_EQ(ring.capacity(), 0u);
 }

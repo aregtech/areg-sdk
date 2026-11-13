@@ -22,12 +22,21 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/SocketMultiplexer.hpp"
 
-#if defined(_POSIX)
+#include "areg/base/SocketDefs.hpp"
 
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#if defined(_POSIX)
+    #include <fcntl.h>
+    #include <sys/ioctl.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
+#elif defined(_WIN32)
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif  // NOMINMAX
+    #include <WinSock2.h>
+#endif  // defined(_POSIX)
+
+#if defined(_POSIX) || defined(_WIN32)
 
 #include <cstring>
 #include <chrono>
@@ -51,16 +60,62 @@ namespace
     //!< Milliseconds the first wait() of a test may block.
     constexpr int32_t   WAIT_MS         { 500 };
 
+#if defined(_WIN32)
+    using Native = SOCKET;
+    constexpr Native    NO_SOCKET       { INVALID_SOCKET };
+
+    void close_native( Native sock )
+    {
+        ::closesocket( sock );
+    }
+#else   // defined(_WIN32)
+    using Native = int;
+    constexpr Native    NO_SOCKET       { -1 };
+
+    void close_native( Native sock )
+    {
+        ::close( sock );
+    }
+#endif  // defined(_WIN32)
+
     //!< A connected socket pair. 'sock' is registered, 'peer' makes it readable.
     struct Pair
     {
-        int sock { -1 };
-        int peer { -1 };
+        Native sock { NO_SOCKET };
+        Native peer { NO_SOCKET };
     };
 
     //!< Opens a connected socket pair. Returns false when the system refuses.
     bool open_pair( Pair & pair )
     {
+#if defined(_WIN32)
+        static const bool started{ areg::socket_initialize( ) };
+        static_cast<void>(started);
+
+        const Native listener{ ::socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ) };
+        if ( listener == NO_SOCKET )
+            return false;
+
+        sockaddr_in addr{ };
+        addr.sin_family      = AF_INET;
+        addr.sin_addr.s_addr = htonl( INADDR_LOOPBACK );
+        int len{ static_cast<int>(sizeof( addr )) };
+        bool result{ false };
+        if ( ( ::bind( listener, reinterpret_cast<sockaddr *>(&addr), sizeof( addr ) ) == 0 )
+          && ( ::listen( listener, 1 ) == 0 )
+          && ( ::getsockname( listener, reinterpret_cast<sockaddr *>(&addr), &len ) == 0 ) )
+        {
+            pair.peer = ::socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
+            if ( ( pair.peer != NO_SOCKET ) && ( ::connect( pair.peer, reinterpret_cast<sockaddr *>(&addr), sizeof( addr ) ) == 0 ) )
+            {
+                pair.sock = ::accept( listener, nullptr, nullptr );
+                result = ( pair.sock != NO_SOCKET );
+            }
+        }
+
+        close_native( listener );
+        return result;
+#else   // defined(_WIN32)
         int fds[2]{ -1, -1 };
         if ( ::socketpair( AF_UNIX, SOCK_STREAM, 0, fds ) != 0 )
             return false;
@@ -68,33 +123,43 @@ namespace
         pair.sock = fds[0];
         pair.peer = fds[1];
         return true;
+#endif  // defined(_WIN32)
     }
 
     void close_pair( Pair & pair )
     {
-        if ( pair.peer != -1 )
-            ::close( pair.peer );
+        if ( pair.peer != NO_SOCKET )
+            close_native( pair.peer );
 
-        if ( pair.sock != -1 )
-            ::close( pair.sock );
+        if ( pair.sock != NO_SOCKET )
+            close_native( pair.sock );
 
-        pair.peer = pair.sock = -1;
+        pair.peer = pair.sock = NO_SOCKET;
     }
 
     //!< Sends one byte, which makes the registered end readable.
     bool feed( const Pair & pair )
     {
         const char one{ 'x' };
-        return ::write( pair.peer, &one, sizeof( one ) ) == static_cast<ssize_t>(sizeof( one ));
+        return ::send( pair.peer, &one, static_cast<int>(sizeof( one )), 0 ) == static_cast<int>(sizeof( one ));
     }
 
     //!< Reads every buffered byte out of the registered end.
     void drain( const Pair & pair )
     {
         char buf[64];
+#if defined(_WIN32)
+        u_long pending{ 0u };
+        while ( ( ::ioctlsocket( pair.sock, static_cast<long>(FIONREAD), &pending ) == 0 ) && ( pending != 0u ) )
+        {
+            if ( ::recv( pair.sock, buf, static_cast<int>(sizeof( buf )), 0 ) <= 0 )
+                break;
+        }
+#else   // defined(_WIN32)
         while ( ::recv( pair.sock, buf, sizeof( buf ), MSG_DONTWAIT ) > 0 )
         {
         }
+#endif  // defined(_WIN32)
     }
 
     inline bool is_handle( SOCKETHANDLE handle )
@@ -260,6 +325,8 @@ TEST( SocketMultiplexerTest, unregister_keeps_the_other_sockets )
         close_pair( pairs[i] );
 }
 
+#if defined(_POSIX)
+
 /**
  * \brief   The read-ahead cache against the multiplexer. One cached receive moves the
  *          whole kernel buffer into user space, so a peer that goes silent without
@@ -370,6 +437,8 @@ TEST( SocketMultiplexerTest, reset_forgets_socket_held_open_elsewhere )
     ::close( held );
     close_pair( fresh );
 }
+
+#endif  // defined(_POSIX)
 
 namespace
 {
@@ -501,9 +570,9 @@ TEST(SocketMultiplexerCoverageTest, peer_close_wakes_the_waiter_with_the_registe
             return mux.wait(-1);
         }) };
     started.wait();
-    const int peer{ pair.peer };
-    pair.peer = -1;
-    EXPECT_EQ(::close(peer), 0);
+    const Native peer{ pair.peer };
+    pair.peer = NO_SOCKET;
+    close_native(peer);
     const bool ready{ waiter.wait_for(std::chrono::seconds(30)) == std::future_status::ready };
     if (!ready)
         mux.reset();
@@ -511,8 +580,8 @@ TEST(SocketMultiplexerCoverageTest, peer_close_wakes_the_waiter_with_the_registe
     const SOCKETHANDLE result{ waiter.get() };
     EXPECT_TRUE(ready);
     EXPECT_EQ(result, pair.sock);
-    uint8_t byte{};
-    EXPECT_EQ(::recv(pair.sock, &byte, sizeof(byte), 0), 0);
+    char byte{};
+    EXPECT_EQ(::recv(pair.sock, &byte, static_cast<int>(sizeof(byte)), 0), 0);
     EXPECT_TRUE(mux.unregister_socket(pair.sock));
 }
 
@@ -536,4 +605,4 @@ TEST(SocketMultiplexerCoverageTest, stateless_wait_reports_timeout_readiness_and
     EXPECT_EQ(mux.wait(server.sock, nullptr, 0, 30'000), server.sock);
 }
 
-#endif  // defined(_POSIX)
+#endif  // defined(_POSIX) || defined(_WIN32)

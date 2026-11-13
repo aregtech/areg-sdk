@@ -259,7 +259,7 @@ jobs:
       - name: Run the unit tests
         id: unit
         working-directory: ${{github.workspace}}
-        timeout-minutes: 40
+        timeout-minutes: 60
         shell: bash
         run: ${{matrix.platform.bash}} tools/intern/coverage.sh unit ${{env.COVERAGE_ARGS}}
 

@@ -25,6 +25,8 @@
 #include "areg/base/String.hpp"
 #include "areg/base/Thread.hpp"
 
+#include <utility>
+
 #ifdef WINDOWS
     #ifndef NOMINMAX
         #define NOMINMAX
@@ -526,4 +528,44 @@ TEST(DateTimeTest, now_in_local_time_differs_from_utc_by_a_zone_offset)
     const TIME64 localTime{ areg::to_time(local) };
     EXPECT_LE(before, localTime + MAX_ZONE_OFFSET);
     EXPECT_LE(localTime, after + MAX_ZONE_OFFSET);
+}
+
+/**
+ * \brief   A date built from a calendar time keeps its fields, assignment copies the time,
+ *          and the streamed size of a date is the size of its time value.
+ **/
+TEST( DateTimeTest, calendar_time_constructor_and_assignment_keep_the_time )
+{
+    areg::CalendarTime calendar{ };
+    calendar.stYear     = 2024;
+    calendar.stMonth    = 2;
+    calendar.stDay      = 29;
+    calendar.stHour     = 13;
+    calendar.stMinute   = 14;
+    calendar.stSecond   = 15;
+    calendar.stMillisecs= 16;
+    calendar.stMicrosecs= 17;
+
+    const areg::DateTime date( calendar );
+    EXPECT_TRUE( date.is_valid( ) );
+    EXPECT_EQ( date.time( ), areg::to_time( calendar ) );
+    EXPECT_EQ( date.year( ), 2024u );
+    EXPECT_EQ( date.month( ), 2u );
+    EXPECT_EQ( date.day( ), 29u );
+    EXPECT_EQ( date.hours( ), 13u );
+    EXPECT_EQ( date.minutes( ), 14u );
+    EXPECT_EQ( date.seconds( ), 15u );
+    EXPECT_EQ( date.milliseconds( ), 16u );
+    EXPECT_EQ( date.microseconds( ), 17u );
+
+    areg::DateTime copied;
+    EXPECT_FALSE( copied.is_valid( ) );
+    copied = date;
+    EXPECT_EQ( copied, date );
+    areg::DateTime source( date );
+    areg::DateTime moved;
+    moved = std::move( source );
+    EXPECT_EQ( moved, date );
+
+    EXPECT_EQ( areg::required_size<areg::DateTime>{ }( date ), static_cast<uint32_t>( sizeof( TIME64 ) ) );
 }

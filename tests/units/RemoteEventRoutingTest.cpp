@@ -11,6 +11,7 @@
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/component/StubAddress.hpp"
+#include "areg/component/StubEvent.hpp"
 
 #include <cstring>
 #include <utility>
@@ -62,6 +63,93 @@ namespace
         ASSERT_NE(envelope.buffer(), nullptr);
         EXPECT_EQ(std::memcmp(envelope.buffer(), bytes.data(), bytes.size()), 0);
     }
+
+    //!< Builds proxy events with the constructors and operators that derived events use.
+    class ProxyEventProbe final : public areg::ProxyEvent
+    {
+    public:
+        ProxyEventProbe(const areg::ProxyAddress & target, const areg::MessageEnvelope & src)
+            : areg::ProxyEvent(target, src)
+        {
+        }
+
+        ProxyEventProbe(const areg::Endpoint & consumer, const areg::RawService & service, const areg::MessageEnvelope & src)
+            : areg::ProxyEvent(consumer, service, src)
+        {
+        }
+
+        explicit ProxyEventProbe(areg::MessageEnvelope && envelope) noexcept
+            : areg::ProxyEvent(std::move(envelope))
+        {
+        }
+
+        ProxyEventProbe(const ProxyEventProbe & src) = default;
+        ProxyEventProbe & operator = (const ProxyEventProbe & src) = default;
+        ProxyEventProbe & operator = (ProxyEventProbe && src) noexcept = default;
+    };
+
+    //!< Builds stub events from an address or a moved envelope.
+    class StubEventProbe final : public areg::StubEvent
+    {
+    public:
+        StubEventProbe(const areg::StubAddress & target, areg::EventType eventType)
+            : areg::StubEvent(target, eventType)
+        {
+        }
+
+        explicit StubEventProbe(areg::MessageEnvelope && envelope) noexcept
+            : areg::StubEvent(std::move(envelope))
+        {
+        }
+    };
+
+    //!< A stub consumer that records the event it is processing.
+    class StubReceiver final : public areg::StubEventConsumer
+    {
+    public:
+        explicit StubReceiver(const areg::StubAddress & address)
+            : areg::StubEventConsumer(address)
+        {
+        }
+
+        using areg::StubEventConsumer::current_event;
+
+        const areg::Event * mSeen{ nullptr };
+        uint32_t mStubEvents{ 0u };
+
+    protected:
+        void process_request_event(areg::ServiceRequestEvent &) override
+        {
+        }
+
+        void process_attribute_event(areg::ServiceRequestEvent &) override
+        {
+        }
+
+        void process_stub_event(areg::StubEvent &) override
+        {
+            mSeen = current_event();
+            ++mStubEvents;
+        }
+
+        void process_generic_event(areg::Event &) override
+        {
+            mSeen = current_event();
+        }
+
+        void process_registered_event(const areg::StubAddress &, areg::ServiceConnectionState) override
+        {
+        }
+
+        bool can_process_requests() const override
+        {
+            return true;
+        }
+
+        void process_connect_event(const areg::ProxyAddress &, areg::ServiceConnectionState) override
+        {
+        }
+    };
 
     class ProxyReceiver final : public areg::ProxyEventConsumer
     {
@@ -582,4 +670,66 @@ TEST(ServiceEventValueTest, responses_built_from_an_endpoint_or_a_copy_keep_resu
     areg::RemoteResponseEvent remoteMoved{ std::move(remoteCopied) };
     EXPECT_EQ(remoteMoved.response_id(), RESPONSE_ID);
     expect_payload(remoteMoved.envelope());
+}
+
+TEST(ProxyEventValueTest, envelope_constructors_address_the_target_and_keep_the_payload)
+{
+    const areg::ProxyAddress target{ proxy_address() };
+    const areg::LocalResponseEvent response(payload(), proxy_address(0x613A1003u), areg::ResultType::DataOK, RESPONSE_ID, SEQUENCE);
+
+    const ProxyEventProbe addressed(target, response.envelope());
+    EXPECT_EQ(addressed.target_proxy(), static_cast<uint32_t>(target));
+    EXPECT_EQ(addressed.event_type(), areg::EventType::EventLocalResponse);
+    expect_payload(addressed.envelope());
+
+    areg::EventHeader expected{};
+    target.to_event(expected);
+    const ProxyEventProbe direct(expected.consumer, expected.rawService, response.envelope());
+    EXPECT_EQ(direct.target_proxy(), static_cast<uint32_t>(target));
+    EXPECT_EQ(direct.envelope().raw_service().service, expected.rawService.service);
+    EXPECT_EQ(direct.envelope().raw_service().role, expected.rawService.role);
+    expect_payload(direct.envelope());
+
+    areg::MessageEnvelope envelope{ response.envelope() };
+    const ProxyEventProbe moved(std::move(envelope));
+    EXPECT_EQ(moved.target_proxy(), static_cast<uint32_t>(target));
+    expect_payload(moved.envelope());
+
+    ProxyEventProbe assigned(areg::MessageEnvelope{});
+    EXPECT_FALSE(assigned.is_valid());
+    assigned = addressed;
+    EXPECT_TRUE(assigned == addressed);
+    EXPECT_EQ(assigned.target_proxy(), static_cast<uint32_t>(target));
+    ProxyEventProbe source{ direct };
+    assigned = std::move(source);
+    EXPECT_TRUE(assigned == direct);
+    expect_payload(assigned.envelope());
+}
+
+TEST(StubEventValueTest, stub_event_addresses_its_provider_and_the_consumer_sees_it_only_while_processing)
+{
+    const areg::StubAddress stub{ stub_address() };
+    StubReceiver receiver(stub);
+    EXPECT_EQ(receiver.current_event(), nullptr);
+
+    StubEventProbe event(stub, areg::EventType::EventLocalNotifyResponse);
+    ASSERT_TRUE(event.is_valid());
+    EXPECT_EQ(event.target_stub(), static_cast<uint32_t>(stub));
+    static_cast<areg::EventConsumer &>(receiver).start_event_processing(event);
+    EXPECT_EQ(receiver.mStubEvents, 1u);
+    EXPECT_EQ(receiver.mSeen, static_cast<const areg::Event *>(&event));
+    EXPECT_EQ(receiver.current_event(), nullptr);
+
+    areg::MessageEnvelope envelope{ event.envelope() };
+    StubEventProbe moved(std::move(envelope));
+    EXPECT_EQ(moved.target_stub(), static_cast<uint32_t>(stub));
+    EXPECT_EQ(moved.event_type(), areg::EventType::EventLocalNotifyResponse);
+
+    const areg::StubAddress other(0x613A2001u, areg::Version(1u, 2u, 3u), areg::ServiceType::Public
+                                 , 0x613A3001u, 0x613A4002u, 0x613A1009u);
+    StubEventProbe foreign(other, areg::EventType::EventLocalNotifyResponse);
+    receiver.mSeen = nullptr;
+    static_cast<areg::EventConsumer &>(receiver).start_event_processing(foreign);
+    EXPECT_EQ(receiver.mStubEvents, 1u);
+    EXPECT_EQ(receiver.mSeen, nullptr);
 }

@@ -430,13 +430,15 @@ int32_t SyncLockAndWaitPosix::wait_multiple( WaitablePosix ** listWaitables, int
     return result;
 }
 
-int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable ) noexcept
+int32_t SyncLockAndWaitPosix::event_signaled( WaitablePosix & syncWaitable, SignalLockPosix & signal ) noexcept
 {
     int32_t result{ 0 };
 
     // WaitAny path: wake threads registered in the intrusive list
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
-    result += syncWaitable.notify_any_waiters();
+    result += syncWaitable.notify_any_waiters(signal);
+#else   // !(defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__))
+    static_cast<void>(signal);
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
     result += notify_wait_all_waiters(syncWaitable);
@@ -588,11 +590,11 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
             if ( syncWaitable != nullptr )
             {
                 mapResources.register_resource_object(syncWaitable, this);
+                syncWaitable->add_wait_all_registration();
                 if ( eventFired && !syncWaitable->check_signaled(mContext) )
                     eventFired = false;
 
                 mWaitingList[i] = syncWaitable;
-                syncWaitable->add_wait_all_registration();
             }
             else
             {

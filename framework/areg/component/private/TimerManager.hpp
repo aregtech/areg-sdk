@@ -173,9 +173,16 @@ private:
     void _process_expired_timer(Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes);
 
     /**
-     * \brief   Stops and removes all registered timers.
+     * \brief   Stops and removes all registered timers. A removed timer is no longer active.
      **/
     void _remove_all_timers();
+
+    /**
+     * \brief   Marks the timer as stopped and not active. The caller holds the lock of the timer.
+     *
+     * \param   timer       The timer that no longer runs.
+     **/
+    static void _deactivate_timer( Timer & timer );
 
     /**
      * \brief   Registers a timer in the timer map after creating the system timer.

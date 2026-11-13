@@ -489,6 +489,34 @@ TEST_F(TimerLifecycleTest, timer_can_move_to_a_restarted_dispatcher_without_a_st
     EXPECT_FALSE(timer.is_active());
 }
 
+/**
+ * \brief   Reproduces the defect: a timer that was active when the timer manager stopped kept
+ *          reporting active, although it could no longer fire.
+ **/
+TEST_F(TimerLifecycleTest, bug_924_timer_active_when_the_system_is_released_is_not_active_and_starts_after_setup)
+{
+    TimerListener consumer;
+    areg::Timer timer(consumer, "LifecycleReleased");
+    EventTestDispatcher dispatcher("LifecycleReleasedThread");
+    TimerTestRun run(dispatcher);
+    run.watch(timer);
+    ASSERT_TRUE(dispatcher.start_ready());
+    ASSERT_TRUE(timer.start_timer(NEVER_MS, dispatcher, areg::Timer::ONE_TIME));
+    EXPECT_TRUE(timer.is_active());
+
+    areg::Application::release();
+    EXPECT_FALSE(timer.is_active());
+    EXPECT_FALSE(timer.start_timer(1u, dispatcher, areg::Timer::ONE_TIME));
+    EXPECT_FALSE(timer.is_active());
+
+    areg::Application::setup(false, false, false, true, false);
+    ASSERT_TRUE(timer.start_timer(1u, dispatcher, areg::Timer::ONE_TIME));
+    ASSERT_TRUE(consumer.wait_count(timer, 1u));
+    ASSERT_TRUE(dispatcher.barrier());
+    EXPECT_EQ(consumer.count(timer), 1u);
+    EXPECT_FALSE(timer.is_active());
+}
+
 namespace
 {
     //!< The consumer of the timer deleted at process exit.

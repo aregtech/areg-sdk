@@ -53,12 +53,13 @@ namespace areg::os {
 // SyncWaitable class implementation
 //////////////////////////////////////////////////////////////////////////
 
-WaitablePosix::WaitablePosix( areg::os::SyncKind syncType )
+WaitablePosix::WaitablePosix( areg::os::SyncKind syncType, uint32_t initState /*= 0u*/ )
     : SyncObjectPosix ( syncType )
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
     , mWaiters        { nullptr }
-    , mWaitersLock    { }
 #endif
+    , mWaitersLock    { }
+    , mWaitState      { initState }
     , mValid          { true }
     , mWaitAllCount   { 0u }
 {
@@ -77,6 +78,11 @@ bool WaitablePosix::is_valid() const noexcept
 void WaitablePosix::free_resources()
 {
     mValid.store(false, std::memory_order_relaxed);
+
+    // Waits for a signal call that holds the signal lock.
+    mWaitersLock.lock();
+    mWaitersLock.unlock();
+
     SyncLockAndWaitPosix::event_remove(*this);
 }
 
@@ -105,8 +111,13 @@ void WaitablePosix::register_waiter( WaiterNode* node ) noexcept
 {
     mWaitersLock.lock();
 
-    node->mNext = mWaiters.load(std::memory_order_relaxed);
+    WaiterNode* const head{ mWaiters.load(std::memory_order_relaxed) };
+    node->mNext = head;
     mWaiters.store(node, std::memory_order_release);
+    if (head == nullptr)
+    {
+        mWaitState.fetch_or(STATE_WAIT_ANY, std::memory_order_acq_rel);
+    }
 
     mWaitersLock.unlock();
 }
@@ -118,7 +129,8 @@ void WaitablePosix::unregister_waiter( WaiterNode* node ) noexcept
     WaiterNode* head = mWaiters.load(std::memory_order_relaxed);
     if (head == node)
     {
-        mWaiters.store(node->mNext, std::memory_order_relaxed);
+        head = node->mNext;
+        mWaiters.store(head, std::memory_order_relaxed);
     }
     else
     {
@@ -134,27 +146,28 @@ void WaitablePosix::unregister_waiter( WaiterNode* node ) noexcept
         }
     }
 
+    if (head == nullptr)
+    {
+        mWaitState.fetch_and(~STATE_WAIT_ANY, std::memory_order_release);
+    }
+
     node->mNext = nullptr;
     mWaitersLock.unlock();
 }
 
-int32_t WaitablePosix::notify_any_waiters() noexcept
+int32_t WaitablePosix::notify_any_waiters( SignalLockPosix & signal ) noexcept
 {
-    return _notify_waiters(0u, can_signal_threads());
+    return _notify_waiters(0u, can_signal_threads(), signal);
 }
 
-int32_t WaitablePosix::notify_pulse_waiters( bool releaseAll ) noexcept
+int32_t WaitablePosix::notify_pulse_waiters( bool releaseAll, SignalLockPosix & signal ) noexcept
 {
-    return _notify_waiters(SYNC_FIRE_PULSE, releaseAll);
+    return _notify_waiters(SYNC_FIRE_PULSE, releaseAll, signal);
 }
 
-int32_t WaitablePosix::_notify_waiters( uint32_t mark, bool releaseAll ) noexcept
+int32_t WaitablePosix::_notify_waiters( uint32_t mark, bool releaseAll, SignalLockPosix & signal ) noexcept
 {
-    std::atomic<uint32_t>* toWake[areg::MAXIMUM_WAITING_OBJECTS];
-    int32_t wakeCount{ 0 };
     int32_t total{ 0 };
-
-    mWaitersLock.lock();
 
     WaiterNode* node{ mWaiters.load(std::memory_order_relaxed) };
     while (node != nullptr)
@@ -165,36 +178,51 @@ int32_t WaitablePosix::_notify_waiters( uint32_t mark, bool releaseAll ) noexcep
         uint32_t expected{ SYNC_FIRE_INVALID };
         if (node->mFiredWord->compare_exchange_strong(expected, node->mFiredValue | mark, std::memory_order_acq_rel, std::memory_order_relaxed))
         {
-            toWake[wakeCount++] = node->mFiredWord;
+            // Wakes a full batch under the lock.
+            if (signal.mWakeCount == areg::MAXIMUM_WAITING_OBJECTS)
+            {
+                signal._wake_marked();
+            }
+
+            signal.mWake[signal.mWakeCount ++] = node->mFiredWord;
+            ++ total;
             if (!releaseAll)
             {
                 break;
-            }
-
-            // Wakes a full batch under the lock.
-            if (wakeCount == areg::MAXIMUM_WAITING_OBJECTS)
-            {
-                for (int32_t i{ 0 }; i < wakeCount; ++i)
-                {
-                    _wake_one_waiter(toWake[i]);
-                }
-
-                total += wakeCount;
-                wakeCount = 0;
             }
         }
 
         node = next;
     }
 
-    mWaitersLock.unlock();
+    return total;
+}
 
-    for (int32_t i{ 0 }; i < wakeCount; ++i)
+//////////////////////////////////////////////////////////////////////////
+// SignalLockPosix class implementation
+//////////////////////////////////////////////////////////////////////////
+
+SignalLockPosix::~SignalLockPosix( ) noexcept
+{
+    mLock.unlock();
+    _wake_marked();
+}
+
+void SignalLockPosix::_wake_marked() noexcept
+{
+    for (int32_t i{ 0 }; i < mWakeCount; ++i)
     {
-        _wake_one_waiter(toWake[i]);
+        _wake_one_waiter(mWake[i]);
     }
 
-    return total + wakeCount;
+    mWakeCount = 0;
+}
+
+#else   // !(defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__))
+
+SignalLockPosix::~SignalLockPosix( ) noexcept
+{
+    mLock.unlock();
 }
 
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)

@@ -38,24 +38,32 @@ WaitableSemaphorePosix::WaitableSemaphorePosix(int32_t maxCount, int32_t initCou
 
 bool WaitableSemaphorePosix::release_semaphore() noexcept
 {
-    bool sendSignal = false;
-
-    do 
+    do
     {
         ObjectLockPosix lock(mObjectLock);
-        if (mCurCount < mMaxCount)
+        if (mCurCount >= mMaxCount)
+            return false;
+
+        // Without a registered waiter, the release is the last access to the semaphore.
+        if (!has_registered_waiters())
         {
             ++ mCurCount;
-            sendSignal  = true;
+            return true;
         }
     } while (false);
 
-    if (sendSignal)
+    SignalLockPosix signal(*this);
+    do
     {
-        SyncLockAndWaitPosix::event_signaled(*this);
-    }
+        ObjectLockPosix lock(mObjectLock);
+        if (mCurCount >= mMaxCount)
+            return false;
 
-    return sendSignal;
+        ++ mCurCount;
+    } while (false);
+
+    SyncLockAndWaitPosix::event_signaled(*this, signal);
+    return true;
 }
 
 bool WaitableSemaphorePosix::check_signaled(pthread_t /*contextThread*/) const

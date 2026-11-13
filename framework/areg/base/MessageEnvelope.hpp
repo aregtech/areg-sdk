@@ -636,16 +636,6 @@ protected:
      **/
     [[nodiscard]]
     uint32_t header_size() const noexcept final;
-
-//////////////////////////////////////////////////////////////////////////
-// Hidden helpers
-//////////////////////////////////////////////////////////////////////////
-private:
-    [[nodiscard]]
-    inline const areg::EventHeader& _header() const;
-
-    [[nodiscard]]
-    inline areg::EventHeader& _header();
 };
 
 inline MessageEnvelope::MessageEnvelope(uint16_t eventType, uint8_t prio, uint32_t reserveSize /*= 0*/, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
@@ -689,17 +679,6 @@ inline MessageEnvelope::MessageEnvelope(const uint8_t* buffer, uint32_t size, ui
 //////////////////////////////////////////////////////////////////////////
 // MessageEnvelope inline implementations
 //////////////////////////////////////////////////////////////////////////
-
-inline const areg::EventHeader& MessageEnvelope::_header() const
-{
-    return reinterpret_cast<const areg::EventHeader&>(*byte_buffer());
-}
-
-inline areg::EventHeader& MessageEnvelope::_header()
-{
-    ASSERT(mByteBuffer.get() != nullptr);
-    return reinterpret_cast<areg::EventHeader&>(*(mByteBuffer.get()));
-}
 
 //////////////////////////////////////////////////////////////////////////
 // Header bulk access

@@ -1070,3 +1070,31 @@ TEST(PropertyKeyTest, keys_without_section_match_by_wildcard_property)
     EXPECT_FALSE(file == prefix);
     EXPECT_FALSE(file == other);
 }
+
+/**
+ * \brief   A key assigned from a string is parsed like a key built from it; a value set from a
+ *          string replaces the value, the same as from a literal.
+ **/
+TEST(PropertyKeyTest, key_assigned_from_a_string_and_value_set_from_a_string_are_parsed)
+{
+    areg::PropertyKey key(str("log::*::scope::*"));
+    const areg::String text{ str("router::*::address::tcpip") };
+    key = text;
+    const areg::PropertyKey built(str("router::*::address::tcpip"));
+    EXPECT_TRUE(key.is_valid());
+    EXPECT_EQ(txt(key.section()), "router");
+    EXPECT_EQ(txt(key.property()), "address");
+    EXPECT_EQ(txt(key.position()), "tcpip");
+    EXPECT_EQ(key.key_type(), built.key_type());
+    EXPECT_EQ(txt(key.to_string()), txt(built.to_string()));
+
+    areg::PropertyValue value;
+    value.set_value(str("first"));
+    EXPECT_EQ(txt(value.as_string()), "first");
+    const areg::String next{ str("second") };
+    value.set_value(next);
+    EXPECT_EQ(txt(value.as_string()), "second");
+    areg::PropertyValue literal;
+    literal.set_value("second");
+    EXPECT_EQ(txt(literal.as_string()), txt(value.as_string()));
+}

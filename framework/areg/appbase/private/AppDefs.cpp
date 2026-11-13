@@ -116,10 +116,10 @@ AREG_API_IMPL const std::vector<areg::Identifier>   areg::LogScopePriorityIndent
 };
 
  //! Areg TCP/IP Multitarget Router Service name
-AREG_API_IMPL char areg::ROUTER_SERVICE_NAME_ASCII[]           { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+AREG_API_IMPL char areg::ROUTER_SERVICE_NAME_ASCII[]           { 'm', 't', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
 
 //! Areg TCP/IP Multitarget Router Service name
-AREG_API_IMPL wchar_t areg::ROUTER_SERVICE_NAME_WIDE[]         { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+AREG_API_IMPL wchar_t areg::ROUTER_SERVICE_NAME_WIDE[]         { 'm', 't', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
 
 //! Areg TCP/IP Log Collector Service name
 AREG_API_IMPL char areg::LOGGER_SERVICE_NAME_ASCII[]           { 'l', 'o', 'g', 'g', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };

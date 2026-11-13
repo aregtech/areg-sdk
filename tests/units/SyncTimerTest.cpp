@@ -22,6 +22,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
+#include <future>
 #include <memory>
 #include <thread>
 #include <vector>
@@ -548,6 +549,49 @@ TEST(SyncTimerTest, static_timer_after_main)
 }
 
 #endif  // GTEST_HAS_DEATH_TEST
+
+// A timer set by several threads at once stays one timer: it is signaled once by a cancel, and the
+// timers of the process keep firing and can be destroyed.
+TEST(SyncTimerTest, timer_set_by_several_threads_at_once_stays_one_timer)
+{
+    constexpr uint32_t THREADS{ 4u };
+    constexpr uint32_t ROUNDS { 20'000u };
+    areg::SyncTimer timer(NEVER_MS, false, true);
+    std::promise<void> go;
+    const std::shared_future<void> started{ go.get_future().share() };
+    std::atomic<uint32_t> failed{ 0u };
+    std::vector<std::thread> setters;
+    for (uint32_t i = 0u; i < THREADS; ++i)
+    {
+        setters.emplace_back([&timer, &failed, started]()
+            {
+                started.wait();
+                for (uint32_t round = 0u; round < ROUNDS; ++round)
+                {
+                    if (timer.set_timer() == false)
+                    {
+                        failed.fetch_add(1u);
+                    }
+                }
+            });
+    }
+
+    go.set_value();
+    for (std::thread & setter : setters)
+    {
+        setter.join();
+    }
+
+    EXPECT_EQ(failed.load(), 0u);
+    EXPECT_FALSE(timer.lock(areg::DO_NOT_WAIT));
+    EXPECT_TRUE(timer.cancel_timer());
+    EXPECT_TRUE(timer.lock(DEADLINE_MS));
+    EXPECT_FALSE(timer.lock(areg::DO_NOT_WAIT));
+
+    areg::SyncTimer other(1u, false, true);
+    ASSERT_TRUE(other.set_timer());
+    EXPECT_TRUE(other.lock(DEADLINE_MS));
+}
 
 #if defined(_POSIX) && !defined(__CYGWIN__)
 /**

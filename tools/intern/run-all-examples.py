@@ -87,6 +87,9 @@ GRACE_SECONDS = 15.0
 # Time given to the router to accept connections after it was started.
 ROUTER_READY_SECONDS = 10.0
 
+# Time given to a process with a 'ready' pattern to print it before the next one starts.
+READY_SECONDS = 30.0
+
 # Time given to a process to leave on its own after it was asked to quit.
 QUIT_SECONDS = 12.0
 
@@ -145,7 +148,7 @@ import areg_benchmarks
 
 
 def proc(binary, args=None, stdin=None, must_exit=True, expect=None, quit=None,
-         has_exit=True):
+         has_exit=True, ready=None):
     return {
         'bin': binary,
         'args': args or [],
@@ -154,6 +157,7 @@ def proc(binary, args=None, stdin=None, must_exit=True, expect=None, quit=None,
         'must_exit': must_exit,
         'has_exit': has_exit,
         'expect': expect or [],
+        'ready': ready,
     }
 
 
@@ -249,6 +253,9 @@ def _check_logobserver_db(outputs):
 # Readers that parse what the console displayed, replayed from the stream; a console
 # that draws at coordinates rewrites rows in place, so its stream is not a list of lines.
 SCREEN_MEASURES = {'datarate'}
+
+# The line 35_logsink prints once it is connected to the log collector.
+_SINK_READY = r'35_logsink: connected'
 
 
 SCENARIOS = [
@@ -397,33 +404,34 @@ SCENARIOS = [
      'procs': [proc('31_loclatency', args=['-t=cross', '-m=bc64,pp64', '-c=2000', '-w=200'],
                     expect=[r'cross\s+\|\s+bc64'])]},
     # Example 35 is built only with logging compiled in. 'full' may drop messages; the
-    # run fails when a missing message was not reported as dropped.
+    # run fails when a missing message was not reported as dropped. The source starts
+    # once the sink is connected: the collector forwards nothing to a later observer.
     {'name': '35_logfull_short', 'tier': 'ipc', 'timeout': 60, 'router': False,
      'check': _check_log_delivery,
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
-               proc('35_logsink', args=['-c=10100'], expect=[r'35 log trip']),
+               proc('35_logsink', args=['-c=10100'], expect=[r'35 log trip'], ready=_SINK_READY),
                proc('35_logsource', args=['-c=10000', '-w=100'], expect=[r'35 log call'])]},
     {'name': '35_logdb_short', 'tier': 'ipc', 'timeout': 60, 'router': False,
      'check': _check_log_delivery,
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
-               proc('35_logsink', args=['-c=2000', '-d=35_logdb_short.sqlog'], expect=[r'35 log trip']),
+               proc('35_logsink', args=['-c=2000', '-d=35_logdb_short.sqlog'], expect=[r'35 log trip'], ready=_SINK_READY),
                proc('35_logsource', args=['-c=2000', '-w=0'], expect=[r'35 log call'])]},
 
     # -- log scenarios of the coverage run: small counts, a killed process writes no counters
     {'name': '35_logfull_cov', 'tier': 'coverage', 'timeout': 60, 'router': False,
      'check': _check_log_delivery,
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
-               proc('35_logsink', args=['-c=2100'], expect=[r'35 log trip']),
+               proc('35_logsink', args=['-c=2100'], expect=[r'35 log trip'], ready=_SINK_READY),
                proc('35_logsource', args=['-c=2000', '-w=100'], expect=[r'35 log call'])]},
     {'name': '35_logpaced_cov', 'tier': 'coverage', 'timeout': 60, 'router': False,
      'check': _check_log_delivery,
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
-               proc('35_logsink', args=['-c=600'], expect=[r'35 log trip']),
+               proc('35_logsink', args=['-c=600'], expect=[r'35 log trip'], ready=_SINK_READY),
                proc('35_logsource', args=['-c=500', '-w=100', '-p=1'], expect=[r'35 log call'])]},
     {'name': '35_logdb_cov', 'tier': 'coverage', 'timeout': 60, 'router': False,
      'check': _check_log_delivery,
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
-               proc('35_logsink', args=['-c=2000', '-d=35_logdb_cov.sqlog'], expect=[r'35 log trip']),
+               proc('35_logsink', args=['-c=2000', '-d=35_logdb_cov.sqlog'], expect=[r'35 log trip'], ready=_SINK_READY),
                proc('35_logsource', args=['-c=2000', '-w=0'], expect=[r'35 log call'])]},
 
     # -- log observer scenarios of the coverage run
@@ -579,7 +587,7 @@ SCENARIOS = [
      'router': False,
      'check': _check_log_delivery,
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
-               proc('35_logsink', args=['-c=101000'], expect=[r'35 log trip']),
+               proc('35_logsink', args=['-c=101000'], expect=[r'35 log trip'], ready=_SINK_READY),
                proc('35_logsource', args=['-c=100000', '-w=1000'],
                     expect=[r'35 log call'])]},
 
@@ -587,7 +595,7 @@ SCENARIOS = [
      'router': False,
      'check': _check_log_delivery,
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
-               proc('35_logsink', args=['-c=5100'], expect=[r'35 log trip']),
+               proc('35_logsink', args=['-c=5100'], expect=[r'35 log trip'], ready=_SINK_READY),
                proc('35_logsource', args=['-c=5000', '-w=100', '-p=1'],
                     expect=[r'35 log call'])]},
 
@@ -596,7 +604,7 @@ SCENARIOS = [
      'router': False,
      'check': _check_log_delivery,
      'procs': [proc('logcollector', args=['--console'], must_exit=False, quit=['-q']),
-               proc('35_logsink', args=['-c=20000', '-d=35_logdb.sqlog'], expect=[r'35 log trip']),
+               proc('35_logsink', args=['-c=20000', '-d=35_logdb.sqlog'], expect=[r'35 log trip'], ready=_SINK_READY),
                proc('35_logsource', args=['-c=20000', '-w=0'], expect=[r'35 log call'])]},
 ]
 
@@ -1762,9 +1770,19 @@ def run_scenario(scenario, bin_dir, out_dir, timeout, router_bin, keep_logs, use
     try:
         for index, entry in enumerate(scenario['procs']):
             log = os.path.join(scenario_dir, '%d_%s.log' % (index, entry['bin']))
+            ready = entry.get('ready')
             runners.append(Runner(paths[index], entry['args'], entry['stdin'], log,
-                                  entry['quit'], use_pty))
-            if index + 1 < len(scenario['procs']):
+                                  entry['quit'], use_pty, live=(ready is not None)))
+            if index + 1 == len(scenario['procs']):
+                break
+            if ready is not None:
+                # The next process starts once this one printed that it is ready.
+                try:
+                    runners[-1].wait_output(ready, time.monotonic() + READY_SECONDS)
+                except AssertionError:
+                    result.fail('%s did not print %r within %d s'
+                                % (runners[-1].name, ready, int(READY_SECONDS)))
+            else:
                 time.sleep(1.0)      # let the provider register before the consumer looks it up
 
         soak = scenario.get('soak')

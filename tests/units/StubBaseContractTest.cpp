@@ -387,6 +387,30 @@ TEST_F(StubBaseContractTest, unblock_sessions_are_unique_consumed_once_and_resto
     EXPECT_FALSE(mStub.prepare_response(first));
 }
 
+/**
+ * \brief   The response of an unblocked request whose consumer was cleared reaches only the
+ *          subscribers of the response, not the consumer that asked.
+ **/
+TEST_F(StubBaseContractTest, unblocked_request_of_a_cleared_consumer_answers_only_the_subscribers)
+{
+    ASSERT_TRUE(mStub.add_notification_listener(RESPONSES[0], mSecond));
+    ASSERT_TRUE(mStub.begin_request(mFirst, 41));
+    const SessionID session = mStub.unblock_current_request();
+    ASSERT_NE(std::numeric_limits<SessionID>::max(), session);
+
+    IntegerArray removed;
+    mStub.clear_all_listeners(mFirst, removed);
+    EXPECT_TRUE(removed.is_empty());
+
+    ASSERT_TRUE(mStub.prepare_response(session));
+    ContractStub::StubListenerList listeners;
+    const auto response = mStub.prepare_response_event(RESPONSES[0], ResultType::RequestOK, 0, listeners);
+    ASSERT_TRUE(response.is_valid());
+    ASSERT_EQ(1u, listeners.size());
+    EXPECT_TRUE(listeners[0].proxy_matches(mSecond));
+    EXPECT_TRUE(mStub.exist(RESPONSES[0], mSecond));
+}
+
 TEST_F(StubBaseContractTest, unblocking_one_request_preserves_subscriptions_and_other_responses)
 {
     ASSERT_TRUE(mStub.add_notification_listener(RESPONSES[0], mSecond));
@@ -747,4 +771,19 @@ TEST_F(StubBaseContractTest, session_ids_skip_the_invalid_id_and_open_sessions_a
     const auto targets = mStub.respond();
     ASSERT_EQ(1u, targets.size());
     EXPECT_EQ(41u, targets[0].mSequenceNr);
+}
+
+TEST(StubBaseListenerTest, listener_of_a_message_has_no_sequence_flags_or_consumer)
+{
+    const ContractStub::Listener listener(REQUESTS[0]);
+    EXPECT_EQ(REQUESTS[0], listener.mMessageId);
+    EXPECT_EQ(0u, listener.mFlags);
+    EXPECT_EQ(0u, listener.mSequenceNr);
+
+    const ContractStub::Listener sameSequence(REQUESTS[0], 0u);
+    EXPECT_TRUE(listener == sameSequence);
+    const ContractStub::Listener otherSequence(REQUESTS[0], 5u);
+    EXPECT_FALSE(listener == otherSequence);
+    const ContractStub::Listener anySequence(REQUESTS[0], SEQUENCE_NUMBER_ANY);
+    EXPECT_TRUE(listener == anySequence);
 }

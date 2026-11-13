@@ -479,3 +479,21 @@ TEST(ThreadTest, PriorityNamesAreDistinctAndInvalidValueIsReported)
     EXPECT_STREQ(areg::Thread::as_string(static_cast<Prio>(outside)), "ERR: Invalid Thread::ThreadPriority value!");
     static_assert(areg::Thread::as_string(Prio::Normal)[0] == 'T', "constexpr name");
 }
+
+/**
+ * \brief   Each exit code of a thread consumer has its name, and a value outside the codes is reported.
+ **/
+TEST(ThreadTest, exit_codes_of_a_consumer_have_their_names)
+{
+    using Code = areg::ThreadConsumer::ExitCode;
+    Code code{ Code::NoParam };
+    EXPECT_STREQ(areg::ThreadConsumer::as_string(code), "ThreadConsumer::NoParam");
+    code = Code::Terminated;
+    EXPECT_STREQ(areg::ThreadConsumer::as_string(code), "ThreadConsumer::Terminated");
+    code = Code::Normal;
+    EXPECT_STREQ(areg::ThreadConsumer::as_string(code), "ThreadConsumer::Normal");
+    code = Code::Error;
+    EXPECT_STREQ(areg::ThreadConsumer::as_string(code), "ThreadConsumer::Error");
+    code = static_cast<Code>(7);
+    EXPECT_STREQ(areg::ThreadConsumer::as_string(code), "ERR: Unexpected value of type ThreadConsumer::ExitCode");
+}

@@ -736,6 +736,30 @@ namespace
         console.quit();
     }
 
+    void scenario_system_notices_to_the_collector()
+    {
+        PrivateConfig config(SERVICE);
+        ConsoleSession console(config);
+        LogPeer source(config, areg::MessageSource::SourceClient);
+        LogPeer observer(config, areg::MessageSource::SourceObserver);
+
+        // An instance list and a duplicate notice sent to the collector reach nobody.
+        for (const areg::EventHeader& header : { areg::message_notify_instances(), areg::message_duplicate_notify() })
+        {
+            areg::MessageEnvelope notice;
+            AREG_CHILD_CHECK(notice.init_envelope(header) != nullptr);
+            notice.set_source(static_cast<uint32_t>(source.cookie));
+            notice.set_target(static_cast<uint32_t>(areg::COOKIE_LOGGER));
+            source.send(notice);
+        }
+
+        observer.send(areg::message_query_instances(observer.cookie, areg::COOKIE_LOGGER));
+        const Received answer = observer.next();
+        check_request(answer, areg::FuncIdRange::SystemServiceNotifyInstances, areg::COOKIE_LOGGER, observer.cookie);
+        AREG_CHILD_CHECK(parse_notice(answer).connected.size() == 1u);
+        console.quit();
+    }
+
 #if AREG_LOGGING
 
     void scenario_log_rows()
@@ -789,6 +813,45 @@ namespace
             }
         }
 
+        console.quit();
+    }
+
+    void scenario_slow_observer()
+    {
+        constexpr uint32_t ROWS{ 60'000u };
+        constexpr char NOTICE[]{ "The log collector dropped " };
+        PrivateConfig config(SERVICE);
+        ConsoleSession console(config);
+        LogPeer source(config, areg::MessageSource::SourceClient);
+        LogPeer observer(config, areg::MessageSource::SourceObserver);
+
+        // The observer reads nothing while the source sends far more than a send buffer holds.
+        const std::string text(areg::LOG_MSG_SIZE - 1u, 'r');
+        for (uint32_t i = 0u; i < ROWS; ++i)
+        {
+            source.send(row_message(source, text));
+        }
+
+        // Every row is either delivered or counted in a notice of the collector.
+        uint64_t delivered{ 0u };
+        uint64_t dropped{ 0u };
+        while (delivered + dropped < ROWS)
+        {
+            const Received row = observer.wait_for(areg::FuncIdRange::ServiceLogMessage);
+            if (row.header.source == static_cast<uint32_t>(source.cookie))
+            {
+                ++delivered;
+                continue;
+            }
+
+            AREG_CHILD_CHECK(row.header.source == static_cast<uint32_t>(areg::COOKIE_LOGGER));
+            const std::string notice{ row_text(row) };
+            AREG_CHILD_CHECK(notice.rfind(NOTICE, 0) == 0);
+            dropped += std::stoull(notice.substr(sizeof(NOTICE) - 1u));
+        }
+
+        AREG_CHILD_CHECK(dropped > 0u);
+        AREG_CHILD_CHECK(delivered + dropped == ROWS);
         console.quit();
     }
 
@@ -1342,6 +1405,11 @@ TEST(LogCollectorServiceTest, spoofed_and_observer_scope_messages_are_ignored)
     AREG_EXPECT_IN_CHILD(scenario_misaddressed_messages());
 }
 
+TEST(LogCollectorServiceTest, instance_list_and_duplicate_notice_sent_to_the_collector_reach_nobody)
+{
+    AREG_EXPECT_IN_CHILD(scenario_system_notices_to_the_collector());
+}
+
 TEST(LogCollectorServiceTest, console_scope_and_query_commands_reach_sources)
 {
     AREG_EXPECT_IN_CHILD(scenario_console_scope_commands());
@@ -1382,6 +1450,11 @@ TEST(LogCollectorDatabaseTest, unusable_path_is_refused_and_input_is_ignored_whi
 TEST(LogCollectorServiceTest, log_rows_reach_every_observer_complete_and_in_order)
 {
     AREG_EXPECT_IN_CHILD(scenario_log_rows());
+}
+
+TEST(LogCollectorServiceTest, observer_that_reads_too_slowly_is_told_how_many_rows_it_missed)
+{
+    AREG_EXPECT_IN_CHILD(scenario_slow_observer());
 }
 
 TEST(LogCollectorServiceTest, console_save_records_instances_scopes_and_rows)

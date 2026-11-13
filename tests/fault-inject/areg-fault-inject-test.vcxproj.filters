@@ -29,6 +29,12 @@
     <ClCompile Include="fault_inject_alloc_sweep_test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fault_inject_posix_sync_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fault_inject_win32_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\framework\logcollector\service\private\LogCollectorDatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -50,6 +56,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FaultInject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FaultSocketPair.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

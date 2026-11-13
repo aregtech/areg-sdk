@@ -924,6 +924,43 @@ TEST( FileTest, delete_flag_removes_file_on_close )
     }
 }
 
+/**
+ * \brief   Removing an open file that is deleted on close succeeds and leaves no file.
+ **/
+TEST( FileTest, remove_of_a_file_opened_for_delete_succeeds )
+{
+    TempFolder tmp;
+    const areg::String path{ tmp.path( "remove-delete.bin" ) };
+    areg::File file( path, mode_of( OpenMode::Write, OpenMode::Create, OpenMode::Delete ) );
+    ASSERT_TRUE( file.open( ) );
+    EXPECT_TRUE( file.remove( ) );
+    EXPECT_FALSE( areg::File::has_file( path ) );
+    EXPECT_FALSE( file.is_opened( ) );
+}
+
+/**
+ * \brief   A temporary file is created, keeps the data while it is open and is deleted on close.
+ **/
+TEST( FileTest, temporary_file_is_deleted_when_it_is_closed )
+{
+    TempFolder tmp;
+    areg::File file( tmp.path( "tempXXXXXX" ), mode_of( OpenMode::CreateTemp ) );
+    ASSERT_TRUE( file.open( ) );
+    EXPECT_TRUE( file.is_temporary( ) );
+    const areg::String name{ file.name( ) };
+    EXPECT_TRUE( areg::File::has_file( name ) );
+
+    const uint8_t data[4]{ 1u, 2u, 3u, 4u };
+    ASSERT_EQ( file.write( data, sizeof( data ) ), static_cast<uint32_t>(sizeof( data )) );
+    EXPECT_TRUE( file.move_to_begin( ) );
+    uint8_t read[4]{ };
+    ASSERT_EQ( file.read( read, sizeof( read ) ), static_cast<uint32_t>(sizeof( read )) );
+    EXPECT_EQ( read[3], 4u );
+
+    file.close( );
+    EXPECT_FALSE( areg::File::has_file( name ) );
+}
+
 #ifdef POSIX
 /**
  * \brief   A temporary file is created from a name template and gets the unique name.

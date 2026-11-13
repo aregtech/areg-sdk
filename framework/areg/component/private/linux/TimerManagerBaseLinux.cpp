@@ -19,6 +19,7 @@
 
 #include "areg/component/private/TimerManagerBase.hpp"
 #include "areg/component/ExitEvent.hpp"
+#include "areg/logging/areg_log.h"
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 #include <unistd.h>
@@ -26,6 +27,8 @@
 #include <cstdint>
 
 namespace areg {
+
+DEF_LOG_SCOPE(areg_component_private_TimerManagerBase, run_dispatcher);
 
 bool TimerManagerBase::post_event(Event& eventElem)
 {
@@ -62,7 +65,9 @@ bool TimerManagerBase::run_dispatcher()
 
     if ((mEpollFd < 0) || (mCommandFd < 0) || (mExitFd < 0))
     {
+        // Releases the waiter of start_manager_thread() without the ready state.
         _close_descriptors();
+        mEventStarted.set_signaled();
         return false;
     }
 
@@ -86,10 +91,13 @@ bool TimerManagerBase::run_dispatcher()
         const int n = ::epoll_wait(mEpollFd, events, 32, -1);
         if (n < 0)
         {
-            if (errno == EINTR)
+            const int error{ errno };
+            if (error == EINTR)
                 continue;   // interrupted by signal, retry
 
-            break;          // unexpected error, treat as exit
+            LOG_SCOPE(areg_component_private_TimerManagerBase, run_dispatcher);
+            LOG_ERR("The wait of the thread [ %s ] failed with error [ %d ], the thread stops with its timers", name().as_string(), error);
+            break;
         }
 
         for (int i = 0; (i < n) && !exitRequested; ++i)
@@ -138,7 +146,7 @@ bool TimerManagerBase::run_dispatcher()
     ready_for_events(false);
     remove_all_events();
 
-    return true;
+    return exitRequested;
 }
 
 void TimerManagerBase::stop_manager_thread(bool waitComplete)

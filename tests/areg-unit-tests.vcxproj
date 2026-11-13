@@ -126,6 +126,7 @@
     <ClCompile Include="units\StringTest.cpp" />
     <ClCompile Include="units\StringUtilsTest.cpp" />
     <ClCompile Include="units\SyncTimerTest.cpp" />
+    <ClCompile Include="units\SimpleEventTest.cpp" />
     <ClCompile Include="units\ThreadTest.cpp" />
     <ClCompile Include="units\ThreadLifecycleCoverageTest.cpp" />
     <ClInclude Include="units\LogCapture.hpp" />
@@ -190,6 +191,7 @@
     <ClCompile Include="units\ServiceCommServerTest.cpp" />
     <ClCompile Include="units\ServiceDefsTest.cpp" />
     <ClCompile Include="units\ServiceApplicationBaseTest.cpp" />
+    <ClCompile Include="units\WindowsServiceTest.cpp" />
     <ClCompile Include="units\SystemServiceBaseTest.cpp" />
     <ClCompile Include="units\SystemServiceDefsTest.cpp" />
     <ClCompile Include="units\UtilityDefsTest.cpp" />

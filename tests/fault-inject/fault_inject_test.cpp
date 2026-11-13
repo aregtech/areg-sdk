@@ -19,6 +19,7 @@
  ************************************************************************/
 #include "units/ChildProcess.hpp"
 #include "fault-inject/FaultInject.hpp"
+#include "fault-inject/FaultSocketPair.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
@@ -39,6 +40,10 @@
     #include "areglogger/client/LogObserverApi.h"
     #include "areglogger/client/private/LoggerClient.hpp"
     #include "logcollector/service/private/LogCollectorDatabase.hpp"
+    #include "aregextend/db/LogDbWriter.hpp"
+    #include "aregextend/db/LogSqliteDatabase.hpp"
+
+    #include <atomic>
 
     #include <filesystem>
     #include <string>
@@ -84,10 +89,20 @@ namespace
     constexpr int THREAD_ERROR  { 8 };      // ERROR_NOT_ENOUGH_MEMORY
     constexpr int SOCKET_ERROR_ { 10024 };  // WSAEMFILE
     constexpr int FILE_ERROR    { 4 };      // ERROR_TOO_MANY_OPEN_FILES
+    [[maybe_unused]] constexpr int REFUSED_ERROR { 10061 };  // WSAECONNREFUSED
+    [[maybe_unused]] constexpr int RESET_ERROR   { 10054 };  // WSAECONNRESET
+    [[maybe_unused]] constexpr int IN_USE_ERROR  { 10048 };  // WSAEADDRINUSE
+    [[maybe_unused]] constexpr int WRITE_ERROR   { 112 };    // ERROR_DISK_FULL
+    [[maybe_unused]] constexpr int READ_ERROR    { 30 };     // ERROR_READ_FAULT
 #else   // defined(_WIN32)
     constexpr int THREAD_ERROR  { EAGAIN };
     constexpr int SOCKET_ERROR_ { EMFILE };
     constexpr int FILE_ERROR    { EMFILE };
+    [[maybe_unused]] constexpr int REFUSED_ERROR { ECONNREFUSED };
+    [[maybe_unused]] constexpr int RESET_ERROR   { ECONNRESET };
+    [[maybe_unused]] constexpr int IN_USE_ERROR  { EADDRINUSE };
+    [[maybe_unused]] constexpr int WRITE_ERROR   { ENOSPC };
+    [[maybe_unused]] constexpr int READ_ERROR    { EIO };
 #endif  // defined(_WIN32)
 
     //!< A thread routine that returns at once.
@@ -209,82 +224,25 @@ TEST( FaultInjectTest, router_service_start_fails_when_the_process_list_and_the_
 
 #endif  // !defined(_WIN32)
 
-#if defined(__linux__)
-
-namespace
-{
-    //!< A listening TCP socket on the loopback address with a port chosen by the system.
-    struct Listener
-    {
-        int         handle  { -1 };
-        uint16_t    port    { 0u };
-
-        bool open( )
-        {
-            handle = ::socket( AF_INET, SOCK_STREAM, 0 );
-            if ( handle < 0 )
-                return false;
-
-            sockaddr_in addr{ };
-            addr.sin_family      = AF_INET;
-            addr.sin_addr.s_addr = htonl( INADDR_LOOPBACK );
-            addr.sin_port        = 0;
-            socklen_t len{ sizeof( addr ) };
-            if ( ( ::bind( handle, reinterpret_cast<sockaddr *>(&addr), sizeof( addr ) ) != 0 )
-              || ( ::listen( handle, 4 ) != 0 )
-              || ( ::getsockname( handle, reinterpret_cast<sockaddr *>(&addr), &len ) != 0 ) )
-            {
-                return false;
-            }
-
-            port = ntohs( addr.sin_port );
-            return true;
-        }
-
-        ~Listener( )
-        {
-            if ( handle >= 0 )
-                ::close( handle );
-        }
-    };
-
-    //!< Connects a client to the listener and accepts it. The sockets are plain descriptors.
-    bool connect_pair( Listener & listener, SOCKETHANDLE & client, SOCKETHANDLE & server )
-    {
-        client = areg::socket_create( );
-        if ( areg::is_valid_socket( client ) == false )
-            return false;
-
-        sockaddr_in addr{ };
-        addr.sin_family      = AF_INET;
-        addr.sin_addr.s_addr = htonl( INADDR_LOOPBACK );
-        addr.sin_port        = htons( listener.port );
-        if ( ::connect( static_cast<int>(client), reinterpret_cast<sockaddr *>(&addr), sizeof( addr ) ) != 0 )
-            return false;
-
-        const int accepted{ ::accept( listener.handle, nullptr, nullptr ) };
-        server = static_cast<SOCKETHANDLE>(accepted);
-        return accepted >= 0;
-    }
-}
+#if defined(__linux__) || defined(_WIN32)
 
 TEST( FaultInjectTest, client_connect_fails_and_a_new_client_connects_when_the_system_refuses )
 {
     AREG_EXPECT_IN_CHILD(
-        Listener listener;
+        fault_test::LoopListener listener;
         AREG_CHILD_CHECK( listener.open( ) );
         AREG_CHILD_CHECK( areg::socket_initialize( ) );
 
         areg_fault::FaultScope faults;
-        areg::SocketClient refused;
-        AREG_CHILD_CHECK( refused.create( "127.0.0.1", listener.port ) );
-        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketConnect, ECONNREFUSED ) );
+        areg::SocketClient refused( "127.0.0.1", listener.address.host_port( ) );
+        AREG_CHILD_CHECK( refused.create_fd( ) );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketConnect, REFUSED_ERROR ) );
         AREG_CHILD_CHECK( refused.connect_to( ) == false );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketConnect ) == 1u && NOT_REPLACED );
         refused.close( );
 
-        areg::SocketClient client;
-        AREG_CHILD_CHECK( client.create( "127.0.0.1", listener.port ) );
+        areg::SocketClient client( "127.0.0.1", listener.address.host_port( ) );
+        AREG_CHILD_CHECK( client.create_fd( ) );
         AREG_CHILD_CHECK( client.connect_to( ) );
         client.close( );
         areg::socket_release( );
@@ -294,18 +252,17 @@ TEST( FaultInjectTest, client_connect_fails_and_a_new_client_connects_when_the_s
 TEST( FaultInjectTest, send_data_reports_an_error_and_a_later_send_succeeds_when_the_system_refuses )
 {
     AREG_EXPECT_IN_CHILD(
-        Listener listener;
-        AREG_CHILD_CHECK( listener.open( ) );
+        fault_test::LoopPair pair;
+        AREG_CHILD_CHECK( pair.open( ) );
         AREG_CHILD_CHECK( areg::socket_initialize( ) );
-        SOCKETHANDLE client{ areg::InvalidSocketHandle };
-        SOCKETHANDLE server{ areg::InvalidSocketHandle };
-        AREG_CHILD_CHECK( connect_pair( listener, client, server ) );
+        const SOCKETHANDLE client{ pair.client };
+        const SOCKETHANDLE server{ pair.server };
 
         areg_fault::FaultScope faults;
         uint8_t data[4]{ };
         data[0] = 1u;
         data[3] = 4u;
-        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, ECONNRESET ) );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, RESET_ERROR ) );
         AREG_CHILD_CHECK( areg::send_data( client, data, sizeof( data ) ) < 0 );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u && NOT_REPLACED );
 
@@ -314,8 +271,7 @@ TEST( FaultInjectTest, send_data_reports_an_error_and_a_later_send_succeeds_when
         AREG_CHILD_CHECK( areg::receive_data( server, received, sizeof( received ) ) == static_cast<int32_t>(sizeof( received )) );
         AREG_CHILD_CHECK( received[0] == 1u && received[3] == 4u );
 
-        areg::socket_close( client );
-        areg::socket_close( server );
+        pair.close( );
         areg::socket_release( );
     );
 }
@@ -323,12 +279,11 @@ TEST( FaultInjectTest, send_data_reports_an_error_and_a_later_send_succeeds_when
 TEST( FaultInjectTest, receive_data_reports_an_error_and_the_next_receive_gets_the_data_when_the_system_refuses )
 {
     AREG_EXPECT_IN_CHILD(
-        Listener listener;
-        AREG_CHILD_CHECK( listener.open( ) );
+        fault_test::LoopPair pair;
+        AREG_CHILD_CHECK( pair.open( ) );
         AREG_CHILD_CHECK( areg::socket_initialize( ) );
-        SOCKETHANDLE client{ areg::InvalidSocketHandle };
-        SOCKETHANDLE server{ areg::InvalidSocketHandle };
-        AREG_CHILD_CHECK( connect_pair( listener, client, server ) );
+        const SOCKETHANDLE client{ pair.client };
+        const SOCKETHANDLE server{ pair.server };
 
         uint8_t data[4]{ };
         data[0] = 5u;
@@ -336,7 +291,7 @@ TEST( FaultInjectTest, receive_data_reports_an_error_and_the_next_receive_gets_t
         AREG_CHILD_CHECK( areg::send_data( client, data, sizeof( data ) ) == static_cast<int32_t>(sizeof( data )) );
 
         areg_fault::FaultScope faults;
-        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketRecv, ECONNRESET ) );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketRecv, RESET_ERROR ) );
         uint8_t received[4]{ };
         AREG_CHILD_CHECK( areg::receive_data( server, received, sizeof( received ) ) < 0 );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketRecv ) == 1u && NOT_REPLACED );
@@ -344,8 +299,7 @@ TEST( FaultInjectTest, receive_data_reports_an_error_and_the_next_receive_gets_t
         AREG_CHILD_CHECK( areg::receive_data( server, received, sizeof( received ) ) == static_cast<int32_t>(sizeof( received )) );
         AREG_CHILD_CHECK( received[0] == 5u && received[3] == 8u );
 
-        areg::socket_close( client );
-        areg::socket_close( server );
+        pair.close( );
         areg::socket_release( );
     );
 }
@@ -355,15 +309,15 @@ TEST( FaultInjectTest, server_create_fails_and_a_new_server_binds_when_bind_is_r
     AREG_EXPECT_IN_CHILD(
         uint16_t port{ 0u };
         {
-            Listener probe;
+            fault_test::LoopListener probe;
             AREG_CHILD_CHECK( probe.open( ) );
-            port = probe.port;
+            port = probe.address.host_port( );
         }
 
         AREG_CHILD_CHECK( areg::socket_initialize( ) );
         areg_fault::FaultScope faults;
         areg::SocketServer refused;
-        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketBind, EADDRINUSE ) );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketBind, IN_USE_ERROR ) );
         AREG_CHILD_CHECK( refused.create( "127.0.0.1", port ) == false );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketBind ) == 1u && NOT_REPLACED );
         AREG_CHILD_CHECK( refused.is_valid( ) == false );
@@ -380,22 +334,45 @@ TEST( FaultInjectTest, server_listen_fails_and_a_second_listen_succeeds_when_lis
     AREG_EXPECT_IN_CHILD(
         uint16_t port{ 0u };
         {
-            Listener probe;
+            fault_test::LoopListener probe;
             AREG_CHILD_CHECK( probe.open( ) );
-            port = probe.port;
+            port = probe.address.host_port( );
         }
 
         AREG_CHILD_CHECK( areg::socket_initialize( ) );
         areg_fault::FaultScope faults;
         areg::SocketServer server;
         AREG_CHILD_CHECK( server.create( "127.0.0.1", port ) );
-        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketListen, EADDRINUSE ) );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketListen, IN_USE_ERROR ) );
         AREG_CHILD_CHECK( server.listen( 4 ) == false );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketListen ) == 1u && NOT_REPLACED );
         AREG_CHILD_CHECK( server.listen( 4 ) );
         server.close( );
         areg::socket_release( );
     );
+}
+
+#endif  // defined(__linux__) || defined(_WIN32)
+
+#if defined(__linux__)
+
+namespace
+{
+    //!< A free loopback port chosen by the system.
+    struct Listener
+    {
+        uint16_t    port    { 0u };
+
+        bool open( )
+        {
+            fault_test::LoopListener listener;
+            if ( listener.open( ) == false )
+                return false;
+
+            port = listener.address.host_port( );
+            return true;
+        }
+    };
 }
 
 namespace
@@ -681,6 +658,10 @@ TEST( FaultInjectTest, multiplexer_register_fails_and_leaves_the_socket_unregist
     );
 }
 
+#endif  // defined(__linux__)
+
+#if defined(__linux__) || defined(_WIN32)
+
 TEST( FaultInjectTest, file_write_reports_no_bytes_and_a_later_write_succeeds_when_write_fails )
 {
     AREG_EXPECT_IN_CHILD(
@@ -691,7 +672,7 @@ TEST( FaultInjectTest, file_write_reports_no_bytes_and_a_later_write_succeeds_wh
         data[0] = 1u;
 
         areg_fault::FaultScope faults;
-        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::FileWrite, ENOSPC ) );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::FileWrite, WRITE_ERROR ) );
         AREG_CHILD_CHECK( file.write( data, sizeof( data ) ) == 0 );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::FileWrite ) == 1u && NOT_REPLACED );
         AREG_CHILD_CHECK( file.write( data, sizeof( data ) ) == static_cast<int32_t>(sizeof( data )) );
@@ -719,7 +700,7 @@ TEST( FaultInjectTest, file_read_reports_no_bytes_and_a_later_read_returns_the_d
         AREG_CHILD_CHECK( file.open( "fault_inject_read.txt", rmode ) );
         uint8_t in[4]{ };
         areg_fault::FaultScope faults;
-        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::FileRead, EIO ) );
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::FileRead, READ_ERROR ) );
         AREG_CHILD_CHECK( file.read( in, sizeof( in ) ) == 0 );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::FileRead ) == 1u && NOT_REPLACED );
         AREG_CHILD_CHECK( file.read( in, sizeof( in ) ) == static_cast<int32_t>(sizeof( in )) );
@@ -729,6 +710,9 @@ TEST( FaultInjectTest, file_read_reports_no_bytes_and_a_later_read_returns_the_d
     );
 }
 
+#endif  // defined(__linux__) || defined(_WIN32)
+
+#if defined(__linux__)
 
 //////////////////////////////////////////////////////////////////////////
 // The console of aregextend.
@@ -927,7 +911,7 @@ namespace
                                   | static_cast<uint32_t>(areg::FileBase::OpenMode::Binary) };
 }
 
-//!< A search whose window cannot be allocated finds nothing; the next search finds the data.
+//!< A search of data, text or wide text whose window cannot be allocated finds nothing; the next search finds it.
 TEST( FaultInjectTest, file_search_finds_nothing_when_its_window_cannot_be_allocated )
 {
     AREG_EXPECT_IN_CHILD(
@@ -936,17 +920,22 @@ TEST( FaultInjectTest, file_search_finds_nothing_when_its_window_cannot_be_alloc
         constexpr char text[]{ "alpha-beta-gamma" };
         constexpr uint32_t length{ static_cast<uint32_t>(sizeof( text ) - 1u) };
         AREG_CHILD_CHECK( file.write( reinterpret_cast<const uint8_t *>(text), length ) == length );
+        constexpr char16_t wide[]{ u"zeta" };
+        constexpr uint32_t wideLength{ static_cast<uint32_t>(sizeof( wide ) - sizeof( char16_t )) };
+        AREG_CHILD_CHECK( file.write( reinterpret_cast<const uint8_t *>(wide), wideLength ) == wideLength );
         const uint8_t * beta{ reinterpret_cast<const uint8_t *>("beta") };
         {
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
             AREG_CHILD_CHECK( file.search_data( 0u, beta, 4u ) == areg::Cursor::INVALID_CURSOR_POSITION );
             AREG_CHILD_CHECK( file.search_text( 0u, "gamma", true ) == areg::Cursor::INVALID_CURSOR_POSITION );
-            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) >= 2u && NOT_REPLACED );
+            AREG_CHILD_CHECK( file.search_text( 0u, L"zeta", true ) == areg::Cursor::INVALID_CURSOR_POSITION );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) >= 3u && NOT_REPLACED );
         }
 
         AREG_CHILD_CHECK( file.search_data( 0u, beta, 4u ) == 6u );
         AREG_CHILD_CHECK( file.search_text( 0u, "gamma", true ) == 11u );
+        AREG_CHILD_CHECK( file.search_text( 0u, L"zeta", true ) == length );
     );
 }
 
@@ -1514,6 +1503,123 @@ TEST( FaultInjectTest, log_observer_database_is_closed_when_its_writer_thread_ca
         remove_private_directory( file );
     );
 }
+
+#if defined(AREG_FAULT_ALLOC_TESTS)
+
+/**
+ * \brief   The writer of a log database cannot allocate the record of a task or of a marker. The task
+ *          is refused and never runs, the marker gets no identifier, the writer keeps running, and
+ *          the next marker gets the identifier after the last one given.
+ **/
+TEST( FaultInjectTest, log_database_writer_refuses_a_task_or_marker_it_cannot_store_and_keeps_running )
+{
+    AREG_EXPECT_IN_CHILD(
+        const std::filesystem::path file{ private_database( "queue.sqlog" ) };
+        {
+            areg::ext::LogSqliteDatabase database;
+            AREG_CHILD_CHECK( database.connect( areg::String( file.string( ).c_str( ) ), areg::DatabaseRole::Recorder ) );
+            areg::ext::LogDbWriter writer( database );
+            AREG_CHILD_CHECK( writer.start( 0u ) );
+
+            areg::LogEntry entry{ areg::LogMessageType::MessageText };
+            entry.logMessagePrio = areg::LogPriority::PrioInfo;
+            entry.logCookie      = 77u;
+            const uint32_t row{ writer.queue_log( areg::create_log_message( entry, areg::LogDataType::Remote, 77u ) ) };
+            AREG_CHILD_CHECK( row != 0u );
+
+            const areg::String author( "author" );
+            const areg::String note( "note" );
+            const uint32_t first{ writer.queue_marker( row, areg::LogPriority::PrioMarkerInfo, author, note ) };
+            AREG_CHILD_CHECK( first != 0u );
+
+            std::atomic<uint32_t> ran{ 0u };
+            areg::ext::LogDbWriter::Task task{ [&ran]( areg::ext::LogSqliteDatabase & /*db*/ ) { ran.fetch_add( 1u ); } };
+            {
+                areg_fault::FaultScope faults;
+                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+                AREG_CHILD_CHECK( writer.queue_task( std::move( task ) ) == false );
+                AREG_CHILD_CHECK( writer.queue_marker( row, areg::LogPriority::PrioMarkerInfo, author, note ) == 0u );
+                AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 2u );
+            }
+
+            AREG_CHILD_CHECK( writer.queue_marker( row, areg::LogPriority::PrioMarkerInfo, author, note ) == first + 1u );
+            AREG_CHILD_CHECK( writer.queue_task( [&ran]( areg::ext::LogSqliteDatabase & /*db*/ ) { ran.fetch_add( 10u ); } ) );
+            writer.stop( );
+            AREG_CHILD_CHECK( ran.load( ) == 10u );
+            database.disconnect( );
+        }
+
+        remove_private_directory( file );
+    );
+}
+
+namespace
+{
+    //!< Writes one log row in a transaction; returns true if the row is saved with the next identifier.
+    bool write_one_row( areg::ext::LogSqliteDatabase & database )
+    {
+        const uint32_t before{ database.max_log_id( ) };
+        areg::LogEntry entry{ areg::LogMessageType::MessageText };
+        entry.logMessagePrio = areg::LogPriority::PrioInfo;
+        entry.logCookie      = 1u;
+        bool result{ database.begin( ) };
+        result = result && database.log_message( entry );
+        return database.commit( result ) && result && ( database.max_log_id( ) == before + 1u );
+    }
+}
+
+/**
+ * \brief   A writing connection of a log database whose background checkpoint cannot be allocated or
+ *          whose thread cannot start: each allocation of the connection fails in turn, then the thread.
+ *          A connection that succeeds saves rows, the commits checkpoint themselves.
+ **/
+TEST( FaultInjectTest, log_database_whose_checkpoint_cannot_start_connects_and_saves_rows )
+{
+    AREG_EXPECT_IN_CHILD(
+        warm_up_threads( );
+        const std::filesystem::path file{ private_database( "checkpoint.sqlog" ) };
+        const areg::String path( file.string( ).c_str( ) );
+        bool finished{ false };
+        uint32_t refused{ 0u };
+        for ( uint32_t skip = 0u; ( skip < 64u ) && ( finished == false ); ++ skip )
+        {
+            areg::ext::LogSqliteDatabase database;
+            bool connected{ false };
+            uint32_t failed{ 0u };
+            {
+                areg_fault::FaultScope faults;
+                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+                connected = database.connect( path, areg::DatabaseRole::Recorder );
+                failed = areg_fault::failed( areg_fault::FaultPoint::Allocation );
+            }
+
+            finished = ( failed == 0u );
+            refused += ( failed != 0u ) ? 1u : 0u;
+            AREG_CHILD_CHECK( connected );
+            AREG_CHILD_CHECK( write_one_row( database ) );
+            database.disconnect( );
+        }
+
+        AREG_CHILD_CHECK( finished );
+        AREG_CHILD_CHECK( refused != 0u );
+        {
+            areg::ext::LogSqliteDatabase database;
+            {
+                areg_fault::FaultScope faults;
+                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, THREAD_ERROR ) );
+                AREG_CHILD_CHECK( database.connect( path, areg::DatabaseRole::Recorder ) );
+                AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u && NOT_REPLACED );
+            }
+
+            AREG_CHILD_CHECK( write_one_row( database ) );
+            database.disconnect( );
+        }
+
+        remove_private_directory( file );
+    );
+}
+
+#endif  // defined(AREG_FAULT_ALLOC_TESTS)
 
 #endif  // AREG_LOGGING
 

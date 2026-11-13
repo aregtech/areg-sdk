@@ -289,3 +289,30 @@ TEST(MemoryDefsTest, owner_move_and_move_into_itself)
     target = std::move(alias);
     EXPECT_EQ(target.use_count(), 1u);
 }
+
+/**
+ * \brief   zero_element clears every byte of one value; zero_elements clears the given count
+ *          and leaves the rest, and a count of zero changes nothing.
+ **/
+TEST(MemoryDefsTest, zero_elements_clears_only_the_given_count)
+{
+    struct Pair
+    {
+        uint32_t first;
+        uint32_t second;
+    };
+
+    Pair one{ 7u, 9u };
+    areg::zero_element<Pair>(one);
+    EXPECT_EQ(one.first, 0u);
+    EXPECT_EQ(one.second, 0u);
+
+    uint32_t values[4]{ 1u, 2u, 3u, 4u };
+    areg::zero_elements<uint32_t>(values, 0u);
+    EXPECT_EQ(values[0], 1u);
+    areg::zero_elements<uint32_t>(values, 3u);
+    EXPECT_EQ(values[0], 0u);
+    EXPECT_EQ(values[1], 0u);
+    EXPECT_EQ(values[2], 0u);
+    EXPECT_EQ(values[3], 4u);
+}

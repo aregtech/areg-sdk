@@ -22,6 +22,7 @@
 
 #include <cstring>
 #include <cwchar>
+#include <limits>
 #include <string>
 #include <type_traits>
 
@@ -189,6 +190,118 @@ TEST( StringDefsEdgeTest, trim_converts_between_character_widths )
     char dst[16]{ };
     areg::trim_all( dst, 16, L"  wide  ", areg::COUNT_ALL );
     EXPECT_STREQ( dst, "wide" );
+
+    wchar_t wide[16]{ };
+    areg::trim_left( wide, 16, "  narrow ", areg::COUNT_ALL );
+    EXPECT_STREQ( wide, L"narrow " );
+}
+
+/**
+ * \brief   Wide text follows the trim rules of narrow text: null or empty input, in place, white space only,
+ *          a counted prefix, another buffer cut to its size, and a destination without room.
+ **/
+TEST( StringDefsEdgeTest, wide_text_trims_like_narrow_text )
+{
+    areg::trim_all<wchar_t>( nullptr );
+    areg::trim_left<wchar_t>( nullptr );
+    areg::trim_right<wchar_t>( nullptr );
+
+    wchar_t empty[4]{ };
+    areg::trim_all( empty );
+    areg::trim_left( empty );
+    areg::trim_right( empty );
+    EXPECT_STREQ( empty, L"" );
+
+    wchar_t text[8]{ L'a', L' ', L'b', L'\0' };
+    areg::trim_all( text, 0 );
+    areg::trim_left( text, 0 );
+    areg::trim_right( text, 0 );
+    EXPECT_STREQ( text, L"a b" );
+
+    wchar_t dst[16]{ L'x', L'\0' };
+    areg::trim_all( static_cast<wchar_t *>(nullptr), 8, L" a ", areg::COUNT_ALL );
+    areg::trim_left( static_cast<wchar_t *>(nullptr), 8, L" a", areg::COUNT_ALL );
+    areg::trim_right( static_cast<wchar_t *>(nullptr), 8, L"a ", areg::COUNT_ALL );
+    areg::trim_all( dst, 8, static_cast<const wchar_t *>(nullptr), areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"" );
+    dst[0] = L'x';
+    areg::trim_left( dst, 8, L"  a", 0 );
+    EXPECT_STREQ( dst, L"" );
+    dst[0] = L'x';
+    areg::trim_right( dst, 8, L"a  ", 0 );
+    EXPECT_STREQ( dst, L"" );
+    dst[0] = L'x';
+    areg::trim_left( dst, 8, static_cast<const wchar_t *>(nullptr), areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"" );
+    dst[0] = L'x';
+    areg::trim_right( dst, 8, static_cast<const wchar_t *>(nullptr), areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"" );
+
+    wchar_t both[16]{ };
+    areg::copy_string( both, 16, L"  a b  " );
+    areg::trim_all( both );
+    EXPECT_STREQ( both, L"a b" );
+    wchar_t left[16]{ };
+    areg::copy_string( left, 16, L"  a b  " );
+    areg::trim_left( left );
+    EXPECT_STREQ( left, L"a b  " );
+    wchar_t right[16]{ };
+    areg::copy_string( right, 16, L"  a b  " );
+    areg::trim_right( right );
+    EXPECT_STREQ( right, L"  a b" );
+    wchar_t clean[16]{ };
+    areg::copy_string( clean, 16, L"a b" );
+    areg::trim_all( clean );
+    areg::trim_left( clean );
+    areg::trim_right( clean );
+    EXPECT_STREQ( clean, L"a b" );
+
+    wchar_t blank[8]{ };
+    areg::copy_string( blank, 8, L"   " );
+    areg::trim_all( blank );
+    EXPECT_STREQ( blank, L"" );
+    areg::copy_string( blank, 8, L"   " );
+    areg::trim_left( blank );
+    EXPECT_STREQ( blank, L"" );
+    areg::copy_string( blank, 8, L"   " );
+    areg::trim_right( blank );
+    EXPECT_STREQ( blank, L"" );
+
+    wchar_t prefix[16]{ };
+    areg::copy_string( prefix, 16, L" a  tail" );
+    areg::trim_left( prefix, 3 );
+    EXPECT_STREQ( prefix, L"a  tail" );
+    areg::copy_string( prefix, 16, L"ab  tail" );
+    areg::trim_right( prefix, 4 );
+    EXPECT_STREQ( prefix, L"abtail" );
+    areg::copy_string( prefix, 16, L" ab tail" );
+    areg::trim_all( prefix, 4 );
+    EXPECT_STREQ( prefix, L"abtail" );
+
+    areg::trim_all( dst, 16, L"  hello  ", areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"hello" );
+    areg::trim_left( dst, 16, L"  hello  ", areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"hello  " );
+    areg::trim_right( dst, 16, L"  hello  ", areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"  hello" );
+    areg::trim_right( dst, 16, L"   ", areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"" );
+    areg::trim_all( dst, 16, L"   ", areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"" );
+
+    wchar_t small[4]{ };
+    areg::trim_all( small, 4, L"  hello  ", areg::COUNT_ALL );
+    EXPECT_STREQ( small, L"hel" );
+    areg::trim_left( small, 4, L"  hello", areg::COUNT_ALL );
+    EXPECT_STREQ( small, L"hel" );
+    areg::trim_right( small, 4, L"hello  ", areg::COUNT_ALL );
+    EXPECT_STREQ( small, L"hel" );
+
+    wchar_t room[2]{ L'x', L'y' };
+    areg::trim_all( room, 0, L" a ", areg::COUNT_ALL );
+    areg::trim_left( room, 0, L" a ", areg::COUNT_ALL );
+    areg::trim_right( room, 0, L" a ", areg::COUNT_ALL );
+    EXPECT_EQ( room[0], L'x' );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -470,6 +583,41 @@ TYPED_TEST( StringDefsEdgeTyped, number_size_query_counts_sign_of_negative_decim
     EXPECT_EQ( buffer[0], C('x') );
     EXPECT_EQ( (areg::make_string<C, int32_t>( buffer, 8, -255, areg::Radix::Hexadecimal )), 2 );
     EXPECT_EQ( std::basic_string<C>( buffer ), T<C>( "FF" ) );
+}
+
+/**
+ * \brief   Reproduces the defect: a number written to a buffer too short kept its lowest digits.
+ *          A number that does not fit leaves an empty string and returns zero.
+ **/
+TYPED_TEST( StringDefsEdgeTyped, number_that_does_not_fit_leaves_an_empty_string )
+{
+    using C = TypeParam;
+    C buffer[8]{ C('x'), C('x'), C('x'), C('x'), C('x'), C('x'), C('x'), C('x') };
+    EXPECT_EQ( (areg::make_string<C, int32_t>( buffer, 3, 1234, areg::Radix::Decimal )), 0 );
+    EXPECT_EQ( std::basic_string<C>( buffer ), std::basic_string<C>() );
+
+    buffer[0] = C('x');
+    EXPECT_EQ( (areg::make_string<C, int32_t>( buffer, 3, -42, areg::Radix::Decimal )), 0 );
+    EXPECT_EQ( std::basic_string<C>( buffer ), std::basic_string<C>() );
+
+    EXPECT_EQ( (areg::make_string<C, int32_t>( buffer, 4, -42, areg::Radix::Decimal )), 3 );
+    EXPECT_EQ( std::basic_string<C>( buffer ), T<C>( "-42" ) );
+}
+
+/**
+ * \brief   Reproduces the defect: the smallest signed value has no positive counterpart and was
+ *          converted through the digit table out of its bounds.
+ **/
+TYPED_TEST( StringDefsEdgeTyped, smallest_signed_value_converts_with_its_sign )
+{
+    using C = TypeParam;
+    C buffer[24]{};
+    EXPECT_EQ( (areg::make_string<C, int32_t>( buffer, 24, std::numeric_limits<int32_t>::min(), areg::Radix::Decimal )), 11 );
+    EXPECT_EQ( std::basic_string<C>( buffer ), T<C>( "-2147483648" ) );
+    EXPECT_EQ( (areg::make_string<C, int64_t>( buffer, 24, std::numeric_limits<int64_t>::min(), areg::Radix::Decimal )), 20 );
+    EXPECT_EQ( std::basic_string<C>( buffer ), T<C>( "-9223372036854775808" ) );
+    EXPECT_EQ( (areg::make_string<C, int32_t>( buffer, 24, std::numeric_limits<int32_t>::min(), areg::Radix::Hexadecimal )), 8 );
+    EXPECT_EQ( std::basic_string<C>( buffer ), T<C>( "80000000" ) );
 }
 
 /**
@@ -778,4 +926,231 @@ TYPED_TEST( StringDefsEdgeTyped, trim_into_destination_from_zero_length_source_l
     dst[0] = C('x');
     areg::trim_all( dst, 4, src.c_str(), 0 );
     EXPECT_EQ( dst[0], C('\0') );
+}
+
+//////////////////////////////////////////////////////////////////////////
+// The same contract for each character type
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief   A line ends at a new line, a DOS new line, a character that is not printable or the given
+ *          count; the end is cut off and the next line follows it. Empty text is returned as it is.
+ **/
+TYPED_TEST( StringDefsEdgeTyped, line_ends_at_new_line_unprintable_character_or_count )
+{
+    using C = TypeParam;
+    C* next{ reinterpret_cast<C*>(this) };
+    EXPECT_EQ( areg::line<C>( nullptr, areg::COUNT_ALL, &next ), nullptr );
+    EXPECT_EQ( next, nullptr );
+    {
+        Buffer<C> text( "ab\r\ncd" );
+        EXPECT_EQ( std::basic_string<C>( areg::line<C>( text.data(), areg::COUNT_ALL, &next ) ), T<C>( "ab" ) );
+        ASSERT_NE( next, nullptr );
+        EXPECT_EQ( std::basic_string<C>( next ), T<C>( "cd" ) );
+    }
+    {
+        Buffer<C> text( "ab\ncd" );
+        EXPECT_EQ( std::basic_string<C>( areg::line<C>( text.data(), areg::COUNT_ALL, &next ) ), T<C>( "ab" ) );
+        ASSERT_NE( next, nullptr );
+        EXPECT_EQ( std::basic_string<C>( next ), T<C>( "cd" ) );
+    }
+    {
+        Buffer<C> text( "ab\x01" "cd" );
+        EXPECT_EQ( std::basic_string<C>( areg::line<C>( text.data(), areg::COUNT_ALL, &next ) ), T<C>( "ab" ) );
+        ASSERT_NE( next, nullptr );
+        EXPECT_EQ( std::basic_string<C>( next ), T<C>( "cd" ) );
+    }
+    {
+        Buffer<C> text( "abc" );
+        EXPECT_EQ( std::basic_string<C>( areg::line<C>( text.data(), 1, &next ) ), T<C>( "a" ) );
+        ASSERT_NE( next, nullptr );
+        EXPECT_EQ( std::basic_string<C>( next ), T<C>( "c" ) );
+    }
+    {
+        Buffer<C> text( "ab\r" );
+        EXPECT_EQ( std::basic_string<C>( areg::line<C>( text.data(), areg::COUNT_ALL, &next ) ), T<C>( "ab" ) );
+        EXPECT_EQ( next, nullptr );
+    }
+    {
+        Buffer<C> text( "last" );
+        EXPECT_EQ( std::basic_string<C>( areg::line<C>( text.data() ) ), T<C>( "last" ) );
+    }
+}
+
+/**
+ * \brief   A counted compare is equal for the same text pointer, compares the counted characters, and
+ *          orders a null text before any other; a compare without a count compares the whole texts.
+ **/
+TYPED_TEST( StringDefsEdgeTyped, fast_compare_orders_null_text_and_compares_counted_characters )
+{
+    using C = TypeParam;
+    const auto abc = T<C>( "abc" );
+    const auto abd = T<C>( "abd" );
+    EXPECT_EQ( areg::compare_fast<C>( abc.c_str(), abc.c_str(), 3 ), areg::Ordering::Equal );
+    EXPECT_EQ( areg::compare_fast<C>( abc.c_str(), abd.c_str(), 2 ), areg::Ordering::Equal );
+    EXPECT_EQ( areg::compare_fast<C>( abc.c_str(), abd.c_str(), 3 ), areg::Ordering::Smaller );
+    EXPECT_EQ( areg::compare_fast<C>( abd.c_str(), abc.c_str(), 3 ), areg::Ordering::Bigger );
+    EXPECT_EQ( areg::compare_fast<C>( nullptr, abc.c_str(), 3 ), areg::Ordering::Smaller );
+    EXPECT_EQ( areg::compare_fast<C>( abc.c_str(), nullptr, 3 ), areg::Ordering::Bigger );
+    EXPECT_EQ( areg::compare_fast<C>( abc.c_str(), abd.c_str(), areg::COUNT_ALL ), areg::Ordering::Smaller );
+    EXPECT_EQ( areg::compare_fast<C>( abc.c_str(), T<C>( "abc" ).c_str(), areg::COUNT_ALL ), areg::Ordering::Equal );
+}
+
+/**
+ * \brief   The last character is searched backwards from the start position, a position past the end
+ *          searches from the end, and empty text or the end of string character find nothing.
+ **/
+TYPED_TEST( StringDefsEdgeTyped, last_character_is_found_backwards_from_the_start_position )
+{
+    using C = TypeParam;
+    const auto text = T<C>( "aXbxc" );
+    const C* next{ text.c_str() };
+    EXPECT_EQ( areg::find_last<C>( C('x'), text.c_str(), areg::END_POS, true, &next ), 3 );
+    EXPECT_EQ( next, text.c_str() + 3 );
+    EXPECT_EQ( areg::find_last<C>( C('x'), text.c_str(), 100, true ), 3 );
+    EXPECT_EQ( areg::find_last<C>( C('x'), text.c_str(), 2, true ), areg::INVALID_POS );
+    EXPECT_EQ( areg::find_last<C>( C('x'), text.c_str(), 2, false ), 1 );
+    EXPECT_EQ( areg::find_last<C>( C('X'), text.c_str(), areg::END_POS, false ), 3 );
+    EXPECT_EQ( areg::find_last<C>( C('z'), text.c_str(), areg::END_POS, false, &next ), areg::INVALID_POS );
+    EXPECT_EQ( areg::find_last<C>( C('\0'), text.c_str() ), areg::INVALID_POS );
+    EXPECT_EQ( areg::find_last<C>( C('a'), static_cast<const C*>(nullptr) ), areg::INVALID_POS );
+    const auto empty = T<C>( "" );
+    EXPECT_EQ( areg::find_last<C>( C('a'), empty.c_str() ), areg::INVALID_POS );
+    EXPECT_EQ( areg::find_last<C>( T<C>( "b" ).c_str(), text.c_str(), areg::END_POS, true ), 2 );
+    EXPECT_EQ( areg::find_last<C>( empty.c_str(), text.c_str() ), areg::INVALID_POS );
+}
+
+/**
+ * \brief   A copy writes at most the space less one and terminates it; no space or no destination
+ *          copies nothing, and a null source gives empty text.
+ **/
+TYPED_TEST( StringDefsEdgeTyped, copy_fits_the_space_and_a_null_source_gives_empty_text )
+{
+    using C = TypeParam;
+    const auto source = T<C>( "abcdef" );
+    C dst[4]{ C('x'), C('x'), C('x'), C('x') };
+    EXPECT_EQ( (areg::copy_string<C, C>( nullptr, 4, source.c_str() )), 0 );
+    EXPECT_EQ( (areg::copy_string<C, C>( dst, 0, source.c_str() )), 0 );
+    EXPECT_EQ( dst[0], C('x') );
+    EXPECT_EQ( (areg::copy_string<C, C>( dst, 4, static_cast<const C*>(nullptr) )), 0 );
+    EXPECT_EQ( dst[0], C('\0') );
+    EXPECT_EQ( (areg::copy_string<C, C>( dst, 4, source.c_str() )), 3 );
+    EXPECT_EQ( std::basic_string<C>( dst ), T<C>( "abc" ) );
+    EXPECT_EQ( (areg::copy_string<C, C>( dst, 4, source.c_str(), 2 )), 2 );
+    EXPECT_EQ( std::basic_string<C>( dst ), T<C>( "ab" ) );
+}
+
+/**
+ * \brief   Reverting changes text of two or more characters, upper case conversion changes letters only,
+ *          and both leave empty text as it is.
+ **/
+TYPED_TEST( StringDefsEdgeTyped, revert_and_upper_case_change_only_text_with_characters )
+{
+    using C = TypeParam;
+    areg::revert_string<C>( nullptr );
+    EXPECT_EQ( areg::make_upper<C>( static_cast<C*>(nullptr) ), nullptr );
+    {
+        Buffer<C> one( "a" );
+        areg::revert_string<C>( one.data() );
+        EXPECT_EQ( one.get(), T<C>( "a" ) );
+    }
+    {
+        Buffer<C> text( "abc" );
+        areg::revert_string<C>( text.data() );
+        EXPECT_EQ( text.get(), T<C>( "cba" ) );
+        areg::revert_string<C>( text.data(), 2 );
+        EXPECT_EQ( text.get(), T<C>( "bca" ) );
+    }
+    {
+        Buffer<C> text( "a1b-" );
+        EXPECT_EQ( std::basic_string<C>( areg::make_upper<C>( text.data() ) ), T<C>( "A1B-" ) );
+    }
+    {
+        Buffer<C> empty( "" );
+        EXPECT_EQ( areg::make_upper<C>( empty.data() ), empty.data() );
+    }
+}
+
+/**
+ * \brief   Trims and copies between narrow and wide text keep the rules of one width: null or empty
+ *          input, white space only, a single character, and a destination without room.
+ **/
+TEST( StringDefsEdgeTest, mixed_width_trims_and_copies_follow_the_rules_of_one_width )
+{
+    char narrow[8]{ 'x' };
+    wchar_t wide[8]{ L'x' };
+
+    areg::trim_all( narrow, 8, static_cast<const wchar_t*>(nullptr), areg::COUNT_ALL );
+    EXPECT_STREQ( narrow, "" );
+    areg::trim_all( narrow, 0, L" a ", areg::COUNT_ALL );
+    areg::trim_all( narrow, 8, L" a ", 0 );
+    EXPECT_STREQ( narrow, "" );
+    areg::trim_all( narrow, 8, L"   ", areg::COUNT_ALL );
+    EXPECT_STREQ( narrow, "" );
+    areg::trim_all( narrow, 8, L"z", areg::COUNT_ALL );
+    EXPECT_STREQ( narrow, "z" );
+    areg::trim_all( narrow, 2, L" ab ", areg::COUNT_ALL );
+    EXPECT_STREQ( narrow, "a" );
+
+    areg::trim_all( wide, 8, static_cast<const char*>(nullptr), areg::COUNT_ALL );
+    EXPECT_STREQ( wide, L"" );
+    areg::trim_all( wide, 8, "   ", areg::COUNT_ALL );
+    EXPECT_STREQ( wide, L"" );
+    areg::trim_all( wide, 8, " ab ", areg::COUNT_ALL );
+    EXPECT_STREQ( wide, L"ab" );
+    areg::trim_left( wide, 8, static_cast<const char*>(nullptr), areg::COUNT_ALL );
+    EXPECT_STREQ( wide, L"" );
+    areg::trim_left( wide, 8, "  ", areg::COUNT_ALL );
+    EXPECT_STREQ( wide, L"" );
+    areg::trim_left( wide, 2, " ab", areg::COUNT_ALL );
+    EXPECT_STREQ( wide, L"a" );
+    areg::trim_left( wide, 8, " ab", 0 );
+    EXPECT_STREQ( wide, L"" );
+    areg::trim_right( wide, 8, static_cast<const char*>(nullptr), areg::COUNT_ALL );
+    EXPECT_STREQ( wide, L"" );
+    areg::trim_right( wide, 8, "   ", areg::COUNT_ALL );
+    EXPECT_STREQ( wide, L"" );
+    areg::trim_right( wide, 8, " ab ", areg::COUNT_ALL );
+    EXPECT_STREQ( wide, L" ab" );
+    areg::trim_right( wide, 8, "ab ", 0 );
+    EXPECT_STREQ( wide, L"" );
+    areg::trim_right( narrow, 8, "   ", areg::COUNT_ALL );
+    EXPECT_STREQ( narrow, "" );
+    areg::trim_right( narrow, 3, "abc ", areg::COUNT_ALL );
+    EXPECT_STREQ( narrow, "ab" );
+
+    EXPECT_EQ( (areg::copy_string<wchar_t, char>( nullptr, 8, "ab" )), 0 );
+    EXPECT_EQ( (areg::copy_string<wchar_t, char>( wide, 8, static_cast<const char*>(nullptr) )), 0 );
+    EXPECT_STREQ( wide, L"" );
+    EXPECT_EQ( (areg::copy_string<wchar_t, char>( wide, 3, "abcd" )), 2 );
+    EXPECT_STREQ( wide, L"ab" );
+    EXPECT_EQ( (areg::copy_string<wchar_t, char>( wide, 8, "abcd", 3 )), 3 );
+    EXPECT_STREQ( wide, L"abc" );
+    EXPECT_EQ( (areg::copy_string<char, wchar_t>( narrow, 0, L"ab" )), 0 );
+    EXPECT_EQ( (areg::copy_string<char, wchar_t>( narrow, 8, static_cast<const wchar_t*>(nullptr) )), 0 );
+    EXPECT_STREQ( narrow, "" );
+}
+
+/**
+ * \brief   Texts of other character types compare equal for one pointer, order a null text first, and
+ *          compare by characters in both case modes.
+ **/
+TEST( StringDefsEdgeTest, texts_of_other_character_types_compare_by_characters_and_order_null_first )
+{
+    const char16_t * const abc{ u"abc" };
+    EXPECT_EQ( (areg::compare_strings<char16_t, char16_t>( abc, abc, areg::COUNT_ALL, true )), areg::Ordering::Equal );
+    EXPECT_EQ( (areg::compare_strings<char16_t, char16_t>( nullptr, abc, areg::COUNT_ALL, true )), areg::Ordering::Smaller );
+    EXPECT_EQ( (areg::compare_strings<char16_t, char16_t>( nullptr, static_cast<const char16_t*>(nullptr), areg::COUNT_ALL, true )), areg::Ordering::Equal );
+    EXPECT_EQ( (areg::compare_strings<char16_t, char16_t>( abc, nullptr, areg::COUNT_ALL, true )), areg::Ordering::Bigger );
+    EXPECT_EQ( (areg::compare_strings<char16_t, char16_t>( abc, u"abd", areg::COUNT_ALL, true )), areg::Ordering::Smaller );
+    EXPECT_EQ( (areg::compare_strings<char16_t, char16_t>( u"ABC", abc, areg::COUNT_ALL, false )), areg::Ordering::Equal );
+    EXPECT_EQ( (areg::compare_strings<char16_t, char16_t>( u"abcd", abc, 3, true )), areg::Ordering::Equal );
+
+    EXPECT_EQ( (areg::compare_strings<char, wchar_t>( nullptr, L"a", areg::COUNT_ALL, true )), areg::Ordering::Smaller );
+    EXPECT_EQ( (areg::compare_strings<char, wchar_t>( "a", static_cast<const wchar_t*>(nullptr), areg::COUNT_ALL, true )), areg::Ordering::Bigger );
+    EXPECT_EQ( (areg::compare_strings<char, wchar_t>( "ab", L"ab", areg::COUNT_ALL, true )), areg::Ordering::Equal );
+    EXPECT_EQ( (areg::compare_strings<char, wchar_t>( "AB", L"ab", areg::COUNT_ALL, false )), areg::Ordering::Equal );
+    EXPECT_EQ( (areg::compare_strings<wchar_t, char>( nullptr, "a", areg::COUNT_ALL, true )), areg::Ordering::Smaller );
+    EXPECT_EQ( (areg::compare_strings<wchar_t, char>( L"b", static_cast<const char*>(nullptr), areg::COUNT_ALL, true )), areg::Ordering::Bigger );
+    EXPECT_EQ( (areg::compare_strings<wchar_t, char>( L"b", "a", areg::COUNT_ALL, true )), areg::Ordering::Bigger );
 }

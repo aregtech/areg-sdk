@@ -31,6 +31,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/DispatcherThread.hpp"
+#include "areg/component/Model.hpp"
 #include "areg/component/WorkerThread.hpp"
 #include "areg/component/WorkerThreadConsumer.hpp"
 
@@ -399,4 +400,26 @@ TEST(ComponentLifecycleFailureTest, thread_that_ends_unasked_leaves_its_model_un
     EXPECT_NE(areg::Thread::find_by_address(areg::ThreadAddress(areg::String("ClRefusedThread"))), nullptr);
     areg::Application::unload_model(_refusedModel);
     EXPECT_EQ(gDeleted.load(), 2u);
+}
+
+/**
+ * \brief   A model name that is not registered does not load and reports the unloaded state, a
+ *          thread name of no component thread reports the unknown state, and a loaded model
+ *          is not touched by an unload of the unknown name.
+ **/
+TEST(ComponentLifecycleFailureTest, unknown_model_does_not_load_and_leaves_loaded_models_running)
+{
+    ClSystem system;
+    constexpr char const unknownModel[]{ "ClNoSuchModel" };
+    ASSERT_TRUE(areg::Application::load_model(_stateModel, true));
+
+    EXPECT_FALSE(areg::Application::load_model(unknownModel, true));
+    EXPECT_FALSE(areg::Application::is_model_loaded(unknownModel));
+    EXPECT_EQ(areg::Application::model_state(unknownModel), areg::ModelState::Unloaded);
+    EXPECT_EQ(areg::Application::thread_state("ClNoSuchThread"), areg::ThreadState::Unknown);
+    EXPECT_EQ(areg::Application::thread_state("ClStateThread"), areg::ThreadState::Running);
+
+    static_cast<void>(areg::Application::unload_model(unknownModel));
+    EXPECT_TRUE(areg::Application::is_model_loaded(_stateModel));
+    EXPECT_EQ(areg::Application::model_state(_stateModel), areg::ModelState::Loaded);
 }

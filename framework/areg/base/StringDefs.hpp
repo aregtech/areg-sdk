@@ -194,8 +194,9 @@ inline constexpr uint32_t make_lower_char(int32_t ch) noexcept;
 
 /**
  * \brief   Converts the given integer digit to a string, writing the result to the specified
- *          buffer. If the buffer is nullptr or charCount is zero, calculates and returns the
- *          space required.
+ *          buffer. If the buffer is nullptr or charCount is less than 2, writes nothing and
+ *          returns the space required. A number is never written in part: if the text with its
+ *          sign and the null terminator does not fit in charCount, the buffer gets an empty string.
  *
  * \param   strDst          The destination string buffer to write the result.
  * \param   charCount       The number of characters allocated in the buffer, including the null
@@ -203,9 +204,9 @@ inline constexpr uint32_t make_lower_char(int32_t ch) noexcept;
  * \param   digit           The integer to convert.
  * \param   radix           The conversion base. If equal to RadixAutomatic, defaults to
  *                          RadixDecimal.
- * \return  Returns the number of characters copied to the buffer, including the null
- *          terminator. If strDst is nullptr or charCount is zero, returns the number of
- *          characters required.
+ * \return  Returns the number of characters copied to the buffer, without the null
+ *          terminator, or 0 if the text does not fit. If strDst is nullptr or charCount is less
+ *          than 2, returns the number of characters the text needs, without the null terminator.
  **/
 template<typename CharType, typename IntType>
 int32_t make_string( CharType*          strDst
@@ -1420,46 +1421,52 @@ int32_t areg::make_string( CharType*        strDst
                          , IntType          digit
                          , areg::Radix      radix ) noexcept
 {
+    static_assert(std::is_integral_v<IntType> && !std::is_same_v<IntType, bool>, "make_string expects an integer type");
+    using UIntType = std::make_unsigned_t<IntType>;
     static constexpr char _valid[] = "0123456789ABCDEF";
 
     radix = (radix != areg::Radix::Automatic) ? radix : areg::Radix::Decimal;
     if (radix < areg::Radix::Binary || radix > areg::Radix::Hexadecimal)
         return 0;
 
-    const IntType base = static_cast<IntType>(radix);
-    IntType       num  = areg::abs<IntType>(digit);
+    const UIntType base{ static_cast<UIntType>(radix) };
+    bool negative{ false };
+    if constexpr (std::is_signed_v<IntType>)
+        negative = (digit < 0);
 
-    if ((strDst != nullptr) && (charCount > 1))
+    const UIntType magnitude{ negative ? static_cast<UIntType>(UIntType{ 0 } - static_cast<UIntType>(digit)) : static_cast<UIntType>(digit) };
+    const bool withSign{ negative && (radix == areg::Radix::Decimal) };
+
+    int32_t length{ withSign ? 1 : 0 };
+    UIntType num{ magnitude };
+    do
     {
-        // Writing path
-        CharType* dst = strDst;
-        --charCount; // reserve space for EOS
+        ++length;
+        num = static_cast<UIntType>(num / base);
+    } while (num != 0);
 
-        do
-        {
-            *dst++ = static_cast<CharType>(_valid[num % base]);
-            num /= base;
-            --charCount;
-        } while ((num != 0) && (charCount > 0));
+    if ((strDst == nullptr) || (charCount < 2))
+        return length;
 
-        if ((charCount > 0) && (digit < 0) && (radix == areg::Radix::Decimal))
-            *dst++ = static_cast<CharType>('-');
-
-        *dst = static_cast<CharType>(areg::EndOfString);
-        areg::revert_string<CharType>(strDst);
-        return static_cast<int32_t>(dst - strDst);
-    }
-    else
+    if (length >= charCount)
     {
-        int32_t result = (digit < 0 && radix == areg::Radix::Decimal) ? 1 : 0;
-        do
-        {
-            ++result;
-            num /= base;
-        } while (num != 0);
-
-        return result;
+        *strDst = static_cast<CharType>(areg::EndOfString);
+        return 0;
     }
+
+    CharType* dst{ strDst + length };
+    *dst = static_cast<CharType>(areg::EndOfString);
+    num = magnitude;
+    do
+    {
+        *(--dst) = static_cast<CharType>(_valid[num % base]);
+        num = static_cast<UIntType>(num / base);
+    } while (num != 0);
+
+    if (withSign)
+        *(--dst) = static_cast<CharType>('-');
+
+    return length;
 }
 
 /** --------------------------------------------------- **/
