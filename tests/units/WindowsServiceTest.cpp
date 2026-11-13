@@ -171,6 +171,26 @@ namespace
         return areg::Application::start_logging_service( );
     }
 
+    //!< Returns true if this process loaded an ASan runtime that is not in the folder of the test.
+    bool asan_runtime_not_beside( )
+    {
+        constexpr const wchar_t * RUNTIMES[]
+        {
+              L"clang_rt.asan_dynamic-x86_64.dll"
+            , L"clang_rt.asan_dbg_dynamic-x86_64.dll"
+            , L"clang_rt.asan_dynamic-i386.dll"
+            , L"clang_rt.asan_dbg_dynamic-i386.dll"
+        };
+
+        for ( const wchar_t * runtime : RUNTIMES )
+        {
+            if ( (::GetModuleHandleW( runtime ) != nullptr) && (::GetFileAttributesW( beside_test( runtime ).c_str( ) ) == INVALID_FILE_ATTRIBUTES) )
+                return true;
+        }
+
+        return false;
+    }
+
     class WindowsServiceTest : public ::testing::TestWithParam<ServiceApp>
     {
     };
@@ -212,6 +232,12 @@ TEST_P( WindowsServiceTest, installed_service_starts_pauses_continues_stops_and_
     }
 
     ::CloseServiceHandle( reader );
+
+    if ( asan_runtime_not_beside( ) )
+    {
+        ::CloseServiceHandle( manager );
+        GTEST_SKIP( ) << "a service finds the ASan runtime only in the folder of the service application";
+    }
 
     ServiceCleanup cleanup( manager, app.service );
 
