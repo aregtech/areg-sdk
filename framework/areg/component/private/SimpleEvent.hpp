@@ -106,12 +106,6 @@ public:
      **/
     bool reset() noexcept;
 
-    /**
-     * \brief   Returns true if the event is auto-reset; false if manual-reset.
-     **/
-    [[nodiscard]]
-    inline bool is_auto_reset() const noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -137,11 +131,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // SimpleEvent inline methods
 //////////////////////////////////////////////////////////////////////////
-inline bool SimpleEvent::is_auto_reset() const noexcept
-{
-    return mAutoReset;
-}
-
 }   // namespace areg
 
 #endif  // AREG_COMPONENT_PRIVATE_SIMPLEEVENT_HPP

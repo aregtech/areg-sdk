@@ -26,6 +26,17 @@
 
 namespace
 {
+    //!< The data of the custom event sent to a proxy.
+    struct ProxyCustomData
+    {
+        int mValue{ 0 };
+    };
+}
+
+AREG_DECLARE_EVENT(ProxyCustomData, ProxyCustomEvent, ProxyCustomConsumer);
+
+namespace
+{
     using namespace areg;
 
     constexpr uint32_t REQUESTS[]{ REQUEST_ID_FIRST, REQUEST_ID_FIRST + 1 };
@@ -86,11 +97,14 @@ namespace
         using ProxyBase::is_listener_registered;
         using ProxyBase::notify_listeners;
         using ProxyBase::process_available_event;
+        using ProxyBase::register_for_event;
         using ProxyBase::remove_listener;
         using ProxyBase::send_request_event;
         using ProxyBase::set_connection_status;
         using ProxyBase::set_state;
         using ProxyBase::service_connection_updated;
+        using ProxyBase::stop_notifications;
+        using ProxyBase::unregister_for_event;
 
         static ProxyBase* create(const String& role, DispatcherThread* owner)
         {
@@ -103,6 +117,11 @@ namespace
         }
 
         mutable std::vector<std::tuple<uint32_t, ResultType, SequenceNumber>> mFailures;
+        //!< Each request built from arguments: message and the size of the arguments.
+        std::vector<std::pair<uint32_t, uint32_t>> mRequests;
+        //!< The custom events processed by the proxy, and the thread of the last one.
+        std::atomic<uint32_t> mCustomEvents{ 0u };
+        std::atomic<const Thread*> mCustomThread{ nullptr };
         //!< Each notification request: message, type, and the connection callbacks the watched listener had then.
         std::vector<std::tuple<uint32_t, RequestType, size_t>> mSubscriptions;
         const ContractListener* mWatched{ nullptr };
@@ -115,6 +134,8 @@ namespace
 
         void process_custom_event(Event&) override
         {
+            mCustomThread.store(Thread::current_thread());
+            mCustomEvents.fetch_add(1u);
         }
 
         ServiceAvailableEvent create_service_available(NotificationConsumer& consumer) override
@@ -129,6 +150,7 @@ namespace
 
         ServiceRequestEvent create_request(const SharedBuffer& data, uint32_t request) override
         {
+            mRequests.emplace_back(request, data.size_used());
             return LocalRequestEvent(data, proxy_address(), stub_address(), request);
         }
 
@@ -856,6 +878,136 @@ TEST(ProxyBaseContractTest, notification_sent_to_a_listener_reaches_it_on_the_pr
     NotificationEvent::send_event(data, nullptr);
     ASSERT_TRUE(owner.barrier());
     EXPECT_EQ(1u, listener.mNotifications.size());
+
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]()
+        {
+            proxy->free_proxy(listener);
+            proxy.reset();
+        }));
+}
+
+TEST(ProxyBaseContractTest, request_built_from_arguments_carries_them_and_fails_like_a_prepared_one_while_disconnected)
+{
+    on_proxy_thread([](DispatcherThread& owner)
+    {
+        ContractListener listener;
+        ProxyLease proxy(listener, owner);
+        ASSERT_NE(nullptr, proxy.pointer());
+        SharedBuffer args;
+        args << uint32_t{ 0x1234u };
+        const SequenceNumber sequence = proxy->send_request_event(REQUESTS[0], args, &listener);
+        EXPECT_NE(SEQUENCE_NUMBER_ANY, sequence);
+        ASSERT_EQ(1u, proxy->mRequests.size());
+        EXPECT_EQ(std::make_pair(REQUESTS[0], args.size_used()), proxy->mRequests[0]);
+        ASSERT_EQ(1u, proxy->mFailures.size());
+        EXPECT_EQ(std::make_tuple(REQUESTS[0], ResultType::ServiceUnavailable, sequence), proxy->mFailures[0]);
+
+        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(REQUESTS[1], SharedBuffer{}, nullptr));
+        ASSERT_EQ(2u, proxy->mRequests.size());
+        EXPECT_EQ(std::make_pair(REQUESTS[1], 0u), proxy->mRequests[1]);
+        EXPECT_EQ(1u, proxy->mFailures.size());
+        proxy->clear_all_notifications(listener);
+    });
+}
+
+TEST(ProxyBaseContractTest, stopping_a_list_of_notifications_sends_one_stop_per_id_only_while_connected)
+{
+    on_proxy_thread([](DispatcherThread& owner)
+    {
+        ContractListener listener;
+        ProxyLease proxy(listener, owner);
+        ASSERT_NE(nullptr, proxy.pointer());
+        const uint32_t ids[]{ ATTRIBUTES[0], RESPONSES[0] };
+        proxy->stop_notifications(ids, 2);
+        EXPECT_TRUE(proxy->mSubscriptions.empty());
+
+        const StubAddress server(INTERFACE, String("ProxyContractProvider"), owner.name());
+        const Channel channel(static_cast<uint32_t>(owner.address()), server.source(), COOKIE_LOCAL);
+        proxy->service_connection_updated(server, channel, ServiceConnectionState::Connected);
+        ASSERT_TRUE(proxy->is_connected());
+        proxy->mSubscriptions.clear();
+        proxy->stop_notifications(ids, 0);
+        EXPECT_TRUE(proxy->mSubscriptions.empty());
+        proxy->stop_notifications(ids, 2);
+        ASSERT_EQ(2u, proxy->mSubscriptions.size());
+        EXPECT_EQ(ATTRIBUTES[0], std::get<0>(proxy->mSubscriptions[0]));
+        EXPECT_EQ(RequestType::StopNotify, std::get<1>(proxy->mSubscriptions[0]));
+        EXPECT_EQ(RESPONSES[0], std::get<0>(proxy->mSubscriptions[1]));
+        EXPECT_EQ(RequestType::StopNotify, std::get<1>(proxy->mSubscriptions[1]));
+        proxy->service_connection_updated(server, channel, ServiceConnectionState::Disconnected);
+    });
+}
+
+TEST(ProxyBaseContractTest, custom_event_reaches_a_registered_proxy_on_its_thread_until_it_unregisters)
+{
+    EventTestDispatcher owner(String("ProxyContractCustomThread"));
+    ASSERT_TRUE(owner.start_ready());
+    EventTestRun run(owner);
+    ContractListener listener;
+    std::shared_ptr<ProxyBase> proxy;
+    ASSERT_TRUE(owner.invoke([&listener, &proxy, &owner]()
+        {
+            proxy = ProxyBase::acquire_proxy(String("ProxyContractCustom"), INTERFACE, listener, ContractProxy::create, owner);
+            if (proxy != nullptr)
+                static_cast<ContractProxy&>(*proxy).register_for_event(ProxyCustomEvent::CLASS_ID);
+        }));
+    ASSERT_NE(nullptr, proxy);
+    ContractProxy& contract{ static_cast<ContractProxy&>(*proxy) };
+
+    ASSERT_TRUE(ProxyCustomEvent::send_event(ProxyCustomData{ 7 }, owner));
+    ASSERT_TRUE(owner.barrier());
+    EXPECT_EQ(1u, contract.mCustomEvents.load());
+    EXPECT_EQ(static_cast<const Thread*>(&owner), contract.mCustomThread.load());
+
+    ASSERT_TRUE(owner.invoke([&contract]() { contract.unregister_for_event(ProxyCustomEvent::CLASS_ID); }));
+    static_cast<void>(ProxyCustomEvent::send_event(ProxyCustomData{ 8 }, owner));
+    ASSERT_TRUE(owner.barrier());
+    EXPECT_EQ(1u, contract.mCustomEvents.load());
+
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]()
+        {
+            proxy->free_proxy(listener);
+            proxy.reset();
+        }));
+}
+
+/**
+ * \brief   A consumer that subscribes again to an attribute it listens to is not added twice; it
+ *          gets the current state of the attribute again only when it asks to be always notified.
+ **/
+TEST(ProxyBaseContractTest, repeated_subscription_sends_the_current_state_only_when_always_notify_is_set)
+{
+    EventTestDispatcher owner(String("ProxyContractRepeatThread"));
+    ASSERT_TRUE(owner.start_ready());
+    EventTestRun run(owner);
+    ContractListener listener;
+    std::shared_ptr<ProxyBase> proxy;
+    ASSERT_TRUE(owner.invoke([&listener, &proxy, &owner]()
+        {
+            proxy = ProxyBase::acquire_proxy(String("ProxyContractProvider"), INTERFACE, listener, ContractProxy::create, owner);
+            ContractProxy & contract{ *static_cast<ContractProxy*>(proxy.get()) };
+            const StubAddress server(INTERFACE, String("ProxyContractProvider"), owner.name());
+            const Channel channel(static_cast<uint32_t>(owner.address()), server.source(), COOKIE_LOCAL);
+            contract.service_connection_updated(server, channel, ServiceConnectionState::Connected);
+            contract.set_notification(ATTRIBUTES[0], &listener, false);
+        }));
+    ASSERT_NE(nullptr, proxy);
+    ASSERT_TRUE(owner.barrier());
+    ASSERT_EQ(1u, listener.mNotifications.size());
+    EXPECT_EQ(ATTRIBUTES[0], std::get<0>(listener.mNotifications[0]));
+    EXPECT_EQ(ResultType::DataInvalid, std::get<1>(listener.mNotifications[0]));
+
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]() { proxy->set_notification(ATTRIBUTES[0], &listener, false); }));
+    ASSERT_TRUE(owner.barrier());
+    EXPECT_EQ(1u, listener.mNotifications.size());
+
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]() { proxy->set_notification(ATTRIBUTES[0], &listener, true); }));
+    ASSERT_TRUE(owner.barrier());
+    ASSERT_EQ(2u, listener.mNotifications.size());
+    EXPECT_EQ(ATTRIBUTES[0], std::get<0>(listener.mNotifications[1]));
+    EXPECT_EQ(ResultType::DataInvalid, std::get<1>(listener.mNotifications[1]));
+    EXPECT_EQ(SEQUENCE_NUMBER_NOTIFY, std::get<2>(listener.mNotifications[1]));
+    EXPECT_EQ(1u, static_cast<ContractProxy*>(proxy.get())->mSubscriptions.size());
 
     ASSERT_TRUE(owner.invoke([&listener, &proxy]()
         {

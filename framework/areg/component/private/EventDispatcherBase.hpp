@@ -387,7 +387,6 @@ private:
 // Hidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline EventDispatcherBase & self() noexcept;
     void _clean() noexcept;
 
     /**
@@ -464,11 +463,6 @@ inline void EventDispatcherBase::remove_all_events() noexcept
 inline void EventDispatcherBase::remove_event_type( const uint32_t eventClassId ) noexcept
 {
     mExternalEvents.remove_events(eventClassId);
-}
-
-inline EventDispatcherBase& EventDispatcherBase::self() noexcept
-{
-    return (*this);
 }
 
 } // namespace areg

@@ -166,8 +166,8 @@ public:
      * \param   author      The one who sets the marker. Can be empty.
      * \param   note        The note of the marker. Can be empty.
      * \return  Returns the identifier the marker gets. Returns 0 if the writer does not run, the
-     *          level is not a marker level, or no row with that identifier was queued. A marker of
-     *          a row that is missing when the writer saves it is not saved.
+     *          level is not a marker level, no row with that identifier was queued, or the marker
+     *          cannot be stored. A marker of a row that is missing when the writer saves it is not saved.
      **/
     uint32_t queue_marker(uint32_t masterId, areg::LogPriority level, const areg::String & author, const areg::String & note);
 
@@ -175,7 +175,8 @@ public:
      * \brief   Queues a change of the database. A task is never dropped.
      *
      * \param   task    The change to run on the writer thread.
-     * \return  Returns true if the task is queued; false if the writer does not run.
+     * \return  Returns true if the task is queued; false if the writer does not run or the task
+     *          cannot be stored.
      **/
     bool queue_task(Task && task);
 

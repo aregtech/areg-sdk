@@ -356,6 +356,19 @@ namespace
     };
 }
 
+// A send thread that stops while its peer does not read releases the backlog and reports the
+// connection, whose first message was cut.
+TEST(SendBacklogTest, release_of_an_unread_backlog_reports_the_cut_connection)
+{
+    Fixture test;
+    ASSERT_TRUE(test.start());
+    std::deque<ITEM_ID> cut;
+    test.backlog.release_all(cut);
+    EXPECT_TRUE(test.backlog.is_empty());
+    ASSERT_EQ(cut.size(), 1u);
+    EXPECT_EQ(cut.front(), COOKIE);
+}
+
 // A paused peer: the waiting send thread does not pump, and it moves on once the peer reads.
 TEST(SendBacklogTest, wait_sleeps_while_paused_and_resumes_when_read)
 {

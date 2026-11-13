@@ -801,3 +801,18 @@ TEST(BufferBaseTest, buffer_with_data_gives_header_end_and_writable_address)
     EXPECT_EQ(std::as_const(buffer).end_of_buffer(), begin + sizeof(DATA));
     EXPECT_EQ(buffer.buffer_to_write(), begin + buffer.position());
 }
+
+/**
+ * \brief   A buffer without data has no valid position; a buffer with data has one.
+ **/
+TEST(BufferBaseTest, position_is_valid_only_for_a_buffer_with_data)
+{
+    areg::SharedBuffer empty;
+    EXPECT_FALSE(empty.is_position_valid());
+    areg::SharedBuffer filled;
+    filled << uint32_t{ 42u };
+    EXPECT_TRUE(filled.is_position_valid());
+    filled.move_to_begin();
+    EXPECT_TRUE(filled.is_position_valid());
+    EXPECT_EQ(filled.position(), 0u);
+}

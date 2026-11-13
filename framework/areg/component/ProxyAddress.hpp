@@ -420,8 +420,6 @@ public:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    [[nodiscard]]
-    inline ProxyAddress& self() noexcept;
     /**
      * \brief   Delivers a service event to a target.
      *
@@ -582,11 +580,6 @@ inline ITEM_ID ProxyAddress::target() const noexcept
 inline void ProxyAddress::set_target(const ITEM_ID & target ) noexcept
 {
     mChannel.set_target(target);
-}
-
-inline ProxyAddress& ProxyAddress::self() noexcept
-{
-    return (*this);
 }
 
 inline bool ProxyAddress::is_valid() const noexcept

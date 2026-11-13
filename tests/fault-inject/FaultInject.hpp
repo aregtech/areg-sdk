@@ -96,6 +96,7 @@ namespace areg_fault
         , FileSeek          //!< Windows SetFilePointer(). Not replaced elsewhere. Error: Win32 error.
         , ServiceManagerOpen  //!< Windows OpenSCManagerW(). Not replaced elsewhere. Error: Win32 error.
         , ServiceOpen       //!< Windows OpenServiceW(). Not replaced elsewhere. Error: Win32 error.
+        , ConsoleMode       //!< Windows SetConsoleMode(). Not replaced elsewhere. Error: Win32 error.
         , Count             //!< The number of points.
     };
 }

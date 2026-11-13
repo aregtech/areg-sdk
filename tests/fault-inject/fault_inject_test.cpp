@@ -40,6 +40,10 @@
     #include "areglogger/client/LogObserverApi.h"
     #include "areglogger/client/private/LoggerClient.hpp"
     #include "logcollector/service/private/LogCollectorDatabase.hpp"
+    #include "aregextend/db/LogDbWriter.hpp"
+    #include "aregextend/db/LogSqliteDatabase.hpp"
+
+    #include <atomic>
 
     #include <filesystem>
     #include <string>
@@ -907,7 +911,7 @@ namespace
                                   | static_cast<uint32_t>(areg::FileBase::OpenMode::Binary) };
 }
 
-//!< A search whose window cannot be allocated finds nothing; the next search finds the data.
+//!< A search of data, text or wide text whose window cannot be allocated finds nothing; the next search finds it.
 TEST( FaultInjectTest, file_search_finds_nothing_when_its_window_cannot_be_allocated )
 {
     AREG_EXPECT_IN_CHILD(
@@ -916,17 +920,22 @@ TEST( FaultInjectTest, file_search_finds_nothing_when_its_window_cannot_be_alloc
         constexpr char text[]{ "alpha-beta-gamma" };
         constexpr uint32_t length{ static_cast<uint32_t>(sizeof( text ) - 1u) };
         AREG_CHILD_CHECK( file.write( reinterpret_cast<const uint8_t *>(text), length ) == length );
+        constexpr char16_t wide[]{ u"zeta" };
+        constexpr uint32_t wideLength{ static_cast<uint32_t>(sizeof( wide ) - sizeof( char16_t )) };
+        AREG_CHILD_CHECK( file.write( reinterpret_cast<const uint8_t *>(wide), wideLength ) == wideLength );
         const uint8_t * beta{ reinterpret_cast<const uint8_t *>("beta") };
         {
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
             AREG_CHILD_CHECK( file.search_data( 0u, beta, 4u ) == areg::Cursor::INVALID_CURSOR_POSITION );
             AREG_CHILD_CHECK( file.search_text( 0u, "gamma", true ) == areg::Cursor::INVALID_CURSOR_POSITION );
-            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) >= 2u && NOT_REPLACED );
+            AREG_CHILD_CHECK( file.search_text( 0u, L"zeta", true ) == areg::Cursor::INVALID_CURSOR_POSITION );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) >= 3u && NOT_REPLACED );
         }
 
         AREG_CHILD_CHECK( file.search_data( 0u, beta, 4u ) == 6u );
         AREG_CHILD_CHECK( file.search_text( 0u, "gamma", true ) == 11u );
+        AREG_CHILD_CHECK( file.search_text( 0u, L"zeta", true ) == length );
     );
 }
 
@@ -1494,6 +1503,123 @@ TEST( FaultInjectTest, log_observer_database_is_closed_when_its_writer_thread_ca
         remove_private_directory( file );
     );
 }
+
+#if defined(AREG_FAULT_ALLOC_TESTS)
+
+/**
+ * \brief   The writer of a log database cannot allocate the record of a task or of a marker. The task
+ *          is refused and never runs, the marker gets no identifier, the writer keeps running, and
+ *          the next marker gets the identifier after the last one given.
+ **/
+TEST( FaultInjectTest, log_database_writer_refuses_a_task_or_marker_it_cannot_store_and_keeps_running )
+{
+    AREG_EXPECT_IN_CHILD(
+        const std::filesystem::path file{ private_database( "queue.sqlog" ) };
+        {
+            areg::ext::LogSqliteDatabase database;
+            AREG_CHILD_CHECK( database.connect( areg::String( file.string( ).c_str( ) ), areg::DatabaseRole::Recorder ) );
+            areg::ext::LogDbWriter writer( database );
+            AREG_CHILD_CHECK( writer.start( 0u ) );
+
+            areg::LogEntry entry{ areg::LogMessageType::MessageText };
+            entry.logMessagePrio = areg::LogPriority::PrioInfo;
+            entry.logCookie      = 77u;
+            const uint32_t row{ writer.queue_log( areg::create_log_message( entry, areg::LogDataType::Remote, 77u ) ) };
+            AREG_CHILD_CHECK( row != 0u );
+
+            const areg::String author( "author" );
+            const areg::String note( "note" );
+            const uint32_t first{ writer.queue_marker( row, areg::LogPriority::PrioMarkerInfo, author, note ) };
+            AREG_CHILD_CHECK( first != 0u );
+
+            std::atomic<uint32_t> ran{ 0u };
+            areg::ext::LogDbWriter::Task task{ [&ran]( areg::ext::LogSqliteDatabase & /*db*/ ) { ran.fetch_add( 1u ); } };
+            {
+                areg_fault::FaultScope faults;
+                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+                AREG_CHILD_CHECK( writer.queue_task( std::move( task ) ) == false );
+                AREG_CHILD_CHECK( writer.queue_marker( row, areg::LogPriority::PrioMarkerInfo, author, note ) == 0u );
+                AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 2u );
+            }
+
+            AREG_CHILD_CHECK( writer.queue_marker( row, areg::LogPriority::PrioMarkerInfo, author, note ) == first + 1u );
+            AREG_CHILD_CHECK( writer.queue_task( [&ran]( areg::ext::LogSqliteDatabase & /*db*/ ) { ran.fetch_add( 10u ); } ) );
+            writer.stop( );
+            AREG_CHILD_CHECK( ran.load( ) == 10u );
+            database.disconnect( );
+        }
+
+        remove_private_directory( file );
+    );
+}
+
+namespace
+{
+    //!< Writes one log row in a transaction; returns true if the row is saved with the next identifier.
+    bool write_one_row( areg::ext::LogSqliteDatabase & database )
+    {
+        const uint32_t before{ database.max_log_id( ) };
+        areg::LogEntry entry{ areg::LogMessageType::MessageText };
+        entry.logMessagePrio = areg::LogPriority::PrioInfo;
+        entry.logCookie      = 1u;
+        bool result{ database.begin( ) };
+        result = result && database.log_message( entry );
+        return database.commit( result ) && result && ( database.max_log_id( ) == before + 1u );
+    }
+}
+
+/**
+ * \brief   A writing connection of a log database whose background checkpoint cannot be allocated or
+ *          whose thread cannot start: each allocation of the connection fails in turn, then the thread.
+ *          A connection that succeeds saves rows, the commits checkpoint themselves.
+ **/
+TEST( FaultInjectTest, log_database_whose_checkpoint_cannot_start_connects_and_saves_rows )
+{
+    AREG_EXPECT_IN_CHILD(
+        warm_up_threads( );
+        const std::filesystem::path file{ private_database( "checkpoint.sqlog" ) };
+        const areg::String path( file.string( ).c_str( ) );
+        bool finished{ false };
+        uint32_t refused{ 0u };
+        for ( uint32_t skip = 0u; ( skip < 64u ) && ( finished == false ); ++ skip )
+        {
+            areg::ext::LogSqliteDatabase database;
+            bool connected{ false };
+            uint32_t failed{ 0u };
+            {
+                areg_fault::FaultScope faults;
+                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+                connected = database.connect( path, areg::DatabaseRole::Recorder );
+                failed = areg_fault::failed( areg_fault::FaultPoint::Allocation );
+            }
+
+            finished = ( failed == 0u );
+            refused += ( failed != 0u ) ? 1u : 0u;
+            AREG_CHILD_CHECK( connected );
+            AREG_CHILD_CHECK( write_one_row( database ) );
+            database.disconnect( );
+        }
+
+        AREG_CHILD_CHECK( finished );
+        AREG_CHILD_CHECK( refused != 0u );
+        {
+            areg::ext::LogSqliteDatabase database;
+            {
+                areg_fault::FaultScope faults;
+                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, THREAD_ERROR ) );
+                AREG_CHILD_CHECK( database.connect( path, areg::DatabaseRole::Recorder ) );
+                AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u && NOT_REPLACED );
+            }
+
+            AREG_CHILD_CHECK( write_one_row( database ) );
+            database.disconnect( );
+        }
+
+        remove_private_directory( file );
+    );
+}
+
+#endif  // defined(AREG_FAULT_ALLOC_TESTS)
 
 #endif  // AREG_LOGGING
 

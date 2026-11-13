@@ -477,7 +477,7 @@ int32_t FileBase::write_invert( const uint8_t * buffer, uint32_t length )
     uint32_t result = 0;
     if ((length != 0) && (buffer != nullptr) && is_opened() && can_write())
     {
-        uint8_t* temp = (buffer != nullptr) && (length > 0) ? new (std::nothrow) uint8_t[length] : nullptr;
+        uint8_t* temp = new (std::nothrow) uint8_t[length];
         if (temp != nullptr )
         {
             for (uint32_t i = 0; i < length; ++ i)

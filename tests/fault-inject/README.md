@@ -58,7 +58,7 @@ namespace areg_fault
                           , Fcntl, SocketGetOption, SocketSetOption, SocketAccept, HostName, EpollCreate, EpollWait, EventCreate
                           , MutexInit, MutexAttrInit, MutexAttrSetType, CondInit, CondAttrInit, CondAttrSetClock, ThreadAttrInit
                           , TimerFdCreate, TimerFdSet, SignalAction
-                          , SocketInit, SocketName, SemaphoreCreate, WaitableTimerCreate, FileSeek, ServiceManagerOpen, ServiceOpen, Count };
+                          , SocketInit, SocketName, SemaphoreCreate, WaitableTimerCreate, FileSeek, ServiceManagerOpen, ServiceOpen, ConsoleMode, Count };
 
     bool     arm( FaultPoint point, int error, uint32_t skip = 0u, uint32_t count = 1u );
     uint32_t failed( FaultPoint point );
@@ -103,6 +103,7 @@ namespace areg_fault
 | `SocketInit`, `SocketName` | not replaced | not replaced | `WSAStartup`, `getsockname` | the returned error (`WSAStartup`) / `WSAGetLastError()` |
 | `SemaphoreCreate`, `WaitableTimerCreate`, `FileSeek` | not replaced | not replaced | `CreateSemaphoreW`, `CreateWaitableTimerExW`, `SetFilePointer` | `GetLastError()` |
 | `ServiceManagerOpen`, `ServiceOpen` | not replaced | not replaced | `OpenSCManagerW`, `OpenServiceW` | `GetLastError()` |
+| `ConsoleMode` | not replaced | not replaced | `SetConsoleMode` | `GetLastError()` |
 
 Use the error the system really reports in that situation, for example `EMFILE` or
 `ERROR_TOO_MANY_OPEN_FILES` for an exhausted descriptor table. The tests keep one constant per

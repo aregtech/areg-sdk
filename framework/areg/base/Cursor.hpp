@@ -105,7 +105,6 @@ public:
      **/
     inline bool move_to_end() const noexcept;
 
-protected:
     /**
      * \brief   Returns true if the current cursor position is valid (not INVALID_CURSOR_POSITION).
      **/

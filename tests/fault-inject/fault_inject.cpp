@@ -1015,6 +1015,7 @@ namespace
     using GetPortStatusExFunc   = BOOL (WINAPI *)( HANDLE, LPOVERLAPPED_ENTRY, ULONG, PULONG, DWORD, BOOL );
     using OpenSCManagerWFunc    = SC_HANDLE (WINAPI *)( LPCWSTR, LPCWSTR, DWORD );
     using OpenServiceWFunc      = SC_HANDLE (WINAPI *)( SC_HANDLE, LPCWSTR, DWORD );
+    using SetConsoleModeFunc    = BOOL (WINAPI *)( HANDLE, DWORD );
 
     using SocketFunc            = SOCKET (WSAAPI *)( int, int, int );
     using ConnectFunc           = int (WSAAPI *)( SOCKET, const sockaddr *, int );
@@ -1048,6 +1049,7 @@ namespace
     GetPortStatusExFunc     gGetPortStatusEx    { nullptr };
     OpenSCManagerWFunc      gOpenSCManagerW     { nullptr };
     OpenServiceWFunc        gOpenServiceW       { nullptr };
+    SetConsoleModeFunc      gSetConsoleMode     { nullptr };
 
     SocketFunc              gSocket             { nullptr };
     ConnectFunc             gConnect            { nullptr };
@@ -1157,6 +1159,11 @@ namespace
     SC_HANDLE WINAPI _fault_OpenServiceW( SC_HANDLE manager, LPCWSTR name, DWORD access )
     {
         return _fails( areg_fault::FaultPoint::ServiceOpen ) ? nullptr : gOpenServiceW( manager, name, access );
+    }
+
+    BOOL WINAPI _fault_SetConsoleMode( HANDLE console, DWORD mode )
+    {
+        return _fails( areg_fault::FaultPoint::ConsoleMode ) ? FALSE : gSetConsoleMode( console, mode );
     }
 
     SOCKET WSAAPI _fault_socket( int domain, int type, int protocol )
@@ -1283,6 +1290,7 @@ namespace
         , AREG_FAULT_HOOK( "kernel32.dll", GetQueuedCompletionStatusEx, gGetPortStatusEx )
         , AREG_FAULT_HOOK( "advapi32.dll", OpenSCManagerW           , gOpenSCManagerW )
         , AREG_FAULT_HOOK( "advapi32.dll", OpenServiceW             , gOpenServiceW )
+        , AREG_FAULT_HOOK( "kernel32.dll", SetConsoleMode           , gSetConsoleMode )
         , AREG_FAULT_HOOK( "ws2_32.dll"  , socket                   , gSocket )
         , AREG_FAULT_HOOK( "ws2_32.dll"  , connect                  , gConnect )
         , AREG_FAULT_HOOK( "ws2_32.dll"  , send                     , gSend )
@@ -1374,6 +1382,7 @@ namespace
         case areg_fault::FaultPoint::FileSeek:
         case areg_fault::FaultPoint::ServiceManagerOpen:
         case areg_fault::FaultPoint::ServiceOpen:
+        case areg_fault::FaultPoint::ConsoleMode:
             return true;
 
         default:

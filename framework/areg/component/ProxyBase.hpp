@@ -109,11 +109,6 @@ private:
         ~Listener() = default;
 
         /**
-         * \brief   Initializes listener with message ID and sequence number.
-         **/
-        inline constexpr Listener( const SequenceNumber & seqNr ) noexcept;
-
-        /**
          * \brief   Initializes listener with message ID, sequence number, and client callback.
          **/
         inline constexpr Listener(const SequenceNumber & seqNr, NotificationConsumer * caller) noexcept;
@@ -987,12 +982,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase::Listener class implementation
 //////////////////////////////////////////////////////////////////////////
-
-inline constexpr ProxyBase::Listener::Listener(const SequenceNumber& seqNr) noexcept
-    : mSequenceNr(seqNr)
-    , mListener(nullptr)
-{
-}
 
 inline constexpr ProxyBase::Listener::Listener(const SequenceNumber& seqNr, NotificationConsumer* caller) noexcept
     : mSequenceNr(seqNr)

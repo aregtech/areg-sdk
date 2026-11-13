@@ -97,12 +97,6 @@ public:
     [[nodiscard]]
     inline bool is_empty() const noexcept;
 
-    /**
-     * \brief   Returns the number of events currently in the queue.
-     **/
-    [[nodiscard]]
-    inline uint32_t count() const noexcept;
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -121,11 +115,6 @@ private:
 inline bool EventStack::is_empty() const noexcept
 {
     return mValueList.empty();
-}
-
-inline uint32_t EventStack::count() const noexcept
-{
-    return static_cast<uint32_t>(mValueList.size());
 }
 
 inline uint32_t EventStack::push_event(Event& event) noexcept

@@ -138,15 +138,6 @@ public:
     inline WorkerThread * find_worker_thread( const String & threadName ) const noexcept;
 
     /**
-     * \brief   Searches for a worker thread by extracting the thread address from a component path.
-     *
-     * \param   componentPath       The component path containing the worker thread address.
-     * \return  Returns a pointer to the worker thread if found; nullptr otherwise.
-     **/
-    [[nodiscard]]
-    inline WorkerThread * find_thread( const String & componentPath ) const noexcept;
-
-    /**
      * \brief   Searches for a registered event consumer by class ID in the master and worker threads.
      * \param   whichClass      The runtime class ID of the event consumer.
      * \return  Returns a pointer to the dispatcher thread where the event consumer is registered;
@@ -232,12 +223,6 @@ inline WorkerThread* ComponentInfo::find_worker_thread( const ThreadAddress& thr
 inline WorkerThread* ComponentInfo::find_worker_thread( const String & threadName ) const noexcept
 {
     return find_worker_thread(ThreadAddress(threadName));
-}
-
-inline WorkerThread* ComponentInfo::find_thread( const String & componentPath ) const noexcept
-{
-    ComponentAddress componentAddress = ComponentAddress::from_path(componentPath);
-    return find_worker_thread(componentAddress.thread_address());
 }
 
 } // namespace areg

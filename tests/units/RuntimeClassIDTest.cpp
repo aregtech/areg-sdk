@@ -27,6 +27,7 @@
 #include <string_view>
 #include <type_traits>
 #include <unordered_map>
+#include <utility>
 
 namespace
 {
@@ -309,4 +310,18 @@ TEST(RuntimeClassIDTest, anonymous_type_number_depends_on_the_file)
     EXPECT_NE(areg::type_class_id<AnonymousType>(first), areg::type_class_id<AnonymousType>(second));
     EXPECT_EQ(areg::type_class_id<AnonymousType>(first), areg::type_class_id<AnonymousType>(std::string(first)));
     EXPECT_EQ(areg::type_class_id<runtime_class_named::NamedType>(first), areg::type_class_id<runtime_class_named::NamedType>(second));
+}
+
+/**
+ * \brief   A moved identifier keeps the name and the number.
+ **/
+TEST(RuntimeClassIDTest, moved_id_keeps_its_value)
+{
+    const std::string name{ "RuntimeClassIDMoved" };
+    areg::RuntimeClassID source(name.c_str());
+    const uint32_t magic{ source.magic() };
+    const areg::RuntimeClassID moved(std::move(source));
+    EXPECT_TRUE(moved.is_valid());
+    EXPECT_EQ(moved.name(), std::string_view{ name });
+    EXPECT_EQ(moved.magic(), magic);
 }

@@ -829,12 +829,28 @@ namespace
         char** result = areg::ext::convert_arguments<char>( argv, 2 );
         AREG_CHILD_CHECK( ( result != nullptr ) && ( std::strcmp( result[1], "--console" ) == 0 ) );
         areg::ext::delete_arguments( result, 2 );
+
+        wchar_t wideFirst[] { L"app" };
+        wchar_t wideSecond[]{ L"--console" };
+        wchar_t* wideArgv[] { wideFirst, wideSecond };
+        for ( uint32_t skip = 0u; skip < 3u; ++ skip )
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+            AREG_CHILD_CHECK( areg::ext::convert_arguments<wchar_t>( wideArgv, 2 ) == nullptr );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
+        }
+
+        result = areg::ext::convert_arguments<wchar_t>( wideArgv, 2 );
+        AREG_CHILD_CHECK( ( result != nullptr ) && ( std::strcmp( result[0], "app" ) == 0 ) && ( std::strcmp( result[1], "--console" ) == 0 ) );
+        areg::ext::delete_arguments( result, 2 );
     }
 }
 
 /**
  * \brief   Reproduces the defect: the conversion of the command line used a throwing allocation,
- *          so a failed one ended the process. Each failed allocation now returns null.
+ *          so a failed one ended the process. Each failed allocation now returns null, for narrow
+ *          and wide arguments.
  **/
 TEST( FaultInjectSweepTest, argument_conversion_that_cannot_allocate_returns_null )
 {

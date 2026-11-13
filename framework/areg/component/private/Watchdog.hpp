@@ -143,12 +143,6 @@ public:
     inline bool is_deadline_guard() const noexcept;
 
     /**
-     * \brief   Returns true if the watchdog is valid and enabled (timeout is not zero).
-     **/
-    [[nodiscard]]
-    inline bool is_valid() const noexcept;
-
-    /**
      * \brief   Returns the watchdog guard identifier.
      **/
     [[nodiscard]]
@@ -265,11 +259,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Watchdog inline methods.
 //////////////////////////////////////////////////////////////////////////
-
-inline bool Watchdog::is_valid() const noexcept
-{
-    return (handle() != nullptr);
-}
 
 inline Watchdog::GUARD_ID Watchdog::id() const noexcept
 {

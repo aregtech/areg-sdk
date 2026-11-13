@@ -35,6 +35,7 @@
 #include "areg/component/Timer.hpp"
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
+#include "aregextend/console/Console.hpp"
 #include "aregextend/service/private/SendBacklog.hpp"
 
 #include <WinSock2.h>
@@ -45,6 +46,7 @@
 #include <cstdio>
 #include <cstring>
 #include <deque>
+#include <initializer_list>
 #include <map>
 #include <mutex>
 #include <thread>
@@ -1121,6 +1123,67 @@ namespace
 TEST( FaultInjectWin32Test, local_service_does_not_start_when_the_service_manager_or_the_service_cannot_be_opened )
 {
     AREG_EXPECT_IN_CHILD( local_service_does_not_start_when_the_service_manager_or_the_service_cannot_be_opened( ) );
+}
+
+namespace
+{
+    //!< Gives the process a console of its own as the standard input and output.
+    void open_own_console( )
+    {
+        static_cast<void>(::FreeConsole( ));
+        AREG_CHILD_CHECK( ::AllocConsole( ) != FALSE );
+        const HANDLE input{ ::CreateFileW( L"CONIN$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr ) };
+        const HANDLE output{ ::CreateFileW( L"CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr ) };
+        AREG_CHILD_CHECK( (input != INVALID_HANDLE_VALUE) && (output != INVALID_HANDLE_VALUE) );
+        AREG_CHILD_CHECK( (::SetStdHandle( STD_INPUT_HANDLE, input ) != FALSE) && (::SetStdHandle( STD_OUTPUT_HANDLE, output ) != FALSE) );
+    }
+
+    //!< Returns the record of a pressed key: a character, or a key code without a character.
+    INPUT_RECORD key_press( WCHAR ch, WORD vk = 0u, WORD repeat = 1u )
+    {
+        INPUT_RECORD record{ };
+        record.EventType                        = KEY_EVENT;
+        record.Event.KeyEvent.bKeyDown          = TRUE;
+        record.Event.KeyEvent.wRepeatCount      = repeat;
+        record.Event.KeyEvent.wVirtualKeyCode   = vk;
+        record.Event.KeyEvent.uChar.UnicodeChar = ch;
+        return record;
+    }
+
+    //!< Puts the records into the input of the console.
+    void put_keys( std::initializer_list<INPUT_RECORD> records )
+    {
+        DWORD written{ 0u };
+        AREG_CHILD_CHECK( ::WriteConsoleInputW( ::GetStdHandle( STD_INPUT_HANDLE ), records.begin( ), static_cast<DWORD>(records.size( )), &written ) != FALSE );
+        AREG_CHILD_CHECK( written == records.size( ) );
+    }
+
+    void console_without_terminal_input_edits_and_recalls_with_key_codes( )
+    {
+        open_own_console( );
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ConsoleMode, ERROR_INVALID_PARAMETER, 1u, 1u ) );
+        areg::ext::Console & console{ areg::ext::Console::instance( ) };
+        AREG_CHILD_CHECK( (areg_fault::failed( areg_fault::FaultPoint::ConsoleMode ) == 1u) && NOT_REPLACED );
+        AREG_CHILD_CHECK( console.is_terminal( ) );
+        AREG_CHILD_CHECK( console.enable_console_input( true ) );
+
+        put_keys( { key_press( L'a', 0u, 3u ), key_press( 0, VK_LEFT ), key_press( 0, VK_LEFT ), key_press( 0, VK_DELETE ), key_press( 0, VK_HOME )
+                  , key_press( L'x' ), key_press( 0, VK_END ), key_press( L'z' ), key_press( 0, VK_RIGHT ), key_press( 0, VK_F1 ), key_press( L'\r' ) } );
+        AREG_CHILD_CHECK( console.wait_for_input( nullptr ) == "xaaz" );
+
+        put_keys( { key_press( L'n' ), key_press( 0, VK_UP ), key_press( 0, VK_DOWN ), key_press( L'!' ), key_press( L'\r' ) } );
+        AREG_CHILD_CHECK( console.wait_for_input( nullptr ) == "n!" );
+        put_keys( { key_press( 0, VK_UP ), key_press( 0, VK_UP ), key_press( L'\r' ) } );
+        AREG_CHILD_CHECK( console.wait_for_input( nullptr ) == "xaaz" );
+    }
+}
+
+// A console that refuses the terminal input mode reports key codes: arrows, Home, End and Delete
+// still edit the line and recall the entered lines, and a repeated key counts as several presses.
+TEST( FaultInjectWin32Test, console_without_terminal_input_edits_and_recalls_with_key_codes )
+{
+    AREG_EXPECT_IN_CHILD( console_without_terminal_input_edits_and_recalls_with_key_codes( ) );
 }
 
 #endif  // defined(_WIN32)
