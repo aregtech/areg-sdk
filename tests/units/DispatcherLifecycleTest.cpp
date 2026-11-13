@@ -616,3 +616,46 @@ TEST(DispatcherLifecycleTest, the_null_dispatcher_of_a_plain_thread_refuses_ever
     EXPECT_EQ(none.remove_consumer(listener), 0);
     EXPECT_EQ(&areg::DispatcherThread::dispatcher_thread(areg::ThreadAddress::invalid_thread_address()), &none);
 }
+
+TEST(DispatcherLifecycleTest, exit_requested_after_start_returns_ends_a_dispatcher_not_yet_in_its_loop)
+{
+    class HeldStartDispatcher final : public EventTestDispatcher
+    {
+    public:
+        HeldStartDispatcher(EventTestGate & gate, std::promise<void> & entered)
+            : EventTestDispatcher("LifecycleHeldStart")
+            , mGate(gate)
+            , mEntered(entered)
+        {
+        }
+
+        bool start_dispatcher() override
+        {
+            mEntered.set_value();
+            EXPECT_TRUE(mGate.wait());
+            return EventTestDispatcher::start_dispatcher();
+        }
+
+    private:
+        EventTestGate &         mGate;
+        std::promise<void> &    mEntered;
+    };
+
+    EventTestGate gate;
+    std::promise<void> entered;
+    HeldStartDispatcher dispatcher(gate, entered);
+    ASSERT_TRUE(dispatcher.start(EVENT_TEST_WAIT_MS));
+    ASSERT_EQ(entered.get_future().wait_for(EVENT_TEST_WAIT), std::future_status::ready);
+
+    dispatcher.trigger_exit();
+    gate.open();
+    const bool ended{ dispatcher.wait_completion(EVENT_TEST_WAIT_MS) };
+    EXPECT_TRUE(ended);
+    if (!ended)
+    {
+        dispatcher.trigger_exit();
+    }
+
+    dispatcher.shutdown(areg::WAIT_INFINITE);
+    EXPECT_FALSE(dispatcher.is_running());
+}
