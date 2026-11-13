@@ -68,50 +68,55 @@ bool WaitableMutexPosix::is_valid() const noexcept
 
 bool WaitableMutexPosix::release_mutex() noexcept
 {
-    SignalScope signal(*this);
-    bool result     = false;
-    bool sendSignal = false;
-
-    do 
+    do
     {
         ObjectLockPosix lock(mObjectLock);
-        if (mOwnerThread == pthread_self())
+        if (mOwnerThread != pthread_self())
+            return false;
+
+        ASSERT(mLockCount > 0);
+        if (mLockCount > 1)
         {
-            ASSERT(mLockCount > 0);
-            result = true;
+            ASSERT(mOwnerThread != static_cast<pthread_t>(0));
+            AREG_OUTPUT_INFO("Waitable Mutex remains locked, the lock count is still [ %d ], the owner thead [ %p ]"
+                        , mLockCount - 1
+                        , reinterpret_cast<id_type>(mOwnerThread));
 
-            if ( mLockCount == 1 )
-            {
-                mOwnerThread= static_cast<pthread_t>(0);
-                mLockCount  = 0;
-                sendSignal  = true;
+            -- mLockCount;
+            return true;
+        }
 
-                AREG_OUTPUT_DBG("Released waitable mutex [ %s ], reached lock count 0.", name().as_string( ));
-            }
-            else if (mLockCount > 1)
-            {
-                ASSERT(mOwnerThread != static_cast<pthread_t>(0));
-                AREG_OUTPUT_INFO("Waitable Mutex remains locked, the lock count is still [ %d ], the owner thead [ %p ]"
-                            , mLockCount - 1
-                            , reinterpret_cast<id_type>(mOwnerThread));
+        if (mLockCount != 1)
+        {
+            AREG_OUTPUT_DBG("Ignoring to unlock the waitable mutex. The lock count is 0, nothing to release, owner thread [ %p ].", reinterpret_cast<id_type>(mOwnerThread));
+            return true;
+        }
 
-                -- mLockCount;
-            }
-#ifdef DEBUG
-            else
-            {
-                ASSERT(mOwnerThread == static_cast<pthread_t>(0));
-                AREG_OUTPUT_DBG("Ignoring to unlock the waitable mutex. The lock count is 0, nothing to release, owner thread [ %p ].", reinterpret_cast<id_type>(mOwnerThread));
-            }
-#endif // DEBUG
+        // Without a registered waiter, the release is the last access to the mutex.
+        if (!has_registered_waiters())
+        {
+            _release_ownership();
+            return true;
         }
     } while (false);
 
-    if (sendSignal)
+    SignalLockPosix signal(*this);
+    do
     {
-        SyncLockAndWaitPosix::event_signaled(*this);
-    }
-    return result;
+        ObjectLockPosix lock(mObjectLock);
+        _release_ownership();
+    } while (false);
+
+    SyncLockAndWaitPosix::event_signaled(*this, signal);
+    return true;
+}
+
+inline void WaitableMutexPosix::_release_ownership() noexcept
+{
+    mOwnerThread= static_cast<pthread_t>(0);
+    mLockCount  = 0;
+
+    AREG_OUTPUT_DBG("Released waitable mutex [ %s ], reached lock count 0.", name().as_string( ));
 }
 
 bool WaitableMutexPosix::notify_request_ownership(pthread_t ownerThread)

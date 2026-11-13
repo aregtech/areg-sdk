@@ -594,17 +594,8 @@ bool WaitableTimerPosix::set_timer(uint32_t msTimeout, bool is_periodic)
 
 bool WaitableTimerPosix::cancel_timer() noexcept
 {
-    SignalScope signal(*this);
     TimerServicePosix::instance().disarm(*this);
-
-    do
-    {
-        ObjectLockPosix lock(mObjectLock);
-        _stop_timer();
-        mIsSignaled = true;
-    } while (false);
-
-    SyncLockAndWaitPosix::event_signaled(*this);
+    _signal_timer(0u, true);
     return true;
 }
 
@@ -651,14 +642,45 @@ void WaitableTimerPosix::_stop_timer() noexcept
 
 void WaitableTimerPosix::_timer_expired(uint32_t expirations) noexcept
 {
+    _signal_timer(expirations, false);
+}
+
+void WaitableTimerPosix::_signal_timer(uint32_t expirations, bool isCancel) noexcept
+{
     do
     {
         ObjectLockPosix lock(mObjectLock);
-        mFiredCount += expirations;
-        mIsSignaled  = true;
+
+        // Without a registered waiter, the state change is the last access to the timer.
+        if (!has_registered_waiters())
+        {
+            _set_signaled(expirations, isCancel);
+            return;
+        }
     } while (false);
 
-    SyncLockAndWaitPosix::event_signaled(*this);
+    SignalLockPosix signal(*this);
+    do
+    {
+        ObjectLockPosix lock(mObjectLock);
+        _set_signaled(expirations, isCancel);
+    } while (false);
+
+    SyncLockAndWaitPosix::event_signaled(*this, signal);
+}
+
+inline void WaitableTimerPosix::_set_signaled(uint32_t expirations, bool isCancel) noexcept
+{
+    if (isCancel)
+    {
+        _stop_timer();
+    }
+    else
+    {
+        mFiredCount += expirations;
+    }
+
+    mIsSignaled = true;
 }
 
 } // namespace areg::os

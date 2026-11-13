@@ -29,15 +29,14 @@ namespace areg::os {
 //////////////////////////////////////////////////////////////////////////
 
 WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool isAutoReset )
-    : WaitablePosix  ( areg::os::SyncKind::SoWaitEvent )
+    : WaitablePosix  ( areg::os::SyncKind::SoWaitEvent, isInitSignaled ? STATE_SIGNALED : 0u )
     , mEventReset    ( isAutoReset ? areg::os::ResetMode::Automatic : areg::os::ResetMode::Manual )
-    , mIsSignaled    ( isInitSignaled )
 {
 }
 
 bool WaitableEventPosix::check_signaled(pthread_t /*contextThread*/) const
 {
-    return mIsSignaled.load(std::memory_order_acquire);
+    return (wait_state().load(std::memory_order_acquire) & STATE_SIGNALED) != 0u;
 }
 
 bool WaitableEventPosix::notify_request_ownership(pthread_t /* ownerThread */)
@@ -45,8 +44,7 @@ bool WaitableEventPosix::notify_request_ownership(pthread_t /* ownerThread */)
     if (mEventReset == areg::os::ResetMode::Automatic)
     {
         // Atomically take ownership
-        bool expected{ true };
-        return mIsSignaled.compare_exchange_strong(expected, false, std::memory_order_acq_rel, std::memory_order_relaxed);
+        return (wait_state().fetch_and(~STATE_SIGNALED, std::memory_order_acq_rel) & STATE_SIGNALED) != 0u;
     }
 
     return true;
@@ -65,18 +63,28 @@ void WaitableEventPosix::notify_released_threads(int32_t numThreads)
 
 bool WaitableEventPosix::set_signaled() noexcept
 {
-    SignalScope signal(*this);
     if (!is_valid())
         return false;
 
+    // Without a registered waiter, setting the bit is the last access to the event.
+    std::atomic<uint32_t> & state{ wait_state() };
+    uint32_t value{ state.load(std::memory_order_relaxed) };
+    while ((value & STATE_WAITERS) == 0u)
+    {
+        if (state.compare_exchange_weak(value, value | STATE_SIGNALED, std::memory_order_acq_rel, std::memory_order_relaxed))
+            return true;
+    }
+
+    SignalLockPosix signal(*this);
+
     // Notify on the false->true edge, AND whenever a waiter is parked even if already signaled.
-    bool notify{ !mIsSignaled.exchange(true, std::memory_order_acq_rel) };
+    bool notify{ (state.fetch_or(STATE_SIGNALED, std::memory_order_acq_rel) & STATE_SIGNALED) == 0u };
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
     notify = notify || has_waiters();
 #endif
     if (notify)
     {
-        SyncLockAndWaitPosix::event_signaled(*this);
+        SyncLockAndWaitPosix::event_signaled(*this, signal);
     }
 
     return true;
@@ -84,23 +92,25 @@ bool WaitableEventPosix::set_signaled() noexcept
 
 void WaitableEventPosix::pulse_event() noexcept
 {
-    SignalScope signal(*this);
     if (!is_valid())
         return;
 
+    SignalLockPosix signal(*this);
+
     // A pulse releases only the threads waiting now and leaves the event non-signaled.
-    mIsSignaled.store(false, std::memory_order_release);
+    std::atomic<uint32_t> & state{ wait_state() };
+    state.fetch_and(~STATE_SIGNALED, std::memory_order_release);
     const bool releaseAll{ mEventReset == areg::os::ResetMode::Manual };
     int32_t released{ 0 };
 #if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
-    released = notify_pulse_waiters(releaseAll);
+    released = notify_pulse_waiters(releaseAll, signal);
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
     if ((releaseAll || (released == 0)) && has_wait_all_waiters())
     {
-        mIsSignaled.store(true, std::memory_order_release);
+        state.fetch_or(STATE_SIGNALED, std::memory_order_release);
         released += SyncLockAndWaitPosix::notify_wait_all_waiters(*this);
-        mIsSignaled.store(false, std::memory_order_release);
+        state.fetch_and(~STATE_SIGNALED, std::memory_order_release);
     }
 
     AREG_OUTPUT_DBG("Pulsed event [ %s ], released [ %d ] thread(s)", name().as_string(), released);

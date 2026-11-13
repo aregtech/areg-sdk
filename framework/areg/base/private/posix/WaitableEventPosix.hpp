@@ -123,10 +123,6 @@ private:
      * \brief   Specifies whether the event is manual- or auto-reset.
      **/
     const areg::os::ResetMode   mEventReset;
-    /**
-     * \brief   Flag that indicates the signaled state of the event.
-     **/
-    std::atomic<bool>           mIsSignaled;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -145,21 +141,22 @@ inline bool WaitableEventPosix::reset() noexcept
     if (!is_valid())
         return false;
 
+    std::atomic<uint32_t> & state{ wait_state() };
+    if ((state.load(std::memory_order_relaxed) & STATE_SIGNALED) == 0u)
+        return true;
+
 #ifdef DEBUG
-    if (mIsSignaled.load(std::memory_order_relaxed))
+    if (areg::os::ResetMode::Automatic == mEventReset)
     {
-        if (areg::os::ResetMode::Automatic == mEventReset)
-        {
-            AREG_OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", name().as_string());
-        }
-        else
-        {
-            AREG_OUTPUT_DBG("Manually reseting event [ %s ]", name().as_string());
-        }
+        AREG_OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", name().as_string());
+    }
+    else
+    {
+        AREG_OUTPUT_DBG("Manually reseting event [ %s ]", name().as_string());
     }
 #endif // DEBUG
 
-    mIsSignaled.store(false, std::memory_order_release);
+    state.fetch_and(~STATE_SIGNALED, std::memory_order_release);
     return true;
 }
 

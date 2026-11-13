@@ -5,6 +5,8 @@
 
 #if defined(AREG_TEST_PRIVATE_POSIX)
     #include "areg/base/private/posix/MutexPosix.hpp"
+    #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
+    #include "areg/base/private/posix/WaitablePosix.hpp"
 #endif  // defined(AREG_TEST_PRIVATE_POSIX)
 
 #include <array>
@@ -759,3 +761,379 @@ TEST(SyncTimerCoverageTest, timer_is_destroyed_as_soon_as_its_expiry_released_it
         ASSERT_TRUE(expired);
     }
 }
+
+TEST(SyncEventCoverageTest, auto_reset_signal_releases_one_waiter_and_a_second_signal_the_other)
+{
+    CoverageDeadline deadline;
+    areg::SyncEvent event(true, true);
+    areg::SyncEvent released(true, true);
+    CoverageGate started;
+    std::atomic<uint32_t> count{ 0u };
+    auto wait_once = [&]()
+        {
+            started.arrive();
+            if (event.lock(COVERAGE_WAIT_MS))
+            {
+                ++count;
+                EXPECT_TRUE(released.set_signaled());
+            }
+            else
+            {
+                ADD_FAILURE() << "Auto-reset event did not release a waiter";
+            }
+        };
+
+    std::thread first(wait_once);
+    std::thread second(wait_once);
+    ASSERT_TRUE(started.wait(2u));
+    ASSERT_TRUE(event.set_signaled());
+    ASSERT_TRUE(released.lock(COVERAGE_WAIT_MS));
+    EXPECT_EQ(count.load(), 1u);
+    ASSERT_TRUE(event.set_signaled());
+    first.join();
+    second.join();
+    EXPECT_EQ(count.load(), 2u);
+    EXPECT_FALSE(event.lock(areg::DO_NOT_WAIT));
+}
+
+TEST(SyncEventCoverageTest, reset_while_a_thread_waits_does_not_lose_the_next_signal)
+{
+    CoverageDeadline deadline;
+    for (bool autoReset : { false, true })
+    {
+        SCOPED_TRACE(autoReset);
+        areg::SyncEvent event(true, autoReset);
+        CoverageGate started;
+        bool acquired{ false };
+        std::thread waiter([&]()
+            {
+                started.arrive();
+                acquired = event.lock(COVERAGE_WAIT_MS);
+            });
+
+        ASSERT_TRUE(started.wait());
+        EXPECT_TRUE(event.reset());
+        EXPECT_TRUE(event.reset());
+        EXPECT_TRUE(event.set_signaled());
+        waiter.join();
+        EXPECT_TRUE(acquired);
+    }
+}
+
+TEST(SemaphoreCoverageTest, concurrent_releases_with_a_waiter_never_exceed_the_maximum_count)
+{
+    CoverageDeadline deadline;
+    constexpr uint32_t ROUNDS{ 500u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::Semaphore semaphore(1, 0);
+        std::atomic<uint32_t> released{ 0u };
+        bool acquired{ false };
+        std::thread waiter([&]() { acquired = semaphore.lock(COVERAGE_WAIT_MS); });
+        auto release = [&]()
+            {
+                if (semaphore.unlock())
+                {
+                    ++released;
+                }
+            };
+
+        std::thread first(release);
+        std::thread second(release);
+        first.join();
+        second.join();
+        waiter.join();
+        ASSERT_TRUE(acquired);
+
+        const uint32_t remaining{ semaphore.lock(areg::DO_NOT_WAIT) ? 1u : 0u };
+        ASSERT_FALSE(semaphore.lock(areg::DO_NOT_WAIT));
+        ASSERT_EQ(released.load(), 1u + remaining);
+    }
+}
+
+TEST(MultiLockCoverageTest, wait_all_is_released_by_a_signal_that_races_its_registration)
+{
+    CoverageDeadline deadline;
+    constexpr uint32_t ROUNDS{ 2'000u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::SyncEvent first(false, false);
+        areg::SyncEvent second(true, false);
+        int32_t index{ areg::MultiLock::LOCK_INDEX_TIMEOUT };
+        std::thread waiter([&]()
+            {
+                areg::SyncObject* objects[]{ &first, &second };
+                areg::MultiLock multi(objects, 2, false);
+                index = multi.lock(COVERAGE_WAIT_MS, true);
+            });
+
+        EXPECT_TRUE(second.set_signaled());
+        waiter.join();
+        ASSERT_EQ(index, areg::MultiLock::LOCK_INDEX_ALL);
+    }
+}
+
+#if defined(AREG_TEST_PRIVATE_POSIX) && (defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__))
+
+namespace
+{
+    template<class SyncType>
+    areg::os::WaitablePosix& waitable_of(SyncType& object)
+    {
+        return *reinterpret_cast<areg::os::WaitablePosix*>(object.handle());
+    }
+
+    void wait_until_parked(const areg::os::WaitablePosix& waitable)
+    {
+        while (!waitable.has_waiters())
+        {
+            std::this_thread::yield();
+        }
+    }
+}
+
+TEST(SyncEventCoverageTest, bug_922_a_parked_waiter_destroys_the_event_as_soon_as_its_wait_returned)
+{
+    CoverageDeadline deadline;
+    constexpr uint32_t ROUNDS{ 200u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::SyncEvent * event{ new (std::nothrow) areg::SyncEvent(true, (i % 2u) == 0u) };
+        ASSERT_NE(event, nullptr);
+        const areg::os::WaitablePosix& waitable{ waitable_of(*event) };
+        bool released{ false };
+        std::thread waiter([event, &released]()
+            {
+                released = event->lock(COVERAGE_WAIT_MS);
+                delete event;
+            });
+
+        wait_until_parked(waitable);
+        static_cast<void>(event->set_signaled());
+        waiter.join();
+        ASSERT_TRUE(released);
+    }
+}
+
+TEST(SyncEventCoverageTest, bug_922_a_parked_waiter_destroys_the_event_as_soon_as_a_pulse_released_it)
+{
+    CoverageDeadline deadline;
+    constexpr uint32_t ROUNDS{ 200u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::SyncEvent * event{ new (std::nothrow) areg::SyncEvent(true, (i % 2u) == 0u) };
+        ASSERT_NE(event, nullptr);
+        const areg::os::WaitablePosix& waitable{ waitable_of(*event) };
+        bool released{ false };
+        std::thread waiter([event, &released]()
+            {
+                released = event->lock(COVERAGE_WAIT_MS);
+                delete event;
+            });
+
+        wait_until_parked(waitable);
+        event->pulse_event();
+        waiter.join();
+        ASSERT_TRUE(released);
+    }
+}
+
+TEST(MutexCoverageTest, bug_922_a_parked_waiter_destroys_the_mutex_as_soon_as_its_lock_returned)
+{
+    CoverageDeadline deadline;
+    constexpr uint32_t ROUNDS{ 200u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::Mutex * mutex{ new (std::nothrow) areg::Mutex(true) };
+        ASSERT_NE(mutex, nullptr);
+        const areg::os::WaitablePosix& waitable{ waitable_of(*mutex) };
+        bool acquired{ false };
+        std::thread waiter([mutex, &acquired]()
+            {
+                acquired = mutex->lock(COVERAGE_WAIT_MS);
+                if (acquired)
+                {
+                    static_cast<void>(mutex->unlock());
+                }
+
+                delete mutex;
+            });
+
+        wait_until_parked(waitable);
+        static_cast<void>(mutex->unlock());
+        waiter.join();
+        ASSERT_TRUE(acquired);
+    }
+}
+
+TEST(SemaphoreCoverageTest, bug_922_a_parked_waiter_destroys_the_semaphore_as_soon_as_its_wait_returned)
+{
+    CoverageDeadline deadline;
+    constexpr uint32_t ROUNDS{ 200u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::Semaphore * semaphore{ new (std::nothrow) areg::Semaphore(1, 0) };
+        ASSERT_NE(semaphore, nullptr);
+        const areg::os::WaitablePosix& waitable{ waitable_of(*semaphore) };
+        bool acquired{ false };
+        std::thread waiter([semaphore, &acquired]()
+            {
+                acquired = semaphore->lock(COVERAGE_WAIT_MS);
+                delete semaphore;
+            });
+
+        wait_until_parked(waitable);
+        static_cast<void>(semaphore->unlock());
+        waiter.join();
+        ASSERT_TRUE(acquired);
+    }
+}
+
+TEST(SyncTimerCoverageTest, bug_922_a_parked_waiter_destroys_the_timer_as_soon_as_a_cancel_released_it)
+{
+    CoverageDeadline deadline;
+    constexpr uint32_t ROUNDS{ 200u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::SyncTimer * timer{ new (std::nothrow) areg::SyncTimer(COVERAGE_WAIT_MS) };
+        ASSERT_NE(timer, nullptr);
+        ASSERT_TRUE(timer->set_timer());
+        const areg::os::WaitablePosix& waitable{ waitable_of(*timer) };
+        bool released{ false };
+        std::thread waiter([timer, &released]()
+            {
+                released = timer->lock(COVERAGE_WAIT_MS);
+                delete timer;
+            });
+
+        wait_until_parked(waitable);
+        static_cast<void>(timer->cancel_timer());
+        waiter.join();
+        ASSERT_TRUE(released);
+    }
+}
+
+TEST(MultiLockCoverageTest, bug_922_a_wait_all_waiter_destroys_the_event_as_soon_as_its_wait_returned)
+{
+    CoverageDeadline deadline;
+    constexpr uint32_t ROUNDS{ 200u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::SyncEvent first(false, false);
+        areg::SyncEvent * second{ new (std::nothrow) areg::SyncEvent(true, false) };
+        ASSERT_NE(second, nullptr);
+        areg::os::WaitablePosix& waitable{ waitable_of(*second) };
+        int32_t index{ areg::MultiLock::LOCK_INDEX_TIMEOUT };
+        std::thread waiter([&first, second, &index]()
+            {
+                do
+                {
+                    areg::SyncObject* objects[]{ &first, second };
+                    areg::MultiLock multi(objects, 2, false);
+                    index = multi.lock(COVERAGE_WAIT_MS, true);
+                } while (false);
+
+                delete second;
+            });
+
+        while (!areg::os::SyncLockAndWaitPosix::is_waitable_registered(waitable))
+        {
+            std::this_thread::yield();
+        }
+
+        static_cast<void>(second->set_signaled());
+        waiter.join();
+        ASSERT_EQ(index, areg::MultiLock::LOCK_INDEX_ALL);
+    }
+}
+
+namespace
+{
+    void wait_until_registered_for_wait_all(areg::SyncObject& object)
+    {
+        areg::os::WaitablePosix& waitable{ *reinterpret_cast<areg::os::WaitablePosix*>(object.handle()) };
+        while (!areg::os::SyncLockAndWaitPosix::is_waitable_registered(waitable))
+        {
+            std::this_thread::yield();
+        }
+    }
+}
+
+TEST(MultiLockCoverageTest, setting_a_signaled_event_again_does_not_release_a_wait_all_waiter)
+{
+    CoverageDeadline deadline;
+    areg::SyncEvent first(false, false);
+    areg::SyncEvent second(true, false);
+    std::atomic<int32_t> index{ areg::MultiLock::LOCK_INDEX_TIMEOUT };
+    std::atomic<bool> done{ false };
+    std::thread waiter([&]()
+        {
+            areg::SyncObject* objects[]{ &first, &second };
+            areg::MultiLock multi(objects, 2, false);
+            index = multi.lock(COVERAGE_WAIT_MS, true);
+            done = true;
+        });
+
+    wait_until_registered_for_wait_all(second);
+    EXPECT_TRUE(first.set_signaled());
+    EXPECT_FALSE(done.load());
+    EXPECT_TRUE(second.set_signaled());
+    waiter.join();
+    EXPECT_EQ(index.load(), areg::MultiLock::LOCK_INDEX_ALL);
+}
+
+TEST(MultiLockCoverageTest, pulse_releases_a_wait_all_waiter_whose_other_objects_are_signaled)
+{
+    CoverageDeadline deadline;
+    for (bool autoReset : { false, true })
+    {
+        SCOPED_TRACE(autoReset);
+        areg::SyncEvent first(false, false);
+        areg::SyncEvent pulsed(true, autoReset);
+        int32_t index{ areg::MultiLock::LOCK_INDEX_TIMEOUT };
+        std::thread waiter([&]()
+            {
+                areg::SyncObject* objects[]{ &first, &pulsed };
+                areg::MultiLock multi(objects, 2, false);
+                index = multi.lock(COVERAGE_WAIT_MS, true);
+            });
+
+        wait_until_registered_for_wait_all(pulsed);
+        pulsed.pulse_event();
+        waiter.join();
+        EXPECT_EQ(index, areg::MultiLock::LOCK_INDEX_ALL);
+        EXPECT_FALSE(pulsed.lock(areg::DO_NOT_WAIT));
+        EXPECT_TRUE(first.lock(areg::DO_NOT_WAIT));
+    }
+}
+
+TEST(MultiLockCoverageTest, two_wait_all_waiters_sharing_an_event_are_each_released_by_their_own_object)
+{
+    CoverageDeadline deadline;
+    areg::SyncEvent shared(true, false);
+    areg::SyncEvent first(true, false);
+    areg::SyncEvent second(true, false);
+    std::atomic<int32_t> firstIndex{ areg::MultiLock::LOCK_INDEX_TIMEOUT };
+    std::atomic<int32_t> secondIndex{ areg::MultiLock::LOCK_INDEX_TIMEOUT };
+    auto wait_all = [&shared](areg::SyncEvent& own, std::atomic<int32_t>& index)
+        {
+            areg::SyncObject* objects[]{ &shared, &own };
+            areg::MultiLock multi(objects, 2, false);
+            index = multi.lock(COVERAGE_WAIT_MS, true);
+        };
+
+    std::thread firstWaiter([&]() { wait_all(first, firstIndex); });
+    std::thread secondWaiter([&]() { wait_all(second, secondIndex); });
+    wait_until_registered_for_wait_all(first);
+    wait_until_registered_for_wait_all(second);
+    EXPECT_TRUE(shared.set_signaled());
+    EXPECT_TRUE(first.set_signaled());
+    firstWaiter.join();
+    EXPECT_EQ(firstIndex.load(), areg::MultiLock::LOCK_INDEX_ALL);
+    EXPECT_EQ(secondIndex.load(), areg::MultiLock::LOCK_INDEX_TIMEOUT);
+    EXPECT_TRUE(second.set_signaled());
+    secondWaiter.join();
+    EXPECT_EQ(secondIndex.load(), areg::MultiLock::LOCK_INDEX_ALL);
+}
+
+#endif  // defined(AREG_TEST_PRIVATE_POSIX) && (defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__))

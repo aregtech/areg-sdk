@@ -54,6 +54,8 @@ struct WaiterNode
 
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
+class SignalLockPosix;
+
 //////////////////////////////////////////////////////////////////////////
 // SyncWaitable class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -63,33 +65,20 @@ struct WaiterNode
  **/
 class WaitablePosix : public SyncObjectPosix
 {
-public:
-    /**
-     * \brief   Marks a signal call on the waitable for the lifetime of the scope.
-     *          free_resources() waits until every signal call in flight has ended.
-     **/
-    class SignalScope
-    {
-    public:
-        /**
-         * \brief   Counts a signal call on the waitable. Created before the call changes the state.
-         *
-         * \param   waitable    The waitable that is signaled.
-         **/
-        explicit inline SignalScope( WaitablePosix & waitable ) noexcept;
+    friend class SignalLockPosix;
 
-        /**
-         * \brief   Ends the signal call. Reads nothing of the waitable after the count drops.
-         **/
-        inline ~SignalScope( ) noexcept;
-
-    private:
-        //!< The counter of signal calls of the waitable.
-        std::atomic<uint32_t> & mSignalers;
-
-        SignalScope( ) = delete;
-        AREG_NOCOPY_NOMOVE( SignalScope );
-    };
+//////////////////////////////////////////////////////////////////////////
+// Constants
+//////////////////////////////////////////////////////////////////////////
+protected:
+    //!< The bit of the wait state an event uses for its signaled state.
+    static constexpr uint32_t   STATE_SIGNALED  { 0x00000001u };
+    //!< The bit of the wait state set while a WaitAny waiter is registered.
+    static constexpr uint32_t   STATE_WAIT_ANY  { 0x00000002u };
+    //!< The bit of the wait state set while a WaitAll waiter is registered.
+    static constexpr uint32_t   STATE_WAIT_ALL  { 0x00000004u };
+    //!< The bits of the wait state set while a waiter of any kind is registered.
+    static constexpr uint32_t   STATE_WAITERS   { STATE_WAIT_ANY | STATE_WAIT_ALL };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -97,8 +86,11 @@ public:
 protected:
     /**
      * \brief   Protected constructor. Sets synchronization type and name.
+     *
+     * \param   syncType    The type of the synchronization object.
+     * \param   initState   The initial bits of the wait state owned by the derived class.
      **/
-    WaitablePosix( areg::os::SyncKind syncType);
+    WaitablePosix( areg::os::SyncKind syncType, uint32_t initState = 0u );
 
 public:
     virtual ~WaitablePosix();
@@ -145,20 +137,20 @@ public:
     bool is_valid() const noexcept override;
 
     /**
-     * \brief   Called before deletion. Waits for the signal calls in flight, then releases all
-     *          waiting threads with failure code.
+     * \brief   Called before deletion. Waits for a signal call that holds the signal lock, then
+     *          releases all waiting threads with failure code.
      **/
     void free_resources() final;
 
     /**
-     * \brief   Called by SyncLockAndWaitPosix when registering this waitable in the WaitAll
-     *          global map. Tracks the count of active WaitAll waiters so event_signaled() can
-     *          skip the global map lock entirely when no WaitAll waiter is present.
+     * \brief   Called by SyncLockAndWaitPosix under the WaitAll map lock when registering this
+     *          waitable in the WaitAll global map, before the state of the waitable is checked.
      **/
     inline void add_wait_all_registration() noexcept;
 
     /**
-     * \brief   Called by SyncLockAndWaitPosix when deregistering this waitable from the WaitAll global map.
+     * \brief   Called by SyncLockAndWaitPosix under the WaitAll map lock when deregistering this
+     *          waitable from the WaitAll global map.
      **/
     inline void remove_wait_all_registration() noexcept;
 
@@ -192,20 +184,22 @@ public:
     void unregister_waiter( WaiterNode* node ) noexcept;
 
     /**
-     * \brief   Walks the intrusive waiter list and fires each eligible WaitAny waiter.
+     * \brief   Marks each eligible WaitAny waiter. The waiters are woken when the signal lock is released.
      *
-     * \return  Returns the number of waiters woken.
+     * \param   signal  The signal lock of this waitable, held by the caller.
+     * \return  Returns the number of waiters marked.
      **/
-    int32_t notify_any_waiters() noexcept;
+    int32_t notify_any_waiters( SignalLockPosix & signal ) noexcept;
 
     /**
      * \brief   Hands a pulse to the WaitAny waiters parked now: each one marked returns owning
      *          this object without checking its state.
      *
      * \param   releaseAll  If true, marks every waiter; otherwise marks the first one only.
+     * \param   signal      The signal lock of this waitable, held by the caller.
      * \return  Returns the number of waiters marked.
      **/
-    int32_t notify_pulse_waiters( bool releaseAll ) noexcept;
+    int32_t notify_pulse_waiters( bool releaseAll, SignalLockPosix & signal ) noexcept;
 
     /**
      * \brief   Returns true if at least one waiter is currently parked on this object's intrusive list.
@@ -214,38 +208,50 @@ public:
     [[nodiscard]]
     inline bool has_waiters() const noexcept;
 
-private:
-    //!< Head of the per-object intrusive WaiterNode list; nullptr when empty.
-    std::atomic<WaiterNode*>    mWaiters;
+#endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+
+protected:
+    /**
+     * \brief   Returns true if a waiter of any kind is registered. Called under the lock that
+     *          guards the state of the derived class, which a waiter takes after registering.
+     **/
+    [[nodiscard]]
+    inline bool has_registered_waiters() const noexcept;
 
     /**
-     * \brief   Marks the waiters with their index and the given bits, and wakes them.
+     * \brief   Returns the wait state: the waiter bits and the bits owned by the derived class.
+     **/
+    inline std::atomic<uint32_t> & wait_state() noexcept;
+
+    /**
+     * \brief   Returns the wait state: the waiter bits and the bits owned by the derived class.
+     **/
+    inline const std::atomic<uint32_t> & wait_state() const noexcept;
+
+private:
+#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+    /**
+     * \brief   Marks the waiters with their index and the given bits.
      *
      * \param   mark        The bits added to the index of each waiter.
      * \param   releaseAll  If true, marks every waiter; otherwise marks the first one only.
+     * \param   signal      The signal lock of this waitable, held by the caller.
      * \return  Returns the number of waiters marked.
      **/
-    int32_t _notify_waiters( uint32_t mark, bool releaseAll ) noexcept;
-    //!< Lock of the mWaiters list; a contended thread sleeps after a short spin.
-    areg::PlainSpinLock         mWaitersLock;
+    int32_t _notify_waiters( uint32_t mark, bool releaseAll, SignalLockPosix & signal ) noexcept;
 
+    //!< Head of the per-object intrusive WaiterNode list; nullptr when empty.
+    std::atomic<WaiterNode*>    mWaiters;
 #endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
-private:
+    //!< Lock of the mWaiters list and of a signal call that may release a waiter.
+    areg::PlainSpinLock         mWaitersLock;
+    //!< The STATE_WAIT_ANY and STATE_WAIT_ALL bits, and the bits owned by the derived class.
+    std::atomic<uint32_t>       mWaitState;
     //! Set to false by free_resources() to signal the object is no longer usable.
-    std::atomic<bool>        mValid;
-    //! Number of active WaitAll (SyncLockAndWaitPosix) registrations.
-    std::atomic<uint32_t>    mWaitAllCount;
-    //! Number of signal calls in flight; SIGNAL_DRAIN is set while free_resources() waits for them.
-    std::atomic<uint32_t>    mSignalers;
-
-    //!< The bit of mSignalers set while free_resources() waits for the signal calls.
-    static constexpr uint32_t   SIGNAL_DRAIN    { 0x80000000u };
-
-    /**
-     * \brief   Blocks until no signal call of the waitable is in flight.
-     **/
-    void _wait_signalers() noexcept;
+    std::atomic<bool>           mValid;
+    //! Number of active WaitAll registrations, changed under the WaitAll map lock.
+    uint32_t                    mWaitAllCount;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -259,42 +265,110 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// SignalLockPosix class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Holds the signal lock of a waitable for a signal call that may release a waiter.
+ *          free_resources() of the waitable waits for it. The destructor releases the lock,
+ *          then wakes the waiters marked under it, and reads nothing of the waitable.
+ **/
+class SignalLockPosix
+{
+    friend class WaitablePosix;
+
+public:
+    /**
+     * \brief   Takes the signal lock of the waitable, before the call changes the state.
+     *
+     * \param   waitable    The waitable that is signaled.
+     **/
+    explicit inline SignalLockPosix( WaitablePosix & waitable ) noexcept;
+
+    /**
+     * \brief   Releases the signal lock and wakes the marked waiters.
+     **/
+    ~SignalLockPosix( ) noexcept;
+
+private:
+    //!< The signal lock of the waitable.
+    areg::PlainSpinLock &   mLock;
+
+#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+    /**
+     * \brief   Wakes the marked waiters and empties the list.
+     **/
+    void _wake_marked() noexcept;
+
+    //!< The fire words of the marked waiters.
+    std::atomic<uint32_t> * mWake[areg::MAXIMUM_WAITING_OBJECTS];
+    //!< The number of entries in mWake.
+    int32_t                 mWakeCount;
+#endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+
+    SignalLockPosix( ) = delete;
+    AREG_NOCOPY_NOMOVE( SignalLockPosix );
+};
+
+//////////////////////////////////////////////////////////////////////////
 // WaitablePosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline WaitablePosix::SignalScope::SignalScope( WaitablePosix & waitable ) noexcept
-    : mSignalers( waitable.mSignalers )
-{
-    mSignalers.fetch_add(1u, std::memory_order_relaxed);
-}
-
-inline WaitablePosix::SignalScope::~SignalScope( ) noexcept
-{
-    const std::atomic<uint32_t> * const word{ &mSignalers };
-    if ((mSignalers.fetch_sub(1u, std::memory_order_release) & WaitablePosix::SIGNAL_DRAIN) != 0u)
-    {
-        areg::os::_os_wake_word_all(word);
-    }
-}
-
 inline void WaitablePosix::add_wait_all_registration() noexcept
 {
-    mWaitAllCount.fetch_add(1u, std::memory_order_relaxed);
+    if (mWaitAllCount ++ == 0u)
+    {
+        mWaitState.fetch_or(STATE_WAIT_ALL, std::memory_order_acq_rel);
+    }
 }
 
 inline void WaitablePosix::remove_wait_all_registration() noexcept
 {
-    mWaitAllCount.fetch_sub(1u, std::memory_order_relaxed);
+    if (-- mWaitAllCount == 0u)
+    {
+        mWaitState.fetch_and(~STATE_WAIT_ALL, std::memory_order_release);
+    }
 }
 
 inline bool WaitablePosix::has_wait_all_waiters() const noexcept
 {
-    return mWaitAllCount.load(std::memory_order_relaxed) > 0u;
+    return (mWaitState.load(std::memory_order_acquire) & STATE_WAIT_ALL) != 0u;
 }
+
+inline bool WaitablePosix::has_registered_waiters() const noexcept
+{
+    return (mWaitState.load(std::memory_order_relaxed) & STATE_WAITERS) != 0u;
+}
+
+inline std::atomic<uint32_t> & WaitablePosix::wait_state() noexcept
+{
+    return mWaitState;
+}
+
+inline const std::atomic<uint32_t> & WaitablePosix::wait_state() const noexcept
+{
+    return mWaitState;
+}
+
+#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
 
 inline bool  WaitablePosix::has_waiters() const noexcept
 {
     return (mWaiters.load(std::memory_order_acquire) != nullptr);
+}
+
+#endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+
+//////////////////////////////////////////////////////////////////////////
+// SignalLockPosix class inline implementation
+//////////////////////////////////////////////////////////////////////////
+
+inline SignalLockPosix::SignalLockPosix( WaitablePosix & waitable ) noexcept
+    : mLock     ( waitable.mWaitersLock )
+#if defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+    , mWakeCount( 0 )
+#endif  // defined(__linux__) || defined(__APPLE__) || defined(__CYGWIN__)
+{
+    mLock.lock();
 }
 
 } // namespace areg::os

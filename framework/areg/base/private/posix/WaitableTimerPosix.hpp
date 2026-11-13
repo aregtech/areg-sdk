@@ -168,6 +168,20 @@ private:
      * \brief   Internal method to reset the timeout and the expiration count.
      **/
     void _stop_timer() noexcept;
+    /**
+     * \brief   Signals the timer and releases its waiters.
+     *
+     * \param   expirations     The number of periods elapsed since the previous call. Ignored on cancel.
+     * \param   isCancel        If true, the timer is cancelled; otherwise it has expired.
+     **/
+    void _signal_timer( uint32_t expirations, bool isCancel ) noexcept;
+    /**
+     * \brief   Sets the signaled state of a cancelled or an expired timer. Called under mObjectLock.
+     *
+     * \param   expirations     The number of periods elapsed since the previous call. Ignored on cancel.
+     * \param   isCancel        If true, the timer is cancelled; otherwise it has expired.
+     **/
+    inline void _set_signaled( uint32_t expirations, bool isCancel ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
