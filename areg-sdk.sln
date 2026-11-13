@@ -214,6 +214,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "10_sync", "examples\10_sync
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_service", "examples\11_service\11_service.vcxproj", "{ABEE2F20-BB60-434F-92D8-75DB71020E01}"
 	ProjectSection(ProjectDependencies) = postProject
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 	EndProjectSection
 EndProject

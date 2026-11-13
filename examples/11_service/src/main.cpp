@@ -19,6 +19,7 @@
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/logging/areg_log.h"
+#include "aregextend/console/Console.hpp"
 #include "src/ServicingComponent.hpp"
 
 #include <algorithm>
@@ -26,6 +27,7 @@
 #ifdef  _MSC_VER
     // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg")
+    #pragma comment(lib, "aregextend")
 #endif // _MSC_VER
 
 constexpr char const _modelName[] { "TestModel" };  //!< The name of model
@@ -51,7 +53,8 @@ DEF_LOG_SCOPE(examples_11_service, main);
 //! A Demo of loading and starting an empty service with no functionalities
 int main()
 {
-    std::cout << "A Demo of loading and starting an empty service with no functionalities ..." << std::endl;
+    const areg::ext::Console& console = areg::ext::Console::instance();
+    console.print_txt("A Demo of loading and starting an empty service with no functionalities ...\n");
 
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr, false );
@@ -66,17 +69,17 @@ int main()
         ASSERT( areg::Application::find_model( _modelName ).is_valid( ) );
 
         areg::Application::load_model(_modelName);
-        std::cout << "Service model is loaded. Waiting maximum for " << timeout << " ms to unload model." << std::endl;
+        console.print_msg("Service model is loaded. Waiting maximum for %u ms to unload model.\n", timeout);
         areg::Application::wait_quit( timeout );    // wait for quit signal to complete application.
         areg::Application::unload_model(_modelName);   // stop and unload components
         
         uint32_t duration = static_cast<uint32_t>(areg::Application::find_model( _modelName ).alive_duration( ) / areg::DURATION_1_MILLI);
         timeout = std::min( timeout, duration );
-        std::cout << timeout << " ms passed. Model is unloaded, releasing resources to exit application..." << std::endl;
+        console.print_msg("%u ms passed. Model is unloaded, releasing resources to exit application...\n", timeout);
         areg::Application::release();      // release and cleanup resources of application.
 
     } while (false);
 
-    std::cout << "Exit application, check the logs for details!" << std::endl;
+    console.print_txt("Exit application, check the logs for details!\n");
     return 0;
 }
