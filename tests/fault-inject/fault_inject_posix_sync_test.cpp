@@ -119,6 +119,9 @@ namespace
         static_cast<void>( warmup.shutdown( areg::WAIT_INFINITE ) );
     }
 
+// The timer manager is not exported from the shared library.
+#if defined(IMP_AREG_LIB)
+
     //!< Counts the expirations of each timer.
     class TimerListener final : public areg::TimerConsumer
     {
@@ -169,6 +172,8 @@ namespace
         out_result = done.get( );
         return true;
     }
+
+#endif  // defined(IMP_AREG_LIB)
 
     //!< A connected TCP loopback pair of plain descriptors.
     struct LoopPair
@@ -345,6 +350,8 @@ namespace
         static_cast<void>( thread.shutdown( areg::WAIT_INFINITE ) );
     }
 
+#if defined(IMP_AREG_LIB)
+
     //////////////////////////////////////////////////////////////////////////
     // The timer manager
     //////////////////////////////////////////////////////////////////////////
@@ -485,6 +492,8 @@ namespace
         marker.stop_timer( );
         AREG_CHILD_CHECK( run.dispatcher.barrier( ) );
     }
+
+#endif  // defined(IMP_AREG_LIB)
 
     //////////////////////////////////////////////////////////////////////////
     // The send backlog
@@ -662,6 +671,8 @@ TEST( FaultInjectPosixSyncTest, thread_does_not_start_while_its_attributes_canno
     AREG_EXPECT_IN_CHILD( thread_does_not_start_while_its_attributes_cannot_be_created_and_starts_after( ) );
 }
 
+#if defined(IMP_AREG_LIB)
+
 TEST( FaultInjectPosixSyncTest, timer_manager_does_not_start_while_its_epoll_set_cannot_be_created_and_starts_after )
 {
     AREG_EXPECT_IN_CHILD( timer_manager_does_not_start_while_its_descriptors_cannot_be_created_and_starts_after( areg_fault::FaultPoint::EpollCreate, 0u ) );
@@ -705,6 +716,8 @@ TEST( FaultInjectPosixSyncTest, bug_924_timer_started_before_a_failed_manager_wa
 {
     AREG_EXPECT_IN_CHILD( timer_started_before_a_failed_manager_wait_fires_or_is_not_active( ) );
 }
+
+#endif  // defined(IMP_AREG_LIB)
 
 TEST( FaultInjectPosixSyncTest, backlog_without_its_wake_descriptor_writes_and_wakes_its_send_thread )
 {

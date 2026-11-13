@@ -735,6 +735,8 @@ extern "C"
         return ( next != nullptr ) ? next( fd, flags, value, old ) : ( errno = ENOSYS, -1 );
     }
 
+    int __sigaction( int signum, const struct sigaction * action, struct sigaction * old ) noexcept;
+
     AREG_FAULT_API int sigaction( int signum, const struct sigaction * action, struct sigaction * old ) noexcept
     {
         int error{ 0 };
@@ -744,9 +746,8 @@ extern "C"
             return -1;
         }
 
-        using Func = int (*)( int, const struct sigaction *, struct sigaction * );
-        static const Func next{ _next<Func>( "sigaction" ) };
-        return ( next != nullptr ) ? next( signum, action, old ) : ( errno = ENOSYS, -1 );
+        // Calls the glibc entry directly, with no lookup and no guarded static.
+        return ::__sigaction( signum, action, old );
     }
 }
 
