@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "units/ChildProcess.hpp"
 #include "fault-inject/FaultInject.hpp"
+#include "fault-inject/FaultSocketPair.hpp"
 
 #if defined(__linux__)
 
@@ -61,149 +62,12 @@ namespace
     //!< Bytes larger than the send and receive buffers of a loopback pair together.
     constexpr uint32_t  LARGE_BYTES { 8u * 1024u * 1024u };
 
-    //!< A connected TCP loopback pair of plain descriptors.
-    struct LoopPair
-    {
-        SOCKETHANDLE    client  { areg::InvalidSocketHandle };
-        SOCKETHANDLE    server  { areg::InvalidSocketHandle };
-
-        //!< Opens the pair. Returns false when the system refuses.
-        bool open( )
-        {
-            const int listener{ ::socket( AF_INET, SOCK_STREAM, 0 ) };
-            if ( listener < 0 )
-                return false;
-
-            sockaddr_in addr{ };
-            addr.sin_family      = AF_INET;
-            addr.sin_addr.s_addr = htonl( INADDR_LOOPBACK );
-            addr.sin_port        = 0;
-            socklen_t len{ sizeof( addr ) };
-            bool result{ false };
-            if ( ( ::bind( listener, reinterpret_cast<sockaddr *>(&addr), sizeof( addr ) ) == 0 )
-              && ( ::listen( listener, 4 ) == 0 )
-              && ( ::getsockname( listener, reinterpret_cast<sockaddr *>(&addr), &len ) == 0 ) )
-            {
-                const int sock{ ::socket( AF_INET, SOCK_STREAM, 0 ) };
-                client = static_cast<SOCKETHANDLE>(sock);
-                if ( ( sock >= 0 ) && ( ::connect( sock, reinterpret_cast<sockaddr *>(&addr), sizeof( addr ) ) == 0 ) )
-                {
-                    const int accepted{ ::accept( listener, nullptr, nullptr ) };
-                    server = static_cast<SOCKETHANDLE>(accepted);
-                    result = ( accepted >= 0 );
-                }
-            }
-
-            ::close( listener );
-            return result;
-        }
-
-        //!< Closes both ends.
-        void close( )
-        {
-            areg::socket_close( client );
-            areg::socket_close( server );
-            client = areg::InvalidSocketHandle;
-            server = areg::InvalidSocketHandle;
-        }
-
-        ~LoopPair( )
-        {
-            close( );
-        }
-    };
-
-    //!< A listening loopback socket and its address.
-    struct LoopListener
-    {
-        SOCKETHANDLE        handle  { areg::InvalidSocketHandle };
-        areg::SocketAddress address { };
-
-        //!< Opens the listener. Returns false when the system refuses.
-        bool open( )
-        {
-            const int sock{ ::socket( AF_INET, SOCK_STREAM, 0 ) };
-            handle = static_cast<SOCKETHANDLE>(sock);
-            if ( sock < 0 )
-                return false;
-
-            sockaddr_in addr{ };
-            addr.sin_family      = AF_INET;
-            addr.sin_addr.s_addr = htonl( INADDR_LOOPBACK );
-            addr.sin_port        = 0;
-            socklen_t len{ sizeof( addr ) };
-            if ( ( ::bind( sock, reinterpret_cast<sockaddr *>(&addr), sizeof( addr ) ) != 0 )
-              || ( ::listen( sock, 8 ) != 0 )
-              || ( ::getsockname( sock, reinterpret_cast<sockaddr *>(&addr), &len ) != 0 ) )
-            {
-                return false;
-            }
-
-            address.from_sockaddr( addr );
-            return true;
-        }
-
-        ~LoopListener( )
-        {
-            areg::socket_close( handle );
-        }
-    };
-
-    //!< Sets or clears O_NONBLOCK on the socket.
-    bool set_nonblocking( SOCKETHANDLE sock, bool nonBlocking )
-    {
-        const int flags{ ::fcntl( static_cast<int>(sock), F_GETFL, 0 ) };
-        if ( flags == -1 )
-            return false;
-
-        const int wanted{ nonBlocking ? ( flags | O_NONBLOCK ) : ( flags & ~O_NONBLOCK ) };
-        return ( ::fcntl( static_cast<int>(sock), F_SETFL, wanted ) != -1 );
-    }
-
-    //!< Receives exactly 'length' bytes from the plain descriptor. Returns false on an error or end of stream.
-    bool read_exact( SOCKETHANDLE sock, uint8_t * buffer, uint32_t length )
-    {
-        uint32_t total{ 0u };
-        while ( total < length )
-        {
-            const ssize_t got{ ::recv( static_cast<int>(sock), buffer + total, length - total, 0 ) };
-            if ( got <= 0 )
-                return false;
-
-            total += static_cast<uint32_t>(got);
-        }
-
-        return true;
-    }
-
-    //!< Sends 4 bytes and checks the peer receives them.
-    bool round_trip( SOCKETHANDLE from, SOCKETHANDLE to )
-    {
-        const uint8_t data[4]{ 1u, 2u, 3u, 4u };
-        uint8_t received[4]{ };
-        return ( areg::send_data( from, data, sizeof( data ) ) == static_cast<int32_t>(sizeof( data )) )
-            && read_exact( to, received, sizeof( received ) )
-            && ( std::memcmp( data, received, sizeof( data ) ) == 0 );
-    }
-
-    //!< Sets the receive mode of the calling thread and restores the previous one.
-    class ModeScope
-    {
-    public:
-        explicit ModeScope( areg::ReceiveMode mode )
-            : mSaved( areg::receive_mode( ) )
-        {
-            areg::set_receive_mode( mode );
-        }
-
-        ~ModeScope( )
-        {
-            areg::set_receive_mode( mSaved );
-        }
-
-    private:
-        areg::ReceiveMode mSaved;
-    };
+    using fault_test::LoopPair;
+    using fault_test::LoopListener;
+    using fault_test::ModeScope;
+    using fault_test::read_exact;
+    using fault_test::round_trip;
+    using fault_test::set_nonblocking;
 }
 
 //////////////////////////////////////////////////////////////////////////

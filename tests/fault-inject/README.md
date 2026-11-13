@@ -42,6 +42,8 @@ leave it red. This folder is how such a branch is reached:
 | `FaultInject.hpp` | The API: `FaultPoint`, `arm()`, `failed()`, `FaultScope`; the C functions the library exports |
 | `fault_inject.cpp` | The library `areg-fault-inject`: counters, and the replacements for Linux, macOS and Windows |
 | `fault_inject_test.cpp` | The tests, executable `areg-fault-inject-test` |
+| `fault_inject_win32_test.cpp` | The Windows tests: sockets, multiplexer wake-up pair, synchronization objects, files, timers, send backlog, service control manager |
+| `FaultSocketPair.hpp` | Loopback socket pairs and listeners opened with plain system calls, Linux and Windows |
 | `CMakeLists.txt` | Both targets; included from `tests/CMakeLists.txt` except on Cygwin |
 | `areg-fault-inject.vcxproj`, `areg-fault-inject-test.vcxproj` (+ `.filters`), `packages.config` | The Visual Studio projects, in the `tests` folder of `areg-sdk.sln` |
 
@@ -55,7 +57,8 @@ namespace areg_fault
     enum class FaultPoint { ThreadCreate, SocketCreate, FileOpen, DirOpen, ProcessSpawn, SocketConnect, SocketSend, SocketRecv, SocketBind, SocketListen, EpollCtl, FileRead, FileWrite, Allocation, AlignedAllocation, PipeCreate, Poll, TermGet, TermSet
                           , Fcntl, SocketGetOption, SocketSetOption, SocketAccept, HostName, EpollCreate, EpollWait, EventCreate
                           , MutexInit, MutexAttrInit, MutexAttrSetType, CondInit, CondAttrInit, CondAttrSetClock, ThreadAttrInit
-                          , TimerFdCreate, TimerFdSet, SignalAction, Count };
+                          , TimerFdCreate, TimerFdSet, SignalAction
+                          , SocketInit, SocketName, SemaphoreCreate, WaitableTimerCreate, FileSeek, ServiceManagerOpen, ServiceOpen, Count };
 
     bool     arm( FaultPoint point, int error, uint32_t skip = 0u, uint32_t count = 1u );
     uint32_t failed( FaultPoint point );
@@ -78,25 +81,28 @@ namespace areg_fault
 | `FileOpen` | `open`, `open64` | `open` | `CreateFileA`, `CreateFileW` | `errno` / `GetLastError()` |
 | `DirOpen` | `opendir` | `opendir` | not replaced | `errno` |
 | `ProcessSpawn` | `posix_spawnp` | `posix_spawnp` | not replaced | return value |
-| `SocketConnect` | `connect` | not replaced | not replaced | `errno` |
-| `SocketSend` | `send`, `sendmsg` | not replaced | not replaced | `errno` |
-| `SocketRecv` | `recv` | not replaced | not replaced | `errno` |
-| `SocketBind` | `bind` | not replaced | not replaced | `errno` |
-| `SocketListen` | `listen` | not replaced | not replaced | `errno` |
+| `SocketConnect` | `connect` | not replaced | `connect` | `errno` / `WSAGetLastError()` |
+| `SocketSend` | `send`, `sendmsg` | not replaced | `send`, `WSASend` | `errno` / `WSAGetLastError()` |
+| `SocketRecv` | `recv` | not replaced | `recv` | `errno` / `WSAGetLastError()` |
+| `SocketBind` | `bind` | not replaced | `bind` | `errno` / `WSAGetLastError()` |
+| `SocketListen` | `listen` | not replaced | `listen` | `errno` / `WSAGetLastError()` |
 | `EpollCtl` | `epoll_ctl` | not replaced | not replaced | `errno` |
-| `FileRead` | `read` | not replaced | not replaced | `errno` |
-| `FileWrite` | `write` | not replaced | not replaced | `errno` |
+| `FileRead` | `read` | not replaced | `ReadFile` | `errno` / `GetLastError()` |
+| `FileWrite` | `write` | not replaced | `WriteFile` | `errno` / `GetLastError()` |
 | `Allocation` | `operator new(std::nothrow)`, `operator new[](std::nothrow)` | not replaced | not replaced | ignored; the call returns null. The tests are skipped in sanitizer builds, whose runtimes define the operators |
 | `AlignedAllocation` | aligned `operator new(std::nothrow)`, `operator new[](std::nothrow)` | not replaced | not replaced | ignored; the call returns null. Skipped in sanitizer builds, as `Allocation` |
 | `PipeCreate` | `pipe` | not replaced | not replaced | `errno` |
-| `Poll` | `poll` | not replaced | not replaced | `errno`. The AddressSanitizer interceptor does not reach the replacement, so its tests are skipped in that build. `HostName` (`gethostname`) behaves the same |
+| `Poll` | `poll` | not replaced | `WSAPoll`, `select` | `errno` / `WSAGetLastError()`. The AddressSanitizer interceptor does not reach the replacement, so its tests are skipped in that build. `HostName` (`gethostname`) behaves the same |
 | `TermGet` | `tcgetattr` | not replaced | not replaced | `errno` |
 | `TermSet` | `tcsetattr` | not replaced | not replaced | `errno` |
-| `Fcntl`, `SocketGetOption`, `SocketSetOption`, `SocketAccept`, `HostName` | `fcntl` and `fcntl64`, `getsockopt`, `setsockopt`, `accept4`, `gethostname` | not replaced | not replaced | `errno` |
-| `EpollCreate`, `EpollWait`, `EventCreate` | `epoll_create1`, `epoll_wait`, `eventfd` | not replaced | not replaced | `errno` |
-| `MutexInit`, `MutexAttrInit`, `MutexAttrSetType`, `CondInit`, `CondAttrInit`, `CondAttrSetClock`, `ThreadAttrInit` | `pthread_mutex_init`, `pthread_mutexattr_init`, `pthread_mutexattr_settype`, `pthread_cond_init`, `pthread_condattr_init`, `pthread_condattr_setclock`, `pthread_attr_init` | not replaced | not replaced | return value |
-| `TimerFdCreate`, `TimerFdSet` | `timerfd_create`, `timerfd_settime` | not replaced | not replaced | `errno` |
+| `Fcntl`, `SocketGetOption`, `SocketSetOption`, `SocketAccept`, `HostName` | `fcntl` and `fcntl64`, `getsockopt`, `setsockopt`, `accept4`, `gethostname` | not replaced | `ioctlsocket`, `getsockopt`, `setsockopt`, `accept`, `gethostname` | `errno` / `WSAGetLastError()` |
+| `EpollCreate`, `EpollWait`, `EventCreate` | `epoll_create1`, `epoll_wait`, `eventfd` | not replaced | `CreateIoCompletionPort`, `GetQueuedCompletionStatusEx`, `CreateEventW` | `errno` / `GetLastError()` |
+| `MutexInit`, `MutexAttrInit`, `MutexAttrSetType`, `CondInit`, `CondAttrInit`, `CondAttrSetClock`, `ThreadAttrInit` | `pthread_mutex_init`, `pthread_mutexattr_init`, `pthread_mutexattr_settype`, `pthread_cond_init`, `pthread_condattr_init`, `pthread_condattr_setclock`, `pthread_attr_init` | not replaced | `MutexInit` only: `CreateMutexW` | return value / `GetLastError()` |
+| `TimerFdCreate`, `TimerFdSet` | `timerfd_create`, `timerfd_settime` | not replaced | `TimerFdCreate` only: `CreateThreadpoolTimer`, the system timer of a `Timer` | `errno` / `GetLastError()` |
 | `SignalAction` | `sigaction` | not replaced | not replaced | `errno` |
+| `SocketInit`, `SocketName` | not replaced | not replaced | `WSAStartup`, `getsockname` | the returned error (`WSAStartup`) / `WSAGetLastError()` |
+| `SemaphoreCreate`, `WaitableTimerCreate`, `FileSeek` | not replaced | not replaced | `CreateSemaphoreW`, `CreateWaitableTimerExW`, `SetFilePointer` | `GetLastError()` |
+| `ServiceManagerOpen`, `ServiceOpen` | not replaced | not replaced | `OpenSCManagerW`, `OpenServiceW` | `GetLastError()` |
 
 Use the error the system really reports in that situation, for example `EMFILE` or
 `ERROR_TOO_MANY_OPEN_FILES` for an exhausted descriptor table. The tests keep one constant per
@@ -172,6 +178,9 @@ The checklist:
    only when the framework really calls something else on the other platforms. Check what it
    calls first, see below.
 8. **No sleep and no timing.** A fault test is deterministic: the call fails or it does not.
+9. **A body with a comma outside parentheses goes into a function**, as in
+   `AREG_EXPECT_IN_CHILD( my_case( ) )`. A brace initializer such as `data[2]{ 1u, 2u }` splits
+   the macro arguments under clang-cl; MSVC accepts it, so only the clang-cl build shows it.
 
 Before writing a test, find the system call the framework really makes on each platform:
 
@@ -226,7 +235,7 @@ msbuild areg-sdk.sln /m /t:tests\areg-fault-inject-test /p:Configuration=Release
 <build output>\bin\areg-fault-inject-test.exe
 ```
 
-The CMake build on Windows defines the same targets; it has not been run yet.
+The CMake build on Windows defines the same targets. It is built with clang-cl and Ninja by `tools/intern/coverage.sh`.
 
 ---
 
@@ -235,13 +244,13 @@ The CMake build on Windows defines the same targets; it has not been run yet.
 | Platform | State |
 |---|---|
 | Linux, GCC, Debug | Built and run: 4 of 4 pass, through ctest and directly, repeated. The console cases (`PipeCreate`, `Poll`, `TermGet`, `TermSet`, `FileRead`) pass in Release, in a coverage build, and with ThreadSanitizer; with AddressSanitizer the `Poll` case is skipped |
-| Windows, MSVC 2022, Release x64 | Built through `areg-sdk.sln` and run: 3 of 3 pass (the router case is POSIX only). The CMake build on Windows is not yet run |
+| Windows, MSVC 2022, Debug and Release x64 | Built through the `.vcxproj` files and run, all pass. The CMake build with clang-cl and coverage also runs them |
 | macOS, AddressSanitizer | Built and run: 4 of 4 pass, the interposing pairs of the linked library apply |
 | macOS, ThreadSanitizer | The library is built without instrumentation, as on every POSIX platform. The runtime opens its suppressions file through the replaced `open` while it initializes, before its thread state exists, and an instrumented replacement crashes there |
 | Linux, GCC, Release, 32-bit x86 | Built and run: 4 of 4 pass |
 | Linux, GCC, ThreadSanitizer, Debug and RelWithDebInfo | Built and run: all pass. The replacement sits behind the sanitizer interceptor (found through `RTLD_NEXT`) and is not instrumented: a blocking interceptor switches off the guard interceptors, so the first-use statics of the replacements read as races. The library is also built without link-time optimization, because GCC applies the `-fsanitize=thread` of the link line to LTO objects and ignores the `-fno-sanitize=thread` of their compile. The sanitizer creates its own helper thread through `pthread_create` at the first thread creation of a process, so a test that arms `ThreadCreate` starts and stops one thread first. The fork case of `fault_inject_posix_base_test.cpp` is skipped: the sanitizer stops a child forked from a multithreaded process when it starts a thread |
 | Cygwin | Not built: Cygwin is neither ELF nor a native Win32 build, and no replacement is written for it. Patching the import tables of the Cygwin DLLs, as on Windows, is the way to add it |
-| Coverage | A passing child exits through `std::exit(0)`, which writes its coverage data. Confirmed on Linux, GCC, Debug with `tools/intern/coverage.sh`: lines reached only in a child count. macOS and Windows not yet confirmed. A child that dies (a signal, `abort`) writes nothing |
+| Coverage | A passing child exits through `std::exit(0)`, which writes its coverage data. Confirmed on Linux, GCC, Debug with `tools/intern/coverage.sh`: lines reached only in a child count. Confirmed on Windows, clang-cl: Codecov counts a line that only the `ThreadCreate` fault reaches. macOS not yet confirmed. A child that dies (a signal, `abort`) writes nothing |
 
 Update this table when a platform is verified.
 
@@ -285,12 +294,12 @@ point.
 | Test | Point | Platforms |
 |---|---|---|
 | A full descriptor table (`RLIMIT_NOFILE` lowered in the child) at router accept and client connect | none, a resource limit | Linux, macOS |
-| The second socket of the Windows multiplexer wake-up pair fails | `SocketCreate`, `skip = 1` | Windows |
+| The second socket of the Windows multiplexer wake-up pair fails | `SocketCreate`, `skip = 1` | Windows done |
 | A dispatcher thread or the timer service thread cannot start | `ThreadCreate` | all |
 | The log file of the file logger cannot be opened | `FileOpen` | all |
 | `launchctl` cannot be spawned for the router service | `ProcessSpawn` | macOS |
 | `bind()` and `listen()` fail in the router | new `SocketBind`, `SocketListen` | all |
-| `connect()` fails with `ECONNREFUSED` / `WSAECONNREFUSED` at once | `SocketConnect` | Linux done; macOS, Windows open |
-| `send()` / `recv()` return an error mid-message | `SocketSend`, `SocketRecv` | Linux done; macOS, Windows open |
-| Memory allocation fails in a `new (std::nothrow)` path | `Allocation` | Linux done (no sanitizer); macOS, Windows open |
+| `connect()` fails with `ECONNREFUSED` / `WSAECONNREFUSED` at once | `SocketConnect` | Linux, Windows done; macOS open |
+| `send()` / `recv()` return an error mid-message | `SocketSend`, `SocketRecv` | Linux, Windows done; macOS open |
+| Memory allocation fails in a `new (std::nothrow)` path | `Allocation` | Linux done (no sanitizer); macOS, Windows open. On Windows `operator new` is linked into each module and calls `malloc` of the C runtime, so failing it means failing every allocation of the module |
 | The console of `aregextend` cannot create its interrupt pipe, read or set the terminal modes, or wait for or read a key | `PipeCreate`, `TermGet`, `TermSet`, `Poll`, `FileRead` | Linux done; macOS open |

@@ -61,6 +61,7 @@ WaitablePosix::WaitablePosix( areg::os::SyncKind syncType )
 #endif
     , mValid          { true }
     , mWaitAllCount   { 0u }
+    , mSignalers      { 0u }
 {
 }
 
@@ -77,7 +78,22 @@ bool WaitablePosix::is_valid() const noexcept
 void WaitablePosix::free_resources()
 {
     mValid.store(false, std::memory_order_relaxed);
+    _wait_signalers();
     SyncLockAndWaitPosix::event_remove(*this);
+}
+
+void WaitablePosix::_wait_signalers() noexcept
+{
+    uint32_t value{ mSignalers.load(std::memory_order_acquire) };
+    if (value == 0u)
+        return;
+
+    value = mSignalers.fetch_or(SIGNAL_DRAIN, std::memory_order_acq_rel) | SIGNAL_DRAIN;
+    while (value != SIGNAL_DRAIN)
+    {
+        areg::os::_os_wait_word(mSignalers, value);
+        value = mSignalers.load(std::memory_order_acquire);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

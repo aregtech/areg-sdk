@@ -189,6 +189,118 @@ TEST( StringDefsEdgeTest, trim_converts_between_character_widths )
     char dst[16]{ };
     areg::trim_all( dst, 16, L"  wide  ", areg::COUNT_ALL );
     EXPECT_STREQ( dst, "wide" );
+
+    wchar_t wide[16]{ };
+    areg::trim_left( wide, 16, "  narrow ", areg::COUNT_ALL );
+    EXPECT_STREQ( wide, L"narrow " );
+}
+
+/**
+ * \brief   Wide text follows the trim rules of narrow text: null or empty input, in place, white space only,
+ *          a counted prefix, another buffer cut to its size, and a destination without room.
+ **/
+TEST( StringDefsEdgeTest, wide_text_trims_like_narrow_text )
+{
+    areg::trim_all<wchar_t>( nullptr );
+    areg::trim_left<wchar_t>( nullptr );
+    areg::trim_right<wchar_t>( nullptr );
+
+    wchar_t empty[4]{ };
+    areg::trim_all( empty );
+    areg::trim_left( empty );
+    areg::trim_right( empty );
+    EXPECT_STREQ( empty, L"" );
+
+    wchar_t text[8]{ L'a', L' ', L'b', L'\0' };
+    areg::trim_all( text, 0 );
+    areg::trim_left( text, 0 );
+    areg::trim_right( text, 0 );
+    EXPECT_STREQ( text, L"a b" );
+
+    wchar_t dst[16]{ L'x', L'\0' };
+    areg::trim_all( static_cast<wchar_t *>(nullptr), 8, L" a ", areg::COUNT_ALL );
+    areg::trim_left( static_cast<wchar_t *>(nullptr), 8, L" a", areg::COUNT_ALL );
+    areg::trim_right( static_cast<wchar_t *>(nullptr), 8, L"a ", areg::COUNT_ALL );
+    areg::trim_all( dst, 8, static_cast<const wchar_t *>(nullptr), areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"" );
+    dst[0] = L'x';
+    areg::trim_left( dst, 8, L"  a", 0 );
+    EXPECT_STREQ( dst, L"" );
+    dst[0] = L'x';
+    areg::trim_right( dst, 8, L"a  ", 0 );
+    EXPECT_STREQ( dst, L"" );
+    dst[0] = L'x';
+    areg::trim_left( dst, 8, static_cast<const wchar_t *>(nullptr), areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"" );
+    dst[0] = L'x';
+    areg::trim_right( dst, 8, static_cast<const wchar_t *>(nullptr), areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"" );
+
+    wchar_t both[16]{ };
+    areg::copy_string( both, 16, L"  a b  " );
+    areg::trim_all( both );
+    EXPECT_STREQ( both, L"a b" );
+    wchar_t left[16]{ };
+    areg::copy_string( left, 16, L"  a b  " );
+    areg::trim_left( left );
+    EXPECT_STREQ( left, L"a b  " );
+    wchar_t right[16]{ };
+    areg::copy_string( right, 16, L"  a b  " );
+    areg::trim_right( right );
+    EXPECT_STREQ( right, L"  a b" );
+    wchar_t clean[16]{ };
+    areg::copy_string( clean, 16, L"a b" );
+    areg::trim_all( clean );
+    areg::trim_left( clean );
+    areg::trim_right( clean );
+    EXPECT_STREQ( clean, L"a b" );
+
+    wchar_t blank[8]{ };
+    areg::copy_string( blank, 8, L"   " );
+    areg::trim_all( blank );
+    EXPECT_STREQ( blank, L"" );
+    areg::copy_string( blank, 8, L"   " );
+    areg::trim_left( blank );
+    EXPECT_STREQ( blank, L"" );
+    areg::copy_string( blank, 8, L"   " );
+    areg::trim_right( blank );
+    EXPECT_STREQ( blank, L"" );
+
+    wchar_t prefix[16]{ };
+    areg::copy_string( prefix, 16, L" a  tail" );
+    areg::trim_left( prefix, 3 );
+    EXPECT_STREQ( prefix, L"a  tail" );
+    areg::copy_string( prefix, 16, L"ab  tail" );
+    areg::trim_right( prefix, 4 );
+    EXPECT_STREQ( prefix, L"abtail" );
+    areg::copy_string( prefix, 16, L" ab tail" );
+    areg::trim_all( prefix, 4 );
+    EXPECT_STREQ( prefix, L"abtail" );
+
+    areg::trim_all( dst, 16, L"  hello  ", areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"hello" );
+    areg::trim_left( dst, 16, L"  hello  ", areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"hello  " );
+    areg::trim_right( dst, 16, L"  hello  ", areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"  hello" );
+    areg::trim_right( dst, 16, L"   ", areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"" );
+    areg::trim_all( dst, 16, L"   ", areg::COUNT_ALL );
+    EXPECT_STREQ( dst, L"" );
+
+    wchar_t small[4]{ };
+    areg::trim_all( small, 4, L"  hello  ", areg::COUNT_ALL );
+    EXPECT_STREQ( small, L"hel" );
+    areg::trim_left( small, 4, L"  hello", areg::COUNT_ALL );
+    EXPECT_STREQ( small, L"hel" );
+    areg::trim_right( small, 4, L"hello  ", areg::COUNT_ALL );
+    EXPECT_STREQ( small, L"hel" );
+
+    wchar_t room[2]{ L'x', L'y' };
+    areg::trim_all( room, 0, L" a ", areg::COUNT_ALL );
+    areg::trim_left( room, 0, L" a ", areg::COUNT_ALL );
+    areg::trim_right( room, 0, L" a ", areg::COUNT_ALL );
+    EXPECT_EQ( room[0], L'x' );
 }
 
 //////////////////////////////////////////////////////////////////////////

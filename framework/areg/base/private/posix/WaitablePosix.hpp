@@ -24,6 +24,7 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/SyncObjectPosix.hpp"
+#include "areg/base/private/WaitWord.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include <atomic>
 #include <pthread.h>
@@ -62,6 +63,34 @@ struct WaiterNode
  **/
 class WaitablePosix : public SyncObjectPosix
 {
+public:
+    /**
+     * \brief   Marks a signal call on the waitable for the lifetime of the scope.
+     *          free_resources() waits until every signal call in flight has ended.
+     **/
+    class SignalScope
+    {
+    public:
+        /**
+         * \brief   Counts a signal call on the waitable. Created before the call changes the state.
+         *
+         * \param   waitable    The waitable that is signaled.
+         **/
+        explicit inline SignalScope( WaitablePosix & waitable ) noexcept;
+
+        /**
+         * \brief   Ends the signal call. Reads nothing of the waitable after the count drops.
+         **/
+        inline ~SignalScope( ) noexcept;
+
+    private:
+        //!< The counter of signal calls of the waitable.
+        std::atomic<uint32_t> & mSignalers;
+
+        SignalScope( ) = delete;
+        AREG_NOCOPY_NOMOVE( SignalScope );
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -116,7 +145,8 @@ public:
     bool is_valid() const noexcept override;
 
     /**
-     * \brief   Called before deletion. Releases all waiting threads with failure code.
+     * \brief   Called before deletion. Waits for the signal calls in flight, then releases all
+     *          waiting threads with failure code.
      **/
     void free_resources() final;
 
@@ -206,6 +236,16 @@ private:
     std::atomic<bool>        mValid;
     //! Number of active WaitAll (SyncLockAndWaitPosix) registrations.
     std::atomic<uint32_t>    mWaitAllCount;
+    //! Number of signal calls in flight; SIGNAL_DRAIN is set while free_resources() waits for them.
+    std::atomic<uint32_t>    mSignalers;
+
+    //!< The bit of mSignalers set while free_resources() waits for the signal calls.
+    static constexpr uint32_t   SIGNAL_DRAIN    { 0x80000000u };
+
+    /**
+     * \brief   Blocks until no signal call of the waitable is in flight.
+     **/
+    void _wait_signalers() noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -221,6 +261,21 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // WaitablePosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline WaitablePosix::SignalScope::SignalScope( WaitablePosix & waitable ) noexcept
+    : mSignalers( waitable.mSignalers )
+{
+    mSignalers.fetch_add(1u, std::memory_order_relaxed);
+}
+
+inline WaitablePosix::SignalScope::~SignalScope( ) noexcept
+{
+    const std::atomic<uint32_t> * const word{ &mSignalers };
+    if ((mSignalers.fetch_sub(1u, std::memory_order_release) & WaitablePosix::SIGNAL_DRAIN) != 0u)
+    {
+        areg::os::_os_wake_word_all(word);
+    }
+}
 
 inline void WaitablePosix::add_wait_all_registration() noexcept
 {

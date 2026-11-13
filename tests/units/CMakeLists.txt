@@ -120,6 +120,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     SendBacklogTest.cpp
     ServiceAddressTest.cpp
     ServiceApplicationBaseTest.cpp
+    WindowsServiceTest.cpp
     ServiceCommConnectionTest.cpp
     ServiceCommDefsTest.cpp
     ServiceCommServerTest.cpp

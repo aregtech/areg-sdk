@@ -617,6 +617,26 @@ TEST(SortedLinkedListTest, test_add_if_unique_by_move)
 }
 
 /**
+ * \brief   A temporary integer is added once at its sorted place in both orders; a duplicate is refused.
+ **/
+TEST(SortedLinkedListTest, add_if_unique_of_a_temporary_value_keeps_order_in_both_directions)
+{
+    for (bool ascending : { true, false })
+    {
+        areg::SortedLinkedList<int> list(ascending);
+        EXPECT_TRUE(list.add_if_unique(5).second);
+        EXPECT_TRUE(list.add_if_unique(1).second);
+        EXPECT_TRUE(list.add_if_unique(9).second);
+        EXPECT_TRUE(list.add_if_unique(7).second);
+        EXPECT_FALSE(list.add_if_unique(5).second);
+        EXPECT_FALSE(list.add_if_unique(9, true).second);
+        ASSERT_EQ(list.size(), 4u);
+        EXPECT_EQ(list.first_entry(), ascending ? 1 : 9);
+        EXPECT_EQ(list.last_entry(), ascending ? 9 : 1);
+    }
+}
+
+/**
  * \brief   Test SortedLinkedList merge by move for every sort order combination, the merged list stays ordered.
  **/
 TEST(SortedLinkedListTest, test_merge_by_move_keeps_target_order)

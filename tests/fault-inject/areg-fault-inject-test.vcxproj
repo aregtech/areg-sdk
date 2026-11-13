@@ -30,6 +30,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
@@ -46,6 +47,7 @@
     <ClCompile Include="fault_inject_os_test.cpp" />
     <ClCompile Include="fault_inject_alloc_sweep_test.cpp" />
     <ClCompile Include="fault_inject_posix_sync_test.cpp" />
+    <ClCompile Include="fault_inject_win32_test.cpp" />
     <ClCompile Include="..\..\framework\logcollector\service\private\LogCollectorDatabase.cpp" />
     <ClCompile Include="..\..\framework\areglogger\client\private\LogObserverApi.cpp" />
     <ClCompile Include="..\..\framework\areglogger\client\private\LogObserverBase.cpp" />
@@ -55,6 +57,7 @@
   <ItemGroup>
     <ClInclude Include="..\units\ChildProcess.hpp" />
     <ClInclude Include="FaultInject.hpp" />
+    <ClInclude Include="FaultSocketPair.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(AregSdkRoot)framework\areg.vcxproj">

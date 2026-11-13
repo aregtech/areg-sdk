@@ -57,38 +57,45 @@ namespace areg_fault
         , FileOpen          //!< POSIX open(), open64(), Windows CreateFileA(), CreateFileW(). Error: errno value / Win32 error.
         , DirOpen           //!< POSIX opendir(). Not replaced on Windows.
         , ProcessSpawn      //!< POSIX posix_spawnp(). Not replaced on Windows.
-        , SocketConnect     //!< Linux connect(). Not replaced on macOS and Windows. Error: errno value.
-        , SocketSend        //!< Linux send() and sendmsg(). Not replaced on macOS and Windows. Error: errno value.
-        , SocketRecv        //!< Linux recv(). Not replaced on macOS and Windows. Error: errno value.
-        , SocketBind        //!< Linux bind(). Not replaced on macOS and Windows. Error: errno value.
-        , SocketListen      //!< Linux listen(). Not replaced on macOS and Windows. Error: errno value.
+        , SocketConnect     //!< Linux connect(), Windows connect(). Not replaced on macOS. Error: errno value / WSA error.
+        , SocketSend        //!< Linux send() and sendmsg(), Windows send() and WSASend(). Not replaced on macOS. Error: errno value / WSA error.
+        , SocketRecv        //!< Linux recv(), Windows recv(). Not replaced on macOS. Error: errno value / WSA error.
+        , SocketBind        //!< Linux bind(), Windows bind(). Not replaced on macOS. Error: errno value / WSA error.
+        , SocketListen      //!< Linux listen(), Windows listen(). Not replaced on macOS. Error: errno value / WSA error.
         , EpollCtl          //!< Linux epoll_ctl(). Not replaced elsewhere. Error: errno value.
-        , FileRead          //!< Linux read(). Not replaced elsewhere. Error: errno value.
-        , FileWrite         //!< Linux write(). Not replaced elsewhere. Error: errno value.
+        , FileRead          //!< Linux read(), Windows ReadFile(). Not replaced on macOS. Error: errno value / Win32 error.
+        , FileWrite         //!< Linux write(), Windows WriteFile(). Not replaced on macOS. Error: errno value / Win32 error.
         , Allocation        //!< Linux operator new(std::nothrow) and operator new[](std::nothrow): returns nullptr. Not replaced elsewhere; the error is ignored.
         , AlignedAllocation //!< Linux operator new(std::align_val_t, std::nothrow) and new[]: returns nullptr. Not replaced elsewhere; the error is ignored.
         , PipeCreate        //!< Linux pipe(). Not replaced elsewhere. Error: errno value.
-        , Poll              //!< Linux poll(). Not replaced elsewhere. Error: errno value.
+        , Poll              //!< Linux poll(), Windows WSAPoll() and select(). Not replaced on macOS. Error: errno value / WSA error.
         , TermGet           //!< Linux tcgetattr(). Not replaced elsewhere. Error: errno value.
         , TermSet           //!< Linux tcsetattr(). Not replaced elsewhere. Error: errno value.
-        , Fcntl             //!< Linux fcntl() and fcntl64(). Not replaced elsewhere. Error: errno value.
-        , SocketGetOption   //!< Linux getsockopt(). Not replaced elsewhere. Error: errno value.
-        , SocketSetOption   //!< Linux setsockopt(). Not replaced elsewhere. Error: errno value.
-        , SocketAccept      //!< Linux accept4(). Not replaced elsewhere. Error: errno value.
-        , HostName          //!< Linux gethostname(). Not replaced elsewhere. Error: errno value.
-        , EpollCreate       //!< Linux epoll_create1(). Not replaced elsewhere. Error: errno value.
-        , EpollWait         //!< Linux epoll_wait(). Not replaced elsewhere. Error: errno value.
-        , EventCreate       //!< Linux eventfd(). Not replaced elsewhere. Error: errno value.
-        , MutexInit         //!< Linux pthread_mutex_init(). Not replaced elsewhere. Error: return value.
+        , Fcntl             //!< Linux fcntl() and fcntl64(), Windows ioctlsocket(). Not replaced on macOS. Error: errno value / WSA error.
+        , SocketGetOption   //!< Linux getsockopt(), Windows getsockopt(). Not replaced on macOS. Error: errno value / WSA error.
+        , SocketSetOption   //!< Linux setsockopt(), Windows setsockopt(). Not replaced on macOS. Error: errno value / WSA error.
+        , SocketAccept      //!< Linux accept4(), Windows accept(). Not replaced on macOS. Error: errno value / WSA error.
+        , HostName          //!< Linux gethostname(), Windows gethostname(). Not replaced on macOS. Error: errno value / WSA error.
+        , EpollCreate       //!< Linux epoll_create1(), Windows CreateIoCompletionPort(). Not replaced on macOS. Error: errno value / Win32 error.
+        , EpollWait         //!< Linux epoll_wait(), Windows GetQueuedCompletionStatusEx(). Not replaced on macOS. Error: errno value / Win32 error.
+        , EventCreate       //!< Linux eventfd(), Windows CreateEventW(). Not replaced on macOS. Error: errno value / Win32 error.
+        , MutexInit         //!< Linux pthread_mutex_init(), Windows CreateMutexW(). Not replaced on macOS. Error: return value / Win32 error.
         , MutexAttrInit     //!< Linux pthread_mutexattr_init(). Not replaced elsewhere. Error: return value.
         , MutexAttrSetType  //!< Linux pthread_mutexattr_settype(). Not replaced elsewhere. Error: return value.
         , CondInit          //!< Linux pthread_cond_init(). Not replaced elsewhere. Error: return value.
         , CondAttrInit      //!< Linux pthread_condattr_init(). Not replaced elsewhere. Error: return value.
         , CondAttrSetClock  //!< Linux pthread_condattr_setclock(). Not replaced elsewhere. Error: return value.
         , ThreadAttrInit    //!< Linux pthread_attr_init(). Not replaced elsewhere. Error: return value.
-        , TimerFdCreate     //!< Linux timerfd_create(). Not replaced elsewhere. Error: errno value.
+        , TimerFdCreate     //!< Linux timerfd_create(), Windows CreateThreadpoolTimer(): the system timer of a Timer. Not replaced on macOS. Error: errno value / Win32 error.
         , TimerFdSet        //!< Linux timerfd_settime(). Not replaced elsewhere. Error: errno value.
         , SignalAction      //!< Linux sigaction(). Not replaced elsewhere. Error: errno value.
+        , SocketInit        //!< Windows WSAStartup(). Not replaced elsewhere. Error: the returned WSA error.
+        , SocketName        //!< Windows getsockname(). Not replaced elsewhere. Error: WSA error.
+        , SemaphoreCreate   //!< Windows CreateSemaphoreW(). Not replaced elsewhere. Error: Win32 error.
+        , WaitableTimerCreate //!< Windows CreateWaitableTimerExW(). Not replaced elsewhere. Error: Win32 error.
+        , FileSeek          //!< Windows SetFilePointer(). Not replaced elsewhere. Error: Win32 error.
+        , ServiceManagerOpen  //!< Windows OpenSCManagerW(). Not replaced elsewhere. Error: Win32 error.
+        , ServiceOpen       //!< Windows OpenServiceW(). Not replaced elsewhere. Error: Win32 error.
         , Count             //!< The number of points.
     };
 }

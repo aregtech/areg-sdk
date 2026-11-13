@@ -65,6 +65,7 @@ void WaitableEventPosix::notify_released_threads(int32_t numThreads)
 
 bool WaitableEventPosix::set_signaled() noexcept
 {
+    SignalScope signal(*this);
     if (!is_valid())
         return false;
 
@@ -83,6 +84,7 @@ bool WaitableEventPosix::set_signaled() noexcept
 
 void WaitableEventPosix::pulse_event() noexcept
 {
+    SignalScope signal(*this);
     if (!is_valid())
         return;
 

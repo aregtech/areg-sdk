@@ -68,6 +68,7 @@ bool WaitableMutexPosix::is_valid() const noexcept
 
 bool WaitableMutexPosix::release_mutex() noexcept
 {
+    SignalScope signal(*this);
     bool result     = false;
     bool sendSignal = false;
 

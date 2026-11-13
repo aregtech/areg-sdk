@@ -657,7 +657,7 @@ TEST(SyncPrimitiveCoverageTest, wait_clock_conversion_and_distance)
  *          waiter it released has returned, so a waiter that destroys the event at once frees it
  *          under the signaler. Red under AddressSanitizer or ThreadSanitizer.
  **/
-TEST(SyncEventCoverageTest, DISABLED_bug_922_an_event_is_destroyed_as_soon_as_its_wait_returned)
+TEST(SyncEventCoverageTest, bug_922_an_event_is_destroyed_as_soon_as_its_wait_returned)
 {
     constexpr uint32_t ROUNDS{ 2'000u };
     for (uint32_t i = 0u; i < ROUNDS; ++i)
@@ -669,5 +669,93 @@ TEST(SyncEventCoverageTest, DISABLED_bug_922_an_event_is_destroyed_as_soon_as_it
         delete event;
         signaler.join();
         ASSERT_TRUE(released);
+    }
+}
+
+/**
+ * \brief   Reproduces the defect: on POSIX the unlocking thread still reads the mutex after the
+ *          waiter it released has locked, unlocked and destroyed it.
+ **/
+TEST(MutexCoverageTest, bug_922_a_mutex_is_destroyed_as_soon_as_its_lock_returned)
+{
+    constexpr uint32_t ROUNDS{ 10'000u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::Mutex * mutex{ new (std::nothrow) areg::Mutex(false) };
+        ASSERT_NE(mutex, nullptr);
+        areg::SyncEvent locked(true, false);
+        std::thread owner([mutex, &locked]()
+            {
+                if (mutex->lock(COVERAGE_WAIT_MS))
+                {
+                    static_cast<void>(locked.set_signaled());
+                    static_cast<void>(mutex->unlock());
+                }
+            });
+
+        const bool ownerLocked{ locked.lock(COVERAGE_WAIT_MS) };
+        const bool acquired{ ownerLocked && mutex->lock(COVERAGE_WAIT_MS) };
+        if (acquired)
+        {
+            static_cast<void>(mutex->unlock());
+        }
+
+        delete mutex;
+        owner.join();
+        ASSERT_TRUE(ownerLocked);
+        ASSERT_TRUE(acquired);
+    }
+}
+
+/**
+ * \brief   Reproduces the defect: on POSIX the releasing thread still reads the semaphore after the
+ *          waiter it released has returned and destroyed it.
+ **/
+TEST(SemaphoreCoverageTest, bug_922_a_semaphore_is_destroyed_as_soon_as_its_wait_returned)
+{
+    constexpr uint32_t ROUNDS{ 2'000u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::Semaphore * semaphore{ new (std::nothrow) areg::Semaphore(1, 0) };
+        ASSERT_NE(semaphore, nullptr);
+        std::thread releaser([semaphore]() { static_cast<void>(semaphore->unlock()); });
+        const bool acquired{ semaphore->lock(COVERAGE_WAIT_MS) };
+        delete semaphore;
+        releaser.join();
+        ASSERT_TRUE(acquired);
+    }
+}
+
+/**
+ * \brief   Reproduces the defect: on POSIX the cancelling thread still reads the timer after the
+ *          waiter it released has returned and destroyed it.
+ **/
+TEST(SyncTimerCoverageTest, bug_922_a_timer_is_destroyed_as_soon_as_a_cancel_released_its_wait)
+{
+    constexpr uint32_t ROUNDS{ 2'000u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::SyncTimer * timer{ new (std::nothrow) areg::SyncTimer(COVERAGE_WAIT_MS) };
+        ASSERT_NE(timer, nullptr);
+        ASSERT_TRUE(timer->set_timer());
+        std::thread canceller([timer]() { static_cast<void>(timer->cancel_timer()); });
+        const bool released{ timer->lock(COVERAGE_WAIT_MS) };
+        delete timer;
+        canceller.join();
+        ASSERT_TRUE(released);
+    }
+}
+
+TEST(SyncTimerCoverageTest, timer_is_destroyed_as_soon_as_its_expiry_released_its_wait)
+{
+    constexpr uint32_t ROUNDS{ 200u };
+    for (uint32_t i = 0u; i < ROUNDS; ++i)
+    {
+        areg::SyncTimer * timer{ new (std::nothrow) areg::SyncTimer(1u) };
+        ASSERT_NE(timer, nullptr);
+        ASSERT_TRUE(timer->set_timer());
+        const bool expired{ timer->lock(COVERAGE_WAIT_MS) };
+        delete timer;
+        ASSERT_TRUE(expired);
     }
 }

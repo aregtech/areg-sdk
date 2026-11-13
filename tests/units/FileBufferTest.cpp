@@ -23,6 +23,7 @@
 #include "areg/base/WideString.hpp"
 
 #include <cstring>
+#include <cwchar>
 #include <string>
 
 namespace
@@ -37,6 +38,21 @@ namespace
     {
         const uint32_t len{ static_cast<uint32_t>(std::strlen( text )) };
         ASSERT_EQ( file.write( reinterpret_cast<const uint8_t *>(text), len ), len );
+        ASSERT_EQ( file.set_position( 0, areg::Cursor::SeekOrigin::Begin ), 0u );
+    }
+
+    //!< Writes the text as UTF-16LE units and moves the cursor to the begin.
+    void fill_units( areg::FileBuffer & file, const std::u16string & units )
+    {
+        std::string bytes;
+        for ( const char16_t unit : units )
+        {
+            bytes.push_back( static_cast<char>(unit & 0xFFu) );
+            bytes.push_back( static_cast<char>((unit >> 8u) & 0xFFu) );
+        }
+
+        const uint32_t len{ static_cast<uint32_t>(bytes.size( )) };
+        ASSERT_EQ( file.write( reinterpret_cast<const uint8_t *>(bytes.data( )), len ), len );
         ASSERT_EQ( file.set_position( 0, areg::Cursor::SeekOrigin::Begin ), 0u );
     }
 }
@@ -76,6 +92,26 @@ TEST( FileBufferTest, closed_buffer_does_nothing_and_open_enables_io )
     EXPECT_EQ( file.length( ), 4u );
     EXPECT_FALSE( file.is_empty( ) );
     EXPECT_NE( file.data_buffer( ), nullptr );
+}
+
+/**
+ * \brief   A temporary buffer opens empty, keeps the data while it is open and is deleted on close.
+ **/
+TEST( FileBufferTest, temporary_buffer_is_deleted_when_it_is_closed )
+{
+    areg::FileBuffer file( static_cast<uint32_t>(OpenMode::CreateTemp) );
+    ASSERT_TRUE( file.open( ) );
+    EXPECT_TRUE( file.is_temporary( ) );
+    EXPECT_TRUE( file.is_empty( ) );
+
+    const uint8_t data[ 4 ]{ 1, 2, 3, 4 };
+    EXPECT_EQ( file.write( data, 4 ), 4u );
+    EXPECT_EQ( file.length( ), 4u );
+
+    file.close( );
+    EXPECT_FALSE( file.is_opened( ) );
+    EXPECT_FALSE( file.is_valid( ) );
+    EXPECT_EQ( file.data_buffer( ), nullptr );
 }
 
 /**
@@ -746,6 +782,95 @@ TEST( FileBufferTest, read_string_stops_at_non_printable )
     EXPECT_STREQ( text.as_string( ), "abc" );
     EXPECT_GT( file.read_string( text ), 0 );
     EXPECT_STREQ( text.as_string( ), "def" );
+}
+
+/**
+ * \brief   Wide lines are read one by one with every line ending; the last line needs none.
+ **/
+TEST( FileBufferTest, wide_lines_are_read_with_every_line_ending )
+{
+    areg::FileBuffer file( MODE_TEXT );
+    ASSERT_TRUE( file.open( ) );
+    fill_units( file, u"first\nsecond\r\n\nlast" );
+
+    areg::WideString line;
+    EXPECT_EQ( file.read_line( line ), 6 );
+    EXPECT_EQ( line, areg::WideString( L"first" ) );
+    EXPECT_EQ( file.read_line( line ), 8 );
+    EXPECT_EQ( line, areg::WideString( L"second" ) );
+    EXPECT_EQ( file.read_line( line ), 1 );
+    EXPECT_TRUE( line.is_empty( ) );
+    EXPECT_EQ( file.read_line( line ), 4 );
+    EXPECT_EQ( line, areg::WideString( L"last" ) );
+    EXPECT_EQ( file.read_line( line ), 0 );
+    EXPECT_TRUE( file.is_eof( ) );
+}
+
+/**
+ * \brief   A wide CR that fills the buffer is one line end with the LF behind it, alone before other text
+ *          or at the end of the data.
+ **/
+TEST( FileBufferTest, wide_line_into_a_buffer_takes_a_cr_at_its_end_as_one_line_end )
+{
+    wchar_t text[ 4 ]{ };
+
+    areg::FileBuffer crlf( MODE_TEXT );
+    ASSERT_TRUE( crlf.open( ) );
+    fill_units( crlf, u"ab\r\nc" );
+    EXPECT_EQ( crlf.read_line( text, 4 ), 4 );
+    EXPECT_EQ( std::wcscmp( text, L"ab" ), 0 );
+    EXPECT_EQ( crlf.read_line( text, 4 ), 1 );
+    EXPECT_EQ( std::wcscmp( text, L"c" ), 0 );
+
+    areg::FileBuffer cr( MODE_TEXT );
+    ASSERT_TRUE( cr.open( ) );
+    fill_units( cr, u"ab\rc" );
+    EXPECT_EQ( cr.read_line( text, 4 ), 3 );
+    EXPECT_EQ( std::wcscmp( text, L"ab" ), 0 );
+    EXPECT_EQ( cr.read_line( text, 4 ), 1 );
+    EXPECT_EQ( std::wcscmp( text, L"c" ), 0 );
+
+    areg::FileBuffer last( MODE_TEXT );
+    ASSERT_TRUE( last.open( ) );
+    fill_units( last, u"ab\r" );
+    EXPECT_EQ( last.read_line( text, 4 ), 3 );
+    EXPECT_EQ( std::wcscmp( text, L"ab" ), 0 );
+    EXPECT_EQ( last.read_line( text, 4 ), 0 );
+}
+
+/**
+ * \brief   Wide text longer than one internal chunk is read whole, also when a surrogate pair crosses
+ *          the chunk border; a string keeps the line end, a non-printable character ends it, a lone
+ *          surrogate is kept.
+ **/
+TEST( FileBufferTest, wide_text_longer_than_a_chunk_keeps_a_surrogate_pair_on_the_chunk_border )
+{
+    std::u16string units( 255u, u'x' );
+    units += u"\U0001F600yyy\n";
+    areg::FileBuffer file( MODE_TEXT );
+    ASSERT_TRUE( file.open( ) );
+    fill_units( file, units );
+
+    std::wstring expected( 255u, L'x' );
+    expected += L"\U0001F600yyy";
+    areg::WideString line;
+    EXPECT_GT( file.read_line( line ), 0 );
+    EXPECT_EQ( line, areg::WideString( expected.c_str( ) ) );
+    EXPECT_EQ( file.read_line( line ), 0 );
+
+    ASSERT_EQ( file.set_position( 0, areg::Cursor::SeekOrigin::Begin ), 0u );
+    areg::WideString text;
+    EXPECT_GT( file.read_string( text ), 0 );
+    EXPECT_EQ( text, areg::WideString( (expected + L"\n").c_str( ) ) );
+
+    areg::FileBuffer mixed( MODE_TEXT );
+    ASSERT_TRUE( mixed.open( ) );
+    fill_units( mixed, std::u16string( u"ab" ) + u'\x0001' + u"c" + static_cast<char16_t>(0xD83Du) + u"d" );
+    EXPECT_EQ( mixed.read_string( text ), 3 );
+    EXPECT_EQ( text, areg::WideString( L"ab" ) );
+    EXPECT_EQ( mixed.read_string( text ), 3 );
+    const wchar_t lone[ 4 ]{ L'c', static_cast<wchar_t>(0xD83Du), L'd', L'\0' };
+    EXPECT_EQ( text, areg::WideString( lone ) );
 }
 
 /**

@@ -87,6 +87,18 @@ namespace
         int32_t                 hookDelta[5]    { 0, 0, 0, 0, 0 };
 
         void * service_handle() const { return mSvcHandle; }
+
+        //!< Sets the service name, shorter than the name buffers.
+        void set_name(const wchar_t * name)
+        {
+            for (size_t i = 0u; i < 47u; ++i)
+            {
+                mNameW[i] = name[i];
+                mNameA[i] = static_cast<char>(name[i]);
+                if (name[i] == L'\0')
+                    break;
+            }
+        }
         [[maybe_unused]] void set_service_handle(void * handle) { mSvcHandle = handle; }
 
         std::pair<const areg::ext::OptionParser::OptionSetup *, int32_t> app_options() const override
@@ -162,8 +174,8 @@ namespace
         }
 
     private:
-        mutable char    mNameA[16]  { 't', 'e', 's', 't', '\0' };
-        mutable wchar_t mNameW[16]  { L't', L'e', L's', L't', L'\0' };
+        mutable char    mNameA[48]  { 't', 'e', 's', 't', '\0' };
+        mutable wchar_t mNameW[48]  { L't', L'e', L's', L't', L'\0' };
         int32_t     mHooks[5]   { 0, 0, 0, 0, 0 };
     };
 
@@ -264,6 +276,19 @@ TEST(ServiceApplicationBaseTest, posix_registration_and_opening_succeed)
     EXPECT_TRUE(h.app.service_open());
 }
 
+TEST(ServiceApplicationBaseTest, service_main_runs_until_quit)
+{
+    Harness h;
+
+    EXPECT_EQ(h.app.service_main(ServiceOption::CMD_Service, nullptr), SystemServiceBase::RESULT_SUCCEEDED);
+
+    EXPECT_EQ(h.app.consoleRuns, 0);
+    EXPECT_EQ(h.app.state(), ServicePhase::Stopped);
+    EXPECT_EQ(h.app.current_option(), ServiceOption::CMD_Service);
+}
+
+#endif  // defined(_POSIX) || defined(POSIX)
+
 TEST(ServiceApplicationBaseTest, console_main_runs_the_console_and_stops)
 {
     Harness h;
@@ -287,17 +312,6 @@ TEST(ServiceApplicationBaseTest, configuration_hooks_of_the_base_are_callable_wh
     {
         EXPECT_EQ(delta, 1);
     }
-}
-
-TEST(ServiceApplicationBaseTest, service_main_runs_until_quit)
-{
-    Harness h;
-
-    EXPECT_EQ(h.app.service_main(ServiceOption::CMD_Service, nullptr), SystemServiceBase::RESULT_SUCCEEDED);
-
-    EXPECT_EQ(h.app.consoleRuns, 0);
-    EXPECT_EQ(h.app.state(), ServicePhase::Stopped);
-    EXPECT_EQ(h.app.current_option(), ServiceOption::CMD_Service);
 }
 
 TEST(ServiceApplicationBaseTest, load_startup_does_not_enter_the_console)
@@ -349,4 +363,44 @@ TEST(ServiceApplicationBaseTest, service_controls_report_their_phases)
     areg::Application::release();
 }
 
-#endif  // defined(_POSIX) || defined(POSIX)
+#if defined(_WIN32)
+
+TEST(ServiceApplicationBaseTest, windows_service_dispatcher_fails_outside_the_service_manager_and_can_be_tried_again)
+{
+    Harness h;
+    EXPECT_EQ(h.app.start_service_dispatcher(), SystemServiceBase::RESULT_FAILED_INIT);
+    EXPECT_EQ(h.app.start_service_dispatcher(), SystemServiceBase::RESULT_FAILED_INIT);
+}
+
+TEST(ServiceApplicationBaseTest, windows_service_startup_fails_outside_the_service_manager_without_running)
+{
+    Harness h;
+
+    EXPECT_EQ(h.app.service_main(ServiceOption::CMD_Service, nullptr), SystemServiceBase::RESULT_FAILED_INIT);
+
+    EXPECT_EQ(h.app.consoleRuns, 0);
+    EXPECT_EQ(h.app.state(), ServicePhase::Stopped);
+    EXPECT_EQ(h.app.current_option(), ServiceOption::CMD_Service);
+}
+
+TEST(ServiceApplicationBaseTest, windows_registration_of_a_console_startup_fails)
+{
+    Harness h;
+    h.app.set_current_option(ServiceOption::CMD_Console);
+    EXPECT_FALSE(h.app.register_service());
+}
+
+TEST(ServiceApplicationBaseTest, windows_service_that_is_not_installed_cannot_be_opened_and_uninstall_frees_the_handles)
+{
+    Harness h;
+    h.app.set_name(L"areg_unit_test_no_such_service");
+    EXPECT_FALSE(h.app.service_open());
+    EXPECT_EQ(h.app.service_handle(), nullptr);
+
+    EXPECT_EQ(h.app.service_main(ServiceOption::CMD_Uninstall, nullptr), SystemServiceBase::RESULT_SUCCEEDED);
+    EXPECT_EQ(h.app.service_handle(), nullptr);
+    EXPECT_EQ(h.app.current_option(), ServiceOption::CMD_Uninstall);
+}
+
+#endif  // defined(_WIN32)
+

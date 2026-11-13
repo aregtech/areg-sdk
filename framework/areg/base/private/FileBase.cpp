@@ -370,8 +370,9 @@ uint32_t FileBase::normalize_mode(uint32_t mode) const noexcept
 
     if ((mode & static_cast<uint32_t>(OpenFlag::BitTemp)) != 0)
     {
+        // A temporary file is created when it is opened and deleted when it is closed.
         mode &= ~(static_cast<uint32_t>(OpenFlag::BitExist) | static_cast<uint32_t>(OpenFlag::BitOpenAlways));
-        mode |= static_cast<uint32_t>(OpenMode::CreateTemp);
+        mode |= static_cast<uint32_t>(OpenMode::CreateTemp) | static_cast<uint32_t>(OpenFlag::BitCreateNew) | static_cast<uint32_t>(OpenFlag::BitDelete);
     }
 
     if ((mode & static_cast<uint32_t>(OpenFlag::BitText)) != 0)

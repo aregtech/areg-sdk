@@ -38,6 +38,7 @@ WaitableSemaphorePosix::WaitableSemaphorePosix(int32_t maxCount, int32_t initCou
 
 bool WaitableSemaphorePosix::release_semaphore() noexcept
 {
+    SignalScope signal(*this);
     bool sendSignal = false;
 
     do 

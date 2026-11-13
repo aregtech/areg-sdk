@@ -135,7 +135,17 @@ void TimerManager::_remove_all_timers()
         mTimerResource.remove_first_element(elem);
         ASSERT(elem.second != nullptr);
         TimerManager::_os_timer_stop(elem.first);
+
+        Lock timerLock(elem.second->mLock);
+        TimerManager::_deactivate_timer(*elem.second);
     }
+}
+
+void TimerManager::_deactivate_timer(Timer & timer)
+{
+    timer.mStarted        = false;
+    timer.mActive.store(false, std::memory_order_relaxed);
+    timer.mDispatchThread = nullptr;
 }
 
 void TimerManager::process_event( const TimerManagerEventData & data )
@@ -148,10 +158,7 @@ void TimerManager::process_event( const TimerManagerEventData & data )
         if (TimerManager::_os_timer_start(*timer) == false)
         {
             _unregister_timer(*timer);
-
-            timer->mStarted        = false;
-            timer->mActive.store(false, std::memory_order_relaxed);
-            timer->mDispatchThread = nullptr;
+            TimerManager::_deactivate_timer(*timer);
         }
     }
 }

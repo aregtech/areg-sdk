@@ -112,9 +112,11 @@ bool File::remove()
     {
         ASSERT(mFileName.is_empty() == false);
 
+        // A file opened for delete is already removed by the close.
+        const bool deletedOnClose{ is_force_delete() };
         close();
         std::error_code err;
-        result = std::filesystem::remove(mFileName.data(), err);
+        result = std::filesystem::remove(mFileName.data(), err) || (deletedOnClose && (err.value() == 0));
     }
 
     mFileHandle = File::_os_invalid_handle();

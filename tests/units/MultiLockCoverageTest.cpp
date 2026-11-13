@@ -2,6 +2,7 @@
 #include "units/ThreadCoverageHelpers.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/base/ThreadConsumer.hpp"
 #if defined(AREG_TEST_PRIVATE_POSIX)
     #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 #endif  // defined(AREG_TEST_PRIVATE_POSIX)
@@ -10,6 +11,13 @@
 #include <atomic>
 #include <memory>
 #include <thread>
+
+#if defined(_WIN32)
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif  // NOMINMAX
+    #include <Windows.h>
+#endif  // defined(_WIN32)
 
 namespace
 {
@@ -388,6 +396,99 @@ TEST(MultiLockCoverageTest, wait_all_with_a_leading_object_without_handle_does_n
 }
 
 #endif  // !defined(_WIN32)
+
+namespace
+{
+    //!< A thread routine that returns when the gate opens.
+    class GateConsumer final : public areg::ThreadConsumer
+    {
+    public:
+        explicit GateConsumer(CoverageGate & gate)
+            : mGate(gate)
+        {
+        }
+
+        void on_run() override
+        {
+            static_cast<void>(mGate.wait());
+        }
+
+    private:
+        CoverageGate & mGate;
+    };
+}
+
+TEST(MultiLockCoverageTest, wait_any_without_a_time_limit_returns_the_signaled_event)
+{
+    areg::SyncEvent first(true, true);
+    areg::SyncEvent second(false, true);
+    areg::SyncEvent* events[]{ &first, &second };
+    EXPECT_EQ(areg::SyncEvent::wait_any(events, 2, areg::WAIT_INFINITE), 1);
+    EXPECT_EQ(areg::SyncEvent::wait_any(events, 2, areg::DO_NOT_WAIT), areg::SyncEvent::WAIT_ANY_TIMEOUT);
+}
+
+TEST(MultiLockCoverageTest, undefined_priority_keeps_the_priority_of_a_running_thread)
+{
+    CoverageDeadline deadline;
+    CoverageGate release;
+    GateConsumer consumer(release);
+    areg::Thread thread(consumer, "MultiLockCoveragePriority");
+    ASSERT_TRUE(thread.start(areg::WAIT_INFINITE));
+    const areg::Thread::ThreadPriority current{ thread.priority() };
+    EXPECT_EQ(thread.set_priority(areg::Thread::ThreadPriority::Undefined), current);
+    EXPECT_EQ(thread.priority(), current);
+    release.arrive();
+    EXPECT_EQ(thread.shutdown(areg::WAIT_INFINITE), areg::Thread::ThreadCompletion::Completed);
+    EXPECT_EQ(thread.set_priority(areg::Thread::ThreadPriority::High), areg::Thread::ThreadPriority::Undefined);
+}
+
+#if defined(_WIN32)
+
+namespace
+{
+    std::atomic<uint32_t> gCompletionRuns{ 0u };
+
+    void CALLBACK _count_completion(ULONG_PTR /*data*/)
+    {
+        gCompletionRuns.fetch_add(1u);
+    }
+}
+
+TEST(MultiLockCoverageTest, alertable_wait_returns_the_completion_index_when_a_routine_runs)
+{
+    areg::SyncEvent event(true, true);
+    areg::SyncObject* objects[]{ &event };
+    areg::MultiLock multi(objects, 1, false);
+    gCompletionRuns.store(0u);
+    ASSERT_NE(::QueueUserAPC(&_count_completion, ::GetCurrentThread(), 0u), 0u);
+    EXPECT_EQ(multi.lock(COVERAGE_WAIT_MS, false, true), areg::MultiLock::LOCK_INDEX_COMPLETION);
+    EXPECT_EQ(gCompletionRuns.load(), 1u);
+    EXPECT_EQ(multi.lock(areg::DO_NOT_WAIT, false, true), areg::MultiLock::LOCK_INDEX_TIMEOUT);
+}
+
+TEST(MultiLockCoverageTest, mutex_abandoned_by_its_thread_is_taken_by_the_next_lock)
+{
+    areg::Mutex single(false);
+    areg::Mutex listed(false);
+    std::thread owner([&single, &listed]()
+        {
+            static_cast<void>(single.lock(areg::WAIT_INFINITE));
+            static_cast<void>(listed.lock(areg::WAIT_INFINITE));
+        });
+    owner.join();
+
+    EXPECT_TRUE(single.lock(COVERAGE_WAIT_MS));
+    EXPECT_TRUE(single.unlock());
+
+    areg::SyncObject* objects[]{ &listed };
+    areg::MultiLock multi(objects, 1, false);
+    EXPECT_EQ(multi.lock(COVERAGE_WAIT_MS, false), 0);
+    EXPECT_TRUE(multi.unlock());
+    EXPECT_TRUE(listed.try_lock());
+    EXPECT_TRUE(listed.unlock());
+}
+
+#endif  // defined(_WIN32)
 
 #if defined(AREG_TEST_PRIVATE_POSIX)
 

@@ -594,6 +594,7 @@ bool WaitableTimerPosix::set_timer(uint32_t msTimeout, bool is_periodic)
 
 bool WaitableTimerPosix::cancel_timer() noexcept
 {
+    SignalScope signal(*this);
     TimerServicePosix::instance().disarm(*this);
 
     do

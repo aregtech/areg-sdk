@@ -31,8 +31,13 @@ else()
 endif()
 
 addExecutableEx(${AREG_FAULT_INJECT_TEST} ""
-    "${AREG_TESTS_DIR}/fault-inject/fault_inject_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_router_client_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_posix_base_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_ipc_more_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_os_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_alloc_sweep_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_posix_sync_test.cpp"
+    "${AREG_TESTS_DIR}/fault-inject/fault_inject_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_router_client_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_posix_base_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_ipc_more_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_os_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_alloc_sweep_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_posix_sync_test.cpp;${AREG_TESTS_DIR}/fault-inject/fault_inject_win32_test.cpp"
     "${AREG_FAULT_INJECT_LIB};GTest::gtest_main;GTest::gtest")
+
+# The tests open their loopback sockets with plain system calls.
+if (WIN32)
+    target_link_libraries(${AREG_FAULT_INJECT_TEST} PRIVATE ws2_32)
+endif()
 
 # The log collector database and the log observer client are not part of a library.
 if (AREG_LOGGING)

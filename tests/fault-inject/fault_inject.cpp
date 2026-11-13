@@ -25,6 +25,7 @@
 #if defined(_WIN32)
     #include <WinSock2.h>
     #include <Windows.h>
+    #include <winsvc.h>
     #include <Psapi.h>
 #else   // defined(_WIN32)
     #include <dirent.h>
@@ -176,9 +177,9 @@ extern "C"
 
 namespace
 {
-    bool _is_supported( areg_fault::FaultPoint /*point*/ ) noexcept
+    bool _is_supported( areg_fault::FaultPoint point ) noexcept
     {
-        return true;
+        return ( point < areg_fault::FaultPoint::SocketInit );
     }
 
     void _install( ) noexcept
@@ -976,62 +977,281 @@ AREG_FAULT_INTERPOSE( _fault_posix_spawnp   , posix_spawnp );
 
 namespace
 {
-    using CreateThreadFunc  = HANDLE (WINAPI *)( LPSECURITY_ATTRIBUTES, SIZE_T, LPTHREAD_START_ROUTINE, LPVOID, DWORD, LPDWORD );
-    using SocketFunc        = SOCKET (WSAAPI *)( int, int, int );
-    using CreateFileAFunc   = HANDLE (WINAPI *)( LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE );
-    using CreateFileWFunc   = HANDLE (WINAPI *)( LPCWSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE );
+    //!< Returns true and sets the Win32 error if this call of the point fails.
+    bool _fails( areg_fault::FaultPoint point ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( point, error ) == false )
+            return false;
 
-    CreateThreadFunc    gCreateThread   { nullptr };
-    SocketFunc          gSocket         { nullptr };
-    CreateFileAFunc     gCreateFileA    { nullptr };
-    CreateFileWFunc     gCreateFileW    { nullptr };
+        ::SetLastError( static_cast<DWORD>(error) );
+        return true;
+    }
+
+    //!< Returns true and sets the socket error if this call of the point fails.
+    bool _fails_wsa( areg_fault::FaultPoint point ) noexcept
+    {
+        int error{ 0 };
+        if ( _should_fail( point, error ) == false )
+            return false;
+
+        ::WSASetLastError( error );
+        return true;
+    }
+
+    using CreateThreadFunc      = HANDLE (WINAPI *)( LPSECURITY_ATTRIBUTES, SIZE_T, LPTHREAD_START_ROUTINE, LPVOID, DWORD, LPDWORD );
+    using CreateFileAFunc       = HANDLE (WINAPI *)( LPCSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE );
+    using CreateFileWFunc       = HANDLE (WINAPI *)( LPCWSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE );
+    using ReadFileFunc          = BOOL (WINAPI *)( HANDLE, LPVOID, DWORD, LPDWORD, LPOVERLAPPED );
+    using WriteFileFunc         = BOOL (WINAPI *)( HANDLE, LPCVOID, DWORD, LPDWORD, LPOVERLAPPED );
+    using SetFilePointerFunc    = DWORD (WINAPI *)( HANDLE, LONG, PLONG, DWORD );
+    using CreateMutexWFunc      = HANDLE (WINAPI *)( LPSECURITY_ATTRIBUTES, BOOL, LPCWSTR );
+    using CreateEventWFunc      = HANDLE (WINAPI *)( LPSECURITY_ATTRIBUTES, BOOL, BOOL, LPCWSTR );
+    using CreateSemaphoreWFunc  = HANDLE (WINAPI *)( LPSECURITY_ATTRIBUTES, LONG, LONG, LPCWSTR );
+    using CreateTimerExWFunc    = HANDLE (WINAPI *)( LPSECURITY_ATTRIBUTES, LPCWSTR, DWORD, DWORD );
+    using CreatePoolTimerFunc   = PTP_TIMER (WINAPI *)( PTP_TIMER_CALLBACK, PVOID, PTP_CALLBACK_ENVIRON );
+    using CreatePortFunc        = HANDLE (WINAPI *)( HANDLE, HANDLE, ULONG_PTR, DWORD );
+    using GetPortStatusExFunc   = BOOL (WINAPI *)( HANDLE, LPOVERLAPPED_ENTRY, ULONG, PULONG, DWORD, BOOL );
+    using OpenSCManagerWFunc    = SC_HANDLE (WINAPI *)( LPCWSTR, LPCWSTR, DWORD );
+    using OpenServiceWFunc      = SC_HANDLE (WINAPI *)( SC_HANDLE, LPCWSTR, DWORD );
+
+    using SocketFunc            = SOCKET (WSAAPI *)( int, int, int );
+    using ConnectFunc           = int (WSAAPI *)( SOCKET, const sockaddr *, int );
+    using SendFunc              = int (WSAAPI *)( SOCKET, const char *, int, int );
+    using WSASendFunc           = int (WSAAPI *)( SOCKET, LPWSABUF, DWORD, LPDWORD, DWORD, LPWSAOVERLAPPED, LPWSAOVERLAPPED_COMPLETION_ROUTINE );
+    using RecvFunc              = int (WSAAPI *)( SOCKET, char *, int, int );
+    using BindFunc              = int (WSAAPI *)( SOCKET, const sockaddr *, int );
+    using ListenFunc            = int (WSAAPI *)( SOCKET, int );
+    using AcceptFunc            = SOCKET (WSAAPI *)( SOCKET, sockaddr *, int * );
+    using GetOptionFunc         = int (WSAAPI *)( SOCKET, int, int, char *, int * );
+    using SetOptionFunc         = int (WSAAPI *)( SOCKET, int, int, const char *, int );
+    using GetNameFunc           = int (WSAAPI *)( SOCKET, sockaddr *, int * );
+    using IoctlFunc             = int (WSAAPI *)( SOCKET, long, u_long * );
+    using PollFunc              = int (WSAAPI *)( LPWSAPOLLFD, ULONG, INT );
+    using SelectFunc            = int (WSAAPI *)( int, fd_set *, fd_set *, fd_set *, const timeval * );
+    using HostNameFunc          = int (WSAAPI *)( char *, int );
+    using StartupFunc           = int (WSAAPI *)( WORD, LPWSADATA );
+
+    CreateThreadFunc        gCreateThread       { nullptr };
+    CreateFileAFunc         gCreateFileA        { nullptr };
+    CreateFileWFunc         gCreateFileW        { nullptr };
+    ReadFileFunc            gReadFile           { nullptr };
+    WriteFileFunc           gWriteFile          { nullptr };
+    SetFilePointerFunc      gSetFilePointer     { nullptr };
+    CreateMutexWFunc        gCreateMutexW       { nullptr };
+    CreateEventWFunc        gCreateEventW       { nullptr };
+    CreateSemaphoreWFunc    gCreateSemaphoreW   { nullptr };
+    CreateTimerExWFunc      gCreateTimerExW     { nullptr };
+    CreatePoolTimerFunc     gCreatePoolTimer    { nullptr };
+    CreatePortFunc          gCreatePort         { nullptr };
+    GetPortStatusExFunc     gGetPortStatusEx    { nullptr };
+    OpenSCManagerWFunc      gOpenSCManagerW     { nullptr };
+    OpenServiceWFunc        gOpenServiceW       { nullptr };
+
+    SocketFunc              gSocket             { nullptr };
+    ConnectFunc             gConnect            { nullptr };
+    SendFunc                gSend               { nullptr };
+    WSASendFunc             gWSASend            { nullptr };
+    RecvFunc                gRecv               { nullptr };
+    BindFunc                gBind               { nullptr };
+    ListenFunc              gListen             { nullptr };
+    AcceptFunc              gAccept             { nullptr };
+    GetOptionFunc           gGetOption          { nullptr };
+    SetOptionFunc           gSetOption          { nullptr };
+    GetNameFunc             gGetName            { nullptr };
+    IoctlFunc               gIoctl              { nullptr };
+    PollFunc                gPoll               { nullptr };
+    SelectFunc              gSelect             { nullptr };
+    HostNameFunc            gHostName           { nullptr };
+    StartupFunc             gStartup            { nullptr };
 
     HANDLE WINAPI _fault_CreateThread( LPSECURITY_ATTRIBUTES security, SIZE_T stack, LPTHREAD_START_ROUTINE routine, LPVOID arg, DWORD flags, LPDWORD id )
     {
-        int error{ 0 };
-        if ( _should_fail( areg_fault::FaultPoint::ThreadCreate, error ) )
-        {
-            ::SetLastError( static_cast<DWORD>(error) );
-            return nullptr;
-        }
-
-        return gCreateThread( security, stack, routine, arg, flags, id );
-    }
-
-    SOCKET WSAAPI _fault_socket( int domain, int type, int protocol )
-    {
-        int error{ 0 };
-        if ( _should_fail( areg_fault::FaultPoint::SocketCreate, error ) )
-        {
-            ::WSASetLastError( error );
-            return INVALID_SOCKET;
-        }
-
-        return gSocket( domain, type, protocol );
+        return _fails( areg_fault::FaultPoint::ThreadCreate ) ? nullptr : gCreateThread( security, stack, routine, arg, flags, id );
     }
 
     HANDLE WINAPI _fault_CreateFileA( LPCSTR name, DWORD access, DWORD share, LPSECURITY_ATTRIBUTES security, DWORD creation, DWORD attributes, HANDLE pattern )
     {
-        int error{ 0 };
-        if ( _should_fail( areg_fault::FaultPoint::FileOpen, error ) )
-        {
-            ::SetLastError( static_cast<DWORD>(error) );
-            return INVALID_HANDLE_VALUE;
-        }
-
-        return gCreateFileA( name, access, share, security, creation, attributes, pattern );
+        return _fails( areg_fault::FaultPoint::FileOpen ) ? INVALID_HANDLE_VALUE : gCreateFileA( name, access, share, security, creation, attributes, pattern );
     }
 
     HANDLE WINAPI _fault_CreateFileW( LPCWSTR name, DWORD access, DWORD share, LPSECURITY_ATTRIBUTES security, DWORD creation, DWORD attributes, HANDLE pattern )
     {
-        int error{ 0 };
-        if ( _should_fail( areg_fault::FaultPoint::FileOpen, error ) )
+        return _fails( areg_fault::FaultPoint::FileOpen ) ? INVALID_HANDLE_VALUE : gCreateFileW( name, access, share, security, creation, attributes, pattern );
+    }
+
+    BOOL WINAPI _fault_ReadFile( HANDLE file, LPVOID buffer, DWORD size, LPDWORD read, LPOVERLAPPED overlapped )
+    {
+        if ( _fails( areg_fault::FaultPoint::FileRead ) == false )
+            return gReadFile( file, buffer, size, read, overlapped );
+
+        if ( read != nullptr )
+            *read = 0u;
+
+        return FALSE;
+    }
+
+    BOOL WINAPI _fault_WriteFile( HANDLE file, LPCVOID buffer, DWORD size, LPDWORD written, LPOVERLAPPED overlapped )
+    {
+        if ( _fails( areg_fault::FaultPoint::FileWrite ) == false )
+            return gWriteFile( file, buffer, size, written, overlapped );
+
+        if ( written != nullptr )
+            *written = 0u;
+
+        return FALSE;
+    }
+
+    DWORD WINAPI _fault_SetFilePointer( HANDLE file, LONG distance, PLONG distanceHigh, DWORD method )
+    {
+        return _fails( areg_fault::FaultPoint::FileSeek ) ? INVALID_SET_FILE_POINTER : gSetFilePointer( file, distance, distanceHigh, method );
+    }
+
+    HANDLE WINAPI _fault_CreateMutexW( LPSECURITY_ATTRIBUTES security, BOOL owned, LPCWSTR name )
+    {
+        return _fails( areg_fault::FaultPoint::MutexInit ) ? nullptr : gCreateMutexW( security, owned, name );
+    }
+
+    HANDLE WINAPI _fault_CreateEventW( LPSECURITY_ATTRIBUTES security, BOOL manual, BOOL initial, LPCWSTR name )
+    {
+        return _fails( areg_fault::FaultPoint::EventCreate ) ? nullptr : gCreateEventW( security, manual, initial, name );
+    }
+
+    HANDLE WINAPI _fault_CreateSemaphoreW( LPSECURITY_ATTRIBUTES security, LONG initial, LONG maximum, LPCWSTR name )
+    {
+        return _fails( areg_fault::FaultPoint::SemaphoreCreate ) ? nullptr : gCreateSemaphoreW( security, initial, maximum, name );
+    }
+
+    HANDLE WINAPI _fault_CreateWaitableTimerExW( LPSECURITY_ATTRIBUTES security, LPCWSTR name, DWORD flags, DWORD access )
+    {
+        return _fails( areg_fault::FaultPoint::WaitableTimerCreate ) ? nullptr : gCreateTimerExW( security, name, flags, access );
+    }
+
+    PTP_TIMER WINAPI _fault_CreateThreadpoolTimer( PTP_TIMER_CALLBACK callback, PVOID context, PTP_CALLBACK_ENVIRON environment )
+    {
+        return _fails( areg_fault::FaultPoint::TimerFdCreate ) ? nullptr : gCreatePoolTimer( callback, context, environment );
+    }
+
+    HANDLE WINAPI _fault_CreateIoCompletionPort( HANDLE file, HANDLE port, ULONG_PTR key, DWORD threads )
+    {
+        return _fails( areg_fault::FaultPoint::EpollCreate ) ? nullptr : gCreatePort( file, port, key, threads );
+    }
+
+    BOOL WINAPI _fault_GetQueuedCompletionStatusEx( HANDLE port, LPOVERLAPPED_ENTRY entries, ULONG count, PULONG removed, DWORD timeout, BOOL alertable )
+    {
+        if ( _fails( areg_fault::FaultPoint::EpollWait ) == false )
+            return gGetPortStatusEx( port, entries, count, removed, timeout, alertable );
+
+        if ( removed != nullptr )
+            *removed = 0u;
+
+        return FALSE;
+    }
+
+    SC_HANDLE WINAPI _fault_OpenSCManagerW( LPCWSTR machine, LPCWSTR database, DWORD access )
+    {
+        return _fails( areg_fault::FaultPoint::ServiceManagerOpen ) ? nullptr : gOpenSCManagerW( machine, database, access );
+    }
+
+    SC_HANDLE WINAPI _fault_OpenServiceW( SC_HANDLE manager, LPCWSTR name, DWORD access )
+    {
+        return _fails( areg_fault::FaultPoint::ServiceOpen ) ? nullptr : gOpenServiceW( manager, name, access );
+    }
+
+    SOCKET WSAAPI _fault_socket( int domain, int type, int protocol )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::SocketCreate ) ? INVALID_SOCKET : gSocket( domain, type, protocol );
+    }
+
+    int WSAAPI _fault_connect( SOCKET hSocket, const sockaddr * name, int length )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::SocketConnect ) ? SOCKET_ERROR : gConnect( hSocket, name, length );
+    }
+
+    int WSAAPI _fault_send( SOCKET hSocket, const char * buffer, int length, int flags )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::SocketSend ) ? SOCKET_ERROR : gSend( hSocket, buffer, length, flags );
+    }
+
+    int WSAAPI _fault_WSASend( SOCKET hSocket, LPWSABUF buffers, DWORD count, LPDWORD sent, DWORD flags, LPWSAOVERLAPPED overlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE routine )
+    {
+        if ( _fails_wsa( areg_fault::FaultPoint::SocketSend ) == false )
+            return gWSASend( hSocket, buffers, count, sent, flags, overlapped, routine );
+
+        if ( sent != nullptr )
+            *sent = 0u;
+
+        return SOCKET_ERROR;
+    }
+
+    int WSAAPI _fault_recv( SOCKET hSocket, char * buffer, int length, int flags )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::SocketRecv ) ? SOCKET_ERROR : gRecv( hSocket, buffer, length, flags );
+    }
+
+    int WSAAPI _fault_bind( SOCKET hSocket, const sockaddr * name, int length )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::SocketBind ) ? SOCKET_ERROR : gBind( hSocket, name, length );
+    }
+
+    int WSAAPI _fault_listen( SOCKET hSocket, int backlog )
+    {
+        if ( _fails_wsa( areg_fault::FaultPoint::SocketListen ) )
+            return SOCKET_ERROR;
+
+        const uint32_t delay{ gSlots[static_cast<uint32_t>(areg_fault::FaultPoint::SocketListen)].delay.load( std::memory_order_relaxed ) };
+        if ( delay != 0u )
         {
-            ::SetLastError( static_cast<DWORD>(error) );
-            return INVALID_HANDLE_VALUE;
+            ::Sleep( delay );
         }
 
-        return gCreateFileW( name, access, share, security, creation, attributes, pattern );
+        return gListen( hSocket, backlog );
+    }
+
+    SOCKET WSAAPI _fault_accept( SOCKET hSocket, sockaddr * address, int * length )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::SocketAccept ) ? INVALID_SOCKET : gAccept( hSocket, address, length );
+    }
+
+    int WSAAPI _fault_getsockopt( SOCKET hSocket, int level, int name, char * value, int * length )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::SocketGetOption ) ? SOCKET_ERROR : gGetOption( hSocket, level, name, value, length );
+    }
+
+    int WSAAPI _fault_setsockopt( SOCKET hSocket, int level, int name, const char * value, int length )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::SocketSetOption ) ? SOCKET_ERROR : gSetOption( hSocket, level, name, value, length );
+    }
+
+    int WSAAPI _fault_getsockname( SOCKET hSocket, sockaddr * name, int * length )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::SocketName ) ? SOCKET_ERROR : gGetName( hSocket, name, length );
+    }
+
+    int WSAAPI _fault_ioctlsocket( SOCKET hSocket, long command, u_long * argument )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::Fcntl ) ? SOCKET_ERROR : gIoctl( hSocket, command, argument );
+    }
+
+    int WSAAPI _fault_WSAPoll( LPWSAPOLLFD entries, ULONG count, INT timeout )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::Poll ) ? SOCKET_ERROR : gPoll( entries, count, timeout );
+    }
+
+    int WSAAPI _fault_select( int count, fd_set * readSet, fd_set * writeSet, fd_set * exceptSet, const timeval * timeout )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::Poll ) ? SOCKET_ERROR : gSelect( count, readSet, writeSet, exceptSet, timeout );
+    }
+
+    int WSAAPI _fault_gethostname( char * name, int length )
+    {
+        return _fails_wsa( areg_fault::FaultPoint::HostName ) ? SOCKET_ERROR : gHostName( name, length );
+    }
+
+    int WSAAPI _fault_WSAStartup( WORD version, LPWSADATA data )
+    {
+        int error{ 0 };
+        return _should_fail( areg_fault::FaultPoint::SocketInit, error ) ? error : gStartup( version, data );
     }
 
     //!< A replaced function: its module, its name, the replacement and the saved original.
@@ -1043,13 +1263,44 @@ namespace
         void **         original;
     };
 
+#define AREG_FAULT_HOOK( module, name, original )   { module, #name, reinterpret_cast<void *>(&_fault_##name), reinterpret_cast<void **>(&original) }
+
     Hook gHooks[]
     {
-          { "kernel32.dll", "CreateThread", reinterpret_cast<void *>(&_fault_CreateThread), reinterpret_cast<void **>(&gCreateThread) }
-        , { "ws2_32.dll"  , "socket"      , reinterpret_cast<void *>(&_fault_socket)      , reinterpret_cast<void **>(&gSocket) }
-        , { "kernel32.dll", "CreateFileA" , reinterpret_cast<void *>(&_fault_CreateFileA) , reinterpret_cast<void **>(&gCreateFileA) }
-        , { "kernel32.dll", "CreateFileW" , reinterpret_cast<void *>(&_fault_CreateFileW) , reinterpret_cast<void **>(&gCreateFileW) }
+          AREG_FAULT_HOOK( "kernel32.dll", CreateThread             , gCreateThread )
+        , AREG_FAULT_HOOK( "kernel32.dll", CreateFileA              , gCreateFileA )
+        , AREG_FAULT_HOOK( "kernel32.dll", CreateFileW              , gCreateFileW )
+        , AREG_FAULT_HOOK( "kernel32.dll", ReadFile                 , gReadFile )
+        , AREG_FAULT_HOOK( "kernel32.dll", WriteFile                , gWriteFile )
+        , AREG_FAULT_HOOK( "kernel32.dll", SetFilePointer           , gSetFilePointer )
+        , AREG_FAULT_HOOK( "kernel32.dll", CreateMutexW             , gCreateMutexW )
+        , AREG_FAULT_HOOK( "kernel32.dll", CreateEventW             , gCreateEventW )
+        , AREG_FAULT_HOOK( "kernel32.dll", CreateSemaphoreW         , gCreateSemaphoreW )
+        , AREG_FAULT_HOOK( "kernel32.dll", CreateWaitableTimerExW   , gCreateTimerExW )
+        , AREG_FAULT_HOOK( "kernel32.dll", CreateThreadpoolTimer    , gCreatePoolTimer )
+        , AREG_FAULT_HOOK( "kernel32.dll", CreateIoCompletionPort   , gCreatePort )
+        , AREG_FAULT_HOOK( "kernel32.dll", GetQueuedCompletionStatusEx, gGetPortStatusEx )
+        , AREG_FAULT_HOOK( "advapi32.dll", OpenSCManagerW           , gOpenSCManagerW )
+        , AREG_FAULT_HOOK( "advapi32.dll", OpenServiceW             , gOpenServiceW )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , socket                   , gSocket )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , connect                  , gConnect )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , send                     , gSend )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , WSASend                  , gWSASend )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , recv                     , gRecv )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , bind                     , gBind )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , listen                   , gListen )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , accept                   , gAccept )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , getsockopt               , gGetOption )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , setsockopt               , gSetOption )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , getsockname              , gGetName )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , ioctlsocket              , gIoctl )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , WSAPoll                  , gPoll )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , select                   , gSelect )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , gethostname              , gHostName )
+        , AREG_FAULT_HOOK( "ws2_32.dll"  , WSAStartup               , gStartup )
     };
+
+#undef AREG_FAULT_HOOK
 
     //!< Writes the replacements into the import address table of the module.
     void _patch_module( HMODULE module ) noexcept
@@ -1092,9 +1343,41 @@ namespace
 
     bool _is_supported( areg_fault::FaultPoint point ) noexcept
     {
-        return ( point == areg_fault::FaultPoint::ThreadCreate )
-            || ( point == areg_fault::FaultPoint::SocketCreate )
-            || ( point == areg_fault::FaultPoint::FileOpen );
+        switch ( point )
+        {
+        case areg_fault::FaultPoint::ThreadCreate:
+        case areg_fault::FaultPoint::SocketCreate:
+        case areg_fault::FaultPoint::FileOpen:
+        case areg_fault::FaultPoint::SocketConnect:
+        case areg_fault::FaultPoint::SocketSend:
+        case areg_fault::FaultPoint::SocketRecv:
+        case areg_fault::FaultPoint::SocketBind:
+        case areg_fault::FaultPoint::SocketListen:
+        case areg_fault::FaultPoint::FileRead:
+        case areg_fault::FaultPoint::FileWrite:
+        case areg_fault::FaultPoint::Poll:
+        case areg_fault::FaultPoint::Fcntl:
+        case areg_fault::FaultPoint::SocketGetOption:
+        case areg_fault::FaultPoint::SocketSetOption:
+        case areg_fault::FaultPoint::SocketAccept:
+        case areg_fault::FaultPoint::HostName:
+        case areg_fault::FaultPoint::EpollCreate:
+        case areg_fault::FaultPoint::EpollWait:
+        case areg_fault::FaultPoint::EventCreate:
+        case areg_fault::FaultPoint::MutexInit:
+        case areg_fault::FaultPoint::TimerFdCreate:
+        case areg_fault::FaultPoint::SocketInit:
+        case areg_fault::FaultPoint::SocketName:
+        case areg_fault::FaultPoint::SemaphoreCreate:
+        case areg_fault::FaultPoint::WaitableTimerCreate:
+        case areg_fault::FaultPoint::FileSeek:
+        case areg_fault::FaultPoint::ServiceManagerOpen:
+        case areg_fault::FaultPoint::ServiceOpen:
+            return true;
+
+        default:
+            return false;
+        }
     }
 
     void _install( ) noexcept

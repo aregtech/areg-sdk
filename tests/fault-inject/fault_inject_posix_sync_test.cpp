@@ -399,7 +399,7 @@ namespace
         {
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( point, EMFILE ) );
-            AREG_CHILD_CHECK( refused.start_timer( 1u, run.dispatcher, areg::Timer::ONE_TIME ) );
+            static_cast<void>( refused.start_timer( 1u, run.dispatcher, areg::Timer::ONE_TIME ) );
             AREG_CHILD_CHECK( marker.start_timer( 1u, run.dispatcher, areg::Timer::ONE_TIME ) );
             AREG_CHILD_CHECK( run.consumer.wait_count( marker, 1u ) );
             AREG_CHILD_CHECK( areg_fault::failed( point ) == 1u && NOT_REPLACED );
@@ -412,6 +412,7 @@ namespace
         AREG_CHILD_CHECK( run.consumer.wait_count( refused, 1u ) );
         refused.stop_timer( );
         marker.stop_timer( );
+        AREG_CHILD_CHECK( run.dispatcher.barrier( ) );
     }
 
     void interrupted_wait_of_the_timer_manager_is_repeated_and_the_timer_fires( )
@@ -426,6 +427,7 @@ namespace
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::EpollWait ) == 1u && NOT_REPLACED );
         AREG_CHILD_CHECK( areg::TimerManager::is_manager_started( ) );
         timer.stop_timer( );
+        AREG_CHILD_CHECK( run.dispatcher.barrier( ) );
     }
 
     void failed_wait_of_the_timer_manager_stops_it_and_it_starts_again( )
@@ -452,6 +454,7 @@ namespace
         AREG_CHILD_CHECK( after.start_timer( 1u, run.dispatcher, areg::Timer::ONE_TIME ) );
         AREG_CHILD_CHECK( run.consumer.wait_count( after, 1u ) );
         after.stop_timer( );
+        AREG_CHILD_CHECK( run.dispatcher.barrier( ) );
     }
 
     void timer_started_before_a_failed_manager_wait_fires_or_is_not_active( )
@@ -464,7 +467,7 @@ namespace
         {
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::EpollWait, EBADF ) );
-            AREG_CHILD_CHECK( lost.start_timer( 1u, run.dispatcher, areg::Timer::ONE_TIME ) );
+            static_cast<void>( lost.start_timer( 1u, run.dispatcher, areg::Timer::ONE_TIME ) );
             AREG_CHILD_CHECK( timerThread->areg::Thread::wait_completion( WAIT_MS ) );
             AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::EpollWait ) == 1u && NOT_REPLACED );
         }
@@ -474,9 +477,13 @@ namespace
         areg::Timer marker( run.consumer, "FaultInjectMarkerLost" );
         AREG_CHILD_CHECK( marker.start_timer( 1u, run.dispatcher, areg::Timer::ONE_TIME ) );
         AREG_CHILD_CHECK( run.consumer.wait_count( marker, 1u ) );
-        AREG_CHILD_CHECK( (run.consumer.count( lost ) == 1u) || (lost.is_active( ) == false) );
+        const uint32_t fired{ run.consumer.count( lost ) };
+        AREG_CHILD_CHECK( (fired == 1u) || (lost.is_active( ) == false) );
+        AREG_CHILD_CHECK( lost.start_timer( 1u, run.dispatcher, areg::Timer::ONE_TIME ) );
+        AREG_CHILD_CHECK( run.consumer.wait_count( lost, fired + 1u ) );
         lost.stop_timer( );
         marker.stop_timer( );
+        AREG_CHILD_CHECK( run.dispatcher.barrier( ) );
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -690,7 +697,11 @@ TEST( FaultInjectPosixSyncTest, failed_wait_of_the_timer_manager_stops_it_and_it
     AREG_EXPECT_IN_CHILD( failed_wait_of_the_timer_manager_stops_it_and_it_starts_again( ) );
 }
 
-TEST( FaultInjectPosixSyncTest, DISABLED_bug_924_timer_started_before_a_failed_manager_wait_fires_or_is_not_active )
+/**
+ * \brief   Reproduces the defect: after a failed wait ended the timer thread, a timer started
+ *          before it kept reporting active and never fired, also after the manager started again.
+ **/
+TEST( FaultInjectPosixSyncTest, bug_924_timer_started_before_a_failed_manager_wait_fires_or_is_not_active )
 {
     AREG_EXPECT_IN_CHILD( timer_started_before_a_failed_manager_wait_fires_or_is_not_active( ) );
 }

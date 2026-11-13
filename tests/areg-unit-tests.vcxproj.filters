@@ -163,6 +163,9 @@
     <ClCompile Include="units\ServiceApplicationBaseTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\WindowsServiceTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="units\SystemServiceBaseTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
