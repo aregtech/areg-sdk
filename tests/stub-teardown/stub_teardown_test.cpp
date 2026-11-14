@@ -80,6 +80,12 @@ namespace
     constexpr char const    _watchModel[]       { "WatchdogTeardownModel" };
     constexpr char const    _watchRole[]        { "WatchdogTeardownBlocker" };
     constexpr char const    _watchThread[]      { "WatchdogTeardownThread" };
+    constexpr char const    _fullStubModel[]    { "FullQueueStubModel" };
+    constexpr char const    _fullProxyModel[]   { "FullQueueProxyModel" };
+    constexpr char const    _fullStubThread[]   { "FullQueueStubThread" };
+    constexpr char const    _fullProxyThread[]  { "FullQueueProxyThread" };
+    constexpr char const    _fullStubRole[]     { "FullQueueProvider" };
+    constexpr char const    _fullProxyRole[]    { "FullQueueConsumer" };
     constexpr areg::Version _version            { 1, 0, 0 };
 
     constexpr uint32_t      LOAD_ROUNDS         { 200 };
@@ -96,6 +102,8 @@ namespace
     constexpr uint32_t      WATCH_TIMEOUT       { 50 };
     constexpr uint32_t      WATCH_BLOCK         { 2000 };
     constexpr uint32_t      WATCH_RESTARTS      { 10 };
+    constexpr uint32_t      FULL_QUEUE          { 32 };
+    constexpr uint32_t      FULL_QUEUE_WAIT     { 1 };
 
     constexpr uint32_t      _requestList[]      { areg::REQUEST_ID_FIRST };
     constexpr uint32_t      _noResponse[]       { areg::RESPONSE_ID_NONE };
@@ -157,11 +165,14 @@ namespace
     std::atomic_uint32_t    gWorkerNumber{ 0 };
     std::atomic_uint32_t    gWatchNumber{ 0 };
     std::atomic_bool        gWatchCalm  { false };
+    std::atomic_bool        gHoldFirst  { false };
 
     Gate                    gStarted;
     Gate                    gRoutedGate;
     Gate                    gRecreated;
     Gate                    gCalmStart;
+    Gate                    gHandledGate;
+    Gate                    gReleaseHeld;
 
     std::mutex              gAddressLock;
     areg::ProxyAddress      gProxyAddress;
@@ -171,6 +182,18 @@ namespace
     {
         std::memset(block, 0xDD, size);
         ::operator delete(block);
+    }
+
+    //!< Counts a handled event; the first one after gHoldFirst is set waits for the release of the round.
+    void _count_handled()
+    {
+        if (gHoldFirst.exchange(false))
+        {
+            gReleaseHeld.wait_for(gRound.load());
+        }
+
+        gHandled.fetch_add(1);
+        gHandledGate.advance();
     }
 
     //!< Counts a routed event and opens the gate of the current round once.
@@ -235,7 +258,7 @@ protected:
 
     void process_request_event(areg::ServiceRequestEvent & /*eventElem*/) override
     {
-        gHandled.fetch_add(1);
+        _count_handled();
         cancel_current_request();
     }
 
@@ -302,7 +325,7 @@ protected:
     {
         if (eventElem.response_id() == RESPONSE_ID)
         {
-            gHandled.fetch_add(1);
+            _count_handled();
         }
     }
 
@@ -661,6 +684,29 @@ END_MODEL(_watchModel)
 }
 
 
+namespace full_stub_model
+{
+BEGIN_MODEL(_fullStubModel)
+    BEGIN_REGISTER_THREAD_EX2(_fullStubThread, areg::WATCHDOG_IGNORE, areg::DEFAULT_STACK_SIZE, FULL_QUEUE, areg::Bool::False, FULL_QUEUE_WAIT)
+        BEGIN_REGISTER_COMPONENT(_fullStubRole, TeardownProvider)
+            REGISTER_IMPLEMENT_SERVICE(_serviceName, _version)
+        END_REGISTER_COMPONENT(_fullStubRole)
+    END_REGISTER_THREAD(_fullStubThread)
+END_MODEL(_fullStubModel)
+}
+
+
+namespace full_proxy_model
+{
+BEGIN_MODEL(_fullProxyModel)
+    BEGIN_REGISTER_THREAD_EX2(_fullProxyThread, areg::WATCHDOG_IGNORE, areg::DEFAULT_STACK_SIZE, FULL_QUEUE, areg::Bool::False, FULL_QUEUE_WAIT)
+        BEGIN_REGISTER_COMPONENT(_fullProxyRole, TeardownConsumer)
+        END_REGISTER_COMPONENT(_fullProxyRole)
+    END_REGISTER_THREAD(_fullProxyThread)
+END_MODEL(_fullProxyModel)
+}
+
+
 namespace worker_model
 {
 BEGIN_MODEL(_workerModel)
@@ -902,6 +948,66 @@ static uint32_t load_unload(const char * modelName, uint32_t rounds, std::initia
     return round;
 }
 
+//!< Routes remote events of the type to the key until one is not accepted; returns the number accepted.
+static uint32_t route_until_refused(areg::EventType eventType, uint32_t key)
+{
+    const areg::Channel channel{ };
+    for (uint32_t count = 0; count < 2 * FULL_QUEUE; ++ count)
+    {
+        areg::MessageEnvelope wire(static_cast<uint16_t>(eventType), static_cast<uint8_t>(areg::EventPriority::NormalPrio));
+        areg::EventHeader * hdr{ wire.header() };
+        if (eventType == areg::EventType::EventRemoteRequest)
+        {
+            hdr->provider.number = key;
+            hdr->messageId       = areg::REQUEST_ID_FIRST;
+        }
+        else
+        {
+            hdr->consumer.number = key;
+            hdr->messageId       = RESPONSE_ID;
+            hdr->eventId         = TeardownRemoteResponse::CLASS_ID;
+        }
+
+        if (areg::RemoteEventFactory::route_incoming_message(wire, channel) == false)
+            return count;
+
+        gRouted.fetch_add(1);
+    }
+
+    return 0;
+}
+
+//!< Fills the lossless queue of the held target until a routed event times out, then releases the
+//!< target. Returns true if the queue took at most its size plus the held event, and the target
+//!< handled exactly the accepted events.
+static bool full_queue_round(uint32_t round, const char * modelName, areg::EventType eventType)
+{
+    const uint32_t handledBefore{ gHandled.load() };
+    gRound.store(round);
+    gHoldFirst.store(true);
+    if (areg::Application::load_model(modelName) == false)
+        return false;
+
+    gStarted.wait_for(round);
+    const uint32_t accepted{ route_until_refused(eventType, gTargetKey.load()) };
+    gReleaseHeld.advance();
+    gHandledGate.wait_for(handledBefore + accepted);
+    areg::Application::unload_model(modelName);
+
+    const uint32_t handled{ gHandled.load() - handledBefore };
+    printf("accepted, handled ........: %u, %u\n", accepted, handled);
+    return (accepted != 0) && (accepted <= FULL_QUEUE + 1) && (handled == accepted);
+}
+
+//!< Runs the full queue round of a provider and of a consumer.
+static uint32_t full_queue()
+{
+    uint32_t rounds{ 0 };
+    rounds += full_queue_round(1, _fullStubModel, areg::EventType::EventRemoteRequest) ? 1 : 0;
+    rounds += full_queue_round(2, _fullProxyModel, areg::EventType::EventRemoteResponse) ? 1 : 0;
+    return rounds;
+}
+
 //!< Lets the host recreate its consumer while the responses are routed to it.
 static uint32_t recreate(uint32_t rounds)
 {
@@ -969,6 +1075,11 @@ int main(int argc, char * argv[])
         expected = WATCH_RESTARTS;
         rounds = watchdog_restarts(expected);
         created = false;
+    }
+    else if (std::strcmp(name, "full-queue") == 0)
+    {
+        expected = 2;
+        rounds = full_queue();
     }
     else if (std::strcmp(name, "proxy-free") == 0)
     {

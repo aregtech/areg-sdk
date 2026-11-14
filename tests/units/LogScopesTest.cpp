@@ -1557,4 +1557,58 @@ TEST(LoggingCoreTest, scope_session_starts_at_zero)
     EXPECT_EQ(scope.session(), 0u);
 }
 
+// A leaf copied or moved onto itself keeps its name and priority.
+TEST(LoggingCoreTest, node_assigned_to_itself_keeps_name_and_priority)
+{
+    const uint32_t info{ static_cast<uint32_t>(areg::LogPriority::PrioInfo) };
+    areg::ScopeNode node;
+    node.set_node_name("branch");
+    areg::String name{ ".first" };
+    ASSERT_TRUE(node.add_child_node(name, info).second);
+
+    areg::ScopeLeaf leaf{ node.leafs()[0u] };
+    areg::ScopeLeaf& same{ leaf };
+    leaf = same;
+    EXPECT_EQ(leaf.node_name(), "first");
+    EXPECT_EQ(leaf.priority(), info);
+
+    leaf = std::move(same);
+    EXPECT_EQ(leaf.node_name(), "first");
+    EXPECT_EQ(leaf.priority(), info);
+}
+
+// Nodes of different kinds are never equal, even with the same name.
+TEST(LoggingCoreTest, nodes_of_different_kinds_are_not_equal)
+{
+    areg::ScopeNode node;
+    node.set_node_name("same");
+    areg::ScopeLeaf leaf;
+    leaf.set_node_name("same");
+
+    const areg::ScopeNodeBase& asNode{ node };
+    const areg::ScopeNodeBase& asLeaf{ leaf };
+    EXPECT_FALSE(asNode == asLeaf);
+    EXPECT_TRUE(asNode != asLeaf);
+    EXPECT_TRUE(asNode == asNode);
+}
+
+// The invalid node returned for a missing child has no path, no configuration and no children.
+TEST(LoggingCoreTest, invalid_node_generates_nothing)
+{
+    areg::ScopeLeaf leaf;
+    leaf.set_node_name("leaf");
+    areg::String none;
+    areg::ScopeNodeBase& invalid{ leaf.add_child_node(none, 0u).first };
+    ASSERT_FALSE(invalid.is_valid());
+
+    EXPECT_EQ(invalid.make_scope_path("prefix_"), "prefix_");
+    EXPECT_EQ(invalid.make_config_string("parent_"), "parent_");
+    areg::ConfigManager config;
+    EXPECT_EQ(invalid.update_config_node(config, "parent_"), 0u);
+    EXPECT_TRUE(config.module_properties().is_empty());
+    EXPECT_EQ(invalid.group_child_nodes(), 0u);
+    EXPECT_EQ(invalid.group_recursive(), 0u);
+    EXPECT_TRUE(invalid.is_empty());
+}
+
 #endif // AREG_LOGGING

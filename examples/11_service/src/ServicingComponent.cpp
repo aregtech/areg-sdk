@@ -14,6 +14,7 @@
 #include "areg/logging/areg_log.h"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
+#include "aregextend/console/Console.hpp"
 
 DEF_LOG_SCOPE(examples_11_service_ServicingComponent, startup_service_interface);
 DEF_LOG_SCOPE(examples_11_service_ServicingComponent, shutdown_service_intrface);
@@ -36,7 +37,7 @@ void ServicingComponent::startup_service_interface(areg::Component & holder)
     areg::StubBase::startup_service_interface(holder);
     mTimer.start_timer(TIMER_TIMEOUT, TIMER_EVENTS);
 
-    printf("Local servicing started, waits for [ %u ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
+    areg::ext::Console::instance().print_msg("Local servicing started, waits for [ %u ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
 }
 
 void ServicingComponent::shutdown_service_interface(areg::Component & holder) noexcept
@@ -47,7 +48,7 @@ void ServicingComponent::shutdown_service_interface(areg::Component & holder) no
     mTimer.stop_timer();
     areg::StubBase::shutdown_service_interface(holder);
 
-    std::cout << "Local servicing stopped..." << std::endl;
+    areg::ext::Console::instance().print_txt("Local servicing stopped...\n");
 }
 
 void ServicingComponent::process_timer([[maybe_unused]] areg::Timer & timer)
@@ -69,11 +70,11 @@ void ServicingComponent::process_timer([[maybe_unused]] areg::Timer & timer)
     if (mTimer.is_active())
     {
     	ASSERT(TIMER_EVENTS > mCount);
-        std::cout << "Hello Service!" << std::endl;
+        areg::ext::Console::instance().print_txt("Hello Service!\n");
     }
     else
     {
-        std::cout << "Goodbye Service!" << std::endl;
+        areg::ext::Console::instance().print_txt("Goodbye Service!\n");
         ASSERT(mCount == TIMER_EVENTS);
 
         LOG_INFO("The timer is not active anymore, signaling quit event");

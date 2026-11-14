@@ -55,12 +55,12 @@ void process_timer(areg::Timer & timer) final;      // TimerConsumer.hpp:73
 
 | Call | Signature | Header |
 |---|---|---|
-| `setup()` | `static void setup(bool startTracing = true, bool startServicing = true, bool startRouting = true, bool startTimer = true, bool startWatchdog = false, const char * configFile = areg::DEFAULT_CONFIG_FILE.data(), ConfigListener * configListener = nullptr)` | `Application.hpp:109` |
-| `load_model()` | `static bool load_model(const char * modelName = nullptr, bool waitComponents = false)` | `Application.hpp:136` |
-| `wait_quit()` | `static bool wait_quit(uint32_t waitTimeout = areg::WAIT_INFINITE)` | `Application.hpp:346` |
-| `signal_quit()` | `static void signal_quit()` | `Application.hpp:352` |
-| `unload_model()` | `static bool unload_model(const char * modelName = nullptr)` | `Application.hpp:155` |
-| `release()` | `static void release()` | `Application.hpp:120` |
+| `setup()` | `static void setup(bool startTracing = true, bool startServicing = true, bool startRouting = true, bool startTimer = true, bool startWatchdog = false, const char * configFile = areg::DEFAULT_CONFIG_FILE.data(), ConfigListener * configListener = nullptr)` | `Application.hpp:111` |
+| `load_model()` | `static bool load_model(const char * modelName = nullptr, bool waitComponents = false)` | `Application.hpp:138` |
+| `wait_quit()` | `static bool wait_quit(uint32_t waitTimeout = areg::WAIT_INFINITE)` | `Application.hpp:348` |
+| `signal_quit()` | `static void signal_quit()` | `Application.hpp:354` |
+| `unload_model()` | `static bool unload_model(const char * modelName = nullptr)` | `Application.hpp:157` |
+| `release()` | `static void release()` | `Application.hpp:122` |
 
 Every argument of `setup()` has a default, so `setup()` alone is the normal call.
 Nothing ends the application until something ends it. In a scaffolded project that is

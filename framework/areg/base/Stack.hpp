@@ -228,7 +228,8 @@ public:
     /**
      * \brief   Validates that the specified position points to a valid entry in the stack.
      *
-     * \param   pos     The position to check.
+     * \param   pos     The position to check: a position of this stack or its invalid position.
+     *                  A position of another container is not allowed.
      * \return  True if the position points to a valid entry; false otherwise.
      **/
     [[nodiscard]]

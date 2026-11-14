@@ -50,6 +50,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     MemoryDefsTest.cpp
     GUnitTest.cpp
     ArrayListTest.cpp
+    BaseContainersCoverageTest.cpp
     AnsiWriterTest.cpp
     ConsoleTest.cpp
     ConfigManagerTest.cpp
@@ -97,6 +98,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     NameNumberCollisionTest.cpp
     ComponentLoaderContractTest.cpp
     ComponentLifecycleFailureTest.cpp
+    ComponentCoreCoverageTest.cpp
     ComponentSelfLifecycleTest.cpp
     ProxyBaseContractTest.cpp
     ProxyStubLifecycleTest.cpp
@@ -220,5 +222,8 @@ if (AREG_LIB_TYPE STREQUAL "shared")
         "${AREG_FRAMEWORK}/areg/logging/private/ScopeNodeBase.cpp"
         "${AREG_FRAMEWORK}/areg/logging/private/ScopeNodes.cpp"
         "${AREG_FRAMEWORK}/areg/logging/private/LoggingEvent.cpp"
+        "${AREG_FRAMEWORK}/areg/logging/private/LoggerBase.cpp"
+        "${AREG_FRAMEWORK}/areg/logging/private/DatabaseLogger.cpp"
+        "${AREG_FRAMEWORK}/areg/logging/private/DebugOutputLogger.cpp"
     )
 endif()

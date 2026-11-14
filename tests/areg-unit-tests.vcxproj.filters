@@ -196,6 +196,15 @@
     <ClCompile Include="..\framework\areg\logging\private\LoggingEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\framework\areg\logging\private\LoggerBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\framework\areg\logging\private\DatabaseLogger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\framework\areg\logging\private\DebugOutputLogger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\framework\logcollector\service\private\LogCollectorDroppedRows.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -293,6 +302,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\ArrayListTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\BaseContainersCoverageTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\ComponentCoreCoverageTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\FixedArrayTest.cpp">

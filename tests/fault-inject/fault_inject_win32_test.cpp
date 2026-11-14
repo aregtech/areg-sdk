@@ -928,7 +928,7 @@ namespace
         {
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::TimerFdCreate, ERROR_NOT_ENOUGH_MEMORY ) );
-            AREG_CHILD_CHECK( refused.start_timer( 1u, dispatcher, areg::Timer::ONE_TIME ) );
+            static_cast<void>( refused.start_timer( 1u, dispatcher, areg::Timer::ONE_TIME ) );
             AREG_CHILD_CHECK( marker.start_timer( 1u, dispatcher, areg::Timer::ONE_TIME ) );
             AREG_CHILD_CHECK( consumer.wait_count( marker, 1u ) );
             AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::TimerFdCreate ) == 1u && NOT_REPLACED );

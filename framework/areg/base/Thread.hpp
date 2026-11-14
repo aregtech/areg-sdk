@@ -175,9 +175,9 @@ public:
      *          size.
      *
      * \param   threadConsumer      The valid instance of thread consumer object.
-     * \param   threadName          The thread name to set and track in the system. Should be unique
-     *                              to enable thread tracking by name. If nullptr or duplicated, the
-     *                              system cannot track the thread by name.
+     * \param   threadName          The thread name to set and track in the system. If empty, a
+     *                              unique name is generated. If another thread with the same name
+     *                              is registered, the started thread replaces it in the lookup by name.
      * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
      *                              Pass `areg::DEFAULT_STACK_SIZE` (0) to use the system
      *                              default stack size.

@@ -473,6 +473,61 @@ TEST( FileBufferTest, resize_and_fill_sets_bytes )
     }
 }
 
+/**
+ * \brief   resize_and_fill() to the current size fills nothing and keeps the data and the position.
+ **/
+TEST( FileBufferTest, resize_and_fill_to_the_current_size_keeps_the_data )
+{
+    areg::FileBuffer file( MODE_BINARY );
+    ASSERT_TRUE( file.open( ) );
+    ASSERT_TRUE( file.write_int( 0x01020304 ) );
+    EXPECT_EQ( file.resize_and_fill( 4, 0xAB ), 4u );
+    EXPECT_EQ( file.length( ), 4u );
+
+    file.move_to_begin( );
+    int32_t value{ 0 };
+    ASSERT_TRUE( file.read_int( value ) );
+    EXPECT_EQ( value, 0x01020304 );
+}
+
+/**
+ * \brief   append() and read_invert() do nothing on a closed buffer and on a buffer that cannot be written.
+ **/
+TEST( FileBufferTest, append_and_invert_read_refuse_a_closed_or_read_only_buffer )
+{
+    const uint8_t data[ 2 ]{ 1, 2 };
+    uint8_t out[ 2 ]{ 7, 7 };
+    areg::FileBuffer closed( MODE_BINARY );
+    EXPECT_EQ( closed.append( data, 2 ), 0 );
+    EXPECT_EQ( closed.read_invert( out, 2 ), 0 );
+    EXPECT_EQ( out[ 0 ], 7u );
+
+    areg::SharedBuffer origin;
+    ASSERT_EQ( origin.write( reinterpret_cast<const uint8_t *>("ab"), 2 ), 2u );
+    areg::SharedBuffer copy( origin );
+    areg::FileBuffer readOnly( copy );
+    ASSERT_TRUE( readOnly.open( ) );
+    EXPECT_EQ( readOnly.append( data, 2 ), 0 );
+    EXPECT_EQ( readOnly.length( ), 2u );
+    EXPECT_EQ( readOnly.read_invert( out, 2 ), 2 );
+    EXPECT_EQ( out[ 0 ], static_cast<uint8_t>('b') );
+    EXPECT_EQ( out[ 1 ], static_cast<uint8_t>('a') );
+}
+
+/**
+ * \brief   A search that starts behind the data finds nothing.
+ **/
+TEST( FileBufferTest, search_data_starting_behind_the_end_finds_nothing )
+{
+    areg::FileBuffer file( MODE_BINARY );
+    ASSERT_TRUE( file.open( ) );
+    const uint8_t data[ 4 ]{ 'a', 'b', 'c', 'd' };
+    ASSERT_EQ( file.write( data, 4 ), 4u );
+    const uint8_t needle[ 2 ]{ 'c', 'd' };
+    EXPECT_EQ( file.search_data( 0, needle, 2 ), 2u );
+    EXPECT_EQ( file.search_data( 1000, needle, 2 ), areg::Cursor::INVALID_CURSOR_POSITION );
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Typed values
 //////////////////////////////////////////////////////////////////////////

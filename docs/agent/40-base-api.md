@@ -120,12 +120,12 @@ for (uint32_t i = 0; i < list.size(); ++ i)
 |---|---|---|---|---|---|
 | `ArrayList` | `<VALUE>` | `uint32_t size() const noexcept` (`ArrayList.hpp:185`) | `bool is_empty() const noexcept` (`:179`) | `operator[](uint32_t)` (`:106`), `value_at(uint32_t)` (`:250`), `set_value_at(uint32_t, const VALUE &)` (`:234`) | `contains(const VALUE &, uint32_t startAt = 0)` (`:201`) |
 | `HashMap` | `<KEY, VALUE>` | `uint32_t size() const noexcept` (`HashMap.hpp:181`) | `bool is_empty() const noexcept` (`:175`) | `operator[](const KEY &)` (`:105`), `value_at(const KEY &)` (`:504`), `set_value_at(const KEY &, const VALUE &)` (`:281`) | `contains(const KEY &)` (`:226`) |
-| `LinkedList` | `<VALUE>` | `uint32_t size() const noexcept` (`LinkedList.hpp:195`) | `bool is_empty() const noexcept` (`:189`) | `operator[](uint32_t)` (`:89`), `value_at(uint32_t)` (`:405`) | `contains(const VALUE &)` (`:254`) |
+| `LinkedList` | `<VALUE>` | `uint32_t size() const noexcept` (`LinkedList.hpp:195`) | `bool is_empty() const noexcept` (`:189`) | `operator[](uint32_t)` (`:89`), `value_at(uint32_t)` (`:406`) | `contains(const VALUE &)` (`:255`) |
 
 `HashMap` and `LinkedList` also index by position (`MAPPOS`, `LISTPOS`) for cursor
 style traversal. Index access is enough for ordinary code.
 
-Add: `add(v)` (`ArrayList.hpp:271`), `push_last(v)` (`LinkedList.hpp:518`), `map[key] = v`.
+Add: `add(v)` (`ArrayList.hpp:271`), `push_last(v)` (`LinkedList.hpp:519`), `map[key] = v`.
 Remove: `remove_at(index)` (`ArrayList.hpp:400`), `remove_at(key)` (`HashMap.hpp:367`).
 All three: `clear()`, `release()`, `find(...)`.
 

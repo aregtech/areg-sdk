@@ -1561,4 +1561,51 @@ TEST( FaultInjectSweepTest, every_failed_aligned_allocation_of_a_service_model_l
 
 #endif  // defined(AREG_FAULT_HELLO)
 
+namespace
+{
+    //!< Returns true if the system thread of the given name is registered and running.
+    bool _system_thread_runs( const char * name )
+    {
+        const areg::Thread * thread{ areg::Thread::find_by_address( areg::ThreadAddress( name ) ) };
+        return (thread != nullptr) && thread->is_running( );
+    }
+
+    //!< Fails the first timer thread in setup, then one ring allocation from ringSkip on, for each ringSkip in turn.
+    void _setup_with_timer_failing_twice( )
+    {
+        bool timerFailedOnRetry{ false };
+        for ( uint32_t ringSkip = 0u; ringSkip < 4u; ++ ringSkip )
+        {
+            {
+                areg_fault::FaultScope faults;
+                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, EAGAIN, 0u, 1u ) );
+                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::AlignedAllocation, 0, ringSkip, 1u ) );
+                areg::Application::setup( false, true, false, true, false );
+                AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u );
+            }
+
+            const bool timerRuns{ _system_thread_runs( "_AREG_TIMER_THREAD_NAME_" ) };
+            const bool managerRuns{ _system_thread_runs( "_AREG_SERVICE_MANAGER_THREAD_" ) };
+            AREG_CHILD_CHECK( areg::Application::system_state( ) == areg::AppState::Failure );
+            AREG_CHILD_CHECK( areg::Application::is_servicing_ready( ) == false );
+            timerFailedOnRetry = timerFailedOnRetry || (managerRuns && (timerRuns == false));
+
+            areg::Application::release( );
+            AREG_CHILD_CHECK( areg::Application::system_state( ) == areg::AppState::Stopped );
+        }
+
+        AREG_CHILD_CHECK( timerFailedOnRetry );
+    }
+}
+
+/**
+ * \brief   A timer manager that cannot start in setup leaves the session in Failure, also when the
+ *          Service Manager starts and its own start of the timer fails again; release ends the
+ *          session.
+ **/
+TEST( FaultInjectSweepTest, setup_reports_failure_when_the_timer_cannot_start_for_the_service_manager )
+{
+    AREG_EXPECT_IN_CHILD( _setup_with_timer_failing_twice( ) );
+}
+
 #endif  // defined(AREG_FAULT_SWEEP_TESTS)

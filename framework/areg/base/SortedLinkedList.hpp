@@ -221,7 +221,8 @@ public:
      * \brief   Returns true if the position points to a valid entry in the list; may be slower due
      *          to traversal.
      *
-     * \param   pos     The position to verify.
+     * \param   pos     The position to verify: a position of this list or its invalid position.
+     *                  A position of another container is not allowed.
      **/
     [[nodiscard]]
     inline bool check_position(const LISTPOS pos) const noexcept;

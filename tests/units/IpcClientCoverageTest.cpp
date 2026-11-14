@@ -816,6 +816,73 @@ TEST_F(IpcSocketCoverageTest, server_without_a_socket_has_no_accepted_connection
 
 namespace
 {
+    //!< Returns the address of a free loopback port.
+    areg::SocketAddress free_loopback_address()
+    {
+        LoopbackListener probe;
+        EXPECT_TRUE(probe.open(false));
+        return probe.address();
+    }
+
+    //!< Takes the next waiting connection of the server and accepts it.
+    areg::SocketAccepted accept_next(areg::ServerConnectionBase & server, bool & accepted)
+    {
+        areg::SocketAddress peer;
+        const SOCKETHANDLE handle{ server.wait_connection(peer) };
+        areg::SocketAccepted connection(handle, peer);
+        accepted = areg::is_valid_socket(handle) && server.accept_connection(connection);
+        return connection;
+    }
+}
+
+TEST_F(IpcSocketCoverageTest, server_numbers_accepted_clients_and_interrupts_and_closes_them_on_request)
+{
+    const areg::SocketAddress address{ free_loopback_address() };
+    areg::ServerConnectionBase server;
+    ASSERT_TRUE(server.create_socket(address.host_address(), address.host_port()));
+    EXPECT_TRUE(server.is_valid());
+    EXPECT_FALSE(server.is_interrupted());
+    ASSERT_TRUE(server.server_listen());
+
+    areg::ClientConnection client(address);
+    ASSERT_TRUE(client.create_socket());
+    ASSERT_TRUE(set_io_deadline(client.live_handle()));
+    bool accepted{ false };
+    areg::SocketAccepted connection{ accept_next(server, accepted) };
+    ASSERT_TRUE(accepted);
+    const ITEM_ID cookie{ server.cookie(connection) };
+    EXPECT_EQ(cookie, areg::COOKIE_REMOTE_SERVICE);
+    EXPECT_TRUE(server.is_connection_accepted(connection.handle()));
+    EXPECT_TRUE(server.cookie_exist(cookie));
+    EXPECT_EQ(server.handle_by_cookie(cookie), connection.handle());
+    EXPECT_EQ(server.client_by_cookie(cookie).handle(), connection.handle());
+
+    server.interrupt_connections();
+    EXPECT_TRUE(server.is_interrupted());
+    EXPECT_TRUE(server.is_connection_accepted(connection.handle()));
+    areg::MessageEnvelope received;
+    EXPECT_LE(client.receive_message(received), 0);
+
+    server.close_socket();
+    EXPECT_FALSE(server.is_valid());
+    EXPECT_FALSE(server.is_connection_accepted(connection.handle()));
+    EXPECT_FALSE(server.cookie_exist(cookie));
+    EXPECT_EQ(server.cookie(connection), areg::COOKIE_UNKNOWN);
+    client.close_socket();
+
+    ASSERT_TRUE(server.create_socket(address.host_address(), address.host_port()));
+    EXPECT_FALSE(server.is_interrupted());
+    ASSERT_TRUE(server.server_listen());
+    areg::ClientConnection again(address);
+    ASSERT_TRUE(again.create_socket());
+    areg::SocketAccepted next{ accept_next(server, accepted) };
+    ASSERT_TRUE(accepted);
+    EXPECT_EQ(server.cookie(next), areg::COOKIE_REMOTE_SERVICE);
+    server.close_socket();
+}
+
+namespace
+{
     class ChannelRecorder final : public areg::ConnectionConsumer
     {
     public:

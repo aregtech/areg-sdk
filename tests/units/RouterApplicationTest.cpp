@@ -363,8 +363,8 @@ TEST(RouterApplicationTest, disconnect_request_releases_only_its_sender)
 }
 
 /**
- * \brief   System messages the router only accepts are not forwarded, and neither is a connection
- *          response without a target; a connection response with a target reaches the target.
+ * \brief   System messages the router only accepts are not forwarded, nor is a message that is not
+ *          executable, and neither is a connection response without a target; a connection response with a target reaches the target.
  **/
 TEST(RouterApplicationTest, only_executable_messages_with_a_target_are_forwarded)
 {
@@ -388,6 +388,7 @@ TEST(RouterApplicationTest, only_executable_messages_with_a_target_are_forwarded
 
         send_to_router(sender, make(areg::FuncIdRange::ServiceLastId, targetCookie));
         send_to_router(sender, make(areg::FuncIdRange::SystemServiceQueryInstances, targetCookie));
+        send_to_router(sender, make(areg::FuncIdRange::SystemServiceNotifyDuplicate, targetCookie));
         send_to_router(sender, make(areg::FuncIdRange::ResponseServiceProviderConnection, areg::TARGET_UNKNOWN));
         send_to_router(sender, make(areg::FuncIdRange::ResponseServiceProviderConnection, targetCookie));
 
@@ -404,6 +405,74 @@ TEST(RouterApplicationTest, only_executable_messages_with_a_target_are_forwarded
         };
 
         expect_forwarded(areg::FuncIdRange::ResponseServiceProviderConnection);
+        console.quit();
+    );
+}
+
+// A registration request of a type the router does not know changes nothing: the router keeps
+// serving, and the registration that follows is processed as if the request never came.
+TEST(RouterApplicationTest, registration_request_of_an_unknown_type_is_ignored)
+{
+    AREG_EXPECT_IN_CHILD(
+        PrivateConfig config;
+        ConsoleSession console(config);
+        ConnectedPeer owner(config.port);
+        ConnectedPeer other(config.port);
+        const ITEM_ID ownerCookie{ owner.reply.target };
+        const ITEM_ID otherCookie{ other.reply.target };
+
+        areg::StubAddress provider(0x4321u, areg::Version(1u, 2u, 3u), areg::ServiceType::Public, 0x1234u, 0x1111u, 0x2222u);
+        provider.set_cookie(ownerCookie);
+        provider.set_source(ownerCookie);
+        areg::ProxyAddress consumer(0x4321u, areg::Version(1u, 2u, 3u), areg::ServiceType::Public, 0x1234u, 0x3333u, 0x4444u);
+        consumer.set_cookie(otherCookie);
+        consumer.set_source(otherCookie);
+        send_to_router(other, areg::router_register_consumer(consumer, otherCookie, areg::COOKIE_ROUTER));
+
+        areg::MessageEnvelope unknown{ areg::router_register_service(provider, ownerCookie, areg::COOKIE_ROUTER) };
+        AREG_CHILD_CHECK(unknown.header() != nullptr);
+        unknown.header()->callType = 0x30u;
+        send_to_router(owner, std::move(unknown));
+
+        areg::MessageEnvelope marker{ areg::create_disconnect_request(ownerCookie, areg::COOKIE_ROUTER) };
+        AREG_CHILD_CHECK(marker.header() != nullptr);
+        marker.header()->messageId = static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection);
+        marker.header()->source    = static_cast<uint32_t>(ownerCookie);
+        marker.header()->target    = static_cast<uint32_t>(otherCookie);
+        send_to_router(owner, std::move(marker));
+
+        areg::EventHeader received{};
+        AREG_CHILD_CHECK(other.socket.receive(areg::wire_header(received), areg::WIRE_HEADER_SIZE) == areg::WIRE_HEADER_SIZE);
+        AREG_CHILD_CHECK(received.messageId == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection));
+        std::vector<uint8_t> payload(received.bufHeader.biUsed);
+        if (payload.empty() == false)
+            AREG_CHILD_CHECK(other.socket.receive(payload.data(), static_cast<int32_t>(payload.size())) == static_cast<int32_t>(payload.size()));
+
+        send_to_router(owner, areg::router_register_service(provider, ownerCookie, areg::COOKIE_ROUTER));
+        expect_registration(owner, areg::RegistrationAction::RegisterConsumer, areg::DisconnectReason::UndefinedReason);
+        expect_registration(other, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason);
+        console.quit();
+    );
+}
+
+// A connection failure of a running router drops its clients and starts it again: new clients are accepted.
+TEST(RouterApplicationTest, connection_failure_of_a_running_router_drops_the_clients_and_restarts_it)
+{
+    AREG_EXPECT_IN_CHILD(
+        PrivateConfig config;
+        ConsoleSession console(config);
+        auto& communication = application().communication_controller();
+        ConnectedPeer before(config.port);
+        AREG_CHILD_CHECK(communication.is_host_connected());
+
+        communication.connection_failure();
+        areg::EventHeader dropped{};
+        AREG_CHILD_CHECK(before.socket.receive(areg::wire_header(dropped), areg::WIRE_HEADER_SIZE) != areg::WIRE_HEADER_SIZE);
+        check_listening();
+
+        ConnectedPeer after(config.port);
+        AREG_CHILD_CHECK(communication.is_host_connected());
+        AREG_CHILD_CHECK(communication.instances().size() == 1u);
         console.quit();
     );
 }

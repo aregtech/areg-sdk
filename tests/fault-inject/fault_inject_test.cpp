@@ -60,6 +60,7 @@
     #include "units/ServiceTestServer.hpp"
     #include "units/LogCapture.hpp"
     #include "units/LogCollectorFake.hpp"
+    #include "areg/ipc/ClientConnection.hpp"
     #include "areg/ipc/RemoteServiceDefs.hpp"
     #include "areg/logging/LogDatabaseEngine.hpp"
     #include "areg/logging/LogConfiguration.hpp"
@@ -167,6 +168,61 @@ TEST( FaultInjectTest, failed_setup_is_released_and_the_next_setup_starts )
         AREG_CHILD_CHECK( areg::Application::is_servicing_ready( ) );
         areg::Application::release( );
         AREG_CHILD_CHECK( areg::Application::system_state( ) == areg::AppState::Stopped );
+    );
+}
+
+namespace
+{
+    //!< Returns true if a thread of the given name is registered and running.
+    bool system_thread_runs( const char * name )
+    {
+        const areg::Thread * thread{ areg::Thread::find_by_address( areg::ThreadAddress( name ) ) };
+        return (thread != nullptr) && thread->is_running( );
+    }
+}
+
+/**
+ * \brief   A setup whose timer or watchdog manager does not run reports the failure state; a
+ *          setup that reports Ready runs every service it was asked to start.
+ **/
+TEST( FaultInjectTest, setup_reports_failure_when_the_timer_or_watchdog_manager_does_not_run )
+{
+    AREG_EXPECT_IN_CHILD(
+        ReturningConsumer consumer;
+        areg::Thread warmup( consumer, "FaultInjectWarmupManagers" );
+        AREG_CHILD_CHECK( warmup.start( areg::WAIT_INFINITE ) );
+        static_cast<void>(warmup.shutdown( areg::WAIT_INFINITE ));
+
+        uint32_t missingTimer{ 0u };
+        uint32_t missingWatchdog{ 0u };
+        for ( const bool startWatchdog : { false, true } )
+        {
+            for ( uint32_t skip{ 0u }; skip < 4u; ++skip )
+            {
+                for ( uint32_t count{ 1u }; count <= 2u; ++count )
+                {
+                    {
+                        areg_fault::FaultScope faults;
+                        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, THREAD_ERROR, skip, count ) );
+                        areg::Application::setup( false, true, false, true, startWatchdog );
+                    }
+
+                    const bool timerRuns{ system_thread_runs( "_AREG_TIMER_THREAD_NAME_" ) };
+                    const bool watchdogRuns{ system_thread_runs( "_AREG_WATCHDOG_THREAD_NAME_" ) };
+                    missingTimer    += timerRuns ? 0u : 1u;
+                    missingWatchdog += watchdogRuns ? 0u : 1u;
+                    const bool allRun{ timerRuns && watchdogRuns && areg::Application::is_servicing_ready( ) };
+                    const areg::AppState state{ areg::Application::system_state( ) };
+                    AREG_CHILD_CHECK( (state == areg::AppState::Ready) || (state == areg::AppState::Failure) );
+                    AREG_CHILD_CHECK( allRun || (state == areg::AppState::Failure) );
+
+                    areg::Application::release( );
+                    AREG_CHILD_CHECK( areg::Application::system_state( ) == areg::AppState::Stopped );
+                }
+            }
+        }
+
+        AREG_CHILD_CHECK( (missingTimer != 0u) && (missingWatchdog != 0u) );
     );
 }
 
@@ -504,6 +560,136 @@ TEST( FaultInjectTest, service_start_finishes_and_retries_when_listen_is_refused
         fixture.stop( );
         areg::Application::release( );
     );
+}
+
+namespace
+{
+    //!< A raw client of the server: it says hello, keeps the cookie the server tells, and writes
+    //!< its messages with write(), which no fault point replaces.
+    struct RawPeer
+    {
+        areg::ClientConnection  link;
+        ITEM_ID                 cookie  { areg::COOKIE_UNKNOWN };
+
+        explicit RawPeer( uint16_t port )
+            : link( areg::String( "127.0.0.1" ), port )
+        {
+        }
+
+        ~RawPeer( )
+        {
+            link.close_socket( );
+        }
+
+        bool join( )
+        {
+            if ( link.create_socket( ) == false )
+                return false;
+
+            areg::MessageEnvelope request{ areg::create_connect_request( areg::COOKIE_REMOTE_SERVICE, areg::COOKIE_ROUTER, areg::MessageSource::SourceTest ) };
+            areg::MessageEnvelope reply;
+            if ( ( link.send_message( request ) > 0 ) && ( link.receive_message( reply ) > 0 ) && areg::is_notify_client( reply ) )
+            {
+                cookie = static_cast<ITEM_ID>( reply.target( ) );
+            }
+
+            return ( cookie >= areg::COOKIE_REMOTE_SERVICE );
+        }
+
+        //!< Writes a message of \a bytes bytes, the first word is \a seq, to the client \a target.
+        bool send_to( ITEM_ID target, uint32_t seq, uint32_t bytes )
+        {
+            areg::MessageEnvelope message;
+            uint8_t * data{ message.init_envelope( areg::notify_client_connection( ), bytes ) };
+            if ( data == nullptr )
+                return false;
+
+            std::memset( data, 0xA5, bytes );
+            std::memcpy( data, &seq, sizeof( seq ) );
+            message.header( )->bufHeader.biUsed = bytes;
+            message.set_message_id( areg::REQUEST_ID_FIRST );
+            message.set_source( static_cast<uint32_t>( cookie ) );
+            message.set_target( static_cast<uint32_t>( target ) );
+            const int32_t size{ static_cast<int32_t>( areg::wire_size( *message.header( ) ) ) };
+            return ( ::write( link.live_handle( ), areg::wire_data( *message.header( ) ), static_cast<size_t>( size ) ) == size );
+        }
+
+        //!< Returns the first word of the next message, or false if the connection ended.
+        bool receive_seq( uint32_t & seq )
+        {
+            areg::MessageEnvelope message;
+            if ( link.receive_message( message ) <= 0 )
+                return false;
+
+            message >> seq;
+            return true;
+        }
+    };
+
+    //!< Fails the send of a forwarded message with \a error and checks what the server does with the target and the message.
+    void _forward_with_failed_send( uint32_t pairs, int error, bool targetIsLost )
+    {
+        areg::Application::setup( false, false, false, true, false );
+        areg_fault::FaultScope faults;
+        ServerFixture fixture( pairs );
+        AREG_CHILD_CHECK( fixture.server.connect_service_host( ) );
+        AREG_CHILD_CHECK( fixture.wait_listening( ) );
+
+        RawPeer sender( fixture.port );
+        RawPeer target( fixture.port );
+        RawPeer other( fixture.port );
+        AREG_CHILD_CHECK( sender.join( ) && target.join( ) && other.join( ) );
+        AREG_CHILD_CHECK( fixture.server.wait_added( 3u ) );
+
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, error ) );
+        AREG_CHILD_CHECK( sender.send_to( target.cookie, 1u, 64u ) );
+        if ( targetIsLost )
+        {
+            AREG_CHILD_CHECK( fixture.server.wait_removed( 1u ) );
+            AREG_CHILD_CHECK( fixture.server.wait_instances( 2u ) );
+            uint32_t seq{ 0u };
+            AREG_CHILD_CHECK( target.receive_seq( seq ) == false );
+        }
+        else
+        {
+            uint32_t seq{ 0u };
+            AREG_CHILD_CHECK( target.receive_seq( seq ) && ( seq == 1u ) );
+            AREG_CHILD_CHECK( fixture.server.instances( ).size( ) == 3u );
+        }
+
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u && NOT_REPLACED );
+        ::areg_fault_disarm_all( );
+
+        AREG_CHILD_CHECK( sender.send_to( other.cookie, 2u, 64u ) );
+        uint32_t seq{ 0u };
+        AREG_CHILD_CHECK( other.receive_seq( seq ) && ( seq == 2u ) );
+        AREG_CHILD_CHECK( fixture.server.is_host_connected( ) );
+
+        fixture.stop( );
+        areg::Application::release( );
+    }
+}
+
+// The system resets the connection of the target while the server forwards a message: the target is forgotten and closed, the others keep talking.
+TEST( FaultInjectTest, server_forgets_the_target_when_the_system_refuses_a_forwarded_message_in_the_shared_thread_mode )
+{
+    AREG_EXPECT_IN_CHILD( _forward_with_failed_send( 0u, ECONNRESET, true ); );
+}
+
+TEST( FaultInjectTest, server_forgets_the_target_when_the_system_refuses_a_forwarded_message_in_the_pool_mode )
+{
+    AREG_EXPECT_IN_CHILD( _forward_with_failed_send( 2u, ECONNRESET, true ); );
+}
+
+// The system takes nothing of a forwarded message at first: the message is queued and arrives, and no client is lost.
+TEST( FaultInjectTest, server_delivers_a_forwarded_message_the_system_could_not_take_at_once_in_the_shared_thread_mode )
+{
+    AREG_EXPECT_IN_CHILD( _forward_with_failed_send( 0u, EAGAIN, false ); );
+}
+
+TEST( FaultInjectTest, server_delivers_a_forwarded_message_the_system_could_not_take_at_once_in_the_pool_mode )
+{
+    AREG_EXPECT_IN_CHILD( _forward_with_failed_send( 2u, EAGAIN, false ); );
 }
 
 #if AREG_LOGGING

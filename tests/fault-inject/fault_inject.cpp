@@ -50,8 +50,11 @@
 #include "fault-inject/FaultInject.hpp"
 
 #include <atomic>
+#include <chrono>
+#include <condition_variable>
 #include <cstdint>
 #include <cstdlib>
+#include <mutex>
 #include <new>
 
 //////////////////////////////////////////////////////////////////////////
@@ -75,14 +78,45 @@ namespace
         std::atomic<uint32_t>   failed      { 0u };     //!< Calls failed since the point was armed.
         std::atomic<uint32_t>   calls       { 0u };     //!< Calls made since the point was armed.
         std::atomic<uint32_t>   delay       { 0u };     //!< Milliseconds a passing call waits before it runs.
+        std::atomic<bool>       hold        { false };  //!< True while every call of the point waits for the release.
+        uint32_t                held        { 0u };     //!< Calls that reached the hold since it was set, guarded by gHoldLock.
     };
 
     FaultSlot   gSlots[POINT_COUNT];
+
+    std::mutex              gHoldLock;      //!< Guards the held calls of every point.
+    std::condition_variable gHoldChanged;   //!< Signaled when a call is held or a hold is released.
+
+    //!< Blocks the call while its point is held.
+    void _wait_while_held( FaultSlot & slot ) noexcept
+    {
+        std::unique_lock<std::mutex> lock( gHoldLock );
+        if ( slot.hold.load( std::memory_order_relaxed ) == false )
+            return;
+
+        ++slot.held;
+        gHoldChanged.notify_all( );
+        gHoldChanged.wait( lock, [&slot]( ) { return slot.hold.load( std::memory_order_relaxed ) == false; } );
+    }
+
+    //!< Ends the hold of the slot and lets its held calls run.
+    void _release_hold( FaultSlot & slot ) noexcept
+    {
+        {
+            std::lock_guard<std::mutex> lock( gHoldLock );
+            slot.hold.store( false, std::memory_order_relaxed );
+        }
+
+        gHoldChanged.notify_all( );
+    }
 
     //!< Returns true and the error if this call of the point fails.
     bool _should_fail( areg_fault::FaultPoint point, int & error ) noexcept
     {
         FaultSlot & slot{ gSlots[static_cast<uint32_t>(point)] };
+        if ( slot.hold.load( std::memory_order_acquire ) )
+            _wait_while_held( slot );
+
         if ( slot.armed.load( std::memory_order_acquire ) == false )
             return false;
 
@@ -143,6 +177,7 @@ extern "C"
             slot.failed.store( 0u, std::memory_order_relaxed );
             slot.calls.store( 0u, std::memory_order_relaxed );
             slot.delay.store( 0u, std::memory_order_relaxed );
+            _release_hold( slot );
         }
     }
 
@@ -165,6 +200,34 @@ extern "C"
         _install( );
         gSlots[point].delay.store( milliseconds, std::memory_order_relaxed );
         return true;
+    }
+
+    AREG_FAULT_API bool areg_fault_hold( uint32_t point )
+    {
+        if ( (point >= POINT_COUNT) || (_is_supported( static_cast<areg_fault::FaultPoint>(point) ) == false) )
+            return false;
+
+        _install( );
+        std::lock_guard<std::mutex> lock( gHoldLock );
+        gSlots[point].held = 0u;
+        gSlots[point].hold.store( true, std::memory_order_release );
+        return true;
+    }
+
+    AREG_FAULT_API void areg_fault_release( uint32_t point )
+    {
+        if ( point < POINT_COUNT )
+            _release_hold( gSlots[point] );
+    }
+
+    AREG_FAULT_API bool areg_fault_wait_held( uint32_t point, uint32_t count, uint32_t milliseconds )
+    {
+        if ( point >= POINT_COUNT )
+            return false;
+
+        FaultSlot & slot{ gSlots[point] };
+        std::unique_lock<std::mutex> lock( gHoldLock );
+        return gHoldChanged.wait_for( lock, std::chrono::milliseconds( milliseconds ), [&slot, count]( ) { return slot.held >= count; } );
     }
 }
 

@@ -867,6 +867,57 @@ TEST(EventQueueTest, batch_skips_empty_slots_and_keeps_priorities_on_the_priorit
     EXPECT_FALSE(queue.has_pending());
 }
 
+TEST(EventQueueTest, batch_with_an_empty_slot_among_priority_events_queues_every_valid_event)
+{
+    ReadyQueue queue(32u, true);
+    Event batch[3]{ makeEvent(1u, EventPriority::CriticalPrio), Event{ }, makeEvent(2u, EventPriority::HighPrio) };
+    EXPECT_EQ(queue.push_events(batch, 3u), 0u);
+    EXPECT_EQ(queue.pop_event().event_id(), 1u);
+    EXPECT_EQ(queue.pop_event().event_id(), 2u);
+    EXPECT_FALSE(queue.has_pending());
+}
+
+TEST(EventQueueTest, batch_of_empty_slots_queues_and_refuses_nothing)
+{
+    ReadyQueue queue(32u, true);
+    Event batch[2]{ Event{ }, Event{ } };
+    EXPECT_EQ(queue.push_events(batch, 2u), 0u);
+    EXPECT_FALSE(queue.has_pending());
+}
+
+TEST(EventQueueTest, closed_queue_refuses_priority_events_of_a_try_push_and_a_batch_and_keeps_them_with_the_caller)
+{
+    ReadyQueue queue(32u, true);
+    queue.exit_queue(false);
+    ASSERT_TRUE(queue.is_closed());
+
+    Event high = makeEvent(1u, EventPriority::HighPrio);
+    EXPECT_EQ(queue.try_push_event(high), EventQueue::PushResult::Refused);
+    EXPECT_TRUE(high.is_valid());
+    EXPECT_EQ(high.event_id(), 1u);
+
+    Event batch[2]{ makeEvent(2u, EventPriority::CriticalPrio), makeEvent(3u) };
+    EXPECT_EQ(queue.push_events(batch, 2u), 2u);
+    EXPECT_EQ(batch[0].event_id(), 2u);
+    EXPECT_EQ(batch[1].event_id(), 3u);
+    EXPECT_TRUE(queue.pop_event().is_exit_prio());
+}
+
+TEST(EventQueueTest, full_lossless_queue_with_a_requested_exit_refuses_a_try_push_instead_of_asking_to_wait)
+{
+    ReadyQueue queue(areg::QUEUE_MIN_RING_CAPACITY, false, FULL_WAIT_MS);
+    for (uint32_t i = 0u; i < areg::QUEUE_MIN_RING_CAPACITY; ++i)
+    {
+        Event evt = makeEvent(i);
+        ASSERT_TRUE(queue.push_event(evt));
+    }
+
+    queue.exit_queue(true);
+    Event late = makeEvent(1000u);
+    EXPECT_EQ(queue.try_push_event(late), EventQueue::PushResult::Refused);
+    EXPECT_TRUE(late.is_valid());
+}
+
 TEST(EventQueueTest, batch_exit_after_an_empty_slot_sets_the_sticky_exit)
 {
     ReadyQueue queue(32u, true);

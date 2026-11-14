@@ -63,6 +63,25 @@ namespace service_test
             mShuttingDown.store(stopping, std::memory_order_release);
         }
 
+        //!< Shrinks the send buffer of the connection of client \a cookie to \a bytes; returns false if the client is unknown.
+        bool shrink_send_buffer(ITEM_ID cookie, uint32_t bytes) noexcept
+        {
+            const areg::Socket::SocketHandle hold{ mClientPairs.empty() ? mServerConnection.hold_by_cookie(cookie)
+                                                                         : mClientPairs[static_cast<uint32_t>(cookie) % mNumPairs]->hold_by_cookie(cookie) };
+            const SOCKETHANDLE handle{ hold.value() };
+            if (areg::is_valid_socket(handle) == false)
+                return false;
+
+            static_cast<void>(areg::set_send_size(handle, bytes));
+            return true;
+        }
+
+        //!< Returns true while the send backlog that serves client \a cookie keeps data not yet written.
+        bool has_unwritten_data(ITEM_ID cookie) noexcept
+        {
+            return ((mClientPairs.empty() ? mThreadSend.backlog() : mClientPairs[static_cast<uint32_t>(cookie) % mNumPairs]->send_thread().backlog()).is_empty() == false);
+        }
+
         //!< Returns the backlog of the send thread of pool pair \a index; the server must run.
         areg::ext::SendBacklog & pool_backlog(uint32_t index) noexcept
         {

@@ -28,6 +28,7 @@
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
+#include "areg/ipc/SocketConnectionBase.hpp"
 #include "aregextend/service/ServiceCommunicationBase.hpp"
 #include "units/LogCapture.hpp"
 #include "units/ServiceTestServer.hpp"
@@ -238,6 +239,62 @@ namespace
             }
 
             return count;
+        }
+    };
+
+    //!< A raw client whose receive window is fixed before it connects, so the server socket takes
+    //!< only a small part of a big message while the client does not read.
+    struct SmallWindowReader
+    {
+        SOCKETHANDLE    handle  { areg::InvalidSocketHandle };
+        ITEM_ID         cookie  { areg::COOKIE_UNKNOWN };
+
+        ~SmallWindowReader()
+        {
+            if (areg::is_valid_socket(handle))
+            {
+                areg::socket_close(handle);
+            }
+        }
+
+        bool join(uint16_t port)
+        {
+            areg::SocketAddress address{ };
+            if (address.resolve_address(areg::String("127.0.0.1"), port, false) == false)
+                return false;
+
+            handle = areg::socket_create();
+            if (areg::is_valid_socket(handle) == false)
+                return false;
+
+            static_cast<void>(areg::set_recv_size(handle, 4096u));
+            if (areg::client_connect_fd(handle, address) == false)
+                return false;
+
+            const areg::MessageEnvelope request{ areg::create_connect_request(areg::COOKIE_REMOTE_SERVICE, areg::COOKIE_ROUTER, areg::MessageSource::SourceTest) };
+            const int32_t size{ static_cast<int32_t>(areg::wire_size(*request.header())) };
+            areg::MessageEnvelope reply;
+            if ((areg::send_data(handle, areg::wire_data(*request.header()), size) != size) || (receive(reply) == false) || (areg::is_notify_client(reply) == false))
+                return false;
+
+            cookie = static_cast<ITEM_ID>(reply.target());
+            return (cookie >= areg::COOKIE_REMOTE_SERVICE);
+        }
+
+        bool receive(areg::MessageEnvelope & message)
+        {
+            areg::EventHeader header{ };
+            if (areg::receive_data_window(handle, areg::wire_header(header), areg::WIRE_HEADER_SIZE) != static_cast<int32_t>(areg::WIRE_HEADER_SIZE))
+                return false;
+
+            uint8_t * body{ areg::SocketConnectionBase::prepare_message(message, header) };
+            const uint32_t used{ header.bufHeader.biUsed };
+            if ((body == nullptr) || ((used != 0u) && (areg::receive_data_window(handle, body, used) != static_cast<int32_t>(used))))
+                return false;
+
+            message.set_size_used(used);
+            message.move_to_begin();
+            return true;
         }
     };
 
@@ -623,6 +680,144 @@ protected:
         EXPECT_NE(after.cookie, first.cookie);
         EXPECT_TRUE(run.server.wait_instances(2u));
     }
+
+    //!< A message the connection of its target takes only in part is delivered whole and in order
+    //!< with the messages that follow it.
+    static void run_partial_inline_write(uint32_t pairs)
+    {
+        constexpr uint32_t  BIG_BYTES   { 60u * 1024u };
+        constexpr uint32_t  COUNT       { 3u };
+
+        Running run(Policy::Accept, pairs);
+        run.server.set_close_stalled(false);
+        ASSERT_TRUE(run.start());
+        PeerPtr sender{ make_peer(run.port) };
+        SmallWindowReader reader;
+        ASSERT_TRUE(sender->join());
+        ASSERT_TRUE(reader.join(run.port));
+        ASSERT_TRUE(run.server.shrink_send_buffer(reader.cookie, 4096u));
+
+#if defined(_WIN32)
+        // A Windows socket may take a whole message: the partial write is checked on POSIX only.
+        constexpr uint32_t  FIRST_COUNT { COUNT };
+#else
+        constexpr uint32_t  FIRST_COUNT { 1u };
+#endif
+        for (uint32_t seq = 0u; seq < FIRST_COUNT; ++seq)
+        {
+            ASSERT_TRUE(sender->send(make_data(sender->cookie, reader.cookie, seq, BIG_BYTES)));
+        }
+
+#if !defined(_WIN32)
+        const Clock::time_point started{ Clock::now() };
+        while ((run.server.has_unwritten_data(reader.cookie) == false) && (elapsed_ms(started) < DEADLINE_MS))
+        {
+            std::this_thread::yield();
+        }
+
+        ASSERT_TRUE(run.server.has_unwritten_data(reader.cookie));
+#endif
+        for (uint32_t seq = FIRST_COUNT; seq < COUNT; ++seq)
+        {
+            ASSERT_TRUE(sender->send(make_data(sender->cookie, reader.cookie, seq, BIG_BYTES)));
+        }
+
+        for (uint32_t seq = 0u; seq < COUNT; ++seq)
+        {
+            areg::MessageEnvelope received;
+            ASSERT_TRUE(reader.receive(received)) << "message " << seq;
+            ASSERT_EQ(received.size_used(), BIG_BYTES);
+            uint32_t value{ 0xFFFF'FFFFu };
+            received >> value;
+            ASSERT_EQ(value, seq);
+        }
+
+        EXPECT_TRUE(run.server.is_host_connected());
+        EXPECT_EQ(run.server.instances().size(), 2u);
+    }
+
+    //!< A message of a client that has no target, a system message that names another source and a
+    //!< second hello are ignored: the sender stays connected and nothing reaches the other client.
+    static void run_ignored_messages(uint32_t pairs)
+    {
+        constexpr uint32_t MARKER{ 99u };
+
+        Running run(Policy::Accept, pairs);
+        ASSERT_TRUE(run.start());
+        PeerPtr sender{ make_peer(run.port) };
+        PeerPtr receiver{ make_peer(run.port) };
+        ASSERT_TRUE(sender->join());
+        ASSERT_TRUE(receiver->join());
+        ASSERT_TRUE(run.server.wait_added(2u));
+
+        ASSERT_TRUE(sender->send(make_data(sender->cookie, static_cast<ITEM_ID>(areg::TARGET_UNKNOWN), 1u, 64u)));
+
+        areg::MessageEnvelope forgedBye{ areg::create_disconnect_request(sender->cookie, areg::COOKIE_ROUTER) };
+        ASSERT_NE(forgedBye.header(), nullptr);
+        forgedBye.header()->source = static_cast<uint32_t>(sender->cookie + 1'000u);
+        ASSERT_TRUE(sender->send(forgedBye));
+
+        areg::MessageEnvelope secondHello{ areg::create_connect_request(sender->cookie, areg::COOKIE_ROUTER, areg::MessageSource::SourceTest) };
+        ASSERT_TRUE(sender->send(secondHello));
+
+        ASSERT_TRUE(sender->send(make_data(sender->cookie, receiver->cookie, MARKER, 64u)));
+        areg::MessageEnvelope received;
+        ASSERT_TRUE(receiver->receive(received));
+        uint32_t value{ 0u };
+        received >> value;
+        EXPECT_EQ(value, MARKER);
+        EXPECT_EQ(received.source(), static_cast<uint32_t>(sender->cookie));
+        EXPECT_EQ(run.server.instances().size(), 2u);
+        EXPECT_TRUE(run.server.is_host_connected());
+    }
+
+    //!< A client writes, in one piece, as many messages as one drain takes and then a header of an
+    //!< unknown event type. The server drops that client and keeps the other one.
+    static void run_corrupt_message_after_full_drain(uint32_t pairs)
+    {
+        Running run(Policy::Accept, pairs);
+        ASSERT_TRUE(run.start());
+        PeerPtr sender{ make_peer(run.port) };
+        PeerPtr other{ make_peer(run.port) };
+        ASSERT_TRUE(sender->join());
+        ASSERT_TRUE(other->join());
+        ASSERT_TRUE(run.server.wait_added(2u));
+        ASSERT_TRUE(sender->limit_receive(static_cast<uint32_t>(DEADLINE_MS)));
+
+        std::vector<uint8_t> wire;
+        const auto append = [&wire](const areg::MessageEnvelope & message)
+        {
+            const uint8_t * data{ areg::wire_data(*message.header()) };
+            wire.insert(wire.end(), data, data + areg::wire_size(*message.header()));
+        };
+
+        for (uint32_t seq = 0u; seq < areg::DEFAULT_DRAIN_LIMIT; ++seq)
+        {
+            append(make_data(sender->cookie, static_cast<ITEM_ID>(areg::TARGET_UNKNOWN), seq, 8u));
+        }
+
+        areg::MessageEnvelope corrupt{ make_data(sender->cookie, other->cookie, 0u, 8u) };
+        ASSERT_NE(corrupt.header(), nullptr);
+        corrupt.header()->eventType = static_cast<uint16_t>(areg::EventType::EventUnknown);
+        append(corrupt);
+
+        const int32_t size{ static_cast<int32_t>(wire.size()) };
+        ASSERT_EQ(areg::send_data(sender->link.live_handle(), wire.data(), static_cast<uint32_t>(size)), size);
+
+        EXPECT_EQ(sender->drain(), 0u);
+        EXPECT_TRUE(run.server.wait_removed(1u));
+        EXPECT_TRUE(run.server.wait_instances(1u));
+        EXPECT_TRUE(run.server.is_host_connected());
+
+        PeerPtr late{ make_peer(run.port) };
+        ASSERT_TRUE(late->join());
+        ASSERT_TRUE(late->send(make_data(late->cookie, other->cookie, 7u, 8u)));
+        areg::MessageEnvelope received;
+        ASSERT_TRUE(other->receive(received));
+        uint32_t value{ 0u };
+        received >> value;
+        EXPECT_EQ(value, 7u);
+    }
 };
 
 #if AREG_LOGGING
@@ -762,6 +957,37 @@ TEST_F(ServiceCommServerTest, client_connecting_while_the_server_stops_is_closed
 TEST_F(ServiceCommServerTest, client_connecting_while_the_server_stops_is_closed_in_the_pool_mode)
 {
     run_client_while_stopping(POOL_PAIRS);
+}
+
+// A message that the target connection takes only in part is finished by the send thread.
+TEST_F(ServiceCommServerTest, message_taken_in_part_by_the_connection_is_delivered_whole_in_the_shared_thread_mode)
+{
+    run_partial_inline_write(0u);
+}
+
+TEST_F(ServiceCommServerTest, message_taken_in_part_by_the_connection_is_delivered_whole_in_the_pool_mode)
+{
+    run_partial_inline_write(POOL_PAIRS);
+}
+
+TEST_F(ServiceCommServerTest, messages_without_target_or_with_a_foreign_source_are_ignored_in_the_shared_thread_mode)
+{
+    run_ignored_messages(0u);
+}
+
+TEST_F(ServiceCommServerTest, messages_without_target_or_with_a_foreign_source_are_ignored_in_the_pool_mode)
+{
+    run_ignored_messages(POOL_PAIRS);
+}
+
+TEST_F(ServiceCommServerTest, corrupt_message_behind_a_full_drain_drops_only_its_client_in_the_shared_thread_mode)
+{
+    run_corrupt_message_after_full_drain(0u);
+}
+
+TEST_F(ServiceCommServerTest, corrupt_message_behind_a_full_drain_drops_only_its_client_in_the_pool_mode)
+{
+    run_corrupt_message_after_full_drain(POOL_PAIRS);
 }
 
 // A client of a host that is not allowed is told that it is rejected, and the server closes the

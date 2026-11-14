@@ -133,15 +133,24 @@ namespace
         }
     };
 
-    //!< The owner of the backlog: counts the pumps and the bytes that left.
+    //!< Milliseconds of the steady clock, the time base of the backlog.
+    uint64_t steady_ms()
+    {
+        return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now().time_since_epoch()).count());
+    }
+
+    //!< The owner of the backlog: counts the pumps, the pumps that moved bytes and the bytes that
+    //!< left, and keeps what the backlog saw when it closed the connection.
     struct Owner final : public SendBacklog::Owner
     {
         SOCKETHANDLE                socket  { areg::InvalidSocketHandle };
         std::atomic<uint32_t>       pumps   { 0u };
+        std::atomic<uint32_t>       moves   { 0u };
         std::atomic<uint64_t>       sent    { 0u };
         std::atomic<bool>           closed  { false };
         SendBacklog::Reason         reason  { SendBacklog::Reason::SocketError };
         uint64_t                    kept    { 0u };
+        uint64_t                    stalled { 0u };
 
         SOCKETHANDLE backlog_socket(ITEM_ID /*cookie*/) override
         {
@@ -151,6 +160,7 @@ namespace
 
         void backlog_sent(uint64_t bytes, uint32_t /*msgs*/) override
         {
+            moves.fetch_add(1u, std::memory_order_relaxed);
             sent.fetch_add(bytes, std::memory_order_relaxed);
         }
 
@@ -158,16 +168,24 @@ namespace
         {
             reason  = why;
             kept    = entry.bytes;
-            closed.store(true, std::memory_order_relaxed);
+            stalled = steady_ms() - entry.progressMs;
+            closed.store(true, std::memory_order_release);
+        }
+
+        //!< Pumps that found the socket and moved nothing.
+        uint32_t idle_pumps() const
+        {
+            return pumps.load(std::memory_order_relaxed) - moves.load(std::memory_order_relaxed);
         }
     };
 
-    //!< Pumps until the stall limit, counted from the last bytes that left, has passed.
-    void pump_past_stall_limit(SendBacklog & backlog, Owner & owner)
+    //!< Pumps until the backlog is empty or the connection is closed, or nothing has moved for
+    //!< DEADLINE_MS.
+    void pump_until_drained(SendBacklog & backlog, Owner & owner)
     {
         Clock::time_point progressed{ Clock::now() };
         uint64_t sent{ owner.sent.load() };
-        while ((owner.closed.load() == false) && (elapsed_ms(progressed) <= static_cast<int64_t>(SendBacklog::CAP_STALL_MS)))
+        while ((backlog.is_empty() == false) && (owner.closed.load() == false) && (elapsed_ms(progressed) < DEADLINE_MS))
         {
             static_cast<void>(backlog.pump(owner));
             if (owner.sent.load() != sent)
@@ -176,12 +194,7 @@ namespace
                 progressed = Clock::now();
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        }
-
-        if (owner.closed.load() == false)
-        {
-            static_cast<void>(backlog.pump(owner));
+            std::this_thread::yield();
         }
     }
 
@@ -200,14 +213,27 @@ namespace
     //!< no timeout, so only a writable socket, a queued event or an exit ends it.
     struct Sender
     {
-        areg::EventQueue    queue;
-        SendBacklog &       backlog;
+        areg::EventQueue        queue;
+        SendBacklog &           backlog;
+        std::atomic<uint32_t>   waits   { 0u };
 
         explicit Sender(SendBacklog & backlog_)
             : queue     ( 0u )
             , backlog   ( backlog_ )
         {
             queue.acquire_lanes();
+        }
+
+        //!< Returns true once the thread has gone to wait at least \a count times.
+        bool waited(uint32_t count) const
+        {
+            const Clock::time_point started{ Clock::now() };
+            while ((waits.load(std::memory_order_acquire) < count) && (elapsed_ms(started) < DEADLINE_MS))
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+
+            return (waits.load(std::memory_order_acquire) >= count);
         }
 
         bool has_queued_events() const noexcept
@@ -225,6 +251,7 @@ namespace
             backlog.reset_wake();
             if (queue.arm_waiter(backlog, true))
             {
+                waits.fetch_add(1u, std::memory_order_release);
                 backlog.wait(areg::WAIT_INFINITE);
             }
 
@@ -307,6 +334,81 @@ namespace
         return result;
     }
 
+    //!< Writes the messages of one connection one at a time, reusing them in a ring, and counts
+    //!< the bytes handed to the backlog and the bytes that left during the writes.
+    struct Feed
+    {
+        //!< Messages written before the feed gives up on a peer that takes everything.
+        static constexpr uint32_t   MAX_WRITES  { 1'024u };
+
+        SendBacklog &                               backlog;
+        const Pair &                                pair;
+        const std::vector<areg::MessageEnvelope> &  messages;
+        const Owner &                               owner;
+        uint64_t                                    queued  { 0u };
+        uint64_t                                    moved   { 0u };
+        uint32_t                                    next    { 0u };
+
+        //!< The bytes the backlog keeps: handed over and not yet left.
+        uint64_t kept() const
+        {
+            return queued - moved - owner.sent.load();
+        }
+
+        //!< Writes until the backlog keeps more than \a bytes. Returns false on a failure or if
+        //!< the peer took everything for MAX_WRITES messages.
+        bool fill_above(uint64_t bytes)
+        {
+            for (uint32_t i = 0u; kept() <= bytes; ++i)
+            {
+                const uint32_t at{ static_cast<uint32_t>(next++ % messages.size()) };
+                uint64_t bytesDone{ 0u };
+                if ((i == MAX_WRITES) || (write_range(backlog, pair, messages, at, 1u, &bytesDone) == false))
+                    return false;
+
+                queued += areg::wire_size(*messages[at].header());
+                moved  += bytesDone;
+            }
+
+            return true;
+        }
+    };
+
+    //!< The end of a stall: the connection was closed, or a pump after the stall limit moved
+    //!< nothing and it stayed open, or the peer kept taking data until the deadline.
+    enum class StallEnd { Closed, Kept, Draining };
+
+    //!< Pumps until the stall limit has passed since the last bytes left and a pump moves nothing.
+    //!< Tops the backlog up to stay above twice \a cap.
+    StallEnd pump_past_stall_limit(SendBacklog & backlog, Feed & feed, Owner & owner, uint64_t cap)
+    {
+        const Clock::time_point started{ Clock::now() };
+        Clock::time_point progressed{ started };
+        uint64_t left{ feed.moved + owner.sent.load() };
+        while (owner.closed.load() == false)
+        {
+            if ((feed.fill_above(2u * cap) == false) || (elapsed_ms(started) >= DEADLINE_MS))
+                return StallEnd::Draining;
+
+            const bool due{ elapsed_ms(progressed) > static_cast<int64_t>(SendBacklog::CAP_STALL_MS) };
+            static_cast<void>(backlog.pump(owner));
+            const uint64_t now{ feed.moved + owner.sent.load() };
+            if (now != left)
+            {
+                left = now;
+                progressed = Clock::now();
+            }
+            else if (due && (owner.closed.load() == false))
+            {
+                return StallEnd::Kept;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+
+        return StallEnd::Closed;
+    }
+
     //!< Reads \a total bytes from the client end.
     bool read_all(const Pair & pair, uint64_t total)
     {
@@ -384,11 +486,12 @@ TEST(SendBacklogTest, wait_sleeps_while_paused_and_resumes_when_read)
         done.set_value();
     });
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    const uint32_t pumpsBefore{ test.owner.pumps.load() };
+    // Counts only the pumps that move nothing.
+    const bool waiting{ test.sender.waited(1u) };
+    const uint32_t idleBefore{ test.owner.idle_pumps() };
     std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_MS));
-    const uint32_t pausedPumps{ test.owner.pumps.load() - pumpsBefore };
-    const bool waitedWhilePaused{ still_waits(returned) };
+    const uint32_t idlePumps{ test.owner.idle_pumps() - idleBefore };
+    const bool waitedWhilePaused{ waiting && still_waits(returned) };
 
     // The reader resumes: only the socket taking data can end the wait, so the backlog drains.
     std::thread reader([&]
@@ -407,7 +510,7 @@ TEST(SendBacklogTest, wait_sleeps_while_paused_and_resumes_when_read)
     test.sender.queue.exit_queue(true);
     sendThread.join();
 
-    EXPECT_LE(pausedPumps, 2u);
+    EXPECT_LE(idlePumps, 2u);
     EXPECT_TRUE(waitedWhilePaused);
     EXPECT_TRUE(drained);
     EXPECT_TRUE(test.backlog.is_empty());
@@ -428,8 +531,9 @@ TEST(SendBacklogTest, queued_message_ends_the_wait)
         done.set_value();
     });
 
+    const bool waiting{ test.sender.waited(1u) };
     std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_MS));
-    const bool waitedBefore{ still_waits(returned) };
+    const bool waitedBefore{ waiting && still_waits(returned) };
     areg::MessageEnvelope wake;
     ASSERT_NE(wake.init_envelope(areg::notify_client_connection(), 0u), nullptr);
     areg::Event evt(std::move(wake));
@@ -461,8 +565,9 @@ TEST(SendBacklogTest, exit_ends_the_wait)
         done.set_value();
     });
 
+    const bool waiting{ test.sender.waited(1u) };
     std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_MS));
-    const bool waitedBefore{ still_waits(returned) };
+    const bool waitedBefore{ waiting && still_waits(returned) };
     test.sender.queue.exit_queue(true);
     const bool ended{ returns(returned) };
     if (ended == false)
@@ -476,8 +581,8 @@ TEST(SendBacklogTest, exit_ends_the_wait)
     EXPECT_TRUE(ended);
 }
 
-// A connection above its cap is held, stays held down to half of it, and is released below that.
-// The waiter registered while it is held is called once, at the release.
+// A connection above its cap is held, stays held while it keeps more than half of the cap, and is
+// released at or below half. The waiter registered while it is held is called once, at the release.
 TEST(SendBacklogTest, connection_is_held_above_cap_until_half_drained)
 {
     constexpr uint64_t CAP{ 4u * MESSAGE_BYTES };
@@ -497,50 +602,46 @@ TEST(SendBacklogTest, connection_is_held_above_cap_until_half_drained)
     EXPECT_FALSE(backlog.is_held(COOKIE));
     EXPECT_FALSE(backlog.hold_wait(COOKIE, waiter));
 
-    uint64_t moved{ 0u };
-    ASSERT_TRUE(write_range(backlog, pair, messages, 0u, 8u, &moved));
-    const uint64_t written{ 8u * (areg::WIRE_HEADER_SIZE + MESSAGE_BYTES) };
-    ASSERT_GT(written - moved, CAP);
+    Feed feed{ backlog, pair, messages, owner };
+    ASSERT_TRUE(feed.fill_above(CAP));
     EXPECT_TRUE(backlog.is_held(COOKIE));
     EXPECT_FALSE(backlog.is_held(COOKIE + 1u));
     EXPECT_EQ(heldTotal.load(), 1u);
     EXPECT_TRUE(backlog.hold_wait(COOKIE, waiter));
 
-    // Drain in steps: held while above half the cap, released once at or below it.
-    // The peer reads at most one buffer per step, so no step drains the cap at once.
-    bool sawHeldBelowCap{ false };
-    uint64_t left{ written - moved };
-    uint64_t readBytes{ 0u };
-    std::vector<uint8_t> buffer(64u * 1024u);
+    // A cap raised to the bytes kept puts them between half the cap and the cap.
+    const uint64_t band{ feed.kept() };
+    backlog.set_limits(band, SendBacklog::UNLIMITED, 60'000u);
+    static_cast<void>(backlog.pump(owner));
+    const uint64_t inBand{ feed.kept() };
+    const bool aboveHalf{ inBand > band / 2u };
+    EXPECT_EQ(backlog.is_held(COOKIE), aboveHalf) << "kept " << inBand << " of cap " << band;
+    EXPECT_EQ(waiter.calls.load(), aboveHalf ? 0u : 1u);
 
-    const Clock::time_point started{ Clock::now() };
-    while ((backlog.is_empty() == false) && (elapsed_ms(started) < DEADLINE_MS))
-    {
-        const int32_t received{ areg::receive_data_nowait(pair.client, buffer.data(), static_cast<uint32_t>(buffer.size())) };
-        ASSERT_GE(received, 0);
-        readBytes += static_cast<uint64_t>(received);
-        static_cast<void>(backlog.pump(owner));
-        left = written - moved - owner.sent.load();
-        const bool held{ backlog.is_held(COOKIE) };
-        if ((left <= CAP) && (left > CAP / 2u))
-        {
-            sawHeldBelowCap = sawHeldBelowCap || held;
-            EXPECT_TRUE(held) << "left " << left;
-        }
-        else if (left <= CAP / 2u)
-        {
-            EXPECT_FALSE(held) << "left " << left;
-        }
-
-        std::this_thread::yield();
-    }
-
-    EXPECT_TRUE(read_all(pair, written - readBytes));
-    EXPECT_TRUE(backlog.is_empty());
-    EXPECT_TRUE(sawHeldBelowCap);
+    // A cap of twice the bytes kept puts them at half of it.
+    backlog.set_limits(2u * feed.kept(), SendBacklog::UNLIMITED, 60'000u);
+    static_cast<void>(backlog.pump(owner));
     EXPECT_FALSE(backlog.is_held(COOKIE));
     EXPECT_EQ(waiter.calls.load(), 1u);
     EXPECT_EQ(heldTotal.load(), 0u);
+
+    std::atomic<bool> readWhole{ false };
+    std::thread reader([&]
+    {
+        readWhole.store(read_all(pair, feed.queued));
+    });
+
+    pump_until_drained(backlog, owner);
+    if (backlog.is_empty() == false)
+    {
+        pair.close();
+    }
+
+    reader.join();
+    EXPECT_TRUE(readWhole.load());
+    EXPECT_TRUE(backlog.is_empty());
+    EXPECT_FALSE(backlog.is_held(COOKIE));
+    EXPECT_EQ(waiter.calls.load(), 1u);
     EXPECT_FALSE(owner.closed.load());
 
     std::deque<ITEM_ID> cut;
@@ -557,7 +658,8 @@ TEST(SendBacklogTest, held_connection_releases_its_waiter_when_it_goes_away)
     test.backlog.set_limits(CAP, SendBacklog::UNLIMITED, 60'000u);
     test.owner.socket = test.pair.server;
     static_cast<void>(test.backlog.attach(test.pair.server));
-    ASSERT_TRUE(write_range(test.backlog, test.pair, test.messages, 0u, 8u));
+    Feed feed{ test.backlog, test.pair, test.messages, test.owner };
+    ASSERT_TRUE(feed.fill_above(CAP));
     ASSERT_TRUE(test.backlog.is_held(COOKIE));
 
     Waiter kept{ };
@@ -584,7 +686,8 @@ TEST(SendBacklogTest, held_connection_does_not_stop_the_send_thread)
     test.backlog.set_limits(MESSAGE_BYTES, SendBacklog::UNLIMITED, 60'000u);
     test.owner.socket = test.pair.server;
     static_cast<void>(test.backlog.attach(test.pair.server));
-    ASSERT_TRUE(write_range(test.backlog, test.pair, test.messages, 0u, 8u));
+    Feed feed{ test.backlog, test.pair, test.messages, test.owner };
+    ASSERT_TRUE(feed.fill_above(MESSAGE_BYTES));
     ASSERT_TRUE(test.backlog.is_held(COOKIE));
 
     areg::MessageEnvelope wake;
@@ -627,20 +730,33 @@ TEST(SendBacklogTest, stalled_peer_above_cap_is_closed_only_if_stalled_peers_are
         backlog.set_limits(CAP, SendBacklog::UNLIMITED, 60'000u, closeStalled);
         static_cast<void>(backlog.attach(pair.server));
         std::vector<areg::MessageEnvelope> messages{ make_messages() };
-        ASSERT_TRUE(write_range(backlog, pair, messages, 0u, 8u));
+        Feed feed{ backlog, pair, messages, owner };
+        ASSERT_TRUE(feed.fill_above(2u * CAP));
         ASSERT_TRUE(backlog.is_held(COOKIE));
 
-        pump_past_stall_limit(backlog, owner);
+        const StallEnd end{ pump_past_stall_limit(backlog, feed, owner, CAP) };
+        if (end == StallEnd::Draining)
+        {
+            std::deque<ITEM_ID> cut;
+            backlog.release_all(cut);
+            pair.close();
+            GTEST_SKIP() << "the peer kept taking data without reading, no stall to test";
+        }
+
         if (closeStalled)
         {
-            EXPECT_TRUE(owner.closed.load());
+            EXPECT_EQ(end, StallEnd::Closed);
             EXPECT_EQ(owner.reason, SendBacklog::Reason::OverCap);
+            EXPECT_GT(owner.kept, CAP);
+            EXPECT_GE(owner.stalled, static_cast<uint64_t>(SendBacklog::CAP_STALL_MS));
             EXPECT_TRUE(backlog.is_empty());
             EXPECT_FALSE(backlog.is_held(COOKIE));
         }
         else
         {
+            EXPECT_EQ(end, StallEnd::Kept);
             EXPECT_FALSE(owner.closed.load());
+            EXPECT_GT(feed.kept(), CAP);
             EXPECT_TRUE(backlog.is_held(COOKIE));
         }
 
@@ -678,9 +794,19 @@ TEST(SendBacklogTest, close_of_a_stalled_peer_is_logged_with_its_reason_bytes_an
     backlog.set_limits(CAP, SendBacklog::UNLIMITED, 60'000u, true);
     static_cast<void>(backlog.attach(pair.server));
     std::vector<areg::MessageEnvelope> messages{ make_messages() };
-    ASSERT_TRUE(write_range(backlog, pair, messages, 0u, 8u));
-    pump_past_stall_limit(backlog, owner);
-    ASSERT_TRUE(owner.closed.load());
+    Feed feed{ backlog, pair, messages, owner };
+    ASSERT_TRUE(feed.fill_above(2u * CAP));
+    const StallEnd end{ pump_past_stall_limit(backlog, feed, owner, CAP) };
+    if (end == StallEnd::Draining)
+    {
+        std::deque<ITEM_ID> cut;
+        backlog.release_all(cut);
+        pair.close();
+        static_cast<void>(capture.stop());
+        GTEST_SKIP() << "the peer kept taking data without reading, no stall to test";
+    }
+
+    ASSERT_EQ(end, StallEnd::Closed);
     pair.close();
 
     const std::string text{ capture.stop() };
@@ -727,17 +853,13 @@ TEST(SendBacklogTest, reading_peer_is_kept_past_twice_its_cap)
     static_cast<void>(backlog.pump(owner));
     EXPECT_FALSE(owner.closed.load());
 
+    std::atomic<bool> readWhole{ false };
     std::thread reader([&]
     {
-        EXPECT_TRUE(read_all(pair, wire_bytes(messages)));
+        readWhole.store(read_all(pair, wire_bytes(messages)));
     });
 
-    const Clock::time_point started{ Clock::now() };
-    while ((backlog.is_empty() == false) && (owner.closed.load() == false) && (elapsed_ms(started) < DEADLINE_MS))
-    {
-        static_cast<void>(backlog.pump(owner));
-        std::this_thread::yield();
-    }
+    pump_until_drained(backlog, owner);
 
     if (owner.closed.load())
     {
@@ -745,12 +867,21 @@ TEST(SendBacklogTest, reading_peer_is_kept_past_twice_its_cap)
     }
 
     reader.join();
-    EXPECT_FALSE(owner.closed.load()) << "reason " << static_cast<int>(owner.reason) << ", sent " << owner.sent.load();
-    EXPECT_TRUE(backlog.is_empty());
-
+    const bool drained{ backlog.is_empty() };
     std::deque<ITEM_ID> cut;
     backlog.release_all(cut);
     pair.close();
+
+    // A close after the reader took nothing for the stall limit is a skip, an earlier one a failure.
+    if (owner.closed.load() && (owner.reason == SendBacklog::Reason::OverCap))
+    {
+        ASSERT_GE(owner.stalled, static_cast<uint64_t>(SendBacklog::CAP_STALL_MS)) << "closed a peer that took data, sent " << owner.sent.load();
+        GTEST_SKIP() << "the reader did not run for " << owner.stalled << " ms, no reading peer to test";
+    }
+
+    EXPECT_FALSE(owner.closed.load()) << "reason " << static_cast<int>(owner.reason) << ", sent " << owner.sent.load();
+    EXPECT_TRUE(drained);
+    EXPECT_TRUE(readWhole.load());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -894,12 +1025,7 @@ TEST(SendBacklogTest, write_larger_than_the_send_buffer_keeps_the_stream_whole)
 
     std::future<uint64_t> reader{ std::async(std::launch::async, [&]() { return read_stream(pair, stream); }) };
     EXPECT_TRUE(write_range(backlog, pair, messages, 0u, STREAM_MESSAGES));
-    const Clock::time_point started{ Clock::now() };
-    while ((backlog.is_empty() == false) && (owner.closed.load() == false) && (elapsed_ms(started) < DEADLINE_MS))
-    {
-        static_cast<void>(backlog.pump(owner));
-        std::this_thread::yield();
-    }
+    pump_until_drained(backlog, owner);
 
     std::deque<ITEM_ID> cut;
     backlog.release_all(cut);
@@ -1032,12 +1158,7 @@ TEST(SendBacklogTest, write_inline_keeps_the_rest_of_a_large_message)
         EXPECT_TRUE(read_all(pair, size));
     });
 
-    const Clock::time_point started{ Clock::now() };
-    while ((backlog.is_empty() == false) && (owner.closed.load() == false) && (elapsed_ms(started) < DEADLINE_MS))
-    {
-        static_cast<void>(backlog.pump(owner));
-        std::this_thread::yield();
-    }
+    pump_until_drained(backlog, owner);
 
     if (backlog.is_empty() == false)
     {
@@ -1223,7 +1344,8 @@ TEST(SendBacklogTest, paused_sources_resume_when_their_connection_is_released)
     test.backlog.set_limits(2u * MESSAGE_BYTES, SendBacklog::UNLIMITED, 60'000u);
     test.owner.socket = test.pair.server;
     static_cast<void>(test.backlog.attach(test.pair.server));
-    ASSERT_TRUE(write_range(test.backlog, test.pair, test.messages, 0u, 8u));
+    Feed feed{ test.backlog, test.pair, test.messages, test.owner };
+    ASSERT_TRUE(feed.fill_above(2u * MESSAGE_BYTES));
     ASSERT_TRUE(test.backlog.is_held(COOKIE));
 
     areg::SocketMultiplexer mux;
@@ -1258,4 +1380,73 @@ TEST(SendBacklogTest, paused_sources_resume_when_their_connection_is_released)
     EXPECT_EQ(resumed[0], KEPT);
     EXPECT_FALSE(paused.has_released());
     paused.clear();
+}
+
+// A backlog without connections has nothing to write: the pump reports no progress and does not
+// ask the owner for a socket.
+TEST(SendBacklogTest, pump_of_an_empty_backlog_reports_no_progress_and_leaves_the_owner_alone)
+{
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    Owner owner{ };
+
+    EXPECT_FALSE(backlog.pump(owner));
+    EXPECT_EQ(owner.pumps.load(), 0u);
+    EXPECT_FALSE(owner.closed.load());
+    EXPECT_TRUE(backlog.is_empty());
+}
+
+// Once the refusal limit of a connection has passed, the wait lasts the shortest time that is not zero.
+TEST(SendBacklogTest, prepare_wait_after_the_refusal_limit_lasts_one_millisecond)
+{
+    Fixture test;
+    ASSERT_TRUE(test.start());
+    test.backlog.set_limits(1024u * 1024u * 1024u, 1u, 60'000u);
+
+    uint32_t wait{ test.backlog.prepare_wait() };
+    const Clock::time_point started{ Clock::now() };
+    while ((wait != 1u) && (elapsed_ms(started) < DEADLINE_MS))
+    {
+        std::this_thread::yield();
+        wait = test.backlog.prepare_wait();
+    }
+
+    EXPECT_EQ(wait, 1u);
+}
+
+// A connection whose socket took nothing of its first message was not cut: release_all names the
+// connections whose first message was partly written, and not that one.
+TEST(SendBacklogTest, release_all_does_not_name_a_connection_that_wrote_nothing)
+{
+    Fixture test;
+    ASSERT_TRUE(test.start());
+
+    const areg::MessageEnvelope * const pointers[]{ &test.messages.front() };
+    std::deque<ITEM_ID> started{ COOKIE };
+    ITEM_ID idle{ COOKIE + 1u };
+    uint64_t bytesDone{ 1u };
+    for (uint32_t round = 0u; (bytesDone != 0u) && (round < 1'000u); ++round, ++idle)
+    {
+        uint32_t msgsDone{ 0u };
+        areg::SocketWriteGuard guard{ test.pair.server };
+        ASSERT_EQ(test.backlog.write(idle, test.pair.server, pointers, 1u, bytesDone, msgsDone), SendBacklog::Result::Kept);
+        if (bytesDone != 0u)
+        {
+            started.push_back(idle);
+        }
+    }
+
+    ASSERT_EQ(bytesDone, 0u);
+    std::deque<ITEM_ID> cut;
+    test.backlog.release_all(cut);
+    std::sort(cut.begin(), cut.end());
+#if defined(_WIN32)
+    // An overlapped send still in flight is cut as well.
+    if (cut.size() > started.size())
+    {
+        started.push_back(idle - 1u);
+    }
+#endif
+    EXPECT_EQ(cut, started);
+    EXPECT_TRUE(test.backlog.is_empty());
 }

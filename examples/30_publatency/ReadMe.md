@@ -198,6 +198,61 @@ For benchmark sessions across parameter changes:
 
 ---
 
+## Taking Measurements
+
+Take numbers **headless** (see [Run without a console](#run-without-a-console-for-scripts)):
+it is the more accurate way, and it ends by itself.
+
+**1. Build** in `Release` with `AREG_LOGGING=OFF` (see [Build](#build)), then `cd` into the
+`bin/` directory of the build.
+
+**2. Start the router and the provider:**
+
+```bash
+./mtrouter.elf &
+./30_pubprovider.elf -n &
+```
+
+**3. Run the consumer** with one mode per call, and save what it prints:
+
+```bash
+./30_pubconsumer.elf -m=pp64 -c=10000 -w=1000 -s=8 > pp64.txt
+```
+
+It prints one line per run and then quits, together with the provider. It ends with exit code `0`
+when the runs finished and `2` when they did not. The router keeps running; stop it at the end.
+
+```
+run 1   mode pp64    samples 10000   min   151.923 p50   160.295 p95   208.798 p99 ... max ... mean ... dur ... ms rate ... msg/s
+```
+
+`min` to `mean` are in microseconds, `dur` is the measured time of the run, and `rate` is in messages
+per second. For the next mode, start the provider again and run the consumer with the new `-m`.
+
+**4. Per-sample CSV (optional).** Add `-f=<path>` to the consumer's command line. After each run
+the consumer writes a file with two `#` lines (the run's settings and its summary), then the header
+`seq,mode,t1_ns,t2_ns,t4_ns,rtt_ns,rtt_us` and one line per sample. `rtt_ns` is `t4_ns - t1_ns`.
+
+- **Each run replaces the file.** With `-s=8 -f=pp64.csv` only the samples of run 8 remain. To keep
+  every run, call the consumer once per run (`-s=1`), with a different file name each time.
+- Without a name (`-f` alone) the file is `latency_<mode>_<YYYYmmdd_HHMMSS>.csv`. Two runs within
+  the same second write the same file.
+- **A relative path is relative to the directory of the executable**, not the directory of the
+  shell, because the application changes its working directory at start. Pass an absolute path
+  to put the file somewhere else.
+
+**5. One summary CSV for several modes (console only).** In the consumer's console, type `-b` on a
+line of its own, then each `-m=... -c=... -w=...` followed by `-s=N`, then `-e`. The file is
+`latency_benchmark_<YYYYmmdd_HHMMSS>.csv`, beside the executable, with one line per run:
+`run,timestamp,mode,stop,count,warmup,req_dur_ms,target_msg_s,min_us,p50_us,p95_us,p99_us,max_us,mean_us,dur_ms,msg_s`.
+Quitting with `-q` before `-e` saves the file too. This does not work headless: there `-b` and `-s`
+are on one line, and that line does not start a run.
+
+**For numbers that can be compared:** use the same `-c` and `-w` on both sides, restart all three
+processes before changing the mode, and never compare a headless number with a console number.
+
+---
+
 ## How It Works
 
 ### Ping-Pong (RTT)

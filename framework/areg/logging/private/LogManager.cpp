@@ -218,9 +218,9 @@ bool LogManager::is_logging_configured()
 
 bool LogManager::force_activate_logging()
 {
-    bool result = false;
     LogManager & logManager = LogManager::instance();
-    if ( !logManager.is_logging_started() )
+    bool result = logManager.is_logging_started();
+    if ( !result )
     {
         do
         {

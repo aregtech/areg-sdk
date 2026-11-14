@@ -63,6 +63,8 @@ namespace
     constexpr uint32_t   _twinWatchdog  { 60'000u };
     //!< The model every test loads.
     constexpr char const _model[]       { "WtModel" };
+    //!< The role whose worker holds its register_event_consumers() until its component sent an event.
+    constexpr char const _heldRole[]    { "WtHeld" };
     //!< How long a test waits for something to happen.
     constexpr std::chrono::seconds      _waitLimit{ 5 };
 
@@ -78,6 +80,12 @@ namespace
         std::thread::id componentThread{};
         std::thread::id workerThread{};
         uint32_t        watchdog{ 0u };
+        bool            registering{ false };
+        bool            registered{ false };
+        bool            released{ false };
+        bool            sendAccepted{ false };
+        bool            sentWhileRegistering{ false };
+        bool            processedAfterRegistration{ false };
     };
 
     //! What every component reports, by role.
@@ -255,6 +263,94 @@ namespace
         areg::WorkerThread *    mWorkerThread{ nullptr };
     };
 
+    //! A worker consumer whose register_event_consumers() waits until its component releases it.
+    class WtHeldWorker final    : public    areg::WorkerThreadConsumer
+                                , public    WtWorkEventConsumer
+    {
+    public:
+        explicit WtHeldWorker(const areg::String & consumerName)
+            : areg::WorkerThreadConsumer(consumerName)
+        { }
+
+    protected:
+        void register_event_consumers(areg::WorkerThread & /*workThread*/, areg::ComponentThread & /*masterThread*/) final
+        {
+            observed().update(_heldRole, [](Seen & seen)
+                {
+                    seen.workerThread = std::this_thread::get_id();
+                    seen.registering = true;
+                });
+            observed().wait(_heldRole, [](Seen & seen) { return seen.released; });
+            observed().update(_heldRole, [](Seen & seen) { seen.registered = true; });
+        }
+
+        void process_event(const WtWorkData & data) final
+        {
+            const std::thread::id here{ std::this_thread::get_id() };
+            const int value{ data.value() };
+            observed().update(_heldRole, [here, value](Seen & seen)
+                {
+                    if (here == seen.workerThread)
+                    {
+                        seen.processed += value;
+                        seen.processedAfterRegistration = seen.registered;
+                    }
+                });
+        }
+    };
+
+    //! Adds the listener of its worker and sends it an event while the worker's
+    //! register_event_consumers() runs, then releases the worker.
+    class WtHeldHost final : public areg::Component
+    {
+    public:
+        WtHeldHost(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+            : areg::Component(entry, owner)
+            , mWorker(entry.mWorkerThreads[0].mConsumerName)
+        { }
+
+    protected:
+        areg::WorkerThreadConsumer * worker_thread_consumer(const areg::String & consumerName,
+                                                            const areg::String & workerThreadName) final
+        {
+            return mWorker.consumer_name() == consumerName
+                 ? &mWorker
+                 : areg::Component::worker_thread_consumer(consumerName, workerThreadName);
+        }
+
+        void notify_thread_started(areg::WorkerThreadConsumer & consumer, areg::WorkerThread & workerThread) final
+        {
+            if (&consumer != &mWorker)
+                return;
+
+            mWorkerThread = &workerThread;
+            WtWorkEvent::add_listener(static_cast<WtWorkEventConsumer &>(mWorker), workerThread);
+            observed().wait(_heldRole, [](Seen & seen) { return seen.registering; });
+            const bool registering{ observed().copy(_heldRole).registered == false };
+            const bool accepted{ WtWorkEvent::send_event(WtWorkData(1), static_cast<areg::DispatcherThread &>(workerThread)) };
+            observed().update(_heldRole, [accepted, registering](Seen & seen)
+                {
+                    seen.sendAccepted = accepted;
+                    seen.sentWhileRegistering = registering;
+                    seen.released = true;
+                });
+        }
+
+        void shutdown_component(areg::ComponentThread & comThread) final
+        {
+            if (mWorkerThread != nullptr)
+            {
+                WtWorkEvent::remove_listener(static_cast<WtWorkEventConsumer &>(mWorker), *mWorkerThread);
+            }
+
+            areg::Component::shutdown_component(comThread);
+        }
+
+    private:
+        WtHeldWorker            mWorker;
+        areg::WorkerThread *    mWorkerThread{ nullptr };
+    };
+
     //! Starts the application without logging and routing, runs the model, and stops.
     class WtModelRun
     {
@@ -305,6 +401,11 @@ BEGIN_MODEL(_model)
             REGISTER_WORKER_THREAD(_worker, _consumer)
         END_REGISTER_COMPONENT("WtUnknown")
     END_REGISTER_THREAD("WtUnknownThread")
+    BEGIN_REGISTER_THREAD("WtHeldThread")
+        BEGIN_REGISTER_COMPONENT(_heldRole, WtHeldHost)
+            REGISTER_WORKER_THREAD("WtHeldWorkerThread", "WtHeldConsumer")
+        END_REGISTER_COMPONENT(_heldRole)
+    END_REGISTER_THREAD("WtHeldThread")
 END_MODEL(_model)
 
 /**
@@ -417,4 +518,22 @@ TEST(WorkerThreadTest, consumer_number_and_name_follow_its_name)
     EXPECT_TRUE(first.is_equal_name(areg::String("WtConsumerName")));
     EXPECT_FALSE(first.is_equal_name(areg::String("WtOtherName")));
     EXPECT_FALSE(first.is_equal_name(areg::String("wtconsumername")));
+}
+
+/**
+ * \brief   A worker accepts an event sent right after its creation while its
+ *          register_event_consumers() still runs, and dispatches it on the worker thread
+ *          once that method returns.
+ **/
+TEST(WorkerThreadTest, worker_accepts_events_sent_while_its_consumers_are_being_registered)
+{
+    WtModelRun run;
+    ASSERT_TRUE(run.loaded());
+    ASSERT_TRUE(observed().wait(_heldRole, [](Seen & seen) { return seen.released; }));
+    const Seen sent{ observed().copy(_heldRole) };
+    EXPECT_TRUE(sent.sentWhileRegistering);
+    ASSERT_TRUE(sent.sendAccepted);
+
+    ASSERT_TRUE(observed().wait(_heldRole, [](Seen & seen) { return seen.processed == 1; }));
+    EXPECT_TRUE(observed().copy(_heldRole).processedAfterRegistration);
 }

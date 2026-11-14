@@ -30,11 +30,17 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
+#include "areg/ipc/ConnectionConsumer.hpp"
+#include "areg/ipc/RemoteMessageHandler.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
+#include "areg/ipc/ServerConnectionBase.hpp"
+#include "areg/base/SocketAccepted.hpp"
+#include "areg/ipc/ServiceClientConnectionBase.hpp"
 #include "areg/ipc/SocketConnectionBase.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/persist/ConfigListener.hpp"
 #include "areg/persist/ConfigManager.hpp"
+#include "units/EventTestSupport.hpp"
 #if AREG_LOGGING
     #include "areglogger/client/LogObserverApi.h"
     #include "areglogger/client/LogObserverBase.hpp"
@@ -51,7 +57,9 @@
 
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <cstring>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -491,6 +499,516 @@ TEST( FaultInjectTest, remote_logger_reconnects_when_the_system_refuses_to_send_
     );
 }
 
+namespace
+{
+    //!< The first message id of the numbered messages of the batch test.
+    constexpr uint32_t BATCH_FIRST_ID{ 0x00007101u };
+
+    //!< Returns a message to the router with the id, whose data is the id.
+    areg::MessageEnvelope numbered_message( uint32_t id, ITEM_ID source )
+    {
+        areg::EventHeader hdr{ areg::message_hello_server( ) };
+        hdr.messageId   = id;
+        hdr.source      = static_cast<uint32_t>( source );
+        hdr.target      = static_cast<uint32_t>( areg::COOKIE_ROUTER );
+        areg::MessageEnvelope message;
+        if ( message.init_envelope( hdr, sizeof( uint32_t ) ) != nullptr )
+        {
+            message << id;
+        }
+
+        return message;
+    }
+
+    //!< Reports when the client connection is confirmed.
+    class BatchObserver final : public areg::ConnectionConsumer
+    {
+    public:
+        void on_service_channel_connected( const areg::Channel & /*channel*/ ) override
+        {
+            mConnected.set_signaled( );
+        }
+
+        void on_service_channel_disconnected( const areg::Channel & /*channel*/ ) override
+        { }
+
+        void on_service_channel_lost( const areg::Channel & /*channel*/ ) override
+        {
+            mLost.fetch_add( 1u );
+        }
+
+        bool wait_connected( )
+        {
+            return mConnected.lock( static_cast<uint32_t>( IO_WAIT_S ) * 1000u );
+        }
+
+        //!< Clears the confirmation, so the next wait is for the next connection.
+        void reset_connected( )
+        {
+            mConnected.reset( );
+        }
+
+        //!< The number of reports of a lost channel.
+        uint32_t lost( ) const
+        {
+            return mLost.load( );
+        }
+
+    private:
+        areg::SyncEvent         mConnected{ true, false };  //!< Signaled when the connection is confirmed.
+        std::atomic<uint32_t>   mLost{ 0u };                //!< The reports of a lost channel.
+    };
+
+    //!< A client connection that queues the messages of the test and records every message reported as not sent.
+    class BatchClient final : private areg::RemoteMessageHandler, public areg::ServiceClientConnectionBase
+    {
+    public:
+        BatchClient( BatchObserver & observer, EventTestDispatcher & dispatcher )
+            : areg::RemoteMessageHandler( )
+            , areg::ServiceClientConnectionBase( areg::COOKIE_ROUTER, areg::RemoteServiceKind::Router, static_cast<uint32_t>( areg::ConnectionType::Tcpip )
+                                               , areg::MessageSource::SourceTest, observer, *this, dispatcher, areg::String( "FiBatch" ) )
+        { }
+
+        bool queue( const areg::MessageEnvelope & message )
+        {
+            return send_message( message );
+        }
+
+        //!< Sets whether the connection may be started or retried.
+        void allow( bool allowed )
+        {
+            mAllowedCalls.store( allowed ? -1 : 0, std::memory_order_release );
+        }
+
+        //!< Allows the connection for the next count queries of the permission, and refuses it after.
+        void allow_queries( int32_t count )
+        {
+            mAllowedCalls.store( count, std::memory_order_release );
+        }
+
+        //!< Waits until the receive failure is reported and its notice is queued. Returns false on timeout.
+        bool wait_receive_failed( )
+        {
+            return mReceiveFailed.lock( static_cast<uint32_t>( IO_WAIT_S ) * 1000u );
+        }
+
+        //!< Queues the command of the connection.
+        void command( areg::ServiceEventData::ServiceCommand cmd )
+        {
+            send_command( cmd );
+        }
+
+        //!< Waits until the count of messages are reported as not sent. Returns false on timeout.
+        bool wait_failed( std::size_t count )
+        {
+            std::unique_lock<std::mutex> lock( mLock );
+            return mChanged.wait_for( lock, std::chrono::seconds( IO_WAIT_S ), [this, count]( ) { return mFailed.size( ) >= count; } );
+        }
+
+        //!< The id and the data of every message reported as not sent, in the order of the reports.
+        std::vector<std::pair<uint32_t, uint32_t>> failed( )
+        {
+            std::lock_guard<std::mutex> lock( mLock );
+            return mFailed;
+        }
+
+    private:
+        bool is_connection_allowed( ) const override
+        {
+            int32_t left{ mAllowedCalls.load( std::memory_order_acquire ) };
+            if ( left < 0 )
+                return true;
+
+            while ( ( left > 0 ) && ( mAllowedCalls.compare_exchange_weak( left, left - 1 ) == false ) )
+            {
+            }
+
+            return ( left > 0 );
+        }
+
+        void failed_send_message( const areg::MessageEnvelope & msgFailed, areg::Socket & /*whichTarget*/ ) override
+        {
+            uint32_t data{ 0u };
+            msgFailed.move_to_begin( );
+            msgFailed >> data;
+            {
+                std::lock_guard<std::mutex> lock( mLock );
+                mFailed.emplace_back( msgFailed.message_id( ), data );
+            }
+
+            mChanged.notify_all( );
+            notify_connection_lost( );
+        }
+
+        void failed_receive_message( areg::Socket & /*whichTarget*/ ) override
+        {
+            notify_connection_lost( );
+            mReceiveFailed.set_signaled( );
+        }
+
+        void failed_process_message( const areg::MessageEnvelope & /*msgUnprocessed*/ ) override
+        { }
+
+        void process_received_message( areg::MessageEnvelope & msgReceived, areg::Socket & /*whichTarget*/ ) override
+        {
+            service_connection_event( msgReceived );
+        }
+
+        areg::SyncEvent                             mReceiveFailed{ true, false };  //!< Signaled after a failed receive is reported.
+        std::mutex                                  mLock;      //!< Guards the list of reports.
+        std::condition_variable                     mChanged;   //!< Signaled on every report.
+        std::vector<std::pair<uint32_t, uint32_t>>  mFailed;    //!< The id and the data of every reported message.
+        mutable std::atomic<int32_t>                mAllowedCalls{ -1 };    //!< Negative: always allowed; otherwise the permissions left.
+    };
+}
+
+/**
+ * \brief   Reproduces the defect: a send of a batch of messages that the system refuses reported
+ *          only the first message as not sent, and the others were lost without a report. Every
+ *          message of the batch is reported once, with its data, and the message sent before is not.
+ **/
+TEST( FaultInjectTest, failed_batch_send_reports_every_message_of_the_batch )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 121u };
+        constexpr uint32_t BATCH{ 3u };
+        TestRouter router;
+        AREG_CHILD_CHECK( router.open( ) );
+        BatchObserver observer;
+        EventTestDispatcher dispatcher( "FiBatchDispatch" );
+        BatchClient client( observer, dispatcher );
+        auto & provider{ static_cast<areg::ConnectionProvider &>( client ) };
+        areg::Application::config_manager( ).set_configuration( areg::ListProperties( ), areg::ListProperties( ) );
+        areg::ConnectionConfiguration config( areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip );
+        config.set_connection_enable( true );
+        AREG_CHILD_CHECK( dispatcher.start_ready( ) );
+        client.register_consumer_commands( );
+        provider.apply_connection_data( areg::String( "127.0.0.1" ), router.port );
+        AREG_CHILD_CHECK( provider.connect_service_host( ) );
+        AREG_CHILD_CHECK( router.answer( COOKIE ) && observer.wait_connected( ) );
+
+        {
+            // The send of the first message waits while the batch is queued behind it, then the batch send fails.
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::hold( areg_fault::FaultPoint::SocketSend ) );
+            AREG_CHILD_CHECK( client.queue( numbered_message( BATCH_FIRST_ID, COOKIE ) ) );
+            AREG_CHILD_CHECK( areg_fault::wait_held( areg_fault::FaultPoint::SocketSend, 1u, static_cast<uint32_t>( IO_WAIT_S ) * 1000u ) );
+            for ( uint32_t i = 1u; i <= BATCH; ++i )
+            {
+                AREG_CHILD_CHECK( client.queue( numbered_message( BATCH_FIRST_ID + i, COOKIE ) ) );
+            }
+
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::SocketSend, ECONNRESET, 1u, 1u ) );
+            areg_fault::release( areg_fault::FaultPoint::SocketSend );
+            AREG_CHILD_CHECK( client.wait_failed( BATCH ) );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketSend ) == 1u );
+        }
+
+        const auto failed{ client.failed( ) };
+        AREG_CHILD_CHECK( failed.size( ) == BATCH );
+        for ( uint32_t i = 0u; i < failed.size( ); ++i )
+        {
+            AREG_CHILD_CHECK( ( failed[i].first == BATCH_FIRST_ID + 1u + i ) && ( failed[i].second == BATCH_FIRST_ID + 1u + i ) );
+        }
+
+        areg::MessageEnvelope sent;
+        AREG_CHILD_CHECK( router.receive( sent ) && ( sent.message_id( ) == BATCH_FIRST_ID ) );
+
+        provider.disconnect_service_host( );
+        AREG_CHILD_CHECK( dispatcher.barrier( ) );
+        client.unregister_consumer_commands( );
+        dispatcher.shutdown( static_cast<uint32_t>( IO_WAIT_S ) * 1000u );
+    );
+}
+
+namespace
+{
+    //!< Connects the client with the failing point armed once, and checks that the client connects again with no timer manager.
+    void client_retries_its_start_without_a_timer_when_the_system_refuses( areg_fault::FaultPoint point, int error, ITEM_ID cookie )
+    {
+        TestRouter router;
+        AREG_CHILD_CHECK( router.open( ) );
+        BatchObserver observer;
+        EventTestDispatcher dispatcher( "FiRetryDispatch" );
+        BatchClient client( observer, dispatcher );
+        auto & provider{ static_cast<areg::ConnectionProvider &>( client ) };
+        areg::Application::config_manager( ).set_configuration( areg::ListProperties( ), areg::ListProperties( ) );
+        areg::ConnectionConfiguration config( areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip );
+        config.set_connection_enable( true );
+        AREG_CHILD_CHECK( dispatcher.start_ready( ) );
+        client.register_consumer_commands( );
+        provider.apply_connection_data( areg::String( "127.0.0.1" ), router.port );
+
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( point, error ) );
+            AREG_CHILD_CHECK( provider.connect_service_host( ) );
+            AREG_CHILD_CHECK( router.answer( cookie ) && observer.wait_connected( ) );
+            AREG_CHILD_CHECK( areg_fault::failed( point ) == 1u );
+        }
+
+        AREG_CHILD_CHECK( client.is_connected_state( ) );
+        AREG_CHILD_CHECK( client.connection_cookie( ) == cookie );
+        provider.disconnect_service_host( );
+        AREG_CHILD_CHECK( dispatcher.barrier( ) );
+        client.unregister_consumer_commands( );
+        dispatcher.shutdown( static_cast<uint32_t>( IO_WAIT_S ) * 1000u );
+    }
+
+    //!< A start while the connection is not allowed makes no connection, and retries on the reconnect timer once it is allowed.
+    void client_does_not_start_while_it_is_not_allowed_and_connects_after_the_timer( ITEM_ID cookie )
+    {
+        TestRouter router;
+        AREG_CHILD_CHECK( router.open( ) );
+        areg::Application::setup( false, false, false, true, false );
+        BatchObserver observer;
+        EventTestDispatcher dispatcher( "FiNotAllowedDispatch" );
+        BatchClient client( observer, dispatcher );
+        auto & provider{ static_cast<areg::ConnectionProvider &>( client ) };
+        areg::Application::config_manager( ).set_configuration( areg::ListProperties( ), areg::ListProperties( ) );
+        areg::ConnectionConfiguration config( areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip );
+        config.set_connection_enable( true );
+        client.allow( false );
+        AREG_CHILD_CHECK( dispatcher.start_ready( ) );
+        client.register_consumer_commands( );
+        provider.apply_connection_data( areg::String( "127.0.0.1" ), router.port );
+        AREG_CHILD_CHECK( provider.connect_service_host( ) );
+        AREG_CHILD_CHECK( dispatcher.barrier( ) );
+        AREG_CHILD_CHECK( client.is_connect_state( ) == false );
+        AREG_CHILD_CHECK( provider.is_host_pending( ) == false );
+        AREG_CHILD_CHECK( client.is_disconnect_state( ) );
+
+        client.allow( true );
+        AREG_CHILD_CHECK( router.answer( cookie ) && observer.wait_connected( ) );
+        AREG_CHILD_CHECK( client.is_connected_state( ) );
+        AREG_CHILD_CHECK( client.connection_cookie( ) == cookie );
+
+        provider.disconnect_service_host( );
+        AREG_CHILD_CHECK( dispatcher.barrier( ) );
+        client.unregister_consumer_commands( );
+        dispatcher.shutdown( static_cast<uint32_t>( IO_WAIT_S ) * 1000u );
+        areg::Application::release( );
+    }
+}
+
+/**
+ * \brief   The system refuses to create the socket of the first attempt and no timer manager runs:
+ *          the client queues its own start command, connects with the next attempt and is confirmed.
+ **/
+TEST( FaultInjectTest, client_connects_again_without_a_timer_when_the_system_refuses_its_socket )
+{
+    AREG_EXPECT_IN_CHILD( client_retries_its_start_without_a_timer_when_the_system_refuses( areg_fault::FaultPoint::SocketCreate, EMFILE, areg::COOKIE_REMOTE_SERVICE + 181u ); );
+}
+
+/**
+ * \brief   The same when the system refuses to create the receive thread of the first attempt.
+ **/
+TEST( FaultInjectTest, client_connects_again_without_a_timer_when_the_system_refuses_its_receive_thread )
+{
+    AREG_EXPECT_IN_CHILD( client_retries_its_start_without_a_timer_when_the_system_refuses( areg_fault::FaultPoint::ThreadCreate, EAGAIN, areg::COOKIE_REMOTE_SERVICE + 191u ); );
+}
+
+namespace
+{
+    //!< True if the router socket has no client waiting to be accepted.
+    bool router_has_no_waiting_client( const TestRouter & router )
+    {
+        pollfd waiting{ router.handle, POLLIN, 0 };
+        return ::poll( &waiting, 1, 0 ) == 0;
+    }
+
+    //!< Creates a client of the test router that is configured and started. Returns false on a failed step.
+    struct PermissionClient
+    {
+        TestRouter          router;
+        BatchObserver       observer;
+        EventTestDispatcher dispatcher{ "FiPermissionDispatch" };
+        BatchClient         client{ observer, dispatcher };
+
+        bool start( )
+        {
+            auto & provider{ static_cast<areg::ConnectionProvider &>( client ) };
+            areg::Application::config_manager( ).set_configuration( areg::ListProperties( ), areg::ListProperties( ) );
+            areg::ConnectionConfiguration config( areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip );
+            config.set_connection_enable( true );
+            if ( ( router.open( ) == false ) || ( dispatcher.start_ready( ) == false ) )
+                return false;
+
+            client.register_consumer_commands( );
+            provider.apply_connection_data( areg::String( "127.0.0.1" ), router.port );
+            return true;
+        }
+
+        void stop( )
+        {
+            static_cast<areg::ConnectionProvider &>( client ).disconnect_service_host( );
+            dispatcher.barrier( );
+            client.unregister_consumer_commands( );
+            dispatcher.shutdown( static_cast<uint32_t>( IO_WAIT_S ) * 1000u );
+        }
+    };
+
+    //!< A failed start is not retried when the connection is no longer allowed; a later start connects.
+    void client_does_not_retry_a_failed_start_while_it_is_not_allowed( areg_fault::FaultPoint point, int error, ITEM_ID cookie )
+    {
+        PermissionClient run;
+        AREG_CHILD_CHECK( run.start( ) );
+        auto & provider{ static_cast<areg::ConnectionProvider &>( run.client ) };
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( point, error ) );
+            run.client.allow_queries( 1 );
+            AREG_CHILD_CHECK( provider.connect_service_host( ) );
+            AREG_CHILD_CHECK( run.dispatcher.barrier( ) );
+            AREG_CHILD_CHECK( areg_fault::failed( point ) == 1u );
+        }
+
+        AREG_CHILD_CHECK( run.client.is_connect_state( ) == false );
+        AREG_CHILD_CHECK( provider.is_host_pending( ) == false );
+        AREG_CHILD_CHECK( router_has_no_waiting_client( run.router ) );
+
+        run.client.allow( true );
+        run.client.command( areg::ServiceEventData::ServiceCommand::CMD_StartService );
+        AREG_CHILD_CHECK( run.router.answer( cookie ) && run.observer.wait_connected( ) );
+        AREG_CHILD_CHECK( run.client.connection_cookie( ) == cookie );
+        run.stop( );
+    }
+
+    //!< A connection lost while the connection is not allowed is neither reported nor retried; a later start connects.
+    void client_neither_reports_nor_retries_a_lost_connection_while_it_is_not_allowed( ITEM_ID cookie )
+    {
+        PermissionClient run;
+        AREG_CHILD_CHECK( run.start( ) );
+        auto & provider{ static_cast<areg::ConnectionProvider &>( run.client ) };
+        AREG_CHILD_CHECK( provider.connect_service_host( ) );
+        AREG_CHILD_CHECK( run.router.answer( cookie ) && run.observer.wait_connected( ) );
+
+        run.client.allow( false );
+        run.router.close_peer( );
+        AREG_CHILD_CHECK( run.client.wait_receive_failed( ) );
+        AREG_CHILD_CHECK( run.dispatcher.barrier( ) );
+        AREG_CHILD_CHECK( run.client.is_connected_state( ) == false );
+        AREG_CHILD_CHECK( run.observer.lost( ) == 0u );
+        AREG_CHILD_CHECK( router_has_no_waiting_client( run.router ) );
+
+        run.observer.reset_connected( );
+        run.client.allow( true );
+        run.client.command( areg::ServiceEventData::ServiceCommand::CMD_StartService );
+        AREG_CHILD_CHECK( run.router.answer( cookie + 1u ) && run.observer.wait_connected( ) );
+        AREG_CHILD_CHECK( run.client.connection_cookie( ) == cookie + 1u );
+        run.stop( );
+    }
+}
+
+/**
+ * \brief   The system refuses the socket of an attempt, and the connection is no longer allowed: the
+ *          client does not queue another start, and connects with a start after it is allowed.
+ **/
+TEST( FaultInjectTest, client_does_not_retry_when_the_system_refuses_its_socket_and_the_connection_is_not_allowed )
+{
+    AREG_EXPECT_IN_CHILD( client_does_not_retry_a_failed_start_while_it_is_not_allowed( areg_fault::FaultPoint::SocketCreate, EMFILE, areg::COOKIE_REMOTE_SERVICE + 211u ); );
+}
+
+/**
+ * \brief   The same when the system refuses the receive thread of the attempt.
+ **/
+TEST( FaultInjectTest, client_does_not_retry_when_the_system_refuses_its_receive_thread_and_the_connection_is_not_allowed )
+{
+    AREG_EXPECT_IN_CHILD( client_does_not_retry_a_failed_start_while_it_is_not_allowed( areg_fault::FaultPoint::ThreadCreate, EAGAIN, areg::COOKIE_REMOTE_SERVICE + 221u ); );
+}
+
+/**
+ * \brief   The router closes the connection while the connection is not allowed: the client reports no
+ *          lost channel and makes no new attempt; it connects with a start after it is allowed.
+ **/
+TEST( FaultInjectTest, client_does_not_report_or_retry_a_lost_connection_while_it_is_not_allowed )
+{
+    AREG_EXPECT_IN_CHILD( client_neither_reports_nor_retries_a_lost_connection_while_it_is_not_allowed( areg::COOKIE_REMOTE_SERVICE + 231u ); );
+}
+
+/**
+ * \brief   A start command while the connection is not allowed does not connect; the client connects on the
+ *          reconnect timer after the connection is allowed.
+ **/
+TEST( FaultInjectTest, client_waits_for_the_permission_to_connect_and_connects_on_the_reconnect_timer )
+{
+    AREG_EXPECT_IN_CHILD( client_does_not_start_while_it_is_not_allowed_and_connects_after_the_timer( areg::COOKIE_REMOTE_SERVICE + 201u ); );
+}
+
+namespace
+{
+    //!< Connects a plain client socket to the loopback port. Returns the descriptor, or -1.
+    int connect_plain_client( uint16_t port )
+    {
+        const int handle{ ::socket( AF_INET, SOCK_STREAM, 0 ) };
+        sockaddr_in addr{ };
+        addr.sin_family      = AF_INET;
+        addr.sin_addr.s_addr = htonl( INADDR_LOOPBACK );
+        addr.sin_port        = htons( port );
+        if ( ( handle >= 0 ) && ( ::connect( handle, reinterpret_cast<sockaddr *>(&addr), sizeof( addr ) ) == 0 ) )
+            return handle;
+
+        if ( handle >= 0 )
+            ::close( handle );
+
+        return -1;
+    }
+
+    //!< The server cannot register an accepted connection for its input: it refuses the connection and numbers the next one with the same cookie.
+    void server_refuses_a_connection_it_cannot_register_and_accepts_the_next( )
+    {
+        uint16_t port{ 0u };
+        {
+            TestRouter probe;
+            AREG_CHILD_CHECK( probe.open( ) );
+            port = probe.port;
+        }
+
+        AREG_CHILD_CHECK( areg::socket_initialize( ) );
+        areg::ServerConnectionBase server;
+        AREG_CHILD_CHECK( server.create_socket( areg::String( "127.0.0.1" ), port ) );
+        AREG_CHILD_CHECK( server.server_listen( ) );
+
+        const int first{ connect_plain_client( port ) };
+        AREG_CHILD_CHECK( first >= 0 );
+        areg::SocketAddress peer;
+        areg::SocketAccepted refused( server.wait_connection( peer ), peer );
+        AREG_CHILD_CHECK( refused.is_valid( ) );
+        const SOCKETHANDLE refusedHandle{ refused.handle( ) };
+
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::EpollCtl, ENOMEM ) );
+            AREG_CHILD_CHECK( server.accept_connection( refused ) == false );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::EpollCtl ) == 1u );
+        }
+
+        AREG_CHILD_CHECK( refused.is_valid( ) == false );
+        AREG_CHILD_CHECK( server.is_connection_accepted( refusedHandle ) == false );
+        AREG_CHILD_CHECK( server.cookie_exist( areg::COOKIE_REMOTE_SERVICE ) == false );
+        char byte{ 0 };
+        AREG_CHILD_CHECK( ::recv( first, &byte, 1, 0 ) == 0 );
+        ::close( first );
+
+        const int second{ connect_plain_client( port ) };
+        AREG_CHILD_CHECK( second >= 0 );
+        areg::SocketAccepted accepted( server.wait_connection( peer ), peer );
+        AREG_CHILD_CHECK( accepted.is_valid( ) && server.accept_connection( accepted ) );
+        AREG_CHILD_CHECK( server.cookie( accepted ) == areg::COOKIE_REMOTE_SERVICE );
+        ::close( second );
+        server.close_socket( );
+    }
+}
+
+/**
+ * \brief   The system refuses to register an accepted connection for input: the server closes that
+ *          connection, keeps no cookie for it, and gives the next connection the first cookie.
+ **/
+TEST( FaultInjectTest, server_closes_a_connection_it_cannot_register_and_accepts_the_next )
+{
+    AREG_EXPECT_IN_CHILD( server_refuses_a_connection_it_cannot_register_and_accepts_the_next( ); );
+}
+
 /**
  * \brief   Reproduces the defect: the system refuses to send the handshake of a new connection.
  *          The client closes that connection and connects again.
@@ -521,6 +1039,7 @@ namespace
     {
         std::atomic_uint32_t    failed      { 0u };     //!< Calls of the messaging failed notification.
         std::atomic_uint32_t    stopped     { 0u };     //!< Calls of the logging started notification with false.
+        std::atomic_uint32_t    started     { 0u };     //!< Calls of the logging started notification with true.
         std::atomic_uint32_t    connected   { 0u };     //!< Calls of the service connected notification with true.
         areg::SyncEvent         evFailed    { true, true };     //!< Signaled by the messaging failed notification.
         areg::SyncEvent         evStopped   { true, true };     //!< Signaled when the logging is reported as stopped.
@@ -541,6 +1060,10 @@ namespace
         {
             gSink.stopped.fetch_add( 1u );
             gSink.evStopped.set_signaled( );
+        }
+        else
+        {
+            gSink.started.fetch_add( 1u );
         }
     }
 
@@ -648,6 +1171,77 @@ TEST( FaultInjectTest, log_observer_reports_the_failure_and_connects_again_when_
 TEST( FaultInjectTest, log_observer_reports_the_failure_and_connects_again_when_the_system_refuses_a_request_with_object )
 {
     AREG_EXPECT_IN_CHILD( observer_reports_refused_send( true ); );
+}
+
+namespace
+{
+    //!< The message the collector receives next has the id of \a expected, comes from \a cookie and goes to \a target.
+    bool receive_request( TestRouter & collector, const areg::MessageEnvelope & expected, ITEM_ID cookie, ITEM_ID target )
+    {
+        areg::MessageEnvelope message;
+        return collector.receive( message )
+            && ( message.message_id( ) == expected.message_id( ) )
+            && ( message.source( ) == cookie )
+            && ( message.target( ) == target );
+    }
+}
+
+/**
+ * \brief   A connected observer sends each request to the collector: a request for all sources is addressed
+ *          to the collector, a request for one source to that source. A pause is reported while connected.
+ **/
+TEST( FaultInjectTest, log_observer_addresses_its_requests_to_the_collector_or_to_one_source )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 151u };
+        constexpr ITEM_ID SOURCE{ areg::COOKIE_REMOTE_SERVICE + 152u };
+        TestRouter collector;
+        AREG_CHILD_CHECK( collector.open( ) );
+
+        ObserverEvents events{ };
+        events.evtLoggingStarted    = &sink_started;
+        events.evtServiceConnected  = &sink_connected;
+        AREG_CHILD_CHECK( log_observer_initialize( &events, nullptr ) );
+        AREG_CHILD_CHECK( log_observer_connect_logger( nullptr, "127.0.0.1", collector.port ) );
+        AREG_CHILD_CHECK( collector.answer( COOKIE, areg::COOKIE_LOGGER ) && wait_event( gSink.evConnected ) );
+        AREG_CHILD_CHECK( receive_instances_query( collector, COOKIE ) );
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance( ) };
+        const areg::ScopeNames scopes;
+
+        AREG_CHILD_CHECK( client.request_scopes( ) );
+        AREG_CHILD_CHECK( receive_request( collector, areg::message_query_scopes( COOKIE, areg::COOKIE_LOGGER ), COOKIE, areg::COOKIE_LOGGER ) );
+        AREG_CHILD_CHECK( client.request_change_scope_prio( scopes ) );
+        AREG_CHILD_CHECK( receive_request( collector, areg::message_update_scopes( COOKIE, areg::COOKIE_LOGGER, scopes ), COOKIE, areg::COOKIE_LOGGER ) );
+        AREG_CHILD_CHECK( client.request_save_configuration( ) );
+        AREG_CHILD_CHECK( receive_request( collector, areg::message_save_configuration( COOKIE, areg::COOKIE_LOGGER ), COOKIE, areg::COOKIE_LOGGER ) );
+        AREG_CHILD_CHECK( client.request_restore_configuration( ) );
+        AREG_CHILD_CHECK( receive_request( collector, areg::message_restore_configuration( COOKIE, areg::COOKIE_LOGGER ), COOKIE, areg::COOKIE_LOGGER ) );
+        AREG_CHILD_CHECK( client.request_source_state( areg::TARGET_ALL, areg::LogSourceState::Paused ) );
+        AREG_CHILD_CHECK( receive_request( collector, areg::message_update_source_state( COOKIE, areg::COOKIE_LOGGER, areg::LogSourceState::Paused ), COOKIE, areg::COOKIE_LOGGER ) );
+
+        AREG_CHILD_CHECK( client.request_scopes( SOURCE ) );
+        AREG_CHILD_CHECK( receive_request( collector, areg::message_query_scopes( COOKIE, SOURCE ), COOKIE, SOURCE ) );
+        AREG_CHILD_CHECK( client.request_change_scope_prio( scopes, SOURCE ) );
+        AREG_CHILD_CHECK( receive_request( collector, areg::message_update_scopes( COOKIE, SOURCE, scopes ), COOKIE, SOURCE ) );
+        AREG_CHILD_CHECK( client.request_save_configuration( SOURCE ) );
+        AREG_CHILD_CHECK( receive_request( collector, areg::message_save_configuration( COOKIE, SOURCE ), COOKIE, SOURCE ) );
+        AREG_CHILD_CHECK( client.request_restore_configuration( SOURCE ) );
+        AREG_CHILD_CHECK( receive_request( collector, areg::message_restore_configuration( COOKIE, SOURCE ), COOKIE, SOURCE ) );
+        AREG_CHILD_CHECK( client.request_source_state( SOURCE, areg::LogSourceState::Paused ) );
+        AREG_CHILD_CHECK( receive_request( collector, areg::message_update_source_state( COOKIE, SOURCE, areg::LogSourceState::Paused ), COOKIE, SOURCE ) );
+
+        AREG_CHILD_CHECK( client.request_scopes( areg::TARGET_UNKNOWN ) == false );
+
+        const uint32_t stopped{ gSink.stopped.load( ) };
+        const uint32_t started{ gSink.started.load( ) };
+        client.set_paused( true );
+        AREG_CHILD_CHECK( gSink.stopped.load( ) == stopped + 1u );
+        client.set_paused( false );
+        AREG_CHILD_CHECK( gSink.started.load( ) == started + 1u );
+
+        log_observer_disconnect_logger( );
+        log_observer_release( );
+    );
 }
 
 /**

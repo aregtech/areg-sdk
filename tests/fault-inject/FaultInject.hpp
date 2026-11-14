@@ -139,6 +139,29 @@ extern "C"
     AREG_FAULT_API bool areg_fault_delay( uint32_t point, uint32_t milliseconds );
 
     /**
+     * \brief   Holds the point: every later call, passing or failing, waits before it runs until
+     *          areg_fault_release() or areg_fault_disarm_all(). Resets the count of held calls.
+     * \param   point   The FaultPoint value.
+     * \return  True if the point is held; false if it is not replaced on this platform.
+     **/
+    AREG_FAULT_API bool areg_fault_hold( uint32_t point );
+
+    /**
+     * \brief   Ends the hold of the point and lets every held call run.
+     * \param   point   The FaultPoint value.
+     **/
+    AREG_FAULT_API void areg_fault_release( uint32_t point );
+
+    /**
+     * \brief   Waits until the given number of calls of the held point wait.
+     * \param   point           The FaultPoint value.
+     * \param   count           The number of held calls to wait for.
+     * \param   milliseconds    The longest time to wait.
+     * \return  True if the calls are held; false on timeout.
+     **/
+    AREG_FAULT_API bool areg_fault_wait_held( uint32_t point, uint32_t count, uint32_t milliseconds );
+
+    /**
      * \brief   Linux only. Counts the calls of the throwing operator new and new[] made by the
      *          thread from now on; 0 stops the counting. The calls still allocate.
      * \param   threadId    The value of pthread_self() of the thread.
@@ -183,6 +206,30 @@ namespace areg_fault
     inline bool delay( FaultPoint point, uint32_t milliseconds )
     {
         return ::areg_fault_delay( static_cast<uint32_t>(point), milliseconds );
+    }
+
+    /**
+     * \brief   Holds the calls of the point. See areg_fault_hold().
+     **/
+    inline bool hold( FaultPoint point )
+    {
+        return ::areg_fault_hold( static_cast<uint32_t>(point) );
+    }
+
+    /**
+     * \brief   Lets the held calls of the point run. See areg_fault_release().
+     **/
+    inline void release( FaultPoint point )
+    {
+        ::areg_fault_release( static_cast<uint32_t>(point) );
+    }
+
+    /**
+     * \brief   Waits until the calls of the held point wait. See areg_fault_wait_held().
+     **/
+    inline bool wait_held( FaultPoint point, uint32_t count, uint32_t milliseconds )
+    {
+        return ::areg_fault_wait_held( static_cast<uint32_t>(point), count, milliseconds );
     }
 
     /**
