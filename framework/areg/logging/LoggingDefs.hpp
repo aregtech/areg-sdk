@@ -559,7 +559,7 @@ namespace areg {
     /**
      * \brief   Forces logging to start with default configuration values.
      *
-     * \return  Returns true if succeeded to start logging.
+     * \return  Returns true if succeeded to start logging or logging was already started.
      **/
     AREG_API bool force_start_logging();
 

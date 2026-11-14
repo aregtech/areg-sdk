@@ -16,6 +16,8 @@
 #include "areg/base/String.hpp"
 #include "areg/base/SocketClient.hpp"
 #include "areg/ipc/RemoteMessageHandler.hpp"
+#include "areg/persist/ConfigListener.hpp"
+#include "areg/persist/ConfigManager.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "areglogger/client/LogObserverApi.h"
 #include "areglogger/client/private/LoggerClient.hpp"
@@ -72,6 +74,7 @@ namespace
         std::vector<ITEM_ID>        restored;           //!< Every cookie of a restored configuration.
         uint32_t                    updateCalls{ 0u };  //!< Calls of the scope update callback.
         std::vector<std::string>    updated;            //!< Every updated scope.
+        uint32_t                    failed{ 0u };       //!< Calls of the messaging failed callback.
     };
 
     Seen    _seen;
@@ -139,6 +142,11 @@ namespace
         {
             _seen.updated.push_back(scopes[i].lsName);
         }
+    }
+
+    void on_failed()
+    {
+        ++_seen.failed;
     }
 
     ObserverEvents make_events()
@@ -1028,6 +1036,80 @@ TEST(LogObserverApiTest, collector_settings_without_a_configuration_are_not_set)
         AREG_CHILD_CHECK(client.request_restore_configuration(areg::TARGET_ALL) == false);
         AREG_CHILD_CHECK(client.request_source_state(areg::TARGET_ALL, areg::LogSourceState::Paused) == false);
         AREG_CHILD_CHECK(client.request_change_scope_prio(areg::ScopeNames(), areg::TARGET_ALL) == false);
+    );
+}
+
+/**
+ * A failed receive is reported to the messaging failed callback while one is set, and to nobody once
+ * the callbacks are removed. A message that cannot be processed changes nothing.
+ **/
+TEST(LogObserverApiTest, failed_receive_is_reported_to_the_messaging_failed_callback)
+{
+    AREG_EXPECT_IN_CHILD(
+        ObserverEvents events{ make_all_events() };
+        events.evtMessagingFailed = &on_failed;
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance() };
+        client.set_callbacks(&events);
+        areg::SocketClient socket(areg::String(ADDRESS), 8383u);
+        AREG_CHILD_CHECK(socket.create_fd());
+        areg::RemoteMessageHandler & handler{ (areg::RemoteMessageHandler &)client };
+
+        handler.failed_receive_message(socket);
+        AREG_CHILD_CHECK(_seen.failed == 1u);
+
+        const areg::MessageEnvelope unprocessed{ log_message(FIRST, "text") };
+        handler.failed_process_message(unprocessed);
+        AREG_CHILD_CHECK((_seen.failed == 1u) && _seen.texts.empty());
+
+        client.set_callbacks(nullptr);
+        handler.failed_receive_message(socket);
+        AREG_CHILD_CHECK(_seen.failed == 1u);
+    );
+}
+
+/**
+ * A message of an invalid socket, an empty message, and a duplicate role notification
+ * are not delivered to the application.
+ **/
+TEST(LogObserverApiTest, messages_that_are_invalid_or_not_meant_for_the_observer_are_not_delivered)
+{
+    AREG_EXPECT_IN_CHILD(
+        ObserverEvents events{ make_all_events() };
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance() };
+        client.set_callbacks(&events);
+        areg::SocketClient valid(areg::String(ADDRESS), 8383u);
+        AREG_CHILD_CHECK(valid.create_fd());
+        areg::SocketClient closed(areg::String(ADDRESS), 8383u);
+        areg::RemoteMessageHandler & handler{ (areg::RemoteMessageHandler &)client };
+
+        areg::MessageEnvelope entry{ log_message(FIRST, "text") };
+        handler.process_received_message(entry, closed);
+        areg::MessageEnvelope empty;
+        handler.process_received_message(empty, valid);
+
+        areg::MessageEnvelope duplicate{ empty_message(FIRST) };
+        duplicate.set_message_id(static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate));
+        handler.process_received_message(duplicate, valid);
+        AREG_CHILD_CHECK(_seen.texts.empty() && _seen.connected.empty() && _seen.scopes.empty());
+
+        handler.process_received_message(entry, valid);
+        AREG_CHILD_CHECK(_seen.texts.size() == 1u);
+        client.set_callbacks(nullptr);
+    );
+}
+
+/**
+ * The client takes part in the save of the configuration: the file is written and the client stays configured.
+ **/
+TEST(LogObserverApiTest, configuration_save_with_the_client_as_listener_writes_the_file)
+{
+    AREG_EXPECT_IN_CHILD(
+        ConfiguredObserver observer("sqlite3", false, 8282u, true);
+        areg::logger::LoggerClient & client{ areg::logger::LoggerClient::instance() };
+        const std::string path{ observer.path_of("saved.init") };
+        AREG_CHILD_CHECK(areg::Application::config_manager().save_config(areg::String(path.c_str()), (areg::ConfigListener *)&client));
+        AREG_CHILD_CHECK(fs::exists(fs::path(path)));
+        AREG_CHILD_CHECK(client.config_logger_port() == 8282u);
     );
 }
 

@@ -166,6 +166,12 @@ namespace
             return result;
         }
 
+        //!< Runs a process with the service name plus the extension, and expects that no service manager call starts another.
+        void expect_running_service_not_started(const std::string& extension);
+
+        //!< The exit status that makes the recording service manager kill itself.
+        static constexpr uint32_t KILLED_BY_SIGNAL{ 1000u };
+
         //!< Calls the start method with only a recording service manager on PATH, or none.
         void run_service_call(bool withTool, uint32_t exitStatus, bool& result, std::string& arguments)
         {
@@ -175,8 +181,8 @@ namespace
                 for (const char* tool : { "systemctl", "launchctl" })
                 {
                     const auto script{ mDirectory / tool };
-                    write_file(script, "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$AREG_APPLICATION_TEST_CAPTURE\"\nexit "
-                                      + std::to_string(exitStatus) + "\n");
+                    write_file(script, "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$AREG_APPLICATION_TEST_CAPTURE\"\n"
+                                      + (exitStatus == KILLED_BY_SIGNAL ? std::string("kill -KILL $$\n") : "exit " + std::to_string(exitStatus) + "\n"));
                     ASSERT_FALSE(HasFatalFailure());
                     std::error_code error;
                     std::filesystem::permissions(script, std::filesystem::perms::owner_all, std::filesystem::perm_options::replace, error);
@@ -326,12 +332,37 @@ TEST_P(ApplicationSetupLocalServiceTest, missing_service_manager_returns_false)
 
 TEST_P(ApplicationSetupLocalServiceTest, running_service_process_is_not_started_again)
 {
+    expect_running_service_not_started(".elf");
+}
+
+TEST_P(ApplicationSetupLocalServiceTest, running_service_process_without_extension_is_not_started_again)
+{
+    expect_running_service_not_started("");
+}
+
+TEST_P(ApplicationSetupLocalServiceTest, service_manager_killed_by_a_signal_returns_false)
+{
     if (host_service_runs())
     {
         GTEST_SKIP() << "The " << service_base() << " process runs on this host";
     }
 
-    const auto executable{ mDirectory / (service_base() + ".elf") };
+    bool result{ true };
+    std::string arguments;
+    run_service_call(true, KILLED_BY_SIGNAL, result, arguments);
+    ASSERT_FALSE(HasFatalFailure());
+    EXPECT_FALSE(result);
+    EXPECT_EQ(arguments, expected_arguments());
+}
+
+void ApplicationSetupLocalServiceTest::expect_running_service_not_started(const std::string& extension)
+{
+    if (host_service_runs())
+    {
+        GTEST_SKIP() << "The " << service_base() << " process runs on this host";
+    }
+
+    const auto executable{ mDirectory / (service_base() + extension) };
     std::error_code error;
 #if defined(__linux__)
     // A shell runs under any name, writes a line once it runs, and waits for a line of its standard input.

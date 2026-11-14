@@ -243,9 +243,9 @@ public:
     static bool is_logging_enabled();
 
     /**
-     * \brief   Forces logging to activate with default settings for debug builds only.
+     * \brief   Forces logging to activate with default settings, if it is not started yet.
      *
-     * \return  Returns true if logging was activated. Always returns false for release builds.
+     * \return  Returns true if logging was activated or was already started.
      **/
     static bool force_activate_logging();
 

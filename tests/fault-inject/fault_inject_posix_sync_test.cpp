@@ -30,6 +30,7 @@
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/base/ThreadAddress.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/component/TimerConsumer.hpp"
@@ -738,6 +739,190 @@ TEST( FaultInjectPosixSyncTest, inline_write_repeats_an_interrupted_send_and_kee
 TEST( FaultInjectPosixSyncTest, signal_is_left_alone_while_its_disposition_cannot_be_read )
 {
     AREG_EXPECT_IN_CHILD( signal_is_left_alone_while_its_disposition_cannot_be_read( ) );
+}
+
+namespace
+{
+    //////////////////////////////////////////////////////////////////////////
+    // The timer manager of the application
+    //////////////////////////////////////////////////////////////////////////
+
+    //!< Counts the expirations of each timer.
+    class AppTimerListener final : public areg::TimerConsumer
+    {
+    public:
+        //!< Waits until the timer expired at least the given number of times.
+        bool wait_count( areg::Timer & timer, uint32_t expected )
+        {
+            std::unique_lock<std::mutex> guard( mMutex );
+            return mChanged.wait_for( guard, std::chrono::milliseconds( WAIT_MS ), [&]( ) { return mCounts[&timer] >= expected; } );
+        }
+
+        //!< Returns the expirations of the timer.
+        uint32_t count( areg::Timer & timer )
+        {
+            std::lock_guard<std::mutex> guard( mMutex );
+            return mCounts[&timer];
+        }
+
+    private:
+        void process_timer( areg::Timer & timer ) override
+        {
+            {
+                std::lock_guard<std::mutex> guard( mMutex );
+                ++ mCounts[&timer];
+            }
+
+            mChanged.notify_all( );
+        }
+
+        std::mutex                          mMutex;
+        std::condition_variable             mChanged;
+        std::map<areg::Timer *, uint32_t>   mCounts;
+    };
+
+    //!< Starts the timer service of the application.
+    void setup_timers( )
+    {
+        areg::Application::setup( false, false, false, true, false );
+    }
+
+    //!< Returns the thread of the timer manager, or nullptr.
+    areg::Thread * timer_manager_thread( )
+    {
+        return areg::Thread::find_by_address( areg::ThreadAddress( areg::String( "_AREG_TIMER_THREAD_NAME_" ) ) );
+    }
+
+    //!< The timer manager cannot start while the descriptor fails: no timer starts. The next setup starts timers.
+    void application_has_no_timers_while_the_timer_manager_cannot_create_its_descriptors_and_has_them_after( areg_fault::FaultPoint point, uint32_t skip )
+    {
+        AppTimerListener consumer;
+        EventTestDispatcher dispatcher( "FaultInjectAppTimerThread" );
+        AREG_CHILD_CHECK( dispatcher.start_ready( ) );
+        areg::Timer timer( consumer, "FaultInjectAppTimer" );
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( point, EMFILE, skip ) );
+            setup_timers( );
+            AREG_CHILD_CHECK( areg_fault::failed( point ) == 1u && NOT_REPLACED );
+        }
+
+        AREG_CHILD_CHECK( timer.start_timer( 1u, dispatcher, areg::Timer::ONE_TIME ) == false );
+        AREG_CHILD_CHECK( timer.is_active( ) == false );
+        areg::Application::release( );
+
+        setup_timers( );
+        AREG_CHILD_CHECK( timer.start_timer( 1u, dispatcher, areg::Timer::ONE_TIME ) );
+        AREG_CHILD_CHECK( consumer.wait_count( timer, 1u ) );
+        timer.stop_timer( );
+        areg::Application::release( );
+    }
+
+    //!< A wait of the timer manager that fails stops the manager and its timers; the next setup starts them again.
+    void application_timer_manager_stops_when_its_wait_fails_and_has_timers_after_the_next_setup( )
+    {
+        AppTimerListener consumer;
+        EventTestDispatcher dispatcher( "FaultInjectAppWaitThread" );
+        AREG_CHILD_CHECK( dispatcher.start_ready( ) );
+        setup_timers( );
+        areg::Thread * const manager{ timer_manager_thread( ) };
+        AREG_CHILD_CHECK( manager != nullptr );
+        areg::Timer timer( consumer, "FaultInjectAppWait" );
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::EpollWait, EBADF ) );
+            static_cast<void>( timer.start_timer( NEVER_MS, dispatcher, areg::Timer::ONE_TIME ) );
+            AREG_CHILD_CHECK( manager->areg::Thread::wait_completion( WAIT_MS ) );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::EpollWait ) == 1u && NOT_REPLACED );
+        }
+
+        timer.stop_timer( );
+        AREG_CHILD_CHECK( consumer.count( timer ) == 0u );
+        areg::Application::release( );
+
+        setup_timers( );
+        AREG_CHILD_CHECK( timer.start_timer( 1u, dispatcher, areg::Timer::ONE_TIME ) );
+        AREG_CHILD_CHECK( consumer.wait_count( timer, 1u ) );
+        timer.stop_timer( );
+        areg::Application::release( );
+    }
+
+    //!< A wait of the timer manager that is interrupted is repeated, and the timer fires.
+    void application_timer_manager_repeats_an_interrupted_wait_and_the_timer_fires( )
+    {
+        AppTimerListener consumer;
+        EventTestDispatcher dispatcher( "FaultInjectAppIntrThread" );
+        AREG_CHILD_CHECK( dispatcher.start_ready( ) );
+        setup_timers( );
+        areg::Timer timer( consumer, "FaultInjectAppIntr" );
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::EpollWait, EINTR ) );
+            AREG_CHILD_CHECK( timer.start_timer( 1u, dispatcher, areg::Timer::ONE_TIME ) );
+            AREG_CHILD_CHECK( consumer.wait_count( timer, 1u ) );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::EpollWait ) == 1u && NOT_REPLACED );
+        }
+
+        timer.stop_timer( );
+        areg::Application::release( );
+    }
+
+    //!< A timer whose system timer cannot be armed stays inactive and fires after the next start.
+    void application_timer_whose_system_timer_cannot_be_armed_stays_inactive_and_fires_after( )
+    {
+        AppTimerListener consumer;
+        EventTestDispatcher dispatcher( "FaultInjectAppArmThread" );
+        AREG_CHILD_CHECK( dispatcher.start_ready( ) );
+        setup_timers( );
+        areg::Timer refused( consumer, "FaultInjectAppRefused" );
+        areg::Timer marker( consumer, "FaultInjectAppMarker" );
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::TimerFdSet, EMFILE ) );
+            static_cast<void>( refused.start_timer( 1u, dispatcher, areg::Timer::ONE_TIME ) );
+            AREG_CHILD_CHECK( marker.start_timer( 1u, dispatcher, areg::Timer::ONE_TIME ) );
+            AREG_CHILD_CHECK( consumer.wait_count( marker, 1u ) );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::TimerFdSet ) == 1u && NOT_REPLACED );
+        }
+
+        AREG_CHILD_CHECK( refused.is_active( ) == false );
+        AREG_CHILD_CHECK( consumer.count( refused ) == 0u );
+        AREG_CHILD_CHECK( refused.start_timer( 1u, dispatcher, areg::Timer::ONE_TIME ) );
+        AREG_CHILD_CHECK( consumer.wait_count( refused, 1u ) );
+        refused.stop_timer( );
+        marker.stop_timer( );
+        areg::Application::release( );
+    }
+}
+
+TEST( FaultInjectPosixSyncTest, application_has_no_timers_while_the_timer_manager_cannot_create_its_epoll_set_and_has_them_after )
+{
+    AREG_EXPECT_IN_CHILD( application_has_no_timers_while_the_timer_manager_cannot_create_its_descriptors_and_has_them_after( areg_fault::FaultPoint::EpollCreate, 0u ) );
+}
+
+TEST( FaultInjectPosixSyncTest, application_has_no_timers_while_the_timer_manager_cannot_create_its_command_descriptor_and_has_them_after )
+{
+    AREG_EXPECT_IN_CHILD( application_has_no_timers_while_the_timer_manager_cannot_create_its_descriptors_and_has_them_after( areg_fault::FaultPoint::EventCreate, 0u ) );
+}
+
+TEST( FaultInjectPosixSyncTest, application_has_no_timers_while_the_timer_manager_cannot_create_its_exit_descriptor_and_has_them_after )
+{
+    AREG_EXPECT_IN_CHILD( application_has_no_timers_while_the_timer_manager_cannot_create_its_descriptors_and_has_them_after( areg_fault::FaultPoint::EventCreate, 1u ) );
+}
+
+TEST( FaultInjectPosixSyncTest, application_timer_manager_stops_when_its_wait_fails_and_has_timers_after_the_next_setup )
+{
+    AREG_EXPECT_IN_CHILD( application_timer_manager_stops_when_its_wait_fails_and_has_timers_after_the_next_setup( ) );
+}
+
+TEST( FaultInjectPosixSyncTest, application_timer_manager_repeats_an_interrupted_wait_and_the_timer_fires )
+{
+    AREG_EXPECT_IN_CHILD( application_timer_manager_repeats_an_interrupted_wait_and_the_timer_fires( ) );
+}
+
+TEST( FaultInjectPosixSyncTest, application_timer_whose_system_timer_cannot_be_armed_stays_inactive_and_fires_after )
+{
+    AREG_EXPECT_IN_CHILD( application_timer_whose_system_timer_cannot_be_armed_stays_inactive_and_fires_after( ) );
 }
 
 TEST( FaultInjectPosixSyncTest, router_service_start_fails_when_no_process_can_be_read_and_the_service_manager_is_unavailable )

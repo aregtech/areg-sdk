@@ -1259,3 +1259,72 @@ TEST(SendBacklogTest, paused_sources_resume_when_their_connection_is_released)
     EXPECT_FALSE(paused.has_released());
     paused.clear();
 }
+
+// A backlog without connections has nothing to write: the pump reports no progress and does not
+// ask the owner for a socket.
+TEST(SendBacklogTest, pump_of_an_empty_backlog_reports_no_progress_and_leaves_the_owner_alone)
+{
+    areg::SendQueueGate gate{ };
+    SendBacklog backlog{ gate };
+    Owner owner{ };
+
+    EXPECT_FALSE(backlog.pump(owner));
+    EXPECT_EQ(owner.pumps.load(), 0u);
+    EXPECT_FALSE(owner.closed.load());
+    EXPECT_TRUE(backlog.is_empty());
+}
+
+// Once the refusal limit of a connection has passed, the wait lasts the shortest time that is not zero.
+TEST(SendBacklogTest, prepare_wait_after_the_refusal_limit_lasts_one_millisecond)
+{
+    Fixture test;
+    ASSERT_TRUE(test.start());
+    test.backlog.set_limits(1024u * 1024u * 1024u, 1u, 60'000u);
+
+    uint32_t wait{ test.backlog.prepare_wait() };
+    const Clock::time_point started{ Clock::now() };
+    while ((wait != 1u) && (elapsed_ms(started) < DEADLINE_MS))
+    {
+        std::this_thread::yield();
+        wait = test.backlog.prepare_wait();
+    }
+
+    EXPECT_EQ(wait, 1u);
+}
+
+// A connection whose socket took nothing of its first message was not cut: release_all names the
+// connections whose first message was partly written, and not that one.
+TEST(SendBacklogTest, release_all_does_not_name_a_connection_that_wrote_nothing)
+{
+    Fixture test;
+    ASSERT_TRUE(test.start());
+
+    const areg::MessageEnvelope * const pointers[]{ &test.messages.front() };
+    std::deque<ITEM_ID> started{ COOKIE };
+    ITEM_ID idle{ COOKIE + 1u };
+    uint64_t bytesDone{ 1u };
+    for (uint32_t round = 0u; (bytesDone != 0u) && (round < 1'000u); ++round, ++idle)
+    {
+        uint32_t msgsDone{ 0u };
+        areg::SocketWriteGuard guard{ test.pair.server };
+        ASSERT_EQ(test.backlog.write(idle, test.pair.server, pointers, 1u, bytesDone, msgsDone), SendBacklog::Result::Kept);
+        if (bytesDone != 0u)
+        {
+            started.push_back(idle);
+        }
+    }
+
+    ASSERT_EQ(bytesDone, 0u);
+    std::deque<ITEM_ID> cut;
+    test.backlog.release_all(cut);
+    std::sort(cut.begin(), cut.end());
+#if defined(_WIN32)
+    // An overlapped send still in flight is cut as well.
+    if (cut.size() > started.size())
+    {
+        started.push_back(idle - 1u);
+    }
+#endif
+    EXPECT_EQ(cut, started);
+    EXPECT_TRUE(test.backlog.is_empty());
+}

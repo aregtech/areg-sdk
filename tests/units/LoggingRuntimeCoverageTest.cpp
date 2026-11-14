@@ -23,6 +23,9 @@
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/ScopeMessage.hpp"
+#include "areg/logging/private/DatabaseLogger.hpp"
+#include "areg/logging/private/DebugOutputLogger.hpp"
+#include "areg/logging/private/LoggingEvent.hpp"
 #include "areg/persist/ConfigManager.hpp"
 #include "aregextend/db/LogSqliteDatabase.hpp"
 #include "aregextend/db/SqliteStatement.hpp"
@@ -1319,5 +1322,239 @@ TEST_F(LoggingRuntimeCoverageTest, start_logging_without_setup_starts_no_timer_m
         fs::current_path(mWorkingDirectory, error);
     );
 }
+
+/**
+ * \brief   A forced start or a forced init of logging that already runs reports that logging runs.
+ **/
+TEST_F(LoggingRuntimeCoverageTest, force_start_of_running_logging_returns_true)
+{
+    AREG_EXPECT_IN_CHILD(
+        std::error_code error;
+        fs::current_path(mDirectory, error);
+        AREG_CHILD_CHECK(!error);
+
+        mConfig.set_log_enabled(areg::LogTarget::File, true);
+        AREG_CHILD_CHECK(areg::start_logging());
+        AREG_CHILD_CHECK(areg::is_started());
+        AREG_CHILD_CHECK(areg::force_start_logging());
+        AREG_CHILD_CHECK(areg::is_started());
+
+        const std::string missing{ (mDirectory / "missing.init").string() };
+        AREG_CHILD_CHECK(areg::init_logging(missing.c_str(), true));
+        AREG_CHILD_CHECK(areg::is_started());
+        areg::stop_logging(true);
+        AREG_CHILD_CHECK(areg::is_started() == false);
+        fs::current_path(mWorkingDirectory, error);
+    );
+}
+
+// A save request of the observer is acknowledged only when the configuration was written.
+TEST_F(LoggingRuntimeCoverageTest, save_request_is_acknowledged_only_when_the_configuration_is_written)
+{
+    ASSERT_TRUE(start_remote());
+    std::error_code error;
+    fs::current_path(mDirectory, error);
+    ASSERT_FALSE(error) << error.message();
+    {
+        std::ofstream blocker(mDirectory / "config", std::ios::binary | std::ios::trunc);
+        ASSERT_TRUE(blocker.is_open());
+    }
+
+    auto saved_before_scopes_reply = [this]()
+    {
+        EXPECT_TRUE(mCollector->send(areg::message_save_configuration(OBSERVER_COOKIE, SOURCE_COOKIE)));
+        EXPECT_TRUE(mCollector->send(areg::message_query_scopes(OBSERVER_COOKIE, SOURCE_COOKIE)));
+        bool saved{ false };
+        areg::MessageEnvelope message;
+        while (mCollector->read(message))
+        {
+            const uint32_t id{ message.message_id() };
+            saved = saved || (id == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogConfigurationSaved));
+            if (id == static_cast<uint32_t>(areg::FuncIdRange::ServiceLogRegisterScopes))
+                return saved;
+        }
+
+        ADD_FAILURE() << "the scopes reply did not arrive";
+        return saved;
+    };
+
+    EXPECT_FALSE(saved_before_scopes_reply());
+    ASSERT_TRUE(fs::remove(mDirectory / "config", error)) << error.message();
+    EXPECT_TRUE(saved_before_scopes_reply());
+    areg::stop_logging(true);
+}
+
+// A start request that arrives while the targets are open keeps them open: nothing is truncated, reconnected or opened twice.
+TEST_F(LoggingRuntimeCoverageTest, repeated_start_request_keeps_every_open_target)
+{
+    mConfig.set_log_enabled(areg::LogTarget::File, true);
+    mConfig.set_log_enabled(areg::LogTarget::Debug, true);
+    use_database();
+    testing::internal::CaptureStdout();
+    const bool started{ start_remote() };
+    if (!started)
+        static_cast<void>(testing::internal::GetCapturedStdout());
+    ASSERT_TRUE(started);
+
+    write_row("before-repeat");
+    ASSERT_TRUE(areg::LoggingEvent::send_event(areg::LoggingEventData(areg::LoggingEventData::LogAction::StartLogs)));
+    ASSERT_TRUE(areg::LoggingEvent::send_event(areg::LoggingEventData(areg::LoggingEventData::LogAction::OpenRemote)));
+    write_row("after-repeat");
+    areg::stop_logging(true);
+    const std::string output{ testing::internal::GetCapturedStdout() };
+
+    const std::string file{ contents(mDirectory / "runtime.log") };
+    EXPECT_NE(file.find("row:before-repeat\n"), std::string::npos);
+    EXPECT_NE(file.find("row:after-repeat\n"), std::string::npos);
+    EXPECT_LT(file.find("row:before-repeat\n"), file.find("row:after-repeat\n"));
+    EXPECT_EQ(mDatabase.rows().size(), 2u);
+    EXPECT_EQ(mDatabase.rows()[0], "before-repeat");
+    EXPECT_EQ(mDatabase.rows()[1], "after-repeat");
+    expect_remote_row("before-repeat");
+    expect_remote_row("after-repeat");
+#if defined(OUTPUT_DEBUG) && defined(DEBUG) && !defined(_WIN32)
+    EXPECT_NE(output.find("row:after-repeat"), std::string::npos);
+    std::size_t hello{ 0u };
+    for (std::size_t pos = output.find("Starting logging"); pos != std::string::npos; pos = output.find("Starting logging", pos + 1u))
+        ++hello;
+    EXPECT_EQ(hello, 1u);
+#else
+    static_cast<void>(output);
+#endif
+}
+
+// The enable request turns the remote logging on and the save request writes it to the process configuration.
+TEST_F(LoggingRuntimeCoverageTest, enable_request_turns_remote_logging_on_and_save_request_persists_it)
+{
+    std::error_code error;
+    fs::current_path(mDirectory, error);
+    ASSERT_FALSE(error) << error.message();
+    mConfig.set_log_enabled(areg::LogTarget::File, true);
+    ASSERT_TRUE(areg::start_logging());
+    ASSERT_FALSE(mManager.remote_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip));
+
+    ASSERT_TRUE(areg::LoggingEvent::send_event(areg::LoggingEventData(areg::LoggingEventData::LogAction::EnableLogs)));
+    ASSERT_TRUE(areg::LoggingEvent::send_event(areg::LoggingEventData(areg::LoggingEventData::LogAction::SaveScopes)));
+    areg::stop_logging(true);
+
+    EXPECT_TRUE(mManager.remote_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip));
+    const fs::path saved{ mDirectory / "config" / (std::string(areg::Process::instance().app_name().as_string()) + ".init") };
+    ASSERT_TRUE(fs::exists(saved));
+    EXPECT_NE(contents(saved).find("true"), std::string::npos);
+}
+
+// The disable request turns the remote logging off.
+TEST_F(LoggingRuntimeCoverageTest, disable_request_turns_remote_logging_off)
+{
+    mConfig.set_log_enabled(areg::LogTarget::File, true);
+    mManager.set_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, true, false);
+    ASSERT_TRUE(areg::start_logging());
+    ASSERT_TRUE(mManager.remote_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip));
+
+    ASSERT_TRUE(areg::LoggingEvent::send_event(areg::LoggingEventData(areg::LoggingEventData::LogAction::DisableLogs)));
+    areg::stop_logging(true);
+    EXPECT_FALSE(mManager.remote_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip));
+}
+
+// The database target opens and forwards rows only while it has an operable engine, and it releases the engine when it is destroyed.
+TEST_F(LoggingRuntimeCoverageTest, database_logger_forwards_rows_only_while_opened_and_releases_engine)
+{
+    mConfig.set_log_enabled(areg::LogTarget::Database, true);
+    areg::LogEntry entry(areg::LogMessageType::MessageText);
+    std::memcpy(entry.logMessage, "db-row", 7u);
+    entry.logMessageLen = 6u;
+    {
+        areg::DatabaseLogger logger(mConfig);
+        EXPECT_EQ(logger.database_engine(), nullptr);
+        EXPECT_FALSE(logger.is_valid());
+        EXPECT_FALSE(logger.open_logger());
+        EXPECT_FALSE(logger.is_logger_opened());
+        logger.log_message(entry);
+        logger.flush_logs();
+        logger.close_logger();
+        EXPECT_TRUE(mDatabase.rows().empty());
+
+        logger.set_database_engine(&mDatabase);
+        EXPECT_TRUE(logger.is_valid());
+        logger.log_message(entry);
+        logger.flush_logs();
+        EXPECT_TRUE(mDatabase.rows().empty());
+        EXPECT_FALSE(mDatabase.wait_commit(0u));
+
+        EXPECT_TRUE(logger.open_logger());
+        EXPECT_TRUE(logger.is_logger_opened());
+        logger.log_message(entry);
+        ASSERT_EQ(mDatabase.rows().size(), 1u);
+        EXPECT_EQ(mDatabase.rows()[0], "db-row");
+        logger.flush_logs();
+        EXPECT_TRUE(mDatabase.wait_commit(0u));
+
+        logger.close_logger();
+        EXPECT_FALSE(logger.is_logger_opened());
+        EXPECT_FALSE(mDatabase.is_operable());
+        logger.log_message(entry);
+        EXPECT_EQ(mDatabase.rows().size(), 1u);
+
+        EXPECT_TRUE(logger.open_logger());
+        EXPECT_TRUE(mDatabase.is_operable());
+        mDatabase.disconnect();
+        EXPECT_FALSE(logger.is_logger_opened());
+    }
+
+    EXPECT_FALSE(mDatabase.is_operable());
+}
+
+// The database target does not open when the database logging is disabled or the engine refuses the file.
+TEST_F(LoggingRuntimeCoverageTest, database_logger_stays_closed_when_disabled_or_refused)
+{
+    areg::DatabaseLogger logger(mConfig);
+    logger.set_database_engine(&mDatabase);
+    mConfig.set_log_enabled(areg::LogTarget::Database, false);
+    EXPECT_FALSE(logger.open_logger());
+    EXPECT_FALSE(logger.is_logger_opened());
+    EXPECT_TRUE(mDatabase.rows().empty());
+
+    mConfig.set_log_enabled(areg::LogTarget::Database, true);
+    mDatabase.mAccept = false;
+    EXPECT_FALSE(logger.open_logger());
+    EXPECT_FALSE(logger.is_logger_opened());
+    mDatabase.mAccept = true;
+    EXPECT_TRUE(logger.open_logger());
+    EXPECT_EQ(logger.database_engine(), &mDatabase);
+    logger.set_database_engine(nullptr);
+    EXPECT_FALSE(logger.is_logger_opened());
+}
+
+#if defined(OUTPUT_DEBUG) && defined(DEBUG) && !defined(_WIN32)
+// The debug target writes one hello line when it opens and one goodbye line when it closes; repeating either does nothing.
+TEST_F(LoggingRuntimeCoverageTest, debug_logger_writes_hello_and_goodbye_once)
+{
+    mConfig.set_log_enabled(areg::LogTarget::Debug, true);
+    areg::DebugOutputLogger logger(mConfig);
+    testing::internal::CaptureStdout();
+    EXPECT_TRUE(logger.open_logger());
+    EXPECT_TRUE(logger.open_logger());
+    EXPECT_TRUE(logger.is_logger_opened());
+    logger.close_logger();
+    logger.close_logger();
+    EXPECT_FALSE(logger.is_logger_opened());
+    const std::string output{ testing::internal::GetCapturedStdout() };
+
+    auto count = [&output](const char* text)
+    {
+        std::size_t result{ 0u };
+        for (std::size_t pos = output.find(text); pos != std::string::npos; pos = output.find(text, pos + 1u))
+            ++result;
+        return result;
+    };
+    EXPECT_EQ(count("Starting logging"), 1u);
+    EXPECT_EQ(count("Completed logging"), 1u);
+    EXPECT_LT(output.find("Starting logging"), output.find("Completed logging"));
+
+    mConfig.set_log_enabled(areg::LogTarget::Debug, false);
+    EXPECT_FALSE(logger.open_logger());
+    EXPECT_FALSE(logger.is_logger_opened());
+}
+#endif
 
 #endif // AREG_LOGGING
