@@ -127,3 +127,38 @@ expected number of messages arrived, or 3 seconds after the last one.
 
 The scope `examples_35_logsource_*` must be enabled for `DEBUG` in `areg.init`,
 which is the default configuration.
+
+---
+
+## Taking Measurements
+
+This example has **no option to write its numbers to a file**. Both programs print their
+results as plain text lines when they end, so redirecting the output keeps them.
+`-d` of the sink saves the log messages, not the measurement.
+
+1. Build in `Release`, with logging **on** (the default, logging is what is measured), and
+   `cd` into the `bin/` directory of the build.
+2. Start the collector, then the sink with the total number of messages: (`-c` + `-w`) times
+   `-t` of the source. For the source below that is `(100000 + 1000) x 2 = 202000`:
+
+   ```bash
+   ./logcollector.elf --console
+   ./35_logsink.elf -c=202000 > sink.txt
+   ```
+
+3. When `sink.txt` shows `35_logsink: connected`, start the source within 60 seconds:
+
+   ```bash
+   ./35_logsource.elf -c=100000 -w=1000 -t=2 > source.txt
+   ```
+
+4. Both end by themselves. The numbers are in the last lines of each file:
+
+   - `source.txt`: `35 log call | P50 ... ns | ... | rate ... msg/s`, the time of one log call
+     on the writing thread.
+   - `sink.txt`: `35 logsink | received ... | lost ... | rate ... msg/s` and
+     `35 log trip | P50 ... us | ...`, the trip from the call to the observer.
+
+For the trip time of a single message rather than the time spent in queues, pace the source,
+for example `-p=1 -b=10`. A `lost` value above 0 means the logging queue was full; see the
+notes in [Output](#output).

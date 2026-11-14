@@ -83,6 +83,34 @@ cannot be scripted.
 31_loclatency -t=same -m=all -r=3 -l=before-T1
 ```
 
+### Taking measurements
+
+1. Build in `Release` with `AREG_LOGGING=OFF`, then `cd` into the `bin/` directory of the build.
+   No router is needed.
+2. Run it with the modes, the count and a CSV file:
+
+   ```bash
+   ./31_loclatency.elf -t=cross -m=all -c=100000 -w=10000 -r=3 -o=/home/me/loc.csv -l=baseline
+   ```
+
+3. Read the table it prints (see [Reading the result table](#reading-the-result-table)). The exit
+   code is `0` when the benchmark finished.
+4. The CSV gets **one line per mode and repeat**. The file is **appended**: the header is written
+   only when the file does not exist yet, so several calls (for example `-t=same`, then `-t=cross`)
+   collect into one file. The columns are:
+
+   ```
+   timestamp,label,platform,compiler,build,topology,mode,payload_bytes,repeat,samples,warmup,
+   min_us,p50_us,p90_us,p99_us,p999_us,max_us,mean_us,stddev_us,inleg_p50_us,duration_ms,msg_per_sec,clock_cost_ns
+   ```
+
+   `-l` puts its text in the `label` column, so the runs of a comparison can be told apart.
+   `platform`, `compiler` and `build` are filled in by the program.
+
+**A relative `-o` path is relative to the directory of the executable**, not the directory of the
+shell, because the application changes its working directory at start. Pass an absolute path to put
+the file somewhere else.
+
 ### Options
 
 | Option | Meaning | Default |

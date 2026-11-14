@@ -102,6 +102,22 @@ MSBuild ./areg-sdk.sln
 
 ---
 
+## Benchmark Examples
+
+Four examples are benchmarks. Each ReadMe has a **Taking Measurements** section that says how to start it and where the numbers are.
+
+| Example | Measures | Router | Numbers into a file |
+|---------|----------|--------|---------------------|
+| [23\_pubdatarate](./23_pubdatarate/ReadMe.md#taking-measurements) | Data rate and message rate between processes | `mtrouter` | No: live values in the consoles, once per second |
+| [30\_publatency](./30_publatency/ReadMe.md#taking-measurements) | Latency between processes: round trip (`pp`) and one way (`bc`) | `mtrouter` | Yes: one summary line per run on the output; per-sample CSV with `-f`; summary CSV with `-b` / `-e` (console only) |
+| [31\_loclatency](./31_loclatency/ReadMe.md#taking-measurements) | Latency inside one process: one thread and two threads | none | Yes: the table on the output; CSV appended with `-o` |
+| [35\_loglatency](./35_loglatency/ReadMe.md#taking-measurements) | Cost of a log call, and the trip through `logcollector` to an observer | `logcollector` | Plain result lines on the output; redirect them to a file |
+
+Build them in `Release`. Build 23, 30 and 31 with `AREG_LOGGING=OFF`. 35 measures logging, so it needs logging on.
+A relative file path given to 30 or 31 is relative to the directory of the executable, not to the shell's directory.
+
+---
+
 ## Conclusion
 
 These examples demonstrate **Areg SDK's core strengths**:

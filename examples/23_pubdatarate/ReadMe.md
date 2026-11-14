@@ -84,6 +84,7 @@ away for the benchmark. **What you measure here is what your production system g
   - [Step 3: Start the Provider](#step-3-start-the-provider)
   - [Provider Command Reference](#provider-command-reference)
   - [Benchmark Recipes](#benchmark-recipes)
+- [Taking Measurements](#taking-measurements)
 - [Interpreting Results](#interpreting-results)
 - [Use Cases](#use-cases)
 
@@ -384,6 +385,55 @@ Tune the message rate by changing number of channels and pixel time:
 >        Connected client :       1 clients.
 > ---------------------------------------
 > ```
+
+---
+
+## Taking Measurements
+
+This example has **no option to write its numbers to a file**. The rates are live values,
+redrawn once per second in the three consoles. A measurement is read off the consoles.
+
+**1. Build** in `Release` with `AREG_LOGGING=OFF` (see [Building the Project](#building-the-project)),
+then `cd` into the `bin/` directory of the build.
+
+**2. Start the three processes** in three terminals, in this order:
+
+```bash
+./mtrouter.elf
+./23_pubclient.elf
+./23_pubservice.elf -w=1024 -h=1024 -l=1024 -t=25 -c=20 -s
+```
+
+The provider takes the same options on its command line as in its console. With `-s` it
+starts streaming at once, without typing anything. Without `-s`, type the options and
+then `-s` in its console.
+
+**3. Read the numbers** once the values have settled, after a few seconds:
+
+| Console | Line | Unit |
+|---------|------|------|
+| `mtrouter` | `Send data rate`, `Recv data rate` | the unit printed on the line, for example `MBytes / sec.` |
+| `mtrouter` | `Send messages`, `Recv messages` | messages per second |
+| `23_pubclient` | `Network receive rate ..: data [ ... ] MByte / sec, message [ ... ] blocks/sec.` | MB/s, messages per second |
+| `23_pubservice` | `Total rate`, `Total Block Rate` | the **theoretical** rate of the settings, not a measurement |
+
+Note two numbers per setting: the **peak**, which is the highest value seen, and the
+**sustained** rate, which is the value it keeps for the rest of the run. Quote the `mtrouter`
+values; see [Where to Read Throughput](#where-to-read-throughput).
+
+**4. Stop** with `-p` (pause) or `-q` (quit) in the `23_pubservice` console. Do it before
+`23_pubclient` runs out of memory (see the warning in [Step 3](#step-3-start-the-provider)).
+Change the settings only after `-p`, then start again with `-s`.
+
+**Keeping a log (Linux, macOS).** If the output of a console is redirected to a file, the
+file holds the screen control sequences as well as the text. The rate lines can be extracted
+from it:
+
+```bash
+./23_pubclient.elf > client.log
+# after the run:
+tr -d '\033' < client.log | sed 's/\[[0-9;]*[A-Za-z]//g' | grep -a "Network receive rate"
+```
 
 ---
 
