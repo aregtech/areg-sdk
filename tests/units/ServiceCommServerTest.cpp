@@ -770,6 +770,54 @@ protected:
         EXPECT_EQ(run.server.instances().size(), 2u);
         EXPECT_TRUE(run.server.is_host_connected());
     }
+
+    //!< A client writes, in one piece, as many messages as one drain takes and then a header of an
+    //!< unknown event type. The server drops that client and keeps the other one.
+    static void run_corrupt_message_after_full_drain(uint32_t pairs)
+    {
+        Running run(Policy::Accept, pairs);
+        ASSERT_TRUE(run.start());
+        PeerPtr sender{ make_peer(run.port) };
+        PeerPtr other{ make_peer(run.port) };
+        ASSERT_TRUE(sender->join());
+        ASSERT_TRUE(other->join());
+        ASSERT_TRUE(run.server.wait_added(2u));
+        ASSERT_TRUE(sender->limit_receive(static_cast<uint32_t>(DEADLINE_MS)));
+
+        std::vector<uint8_t> wire;
+        const auto append = [&wire](const areg::MessageEnvelope & message)
+        {
+            const uint8_t * data{ areg::wire_data(*message.header()) };
+            wire.insert(wire.end(), data, data + areg::wire_size(*message.header()));
+        };
+
+        for (uint32_t seq = 0u; seq < areg::DEFAULT_DRAIN_LIMIT; ++seq)
+        {
+            append(make_data(sender->cookie, static_cast<ITEM_ID>(areg::TARGET_UNKNOWN), seq, 8u));
+        }
+
+        areg::MessageEnvelope corrupt{ make_data(sender->cookie, other->cookie, 0u, 8u) };
+        ASSERT_NE(corrupt.header(), nullptr);
+        corrupt.header()->eventType = static_cast<uint16_t>(areg::EventType::EventUnknown);
+        append(corrupt);
+
+        const int32_t size{ static_cast<int32_t>(wire.size()) };
+        ASSERT_EQ(areg::send_data(sender->link.live_handle(), wire.data(), static_cast<uint32_t>(size)), size);
+
+        EXPECT_EQ(sender->drain(), 0u);
+        EXPECT_TRUE(run.server.wait_removed(1u));
+        EXPECT_TRUE(run.server.wait_instances(1u));
+        EXPECT_TRUE(run.server.is_host_connected());
+
+        PeerPtr late{ make_peer(run.port) };
+        ASSERT_TRUE(late->join());
+        ASSERT_TRUE(late->send(make_data(late->cookie, other->cookie, 7u, 8u)));
+        areg::MessageEnvelope received;
+        ASSERT_TRUE(other->receive(received));
+        uint32_t value{ 0u };
+        received >> value;
+        EXPECT_EQ(value, 7u);
+    }
 };
 
 #if AREG_LOGGING
@@ -930,6 +978,16 @@ TEST_F(ServiceCommServerTest, messages_without_target_or_with_a_foreign_source_a
 TEST_F(ServiceCommServerTest, messages_without_target_or_with_a_foreign_source_are_ignored_in_the_pool_mode)
 {
     run_ignored_messages(POOL_PAIRS);
+}
+
+TEST_F(ServiceCommServerTest, corrupt_message_behind_a_full_drain_drops_only_its_client_in_the_shared_thread_mode)
+{
+    run_corrupt_message_after_full_drain(0u);
+}
+
+TEST_F(ServiceCommServerTest, corrupt_message_behind_a_full_drain_drops_only_its_client_in_the_pool_mode)
+{
+    run_corrupt_message_after_full_drain(POOL_PAIRS);
 }
 
 // A client of a host that is not allowed is told that it is rejected, and the server closes the
