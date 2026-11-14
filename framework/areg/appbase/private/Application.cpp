@@ -115,9 +115,9 @@ void Application::setup( bool startTracing   /*= true */
 
     Application::load_configuration(areg::is_empty(configFile) ? areg::DEFAULT_CONFIG_FILE.data() : configFile, configListener);
 
-    if (startTimer)
+    if (startTimer && (Application::_start_timer_manager() == false))
     {
-        Application::_start_timer_manager();
+        Application::_set_app_state(areg::AppState::Failure);
     }
 
 #if AREG_LOGGING
@@ -137,9 +137,9 @@ void Application::setup( bool startTracing   /*= true */
     }
 #endif  // AREG_LOGGING
 
-    if ( startWatchdog )
+    if ( startWatchdog && (Application::start_watchdog_manager() == false) )
     {
-        Application::start_watchdog_manager();
+        Application::_set_app_state(areg::AppState::Failure);
     }
 
     if ( startServicing )
@@ -244,10 +244,8 @@ bool Application::_start_service_manager()
     {
         if (ServiceManager::_start_service_manager( ))
         {
-            Application::_start_timer_manager();
-            Application::start_watchdog_manager();
-            result = true;
-            Application::_set_app_state(areg::AppState::Ready);
+            result = Application::_start_timer_manager() && Application::start_watchdog_manager();
+            Application::_set_app_state(result ? areg::AppState::Ready : areg::AppState::Failure);
         }
         else
         {

@@ -170,6 +170,61 @@ TEST( FaultInjectTest, failed_setup_is_released_and_the_next_setup_starts )
     );
 }
 
+namespace
+{
+    //!< Returns true if a thread of the given name is registered and running.
+    bool system_thread_runs( const char * name )
+    {
+        const areg::Thread * thread{ areg::Thread::find_by_address( areg::ThreadAddress( name ) ) };
+        return (thread != nullptr) && thread->is_running( );
+    }
+}
+
+/**
+ * \brief   A setup whose timer or watchdog manager does not run reports the failure state; a
+ *          setup that reports Ready runs every service it was asked to start.
+ **/
+TEST( FaultInjectTest, setup_reports_failure_when_the_timer_or_watchdog_manager_does_not_run )
+{
+    AREG_EXPECT_IN_CHILD(
+        ReturningConsumer consumer;
+        areg::Thread warmup( consumer, "FaultInjectWarmupManagers" );
+        AREG_CHILD_CHECK( warmup.start( areg::WAIT_INFINITE ) );
+        static_cast<void>(warmup.shutdown( areg::WAIT_INFINITE ));
+
+        uint32_t missingTimer{ 0u };
+        uint32_t missingWatchdog{ 0u };
+        for ( const bool startWatchdog : { false, true } )
+        {
+            for ( uint32_t skip{ 0u }; skip < 4u; ++skip )
+            {
+                for ( uint32_t count{ 1u }; count <= 2u; ++count )
+                {
+                    {
+                        areg_fault::FaultScope faults;
+                        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, THREAD_ERROR, skip, count ) );
+                        areg::Application::setup( false, true, false, true, startWatchdog );
+                    }
+
+                    const bool timerRuns{ system_thread_runs( "_AREG_TIMER_THREAD_NAME_" ) };
+                    const bool watchdogRuns{ system_thread_runs( "_AREG_WATCHDOG_THREAD_NAME_" ) };
+                    missingTimer    += timerRuns ? 0u : 1u;
+                    missingWatchdog += watchdogRuns ? 0u : 1u;
+                    const bool allRun{ timerRuns && watchdogRuns && areg::Application::is_servicing_ready( ) };
+                    const areg::AppState state{ areg::Application::system_state( ) };
+                    AREG_CHILD_CHECK( (state == areg::AppState::Ready) || (state == areg::AppState::Failure) );
+                    AREG_CHILD_CHECK( allRun || (state == areg::AppState::Failure) );
+
+                    areg::Application::release( );
+                    AREG_CHILD_CHECK( areg::Application::system_state( ) == areg::AppState::Stopped );
+                }
+            }
+        }
+
+        AREG_CHILD_CHECK( (missingTimer != 0u) && (missingWatchdog != 0u) );
+    );
+}
+
 TEST( FaultInjectTest, socket_create_returns_an_invalid_socket_when_the_system_refuses )
 {
     AREG_EXPECT_IN_CHILD(

@@ -72,7 +72,9 @@ public:
 
     /**
      * \brief   Initializes application and starts specified system services. The system ignores
-     *          requests to start a service if it is already running.
+     *          requests to start a service if it is already running. If a requested service,
+     *          or the timer or watchdog manager the Service Manager needs, cannot start,
+     *          system_state() returns Failure; release() ends the failed session.
      *
      * \param   startTracing        If true, starts the tracing service.
      * \param   startServicing      If true, starts the Service Manager. Ignored if startRouting is
