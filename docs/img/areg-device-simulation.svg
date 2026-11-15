@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="294" viewBox="0 0 640 294" role="img" aria-labelledby="title description">
+  <title id="title">Build the client before the device exists</title>
+  <desc id="description">Two alternative deployments use the same consumer, service interface and provider role. In development the provider simulates a device. With hardware it is device-backed. In both illustrated deployments the consumer and provider are separate processes connected through mtrouter over TCP. Only one provider is selected for the role.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L8 4 L0 8Z" fill="#57606a"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 24px; fill: #1f2328; }
+      .heading { font-weight: 600; }
+      .process { fill: #f6f8fa; stroke: #8c959f; stroke-width: 2; }
+      .consumer { fill: #fbefff; stroke: #8250df; stroke-width: 2; }
+      .provider { fill: #dafbe1; stroke: #22863a; stroke-width: 2; }
+      .link { fill: none; stroke: #57606a; stroke-width: 2; marker-start: url(#arrow); marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect x="1" y="1" width="638" height="292" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+  <text class="heading" x="22" y="34">During development</text>
+  <rect class="process" x="22" y="48" width="174" height="80" rx="8"/>
+  <rect class="consumer" x="30" y="62" width="158" height="52" rx="6"/>
+  <text x="109" y="96" text-anchor="middle">Consumer</text>
+  <path class="link" d="M200 88 H229"/>
+  <rect x="236" y="54" width="138" height="68" rx="8" fill="#1f2328"/>
+  <text x="305" y="83" text-anchor="middle" style="fill:#ffffff">mtrouter</text>
+  <text x="305" y="109" text-anchor="middle" style="fill:#ffffff">TCP</text>
+  <path class="link" d="M380 88 H409"/>
+  <rect class="process" x="416" y="48" width="202" height="80" rx="8"/>
+  <rect class="provider" x="424" y="56" width="186" height="64" rx="6"/>
+  <text x="517" y="83" text-anchor="middle">Simulated</text>
+  <text x="517" y="109" text-anchor="middle">provider</text>
+
+  <text class="heading" x="22" y="166">With hardware</text>
+  <rect class="process" x="22" y="180" width="174" height="80" rx="8"/>
+  <rect class="consumer" x="30" y="194" width="158" height="52" rx="6"/>
+  <text x="109" y="228" text-anchor="middle">Consumer</text>
+  <path class="link" d="M200 220 H229"/>
+  <rect x="236" y="186" width="138" height="68" rx="8" fill="#1f2328"/>
+  <text x="305" y="215" text-anchor="middle" style="fill:#ffffff">mtrouter</text>
+  <text x="305" y="241" text-anchor="middle" style="fill:#ffffff">TCP</text>
+  <path class="link" d="M380 220 H409"/>
+  <rect class="process" x="416" y="180" width="202" height="80" rx="8"/>
+  <rect class="provider" x="424" y="188" width="186" height="64" rx="6"/>
+  <text x="517" y="215" text-anchor="middle">Device-backed</text>
+  <text x="517" y="241" text-anchor="middle">provider</text>
+  <text x="320" y="284" text-anchor="middle">Same consumer, interface and provider role.</text>
+</svg>
