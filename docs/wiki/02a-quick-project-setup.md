@@ -23,24 +23,39 @@ Create a ready-to-build Areg SDK project with one command, then build and run it
 
 ## Quick Start
 
-Run the command from the directory that contains your `areg-sdk` clone.
+Install the [prerequisites](#prerequisites), then start in the directory that contains
+your `areg-sdk` clone, without an existing `areg_hello` directory. These commands use
+that local SDK copy. To compare one implementation across deployments first, see
+[the three-deployment walkthrough](./03-helloservice-walkthrough.md).
 
-**Linux / macOS:**
+**Linux:**
 ```bash
-sh areg-sdk/tools/setup-project.sh --name areg_hello --mode local
+sh areg-sdk/tools/setup-project.sh --name areg_hello --mode local --sdk-root areg-sdk
 cd areg_hello
 cmake -B build
-cmake --build build -j
-# run areg_hello from build/bin/
+cmake --build build -j4
+./build/bin/areg_hello.elf
+cat build/bin/logs/areg_hello_*.log
 ```
 
-**Windows:**
-```powershell
-areg-sdk\tools\setup-project.bat --name areg_hello --mode local
+**macOS:**
+```bash
+sh areg-sdk/tools/setup-project.sh --name areg_hello --mode local --sdk-root areg-sdk
 cd areg_hello
 cmake -B build
-cmake --build build -j
-# run areg_hello from build\bin\
+cmake --build build -j4
+./build/bin/areg_hello.mac
+cat build/bin/logs/areg_hello_*.log
+```
+
+**Windows (PowerShell):**
+```powershell
+.\areg-sdk\tools\setup-project.bat --name areg_hello --mode local --sdk-root areg-sdk
+cd areg_hello
+cmake -B build
+cmake --build build --config Debug -j4
+.\build\bin\areg_hello.exe
+Get-Content build\bin\logs\areg_hello_*.log
 ```
 
 **With Python 3, on any platform:**
@@ -51,7 +66,7 @@ python3 areg-sdk/tools/agent/setup_project.py --name areg_hello --mode local
 Run without options on a terminal and the tool asks for the project name, the mode and
 the directory, with a default for each.
 
-**Running the application prints:**
+**The application exits after one exchange. Its log contains**, with timestamps and metadata:
 ```
 provider: hello, ServiceConsumer
 consumer: greeted
@@ -261,7 +276,7 @@ During the build, `codegen.jar` generates `HelloServiceProviderBase`,
 ```cpp
 void request_hello_service(const areg::String & client) final
 {
-    std::cout << "provider: hello, " << client << std::endl;
+    GLOBAL_INFO("provider: hello, %s", client.as_string());
     response_hello_service(true);
 }
 ```
@@ -286,7 +301,7 @@ bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & pr
 
 void response_hello_service(bool success) final
 {
-    std::cout << "consumer: " << (success ? "greeted" : "failed") << std::endl;
+    GLOBAL_INFO("consumer: %s", success ? "greeted" : "failed");
     areg::Application::signal_quit();
 }
 ```
@@ -343,35 +358,34 @@ macro_declare_executable(areg_hello_consumer gen_areg_hello consumer.cpp)
 ```bash
 cd areg_hello
 cmake -B build
-cmake --build build -j
+cmake --build build --config Debug -j4
 ```
 
 The first configure fetches Areg SDK, unless `--sdk-root` names a local copy, and the first
-build compiles the framework: a few minutes. A rebuild takes seconds.
+build compiles the framework. Build time depends on the machine and configuration.
 
 ### Run a `local` project
 
-Run `areg_hello` from `build/bin/`. It prints:
+Run the executable and read the log using the commands for your platform in
+[Quick Start](#quick-start). The log contains:
 
 ```
 provider: hello, ServiceConsumer
 consumer: greeted
 ```
 
-and exits.
+The program exits after the exchange. Its diagnostics use Areg logging, not standard output.
 
 ### Run an `ipc` project
 
 The project carries a start script:
 
-```bash
-./run.sh        # Linux / macOS
-run.bat         # Windows
-```
+On Linux/macOS, run `./run.sh`. In Windows PowerShell, run `.\run.bat`.
 
 It starts `mtrouter`, waits until it listens, starts the provider, then the consumer,
-and stops the router and the provider when the consumer ends. The provider prints
-`provider: hello, ServiceConsumer...` and the consumer prints `consumer: greeted`.
+and stops the router and the provider when the consumer ends. The provider logs
+`provider: hello, ServiceConsumer...` and the consumer logs `consumer: greeted`.
+Read `build/bin/logs/*.log` with `cat` on Linux/macOS or `Get-Content` in PowerShell.
 
 To start the pieces by hand, run `mtrouter`, then `areg_hello_provider`, then
 `areg_hello_consumer`, each from `build/bin/`. For a network deployment, set the
@@ -441,7 +455,7 @@ Implement it in the provider:
 ```cpp
 void request_goodbye() final
 {
-    std::cout << "provider: goodbye" << std::endl;
+    GLOBAL_INFO("provider: goodbye");
     response_goodbye();
 }
 ```
@@ -456,7 +470,7 @@ void response_hello_service(bool success) final
 
 void response_goodbye() final
 {
-    std::cout << "consumer: goodbye received" << std::endl;
+    GLOBAL_INFO("consumer: goodbye received");
     areg::Application::signal_quit();
 }
 ```
