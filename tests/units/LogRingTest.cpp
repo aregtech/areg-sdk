@@ -41,10 +41,12 @@
 #endif  // defined(_WIN32)
 
 #include <atomic>
+#include <chrono>
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace
@@ -64,6 +66,9 @@ namespace
     //!< The rows dropped from the full remote log queue, the row the logging thread holds included.
     constexpr uint32_t  DROPPED     { BEFORE - QUEUE_SIZE + 1u };
 
+    //!< Milliseconds a test holds the logging thread in a write while the application is released.
+    constexpr uint32_t  STALL_MS    { 1'500u };
+
     //!< The cookie the test assigns to the source.
     constexpr ITEM_ID   COOKIE      { 300u };
 
@@ -74,9 +79,10 @@ namespace
     class RingConfigListener final : public areg::ConfigListener
     {
     public:
-        //!< Sets the remote log queue to 'queueSize' log messages.
-        explicit RingConfigListener(uint32_t queueSize)
+        //!< Sets the remote log queue to 'queueSize' log messages. With 'remote' false only the database target logs.
+        explicit RingConfigListener(uint32_t queueSize, bool remote = true)
             : mQueueSize(queueSize)
+            , mRemote(remote)
         {
         }
 
@@ -84,10 +90,10 @@ namespace
         void apply(areg::ConfigManager& config) const
         {
             config.set_service_enable(areg::RemoteServiceKind::Router, areg::ConnectionType::Tcpip, false, true);
-            config.set_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, true, true);
+            config.set_service_enable(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, mRemote, true);
             config.set_service_address(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, areg::String("127.0.0.1"), true);
             config.set_service_port(areg::RemoteServiceKind::Logger, areg::ConnectionType::Tcpip, _port, true);
-            config.set_log_enabled(areg::LogTarget::Remote, true, true);
+            config.set_log_enabled(areg::LogTarget::Remote, mRemote, true);
             config.set_log_enabled(areg::LogTarget::File, false, true);
             config.set_log_enabled(areg::LogTarget::Database, true, true);
             config.set_remote_queue_size(mQueueSize, true);
@@ -118,6 +124,9 @@ namespace
     private:
         //!< The size of the remote log queue.
         const uint32_t  mQueueSize;
+
+        //!< True if the logs are sent to the log collector.
+        const bool      mRemote;
     };
 
     //!< A log database that keeps nothing. It is given each row in the logging thread before the remote
@@ -162,6 +171,9 @@ namespace
 
             return true;
         }
+
+        //!< The rows of the test the logging thread has handled. Read it after the logging thread ended.
+        uint32_t rows() const noexcept { return mRows; }
 
         bool log_instance_connected(const areg::ConnectedInstance & /*instance*/, const areg::DateTime & /*timestamp*/) final { return true; }
         bool log_instance_disconnected(const ITEM_ID & /*cookie*/, const areg::DateTime & /*timestamp*/) final { return true; }
@@ -494,6 +506,59 @@ TEST(LogRingTest, scope_update_with_a_forged_count_ends_with_the_message)
     EXPECT_TRUE(updated);
     stop_source(database);
     areg::socket_release();
+}
+
+// A logging thread that keeps up delivers every row written before the release of the application.
+TEST(LogRingTest, release_delivers_every_queued_row_to_a_logger_that_keeps_up)
+{
+    RowsHandled database;
+    RingConfigListener config(QUEUE_SIZE, false);
+    if (areg::Application::is_configured())
+    {
+        config.apply(areg::Application::config_manager());
+    }
+
+    areg::set_db_engine(&database);
+    areg::Application::setup(true, true, false, true, false, nullptr, &config);
+    log_rows(0u, BEFORE);
+    ASSERT_TRUE(database.reached.lock(static_cast<uint32_t>(WAIT_MS)));
+
+    database.resume.set_signaled();
+    log_rows(BEFORE, ROWS);
+    areg::Application::release();
+    areg::set_db_engine(nullptr);
+    EXPECT_EQ(database.rows(), ROWS);
+}
+
+// The release of the application waits for a logging thread that is held in a write, and the rows
+// queued behind the held one are delivered when it goes on.
+TEST(LogRingTest, release_delivers_the_rows_queued_behind_a_stalled_logger)
+{
+    RowsHandled database;
+    RingConfigListener config(QUEUE_SIZE, false);
+    if (areg::Application::is_configured())
+    {
+        config.apply(areg::Application::config_manager());
+    }
+
+    areg::set_db_engine(&database);
+    areg::Application::setup(true, true, false, true, false, nullptr, &config);
+    log_rows(0u, BEFORE);
+    ASSERT_TRUE(database.reached.lock(static_cast<uint32_t>(WAIT_MS)));
+    log_rows(BEFORE, ROWS);
+    ASSERT_TRUE(database.held.lock(static_cast<uint32_t>(WAIT_MS)));
+
+    std::thread resumer([&database]()
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(STALL_MS));
+        database.resume.set_signaled();
+    });
+
+    areg::Application::release();
+    resumer.join();
+    areg::set_db_engine(nullptr);
+
+    EXPECT_EQ(database.rows(), ROWS);
 }
 
 #endif  // AREG_LOGGING

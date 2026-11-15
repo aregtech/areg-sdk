@@ -477,6 +477,7 @@ namespace service_harness
             AREG_CHILD_CHECK(actual == contents);
         }
 
+        //!< Checks that the log file of the stopped service has the line of every named option. Call it after quit.
         void check_options_logged(const std::vector<std::string>& names) const
         {
 #if AREG_LOGGING
@@ -484,8 +485,19 @@ namespace service_harness
             std::ifstream input(log);
             AREG_CHILD_CHECK(input.good());
             const std::string actual{ std::istreambuf_iterator<char>(input), std::istreambuf_iterator<char>() };
-            for (const auto& name : names)
-                AREG_CHILD_CHECK(actual.find(service.optionLog + name + " ], going to process...") != std::string::npos);
+            bool complete{ true };
+            for (const std::string& name : names)
+            {
+                if (actual.find(service.optionLog + name + " ], going to process...") == std::string::npos)
+                {
+                    std::fprintf(stderr, "option not logged: [%s]\n", name.c_str());
+                    complete = false;
+                }
+            }
+
+            if (!complete)
+                std::fprintf(stderr, "log file %s:\n%s\n", log.c_str(), actual.c_str());
+            AREG_CHILD_CHECK(complete);
 #else
             (void)names;
 #endif

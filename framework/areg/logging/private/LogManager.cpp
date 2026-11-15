@@ -369,13 +369,9 @@ void LogManager::wait_thread_end()
 
 inline void LogManager::_wait_logs_written()
 {
-    if (!wait_completion( areg::SHUTDOWN_DRAIN_TIMEOUT ))
-    {
-        // The queue did not empty in time. Stop the thread, the rest is given up on.
-        trigger_exit( );
-        wait_completion( areg::WAIT_INFINITE );
-    }
-
+    // The queue takes nothing new, and the thread ends after the messages already queued.
+    trigger_exit_drained( );
+    wait_completion( areg::WAIT_INFINITE );
     shutdown(areg::DO_NOT_WAIT);
 }
 
