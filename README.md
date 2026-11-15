@@ -24,9 +24,15 @@ in each thread and process.
 
 Linux · macOS · Windows · Embedded Linux
 
+<a id="requirements"></a>
+**Requirements** ([setup guide](./docs/wiki/01e-build-environment.md))
+
+- **Build applications:** Git, a C++17 compiler, CMake 3.20+ and **Java 17+** for code generation.
+- **Use coding agents:** also **Python 3.10+**. Neither Java nor Python is needed to run the built C++ application.
+
 **[Run the example ↓](#quick-start)** · [Check the fit](#areg-vs-alternatives) · [Build with a coding agent](#agentic-coding)
 
-<div align="center"><a href="./docs/wiki/03-helloservice-walkthrough.md"><img src="./docs/img/areg-one-code-three-deployments.svg" alt="The same provider and consumer in one thread, two threads, or separate processes connected through mtrouter over TCP" width="720"/></a></div>
+<div align="center"><a href="./docs/wiki/03-helloservice-walkthrough.md"><img src="./docs/img/areg-one-code-three-deployments.svg" alt="The same provider and consumer in one thread, two threads, or separate processes connected through mtrouter over TCP" width="540"/></a></div>
 
 **One service implementation. Three deployments.**
 [`03_helloservice`](./examples/03_helloservice/) builds every variant from the
@@ -34,13 +40,11 @@ Linux · macOS · Windows · Embedded Linux
 The application models and build arrangement change; compiled model changes require a rebuild.
 Cross-process communication uses `mtrouter` over plain TCP, for trusted networks.
 
-## Quick start
+## Quick start[![](./docs/img/pin.svg)](#quick-start)
 
 Run the two-thread version first. Then separate the processes without editing the service implementations.
 
-Requires Git, a C++17 compiler, CMake 3.20+ and Java 17+ for code generation.
-No Java runtime or Python is needed by the resulting application.
-[Install prerequisites](./docs/wiki/01e-build-environment.md).
+Install the [required tools](#requirements) before building.
 
 Start in a directory without an existing `areg-sdk` folder. These commands build the example
 from the current `master` branch, not a pinned release:
@@ -131,7 +135,7 @@ decide where their components run.
 
 Useful for your next C++ project? **Star Areg** to keep the example close at hand.
 
-## Table of Contents
+## Table of Contents[![](./docs/img/pin.svg)](#table-of-contents)
 
 - [Run the example](#quick-start)
 - [Find your use case](#use-cases)
@@ -142,18 +146,20 @@ Useful for your next C++ project? **Star Areg** to keep the example close at han
 - [Check project status](#project-status)
 - [Start your own project](#getting-started)
 
-## Use cases
+## Use cases[![](./docs/img/pin.svg)](#use-cases)
 
 Patterns to adapt to your application:
 
-### Move the processing stage, not its implementation
+<a id="move-the-processing-stage-not-its-implementation"></a>
+### Collect images, analyze them, save the results
 
-Start an acquisition → processing → storage pipeline in one process. When processing
-needs isolation or another machine, move its service component without rewriting its handlers.
-The pattern fits imaging, industrial inspection and edge inference; capacity depends on
-your hardware, network and processing workload.
+A camera collects images, an analysis service finds defects or runs an AI model, and a
+storage service saves the results. Give each part a clear service interface instead of
+writing a new communication protocol between them.
+This pattern fits scientific imaging and factory inspection. Measure the complete
+application on your hardware to find how many images it can handle.
 
-<div align="center"><a href="./docs/img/areg-pipeline-deployments.svg"><img src="./docs/img/areg-pipeline-deployments.svg" alt="The same acquisition, processing and storage stages in one process or in separate processes connected through mtrouter" width="720"/></a></div>
+<div align="center"><a href="./docs/img/areg-pipeline-deployments.svg"><img src="./docs/img/areg-pipeline-deployments.svg" alt="Collect, analyze and save images in one process or in separate processes connected through mtrouter" width="540"/></a></div>
 
 [Imaging pipelines](./docs/USECASES.md#scientific-and-industrial-imaging-pipelines) ·
 [Edge inference](./docs/USECASES.md#edge-ai-and-inference-pipelines)
@@ -164,7 +170,7 @@ Implement the device's service interface in a simulated provider. Develop and ex
 consumer, then connect it to a device-backed provider using the same interface and role name.
 Keep the consumer's service calls; validate simulation fidelity separately.
 
-<div align="center"><a href="./docs/img/areg-device-simulation.svg"><img src="./docs/img/areg-device-simulation.svg" alt="The same consumer connects to either a simulated provider or a device-backed provider through mtrouter" width="720"/></a></div>
+<div align="center"><a href="./docs/img/areg-device-simulation.svg"><img src="./docs/img/areg-device-simulation.svg" alt="The same consumer connects to either a simulated provider or a device-backed provider through mtrouter" width="540"/></a></div>
 
 [Simulation and hardware-in-the-loop](./docs/USECASES.md#simulation-and-hardware-in-the-loop-testing)
 
@@ -184,7 +190,7 @@ coordinate them in an edge application, and send useful results to a cloud API.
 Areg handles the trusted-network service communication; the application supplies
 the cloud connection and its security.
 
-<div align="center"><a href="./docs/img/areg-nebula.svg"><img src="./docs/img/areg-nebula.svg" alt="Device services communicate through mtrouter with an edge application in a trusted network; the application manages its secure cloud connection" width="720"/></a></div>
+<div align="center"><a href="./docs/img/areg-nebula.svg"><img src="./docs/img/areg-nebula.svg" alt="Device services communicate through mtrouter with an edge application in a trusted network; the application manages its secure cloud connection" width="540"/></a></div>
 
 [Device services](./docs/USECASES.md#device-as-a-service-driverless-hardware) ·
 [Original Nebula illustration](./docs/img/mist-network.png)
@@ -197,7 +203,7 @@ More patterns: [incremental monolith decomposition](./docs/USECASES.md#increment
 
 <div align="right"><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></div>
 
-## How it works
+## How it works[![](./docs/img/pin.svg)](#how-it-works)
 
 1. **Define the contract.** A `.siml` interface declares requests/responses, attributes
    (subscribed state) and broadcasts (events).
@@ -225,7 +231,7 @@ application locks. Keep handlers non-blocking and synchronize shared external st
 `logcollector` gathers application logs; [Lusan](https://github.com/aregtech/areg-sdk-tools)
 shows sources and messages together. Change logging priorities at runtime without a restart.
 
-<div align="center"><a href="./docs/img/lusan-live-log-gen.png"><img src="./docs/img/lusan-live-log-readme.png" alt="Lusan displaying a provider and two consumers with their collected log messages" width="860"/></a></div>
+<div align="center"><a href="./docs/img/lusan-live-log-gen.png"><img src="./docs/img/lusan-live-log-readme.png" alt="Lusan displaying a provider and two consumers with their collected log messages" width="640"/></a></div>
 
 This existing capture shows older example names, not the greeting above.
 [Live-logging walkthrough](./docs/wiki/06f-lusan-live-logging.md) ·
@@ -235,22 +241,37 @@ This existing capture shows older example names, not the greeting above.
 
 <div align="right"><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></div>
 
-## Agentic coding
+## Agentic coding[![](./docs/img/pin.svg)](#agentic-coding)
 
-**Your agent writes service logic, not the plumbing.**
+**Build C++ applications with your coding agent.**
 
-Areg's agentic layer pairs task-focused guidance with generators and executable checks:
-**declare → generate → implement → verify**.
+Areg includes instructions and tools that guide an agent from your requirements to a
+running application. The agent defines services, data types and state machines.
+Generators create the communication and component code; the agent implements the
+service logic, builds the application and runs scenario checks.
 
-- **Focused context:** task routing and API lookup instead of a framework-wide search.
-- **Less code to write:** generated components, models and a worksheet of business logic to implement.
-- **A checked result:** contract checks, builds and scenarios exercise the application.
+**Build your own:** start your coding agent in an empty project folder outside the SDK.
+Point it to the SDK's [`AGENTS.md`](./AGENTS.md), then describe what your application
+should do. [Step-by-step workflow](./docs/wiki/09a-agentic-coding.md).
 
-Start at [`AGENTS.md`](./AGENTS.md), or read the [workflow guide](./docs/wiki/09a-agentic-coding.md).
-Python 3.10+ is needed for these tools, not for ordinary C++ development.
+**See a result:** an agent wrote this coffee-machine state model, shown in Lusan.
+The crop shows the drink-making states; open the image for the full editor view.
+
+<div align="center"><a href="./docs/img/screenshot-fsm-ai.png"><img src="./docs/img/screenshot-fsm-ai-readme.png" alt="Agent-written coffee-machine states in Lusan: grinding, heating, brewing, frothing and dispensing, with transitions and a history state" width="540"/></a></div>
+
+**Try a ready-made task:** [temperature monitor](./examples/ai-benchmark/prompt-tempalarm.md),
+[coffee machine](./examples/ai-benchmark/prompt-coffeemachine.md) or
+[elevator](./examples/ai-benchmark/prompt-elevator.md).
+The [benchmark guide](./examples/ai-benchmark/) explains how to run them and inspect
+the results. Agent runs use your account and may incur charges.
 
 <details>
 <summary>Measured workflow results, with their limits</summary>
+
+In the [October 18 baseline](./examples/ai-benchmark/baseline-2026-10-18.md), two Areg
+coffee-machine runs with Copilot CLI and GPT-5.6 Terra cost **$0.318 and $0.464**.
+Both passed all seven assigned checks. These are reported costs for the application
+tasks, not the pictured diagram alone or a guaranteed price for a new run.
 
 In two October 2026 baselines, **28/28 Areg runs** passed their assigned hidden checks,
 versus **12/15 gRPC runs**, with roughly **one-half to one-quarter as much hand-written C++**.
@@ -268,7 +289,7 @@ Total cost varies by task and model; loading the guidance can require more input
 
 <div align="right"><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></div>
 
-## Performance
+## Performance[![](./docs/img/pin.svg)](#performance)
 
 Published Linux TCP-loopback results on an i7-13700H with DDR4, using the framework stack,
 not raw sockets:
@@ -302,7 +323,7 @@ These are binary sizes, not RAM. Bare metal, RTOS and 16-bit targets are not sup
 <div align="right"><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></div>
 
 <a id="areg-vs-alternatives"></a>
-## Is Areg a fit?
+## Is Areg a fit?[![](./docs/img/pin.svg)](#areg-vs-alternatives)
 
 Choose by the architecture you need, not a universal framework ranking.
 
@@ -322,7 +343,7 @@ processes or restore application state.
 
 <div align="right"><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></div>
 
-## Project status
+## Project status[![](./docs/img/pin.svg)](#project-status)
 
 The current named release is [`v2.0.0-rc1`](https://github.com/aregtech/areg-sdk/releases/tag/v2.0.0-rc1),
 the first 2.0 release candidate. The example above evaluates `master`.
@@ -331,9 +352,9 @@ Supported: 2.0.0-rc1 and newer, and `master`; 1.5.0 and earlier use a different,
 | Evidence | Reports |
 |---|---|
 | Builds | [![CMake build](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml) [![MS Build](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml) [![Platforms](https://github.com/aregtech/areg-sdk/actions/workflows/platforms.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/platforms.yml) |
-| Analysis | [![CodeQL](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml) [![Sanitizers](https://github.com/aregtech/areg-sdk/actions/workflows/sanitizers.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/sanitizers.yml) [![Agent docs](https://github.com/aregtech/areg-sdk/actions/workflows/agent-docs.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/agent-docs.yml) |
+| Quality | [![CodeQL](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml) [![Sanitizers](https://github.com/aregtech/areg-sdk/actions/workflows/sanitizers.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/sanitizers.yml) [![Coverage](https://codecov.io/gh/aregtech/areg-sdk/graph/badge.svg?branch=master)](https://codecov.io/gh/aregtech/areg-sdk) [![Agent docs](https://github.com/aregtech/areg-sdk/actions/workflows/agent-docs.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/agent-docs.yml) |
 
-The coverage badge at the top links to its report; coverage is not a guarantee of correctness.
+Badges link to their reports; coverage is not a guarantee of correctness.
 
 ### Roadmap
 
@@ -353,7 +374,7 @@ Commercial support is not required for commercial use of the Apache-licensed SDK
 <a id="ways-in"></a>
 <a id="learning-path"></a>
 <a id="documentation"></a>
-## Start your own project
+## Start your own project[![](./docs/img/pin.svg)](#getting-started)
 
 | Your next step | Start here |
 |---|---|
