@@ -10,11 +10,12 @@
 
 **Change the deployment. Keep the service code.**
 
-Your processing stage needs its own process. Your device needs another client.
-Neither should mean rewriting the communication.
-Areg is a C++17 service framework: describe a typed interface, generate the communication
-code, and implement your service logic. Keep the same provider and consumer implementations
-across threads, processes and machines.
+Start with your C++ services in one process. Run the same service code in separate
+processes or on different machines.
+
+Areg is a C++17 framework that generates communication code from typed service interfaces.
+You implement the service logic; the application model defines which components run
+in each thread and process.
 
 [![CMake build](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml)
 [![Coverage](https://codecov.io/gh/aregtech/areg-sdk/graph/badge.svg?branch=master)](https://codecov.io/gh/aregtech/areg-sdk)
