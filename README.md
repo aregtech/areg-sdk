@@ -1,6 +1,8 @@
+<a id="top"></a>
+
 <div align="center">
   <a href="https://www.areg.tech">
-    <img src="./docs/img/areg-sdk-logo.svg" alt="Areg SDK" width="320"/>
+    <img src="./docs/img/areg-sdk-logo.svg" alt="Areg SDK" width="480"/>
   </a>
 </div>
 
@@ -24,10 +26,10 @@ Linux · macOS · Windows · Embedded Linux · Trusted networks
 
 [Run your first service](#quick-start) · [See where it fits](#use-cases) · [Evaluate the tradeoffs](#areg-vs-alternatives)
 
-<div align="center"><img src="./docs/img/areg-one-code-three-deployments.svg" alt="The same provider and consumer in one thread, two threads, or separate processes connected through mtrouter over TCP" width="720"/></div>
+<div align="center"><a href="./docs/img/areg-one-code-three-deployments.svg"><img src="./docs/img/areg-one-code-three-deployments.svg" alt="The same provider and consumer in one thread, two threads, or separate processes connected through mtrouter over TCP" width="720"/></a></div>
 
-Same service implementations; different deployment boundaries. Change the model and build
-layout; configure interface visibility and the router as needed. This is not automatic live migration.
+Same service implementations; different deployment boundaries. Change the application model
+and rebuild; adjust interface visibility and router settings as needed.
 See the shared source in [`03_helloservice`](./examples/03_helloservice/).
 
 Published Linux result: **~9.9 µs one-way P50** through the full API over TCP loopback,
@@ -52,9 +54,15 @@ void request_hello_service(const areg::String & client) final
     GLOBAL_INFO("provider: hello, %s", client.as_string());
     response_hello_service(true);
 }
+
+// Consumer: receive the answer and end this one-shot example
+void response_hello_service(bool success) final
+{
+    GLOBAL_INFO("consumer: %s", success ? "greeted" : "failed");
+    areg::Application::signal_quit();
+}
 ```
 
-The answer arrives in the consumer's `response_hello_service(bool success)` handler.
 Neither handler selects a socket, finds a remote address, or manages a dispatch thread.
 
 ---
@@ -91,19 +99,43 @@ On Windows, use `setup-project.bat`, run `build\bin\myapp.exe`, and read the log
 `type build\bin\logs\myapp_*.log`; the IPC launcher is `run.bat`.
 [Setup options and platform instructions](./docs/wiki/02a-quick-project-setup.md).
 
+Prefer a coding agent? Areg ships an [agentic development layer](#agentic-coding), not just an API to guess.
+
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
+
 ## Table of Contents
 
-[Use cases](#use-cases) · [Why Areg](#why-areg) · [How it works](#how-it-works) ·
-[Performance](#performance) · [Embedded ready](#embedded-ready) · [Alternatives](#areg-vs-alternatives) ·
-[Project status](#project-status) · [Tools](#tools) · [Agentic coding](#agentic-coding) ·
-[Getting started](#getting-started) · [Roadmap](#roadmap) · [Documentation](#documentation) ·
-[License](#license) · [Community](#community)
+- [Quick start](#quick-start)
+- [Use cases](#use-cases)
+- [Why Areg](#why-areg)
+- [How it works](#how-it-works)
+- [Agentic coding](#agentic-coding)
+- [Performance](#performance)
+- [Embedded ready](#embedded-ready)
+- [Areg vs. alternatives](#areg-vs-alternatives)
+- [Project status](#project-status)
+- [Tools](#tools)
+- [Getting started](#getting-started)
+- [Roadmap](#roadmap)
+- [Documentation](#documentation)
+- [License](#license)
+- [Community](#community)
 
 ---
 
 ## Use cases[![](./docs/img/pin.svg)](#use-cases)
 
-Three architecture patterns to apply to your own system.
+### IoT: Mist-to-Cloud / Nebula
+
+Make decisions near the device; send useful results upstream. Device services and an edge
+application communicate through Areg inside a trusted network. Your edge application can
+aggregate readings, control equipment and connect to a cloud API through its own secure connection.
+
+<div align="center"><a href="./docs/img/areg-nebula.svg"><img src="./docs/img/areg-nebula.svg" alt="Nebula IoT pattern: device services connect through mtrouter to an edge application in a trusted network; the application manages a separate secure connection to the cloud" width="720"/></a></div>
+
+The Nebula idea, with the boundary explicit: Areg handles local service communication;
+cloud integration and its security belong to the application.
+[Original concept illustration](./docs/img/mist-network.png).
 
 ### Move the processing stage, not its implementation
 
@@ -112,7 +144,7 @@ Later, processing needs its own process for isolation, or a separate machine for
 Keep the service implementations; change their model and build arrangement.
 The same pattern fits scientific imaging, industrial inspection and edge inference.
 
-<div align="center"><img src="./docs/img/areg-pipeline-deployments.svg" alt="Acquisition, processing and storage share one process during development; the same stages can run in separate processes, each connected to mtrouter over TCP" width="720"/></div>
+<div align="center"><a href="./docs/img/areg-pipeline-deployments.svg"><img src="./docs/img/areg-pipeline-deployments.svg" alt="Acquisition, processing and storage share one process during development; the same stages can run in separate processes, each connected to mtrouter over TCP" width="720"/></a></div>
 
 Same stages, different process boundaries. Actual data rates depend on the network,
 hardware and work inside each stage; Areg supplies communication, not an inference engine.
@@ -134,7 +166,7 @@ expects. Exercise the consumer, then replace the simulated provider with the dev
 Keep the consumer's service calls. Simulation fidelity and hardware validation remain your responsibility.
 [Simulation and hardware-in-the-loop](./docs/USECASES.md#simulation-and-hardware-in-the-loop-testing).
 
-<div align="center"><img src="./docs/img/areg-device-simulation.svg" alt="Two alternative deployments: the same consumer connects through mtrouter to either a simulated provider or a device-backed provider, using the same interface and role name" width="720"/></div>
+<div align="center"><a href="./docs/img/areg-device-simulation.svg"><img src="./docs/img/areg-device-simulation.svg" alt="Two alternative deployments: the same consumer connects through mtrouter to either a simulated provider or a device-backed provider, using the same interface and role name" width="720"/></a></div>
 
 One service contract, alternative providers -- not two providers competing for the same role.
 Explore the patterns in [Use cases and benefits](./docs/USECASES.md).
@@ -145,6 +177,8 @@ Also useful for [industrial automation](./docs/USECASES.md#industrial-automation
 [splitting a C++ monolith](./docs/USECASES.md#incremental-decomposition-of-c-monoliths)
 and [multiple UIs over one backend](./docs/USECASES.md#multi-display-and-multi-ui-architectures).
 
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
+
 ---
 
 ## Why Areg[![](./docs/img/pin.svg)](#why-areg)
@@ -154,6 +188,8 @@ and [multiple UIs over one backend](./docs/USECASES.md#multi-display-and-multi-u
 - **Flexible startup order:** consumers connect when their named providers appear and reconnect when they return. Applications receive connection-state callbacks.
 - **Recovery hooks built in:** a configured watchdog can restart a stuck component thread and reinitialize its components. It does not restart crashed processes or restore lost application state.
 - **One view of many processes:** collect distributed logs and change logging priorities at runtime without restarting the application.
+
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
 
 ## How it works[![](./docs/img/pin.svg)](#how-it-works)
 
@@ -175,6 +211,47 @@ not just a transport library. Keep handlers non-blocking; move long-running work
 Cross-process interfaces must be `Public`.
 [Code generator](./docs/wiki/06b-code-generator.md) ·
 [Complete deployment models](./examples/03_helloservice/).
+
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
+
+---
+
+## Agentic coding[![](./docs/img/pin.svg)](#agentic-coding)
+
+**Your agent writes service logic, not the plumbing.**
+
+Areg is AI-ready by design: its agentic layer supplies task-focused documentation, generators
+and executable checks. The workflow is **declare → generate → implement → verify**.
+
+- **Focused context:** task routing and API lookup instead of a framework-wide search.
+- **Less code to write:** generated components, models and a worksheet of the business logic to implement.
+- **A checked result:** contract checks, builds and scenarios exercise the application.
+
+The layer is designed to spend tokens on service logic rather than API discovery and boilerplate.
+Published comparisons show less hand-written C++ and fewer fix cycles. Total cost varies by task
+and model; loading the guidance can require more input context.
+
+Start at [`AGENTS.md`](./AGENTS.md), or read the [developer's workflow guide](./docs/wiki/09a-agentic-coding.md).
+Python 3.10+ is needed for the agent tools, not for ordinary C++ development.
+
+<details>
+<summary>Measured results and reproducible tasks</summary>
+
+In two October 2026 baselines, **28/28 Areg runs** passed their assigned hidden checks,
+versus **12/15 gRPC runs**, with roughly **one-half to one-quarter as much hand-written C++**.
+These are maintainer-authored tasks with unequal run counts and different tooling;
+some prompt requirements differ, and runs could include fix cycles.
+They evaluate those workflows, not general framework correctness or guaranteed cost savings.
+
+[Sonnet baseline](./examples/ai-benchmark/baseline-2026-10-17.md) ·
+[Terra baseline](./examples/ai-benchmark/baseline-2026-10-18.md) ·
+[Reproducible tasks](./examples/ai-benchmark/) ·
+[Agent-written state machine in Lusan](./docs/img/screenshot-fsm-ai.png) ·
+[Share a run, passed or failed](https://github.com/aregtech/areg-sdk/discussions/800).
+
+</details>
+
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
 
 ---
 
@@ -203,6 +280,8 @@ Reproduce on your hardware with [`23_pubdatarate`](./examples/23_pubdatarate/) a
 [`30_publatency`](./examples/30_publatency/).
 [Logging measurements](./docs/wiki/04f-logging-performance.md) have their own workload and methodology.
 
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
+
 ## Embedded ready[![](./docs/img/pin.svg)](#embedded-ready)
 
 For embedded Linux with sockets and pthreads, on ARMv7, ARM64, x86 and x86_64.
@@ -217,6 +296,8 @@ These are cross-compiled binary sizes, not RAM measurements. The published minim
 RAM measurements are on x86_64, not ARM.
 Bare metal, RTOS and 16-bit targets are **not supported today**.
 [Configurations, RAM measurements and limits](./docs/wiki/08e-embedded-ready.md).
+
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
 
 ---
 
@@ -235,6 +316,8 @@ Actor frameworks and Qt queued connections also offer thread-owned dispatch.
 Areg combines that model with generated service interfaces, discovery by name,
 reconnection and distributed logging. It is not a web framework or an internet-facing API gateway.
 
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
+
 ## Project status[![](./docs/img/pin.svg)](#project-status)
 
 | | |
@@ -246,6 +329,8 @@ reconnection and distributed logging. It is not a web framework or an internet-f
 | **Networking boundary** | `mtrouter` uses plain TCP, without authentication or encryption today. Deploy only in trusted networks; optional TLS is planned, not shipped. |
 
 Badges link to the build, analysis and coverage reports; coverage is not a guarantee of correctness.
+
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
 
 ---
 
@@ -270,24 +355,7 @@ not output from the quick start above. [Live-logging walkthrough](./docs/wiki/06
 [Interface designer screenshot](./docs/img/lusan-service-if-general.png).
 Libraries: `areg` (core), `aregextend` (utilities, SQLite wrapper), `areglogger` (log observer API).
 
-## Agentic coding[![](./docs/img/pin.svg)](#agentic-coding)
-
-An unfamiliar framework should not make a coding agent guess its API.
-[`AGENTS.md`](./AGENTS.md) provides the entry point; generators write the plumbing,
-API checks catch invented names, and executable scenarios exercise the result.
-Python 3.10+ is needed for this tooling, not for ordinary C++ development.
-
-In two published October 2026 baselines, **28/28 Areg runs** passed their assigned hidden checks,
-versus **12/15 gRPC runs**. These are maintainer-authored tasks with unequal run counts and
-different tooling; some prompt requirements differ, and runs could include fix cycles.
-They evaluate those workflows, not general framework correctness.
-[Sonnet baseline](./examples/ai-benchmark/baseline-2026-10-17.md) ·
-[Terra baseline](./examples/ai-benchmark/baseline-2026-10-18.md).
-
-[Workflow guide](./docs/wiki/09a-agentic-coding.md) ·
-[Reproducible tasks](./examples/ai-benchmark/) ·
-[Agent-written state machine in Lusan](./docs/img/screenshot-fsm-ai.png) ·
-[Share a run, passed or failed](https://github.com/aregtech/areg-sdk/discussions/800).
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
 
 ---
 
@@ -304,12 +372,16 @@ They evaluate those workflows, not general framework correctness.
 | Build the SDK and explore examples | [CMake build](./docs/wiki/01b-cmake-build.md) · [Visual Studio](./docs/wiki/01c-msvc-build.md) · [Examples](./examples/README.md) |
 | Prepare a development machine | [Build environment](./docs/wiki/01e-build-environment.md); GCC, Clang or MSVC |
 
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
+
 ## Roadmap[![](./docs/img/pin.svg)](#roadmap)
 
 Next: the 2.0.0 release and vcpkg port, followed by RTOS support starting with Zephyr.
 Planned: shared-memory transport and optional TLS for `mtrouter`.
 Language bindings and additional transports remain open for community input.
 These are future directions, not current capabilities.
+
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
 
 ## Documentation[![](./docs/img/pin.svg)](#documentation)
 
@@ -318,11 +390,15 @@ These are future directions, not current capabilities.
 [Examples](./examples/README.md) for working code ·
 [AGENTS.md](./AGENTS.md) for coding agents.
 
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
+
 ## License[![](./docs/img/pin.svg)](#license)
 
 [Apache License 2.0](./LICENSE.txt), permitting open-source and commercial use.
 Optional commercial licensing, training and dedicated support: **info[at]areg[dot]tech**.
 Commercial support is not required to use the Apache-licensed SDK commercially.
+
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
 
 ## Community[![](./docs/img/pin.svg)](#community)
 
@@ -332,6 +408,8 @@ Commercial support is not required to use the Apache-licensed SDK commercially.
 Reproductions, measurements on your hardware, and documentation improvements are welcome.
 
 [![Use Areg SDK](https://img.shields.io/badge/uses-areg--sdk-blue)](https://github.com/aregtech/areg-sdk)
+
+<div align="right"><sub><a href="#table-of-contents">Contents</a> · <a href="#top">Back to top ↑</a></sub></div>
 
 ---
 

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="288" viewBox="0 0 640 288" role="img" aria-labelledby="title description">
+  <title id="title">Nebula: device services, edge decisions, cloud integration</title>
+  <desc id="description">An illustrative IoT pattern, not a scale benchmark. Device-service processes connect through mtrouter over TCP to an edge application inside a trusted network. The edge application implements a separate secure connection to a cloud API. Cloud integration and its security are application responsibilities, not a built-in Areg transport.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d5f1f5"/>
+      <stop offset="1" stop-color="#c1d9f4"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 1 L7 4 L1 7" fill="none" stroke="#71859a" stroke-width="1.4"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: #24394b; font-size: 20px; }
+      .heading { font-size: 21px; font-weight: 600; }
+      .muted { fill: #5d7083; font-size: 16px; }
+      .canvas { fill: #ffffff; }
+      .zone { fill: #f3f9fa; stroke: #9ebcc9; stroke-width: 1; stroke-dasharray: 5 5; }
+      .device { fill: #e6f4f0; stroke: #69a99e; stroke-width: 1; }
+      .edge { fill: #e7f2fc; stroke: #89accd; stroke-width: 1; }
+      .icon { fill: none; stroke: #236879; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+      .link { fill: none; stroke: #71859a; stroke-width: 1.2; }
+      .cloud-label { fill: #24394b; }
+      @media (prefers-color-scheme: dark) {
+        text { fill: #e1eaf2; }
+        .canvas { fill: #101923; }
+        .muted { fill: #a4b8ca; }
+        .zone { fill: #152732; stroke: #50798b; }
+        .device { fill: #1b403e; stroke: #568e85; }
+        .edge { fill: #1d3854; stroke: #597fa5; }
+        .icon { stroke: #9ed5dc; }
+      }
+    </style>
+  </defs>
+  <rect class="canvas" width="640" height="288" rx="12"/>
+  <text class="heading" x="24" y="32">Mist + edge</text>
+  <text class="heading" x="514" y="32">Cloud</text>
+  <rect class="zone" x="16" y="48" width="416" height="224" rx="16"/>
+  <text class="muted" x="34" y="73">Areg / trusted network</text>
+
+  <path class="link" d="M76 190 V168 H224 V190 M150 168 V151 M150 168 V190"/>
+  <rect class="device" x="42" y="190" width="68" height="48" rx="9"/>
+  <rect class="device" x="116" y="190" width="68" height="48" rx="9"/>
+  <rect class="device" x="190" y="190" width="68" height="48" rx="9"/>
+  <g class="icon">
+    <circle cx="76" cy="214" r="5"/>
+    <path d="M67 205 Q58 214 67 223 M85 205 Q94 214 85 223 M63 201 Q50 214 63 227 M89 201 Q102 214 89 227"/>
+    <rect x="138" y="202" width="24" height="24" rx="3"/>
+    <path d="M142 197 V202 M150 197 V202 M158 197 V202 M142 226 V231 M150 226 V231 M158 226 V231 M133 206 H138 M133 214 H138 M133 222 H138 M162 206 H167 M162 214 H167 M162 222 H167"/>
+    <rect x="208" y="204" width="32" height="22" rx="4"/>
+    <path d="M213 204 L216 199 H232 L235 204"/>
+    <circle cx="224" cy="215" r="7"/>
+  </g>
+  <text x="150" y="259" text-anchor="middle">Device services</text>
+
+  <rect x="82" y="105" width="136" height="46" rx="9" fill="#174e65"/>
+  <text x="150" y="125" text-anchor="middle" style="fill:#ffffff;font-size:19px">mtrouter</text>
+  <text x="150" y="142" text-anchor="middle" style="fill:#ffffff;font-size:13px;letter-spacing:1px">TCP</text>
+  <path class="link" d="M228 128 H280" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <rect class="edge" x="290" y="98" width="122" height="116" rx="12"/>
+  <g class="icon">
+    <rect x="331" y="111" width="40" height="16" rx="3"/>
+    <rect x="331" y="133" width="40" height="16" rx="3"/>
+    <path d="M338 119 H339 M338 141 H339 M347 119 H363 M347 141 H363"/>
+  </g>
+  <text x="351" y="176" text-anchor="middle">Edge app</text>
+  <text class="muted" x="351" y="198" text-anchor="middle">act / aggregate</text>
+
+  <path class="link" d="M422 128 H488" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+  <path d="M510 153 C482 153 480 117 502 109 C497 84 532 70 549 90 C565 68 599 79 600 104 C630 105 636 145 609 153Z" fill="url(#sky)" stroke="#82b2cc" stroke-width="1"/>
+  <text class="cloud-label" x="555" y="124" text-anchor="middle" style="font-size:19px">Cloud API</text>
+  <text x="522" y="191" text-anchor="middle" style="font-size:18px">Your secure</text>
+  <text x="522" y="213" text-anchor="middle" style="font-size:18px">cloud connection</text>
+  <text class="muted" x="522" y="247" text-anchor="middle">Application-managed</text>
+</svg>

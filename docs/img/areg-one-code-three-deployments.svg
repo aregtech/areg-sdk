@@ -1,53 +1,71 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="336" viewBox="0 0 640 336" role="img" aria-labelledby="title description">
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="252" viewBox="0 0 640 252" role="img" aria-labelledby="title description">
   <title id="title">Same service code. Three deployments.</title>
-  <desc id="description">A provider and consumer run in one thread, two threads of one process, or separate processes connected through mtrouter over TCP. Solid boundaries are processes; dashed boundaries are threads. Change the deployment model and build layout, not the service implementations.</desc>
+  <desc id="description">The same provider and consumer share one thread, use two threads in one process, or run in separate processes on one or more machines. Solid outlines mark application processes; dashed outlines mark threads. Cross-process messages pass through mtrouter over TCP.</desc>
   <defs>
-    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0 0 L8 4 L0 8Z" fill="#57606a"/>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 1 L7 4 L1 7" fill="none" stroke="#71859a" stroke-width="1.4"/>
     </marker>
     <style>
-      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 24px; fill: #1f2328; }
-      .label { font-size: 22px; fill: #57606a; }
-      .heading { font-weight: 600; }
-      .process { fill: #f6f8fa; stroke: #8c959f; stroke-width: 2; }
-      .thread { fill: none; stroke: #57606a; stroke-width: 2; stroke-dasharray: 5 4; }
-      .provider { fill: #dafbe1; stroke: #22863a; stroke-width: 2; }
-      .consumer { fill: #fbefff; stroke: #8250df; stroke-width: 2; }
-      .link { fill: none; stroke: #57606a; stroke-width: 2; marker-start: url(#arrow); marker-end: url(#arrow); }
+      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: #24394b; font-size: 21px; }
+      .heading { font-size: 20px; font-weight: 600; }
+      .muted { fill: #5d7083; font-size: 16px; }
+      .canvas { fill: #ffffff; }
+      .process { fill: #f7fafc; stroke: #bdcdd9; stroke-width: 1; }
+      .thread { fill: none; stroke: #8ca1b3; stroke-width: 1; stroke-dasharray: 4 4; }
+      .provider { fill: #e6f4f0; }
+      .consumer { fill: #efedfa; }
+      .router { fill: #174e65; }
+      .white { fill: #ffffff; }
+      .link { fill: none; stroke: #71859a; stroke-width: 1.2; marker-start: url(#arrow); marker-end: url(#arrow); }
+      @media (max-width: 420px) {
+        text { font-size: 24px; }
+        .heading { font-size: 22px; }
+        .muted { font-size: 18px; }
+      }
+      @media (prefers-color-scheme: dark) {
+        text { fill: #e1eaf2; }
+        .canvas { fill: #101923; }
+        .muted { fill: #a4b8ca; }
+        .process { fill: #172330; stroke: #456075; }
+        .thread { stroke: #7892a7; }
+        .provider { fill: #1b403e; }
+        .consumer { fill: #35304e; }
+        .router { fill: #215e77; }
+      }
     </style>
   </defs>
-  <rect x="1" y="1" width="638" height="334" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+  <rect class="canvas" width="640" height="252" rx="12"/>
   <text class="heading" x="22" y="40">One thread</text>
-  <text class="label" x="22" y="69">One process</text>
-  <rect class="process" x="210" y="16" width="408" height="76" rx="8"/>
-  <rect class="thread" x="218" y="24" width="392" height="60" rx="6"/>
-  <rect class="provider" x="230" y="33" width="145" height="42" rx="6"/>
-  <text x="302" y="61" text-anchor="middle">Provider</text>
-  <path class="link" d="M380 54 H444"/>
-  <rect class="consumer" x="450" y="33" width="148" height="42" rx="6"/>
-  <text x="524" y="61" text-anchor="middle">Consumer</text>
+  <text class="muted" x="22" y="63">one process</text>
+  <rect class="process" x="208" y="14" width="410" height="64" rx="9"/>
+  <rect class="thread" x="218" y="23" width="390" height="46" rx="6"/>
+  <rect class="provider" x="228" y="30" width="140" height="32" rx="5"/>
+  <text x="298" y="53" text-anchor="middle">Provider</text>
+  <path class="link" d="M378 46 H448"/>
+  <rect class="consumer" x="458" y="30" width="140" height="32" rx="5"/>
+  <text x="528" y="53" text-anchor="middle">Consumer</text>
 
-  <text class="heading" x="22" y="140">Two threads</text>
-  <text class="label" x="22" y="169">One process</text>
-  <rect class="process" x="210" y="116" width="408" height="76" rx="8"/>
-  <rect class="thread" x="218" y="124" width="168" height="60" rx="6"/>
-  <rect class="thread" x="440" y="124" width="170" height="60" rx="6"/>
-  <rect class="provider" x="230" y="133" width="145" height="42" rx="6"/>
-  <text x="302" y="161" text-anchor="middle">Provider</text>
-  <path class="link" d="M390 154 H436"/>
-  <rect class="consumer" x="450" y="133" width="148" height="42" rx="6"/>
-  <text x="524" y="161" text-anchor="middle">Consumer</text>
+  <text class="heading" x="22" y="116">Two threads</text>
+  <text class="muted" x="22" y="139">one process</text>
+  <rect class="process" x="208" y="90" width="410" height="64" rx="9"/>
+  <rect class="thread" x="218" y="99" width="160" height="46" rx="6"/>
+  <rect class="thread" x="448" y="99" width="160" height="46" rx="6"/>
+  <rect class="provider" x="228" y="106" width="140" height="32" rx="5"/>
+  <text x="298" y="129" text-anchor="middle">Provider</text>
+  <path class="link" d="M386 122 H440"/>
+  <rect class="consumer" x="458" y="106" width="140" height="32" rx="5"/>
+  <text x="528" y="129" text-anchor="middle">Consumer</text>
 
-  <text class="heading" x="22" y="226">Separate processes or machines</text>
-  <rect class="process" x="22" y="242" width="180" height="72" rx="8"/>
-  <rect class="provider" x="34" y="257" width="156" height="42" rx="6"/>
-  <text x="112" y="285" text-anchor="middle">Provider</text>
-  <path class="link" d="M207 278 H243"/>
-  <rect x="250" y="245" width="140" height="66" rx="8" fill="#1f2328"/>
-  <text x="320" y="272" text-anchor="middle" style="fill:#ffffff">mtrouter</text>
-  <text class="label" x="320" y="298" text-anchor="middle" style="fill:#ffffff">TCP</text>
-  <path class="link" d="M396 278 H432"/>
-  <rect class="process" x="438" y="242" width="180" height="72" rx="8"/>
-  <rect class="consumer" x="450" y="257" width="156" height="42" rx="6"/>
-  <text x="528" y="285" text-anchor="middle">Consumer</text>
+  <text class="heading" x="22" y="182">Separate processes or machines</text>
+  <rect class="process" x="22" y="194" width="180" height="44" rx="8"/>
+  <rect class="provider" x="30" y="200" width="164" height="32" rx="5"/>
+  <text x="112" y="223" text-anchor="middle">Provider</text>
+  <path class="link" d="M212 216 H238"/>
+  <rect class="router" x="248" y="194" width="144" height="44" rx="8"/>
+  <text class="white" x="320" y="213" text-anchor="middle" style="font-size:18px">mtrouter</text>
+  <text class="white" x="320" y="230" text-anchor="middle" style="font-size:13px;letter-spacing:1px">TCP</text>
+  <path class="link" d="M402 216 H428"/>
+  <rect class="process" x="438" y="194" width="180" height="44" rx="8"/>
+  <rect class="consumer" x="446" y="200" width="164" height="32" rx="5"/>
+  <text x="528" y="223" text-anchor="middle">Consumer</text>
 </svg>

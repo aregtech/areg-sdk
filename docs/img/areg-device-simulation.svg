@@ -1,46 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="294" viewBox="0 0 640 294" role="img" aria-labelledby="title description">
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="200" viewBox="0 0 640 200" role="img" aria-labelledby="title description">
   <title id="title">Build the client before the device exists</title>
-  <desc id="description">Two alternative deployments use the same consumer, service interface and provider role. In development the provider simulates a device. With hardware it is device-backed. In both illustrated deployments the consumer and provider are separate processes connected through mtrouter over TCP. Only one provider is selected for the role.</desc>
+  <desc id="description">Two alternative deployments retain the same consumer, service interface and provider role. During development the provider simulates the device. With hardware the provider is device-backed. Both illustrations use separate consumer and provider processes connected through mtrouter over TCP. Only one provider is selected for the role.</desc>
   <defs>
-    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0 0 L8 4 L0 8Z" fill="#57606a"/>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 1 L7 4 L1 7" fill="none" stroke="#71859a" stroke-width="1.4"/>
     </marker>
     <style>
-      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 24px; fill: #1f2328; }
-      .heading { font-weight: 600; }
-      .process { fill: #f6f8fa; stroke: #8c959f; stroke-width: 2; }
-      .consumer { fill: #fbefff; stroke: #8250df; stroke-width: 2; }
-      .provider { fill: #dafbe1; stroke: #22863a; stroke-width: 2; }
-      .link { fill: none; stroke: #57606a; stroke-width: 2; marker-start: url(#arrow); marker-end: url(#arrow); }
+      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: #24394b; font-size: 21px; }
+      .heading { font-size: 20px; font-weight: 600; }
+      .canvas { fill: #ffffff; }
+      .process { fill: #f7fafc; stroke: #bdcdd9; stroke-width: 1; }
+      .provider { fill: #e6f4f0; }
+      .consumer { fill: #efedfa; }
+      .router { fill: #174e65; }
+      .link { fill: none; stroke: #71859a; stroke-width: 1.2; marker-start: url(#arrow); marker-end: url(#arrow); }
+      @media (max-width: 420px) {
+        text { font-size: 24px; }
+        .heading { font-size: 22px; }
+      }
+      @media (prefers-color-scheme: dark) {
+        text { fill: #e1eaf2; }
+        .canvas { fill: #101923; }
+        .process { fill: #172330; stroke: #456075; }
+        .provider { fill: #1b403e; }
+        .consumer { fill: #35304e; }
+        .router { fill: #215e77; }
+      }
     </style>
   </defs>
-  <rect x="1" y="1" width="638" height="292" rx="12" fill="#ffffff" stroke="#d0d7de"/>
-  <text class="heading" x="22" y="34">During development</text>
-  <rect class="process" x="22" y="48" width="174" height="80" rx="8"/>
-  <rect class="consumer" x="30" y="62" width="158" height="52" rx="6"/>
-  <text x="109" y="96" text-anchor="middle">Consumer</text>
-  <path class="link" d="M200 88 H229"/>
-  <rect x="236" y="54" width="138" height="68" rx="8" fill="#1f2328"/>
-  <text x="305" y="83" text-anchor="middle" style="fill:#ffffff">mtrouter</text>
-  <text x="305" y="109" text-anchor="middle" style="fill:#ffffff">TCP</text>
-  <path class="link" d="M380 88 H409"/>
-  <rect class="process" x="416" y="48" width="202" height="80" rx="8"/>
-  <rect class="provider" x="424" y="56" width="186" height="64" rx="6"/>
-  <text x="517" y="83" text-anchor="middle">Simulated</text>
-  <text x="517" y="109" text-anchor="middle">provider</text>
+  <rect class="canvas" width="640" height="200" rx="12"/>
+  <text class="heading" x="22" y="29">Develop against simulation</text>
+  <rect class="process" x="22" y="42" width="180" height="50" rx="8"/>
+  <rect class="consumer" x="30" y="51" width="164" height="32" rx="5"/>
+  <text x="112" y="74" text-anchor="middle">Consumer</text>
+  <path class="link" d="M212 67 H238"/>
+  <rect class="router" x="248" y="45" width="144" height="44" rx="8"/>
+  <text x="320" y="64" text-anchor="middle" style="fill:#ffffff;font-size:18px">mtrouter</text>
+  <text x="320" y="81" text-anchor="middle" style="fill:#ffffff;font-size:13px;letter-spacing:1px">TCP</text>
+  <path class="link" d="M402 67 H428"/>
+  <rect class="process" x="438" y="42" width="180" height="50" rx="8"/>
+  <rect class="provider" x="446" y="48" width="164" height="38" rx="5"/>
+  <text x="528" y="74" text-anchor="middle">Simulator</text>
 
-  <text class="heading" x="22" y="166">With hardware</text>
-  <rect class="process" x="22" y="180" width="174" height="80" rx="8"/>
-  <rect class="consumer" x="30" y="194" width="158" height="52" rx="6"/>
-  <text x="109" y="228" text-anchor="middle">Consumer</text>
-  <path class="link" d="M200 220 H229"/>
-  <rect x="236" y="186" width="138" height="68" rx="8" fill="#1f2328"/>
-  <text x="305" y="215" text-anchor="middle" style="fill:#ffffff">mtrouter</text>
-  <text x="305" y="241" text-anchor="middle" style="fill:#ffffff">TCP</text>
-  <path class="link" d="M380 220 H409"/>
-  <rect class="process" x="416" y="180" width="202" height="80" rx="8"/>
-  <rect class="provider" x="424" y="188" width="186" height="64" rx="6"/>
-  <text x="517" y="215" text-anchor="middle">Device-backed</text>
-  <text x="517" y="241" text-anchor="middle">provider</text>
-  <text x="320" y="284" text-anchor="middle">Same consumer, interface and provider role.</text>
+  <text class="heading" x="22" y="127">Connect to the real device</text>
+  <rect class="process" x="22" y="140" width="180" height="50" rx="8"/>
+  <rect class="consumer" x="30" y="149" width="164" height="32" rx="5"/>
+  <text x="112" y="172" text-anchor="middle">Consumer</text>
+  <path class="link" d="M212 165 H238"/>
+  <rect class="router" x="248" y="143" width="144" height="44" rx="8"/>
+  <text x="320" y="162" text-anchor="middle" style="fill:#ffffff;font-size:18px">mtrouter</text>
+  <text x="320" y="179" text-anchor="middle" style="fill:#ffffff;font-size:13px;letter-spacing:1px">TCP</text>
+  <path class="link" d="M402 165 H428"/>
+  <rect class="process" x="438" y="140" width="180" height="50" rx="8"/>
+  <rect class="provider" x="446" y="146" width="164" height="38" rx="5"/>
+  <text x="528" y="172" text-anchor="middle">Device</text>
 </svg>

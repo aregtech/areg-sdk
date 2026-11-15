@@ -1,43 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="316" viewBox="0 0 640 316" role="img" aria-labelledby="title description">
-  <title id="title">Move a pipeline stage without rewriting its service</title>
-  <desc id="description">The logical pipeline is acquisition, processing, storage. In one deployment all three stages share one process. In another each stage has its own process, with every cross-process connection going through mtrouter over TCP. The stages keep their implementations.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="236" viewBox="0 0 640 236" role="img" aria-labelledby="title description">
+  <title id="title">Move a pipeline stage, not its implementation</title>
+  <desc id="description">Acquisition, processing and storage share one process during development. In the second deployment each stage has its own process. Lines to mtrouter represent the TCP connections; cross-process traffic does not bypass the router. Stage implementations remain the same.</desc>
   <defs>
-    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0 0 L8 4 L0 8Z" fill="#57606a"/>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M1 1 L7 4 L1 7" fill="none" stroke="#71859a" stroke-width="1.4"/>
     </marker>
     <style>
-      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 24px; fill: #1f2328; }
-      .heading { font-weight: 600; }
-      .process { fill: #f6f8fa; stroke: #8c959f; stroke-width: 2; }
-      .acquire { fill: #dafbe1; stroke: #22863a; stroke-width: 2; }
-      .compute { fill: #ddf4ff; stroke: #0969da; stroke-width: 2; }
-      .store { fill: #fbefff; stroke: #8250df; stroke-width: 2; }
-      .link { fill: none; stroke: #57606a; stroke-width: 2; marker-end: url(#arrow); }
+      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: #24394b; font-size: 21px; }
+      .heading { font-size: 20px; font-weight: 600; }
+      .canvas { fill: #ffffff; }
+      .process { fill: #f7fafc; stroke: #bdcdd9; stroke-width: 1; }
+      .acquire { fill: #e6f4f0; }
+      .compute { fill: #e7f2fc; }
+      .store { fill: #efedfa; }
+      .router { fill: #174e65; }
+      .link { fill: none; stroke: #71859a; stroke-width: 1.2; }
+      @media (max-width: 420px) {
+        text { font-size: 24px; }
+        .heading { font-size: 22px; }
+      }
+      @media (prefers-color-scheme: dark) {
+        text { fill: #e1eaf2; }
+        .canvas { fill: #101923; }
+        .process { fill: #172330; stroke: #456075; }
+        .acquire { fill: #1b403e; }
+        .compute { fill: #1d3854; }
+        .store { fill: #35304e; }
+        .router { fill: #215e77; }
+      }
     </style>
   </defs>
-  <rect x="1" y="1" width="638" height="314" rx="12" fill="#ffffff" stroke="#d0d7de"/>
-  <text class="heading" x="22" y="34">Start together: one process</text>
-  <rect class="process" x="22" y="48" width="596" height="72" rx="8"/>
-  <rect class="acquire" x="34" y="62" width="168" height="44" rx="6"/>
-  <text x="118" y="91" text-anchor="middle">1. Acquire</text>
-  <path class="link" d="M206 84 H230"/>
-  <rect class="compute" x="236" y="62" width="168" height="44" rx="6"/>
-  <text x="320" y="91" text-anchor="middle">2. Process</text>
-  <path class="link" d="M408 84 H432"/>
-  <rect class="store" x="438" y="62" width="168" height="44" rx="6"/>
-  <text x="522" y="91" text-anchor="middle">3. Store</text>
+  <rect class="canvas" width="640" height="236" rx="12"/>
+  <text class="heading" x="22" y="31">Start together / one process</text>
+  <rect class="process" x="22" y="44" width="596" height="50" rx="8"/>
+  <rect class="acquire" x="32" y="53" width="166" height="32" rx="5"/>
+  <text x="115" y="76" text-anchor="middle">Acquire</text>
+  <path class="link" d="M207 69 H228" marker-end="url(#arrow)"/>
+  <rect class="compute" x="237" y="53" width="166" height="32" rx="5"/>
+  <text x="320" y="76" text-anchor="middle">Process</text>
+  <path class="link" d="M412 69 H433" marker-end="url(#arrow)"/>
+  <rect class="store" x="442" y="53" width="166" height="32" rx="5"/>
+  <text x="525" y="76" text-anchor="middle">Store</text>
 
-  <text class="heading" x="22" y="158">Split when needed: one process per stage</text>
-  <rect class="process" x="22" y="172" width="184" height="68" rx="8"/>
-  <rect class="process" x="228" y="172" width="184" height="68" rx="8"/>
-  <rect class="process" x="434" y="172" width="184" height="68" rx="8"/>
-  <rect class="acquire" x="30" y="184" width="168" height="44" rx="6"/>
-  <text x="114" y="213" text-anchor="middle">1. Acquire</text>
-  <rect class="compute" x="236" y="184" width="168" height="44" rx="6"/>
-  <text x="320" y="213" text-anchor="middle">2. Process</text>
-  <rect class="store" x="442" y="184" width="168" height="44" rx="6"/>
-  <text x="526" y="213" text-anchor="middle">3. Store</text>
-  <path d="M114 240 V278 H206 M320 240 V258 M526 240 V278 H434" fill="none" stroke="#57606a" stroke-width="2"/>
-  <rect x="206" y="258" width="228" height="42" rx="8" fill="#1f2328"/>
-  <text x="320" y="286" text-anchor="middle" style="fill:#ffffff">mtrouter (TCP)</text>
+  <text class="heading" x="22" y="126">Split when needed / one process per stage</text>
+  <rect class="process" x="22" y="140" width="186" height="50" rx="8"/>
+  <rect class="process" x="227" y="140" width="186" height="50" rx="8"/>
+  <rect class="process" x="432" y="140" width="186" height="50" rx="8"/>
+  <rect class="acquire" x="32" y="149" width="166" height="32" rx="5"/>
+  <text x="115" y="172" text-anchor="middle">Acquire</text>
+  <rect class="compute" x="237" y="149" width="166" height="32" rx="5"/>
+  <text x="320" y="172" text-anchor="middle">Process</text>
+  <rect class="store" x="442" y="149" width="166" height="32" rx="5"/>
+  <text x="525" y="172" text-anchor="middle">Store</text>
+  <path class="link" d="M115 190 V212 H224 M320 190 V198 M525 190 V212 H416"/>
+  <rect class="router" x="224" y="198" width="192" height="28" rx="6"/>
+  <text x="320" y="218" text-anchor="middle" style="fill:#ffffff;font-size:18px">mtrouter / TCP</text>
 </svg>
