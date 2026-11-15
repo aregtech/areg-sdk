@@ -200,6 +200,8 @@ and the current router transport is intended for trusted peers.
 Operator interfaces, monitoring applications and test tools can consume the same
 backend contract. Requests carry commands; subscribed attributes deliver state updates.
 
+<div align="center"><a href="./img/areg-multi-ui.svg"><img src="./img/areg-multi-ui.svg" alt="An operator UI, a monitoring application and a test tool consuming one backend service through mtrouter" width="720"/></a></div>
+
 An additional consumer need not introduce another backend protocol.
 The application still handles competing commands, permissions, slow consumers and
 integration with each UI toolkit's own event loop.

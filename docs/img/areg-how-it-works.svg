@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="256" viewBox="0 0 640 256" role="img" aria-labelledby="title description">
+  <title id="title">Define the interface, generate the code, choose the deployment</title>
+  <desc id="description">Three steps. First, a .siml service interface declares requests, attributes and broadcasts. Second, the code generator writes the C++ proxies and dispatch, and the developer writes the service logic. Third, the application model deploys the same components in threads, in processes or on separate machines.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 1 L7 4 L1 7" fill="none" stroke="#71859a" stroke-width="1.4"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: #24394b; font-size: 21px; }
+      .heading { font-size: 20px; font-weight: 600; }
+      .muted { fill: #5d7083; font-size: 16px; }
+      .canvas { fill: #ffffff; }
+      .process { fill: #f7fafc; stroke: #bdcdd9; stroke-width: 1; }
+      .provider { fill: #e6f4f0; }
+      .consumer { fill: #efedfa; }
+      .compute { fill: #e7f2fc; }
+      .flow { fill: none; stroke: #71859a; stroke-width: 1.2; marker-end: url(#arrow); }
+      .router { fill: #174e65; }
+      .router-label { fill: #ffffff; font-size: 21px; }
+      .router-note { fill: #ffffff; font-size: 16px; }
+      .link { fill: none; stroke: #71859a; stroke-width: 1.2; marker-start: url(#arrow); marker-end: url(#arrow); }
+      @media (max-width: 420px) {
+        text { font-size: 24px; }
+        .heading { font-size: 22px; }
+        .muted { font-size: 18px; }
+        .router-note { font-size: 18px; }
+      }
+      @media (prefers-color-scheme: dark) {
+        text { fill: #e1eaf2; }
+        .canvas { fill: #101923; }
+        .muted { fill: #a4b8ca; }
+        .process { fill: #172330; stroke: #456075; }
+        .provider { fill: #1b403e; }
+        .consumer { fill: #35304e; }
+        .compute { fill: #1d3854; }
+        .router { fill: #215e77; }
+      }
+    </style>
+  </defs>
+  <rect class="canvas" width="640" height="256" rx="12"/>
+  <text class="heading" x="22" y="32">1. Define</text>
+  <text class="heading" x="227" y="32">2. Generate</text>
+  <text class="heading" x="432" y="32">3. Deploy</text>
+  <rect class="process" x="22" y="48" width="186" height="136" rx="8"/>
+  <rect class="compute" x="32" y="58" width="166" height="32" rx="5"/>
+  <text x="115" y="81" text-anchor="middle">.siml interface</text>
+  <text class="muted" x="115" y="118" text-anchor="middle">requests</text>
+  <text class="muted" x="115" y="142" text-anchor="middle">attributes</text>
+  <text class="muted" x="115" y="166" text-anchor="middle">broadcasts</text>
+  <path class="flow" d="M208 116 H225"/>
+  <rect class="process" x="227" y="48" width="186" height="136" rx="8"/>
+  <rect class="compute" x="237" y="58" width="166" height="32" rx="5"/>
+  <text x="320" y="81" text-anchor="middle">Generated C++</text>
+  <text class="muted" x="320" y="116" text-anchor="middle">proxies, dispatch</text>
+  <rect class="provider" x="237" y="142" width="166" height="32" rx="5"/>
+  <text x="320" y="165" text-anchor="middle">Your logic</text>
+  <path class="flow" d="M413 116 H430"/>
+  <rect class="process" x="432" y="48" width="186" height="136" rx="8"/>
+  <rect class="consumer" x="442" y="58" width="166" height="32" rx="5"/>
+  <text x="525" y="81" text-anchor="middle">Threads</text>
+  <rect class="consumer" x="442" y="100" width="166" height="32" rx="5"/>
+  <text x="525" y="123" text-anchor="middle">Processes</text>
+  <rect class="consumer" x="442" y="142" width="166" height="32" rx="5"/>
+  <text x="525" y="165" text-anchor="middle">Machines</text>
+  <text class="muted" x="320" y="226" text-anchor="middle">The model chooses the deployment; the service code stays</text>
+</svg>
