@@ -36,7 +36,7 @@ namespace areg {
  *          moment the output logger supports only ASCII messages and any Unicode character might
  *          output wrong.
  **/
-class DebugOutputLogger final   : public    LoggerBase
+class DebugOutputLogger final   : public    LoggerBase   // GCOVR_EXCL_LINE: never deleted
                                 , private   OutStream
 {
 //////////////////////////////////////////////////////////////////////////

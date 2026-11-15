@@ -78,7 +78,7 @@ private:
     static constexpr uint32_t       LOG_RECONNECT_TIMEOUT       { areg::TIMEOUT_1_SEC * 5 };
 
     //!< Receives the log messages, which are posted to the logging thread as events.
-    class LogMessageConsumer final : public EventConsumer
+    class LogMessageConsumer final : public EventConsumer   // GCOVR_EXCL_LINE: never deleted
     {
     public:
         explicit LogMessageConsumer(LogManager & logManager) noexcept

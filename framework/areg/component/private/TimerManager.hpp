@@ -45,7 +45,7 @@ namespace areg {
  * \brief   Manages timers and generates timer events to target consumers. Singleton pattern.
  *          Creates system timers and delivers timer events to the consumer's owner thread.
  **/
-class TimerManager final : protected TimerManagerBase
+class TimerManager final : protected TimerManagerBase   // GCOVR_EXCL_LINE: never deleted
 {
 
 //////////////////////////////////////////////////////////////////////////

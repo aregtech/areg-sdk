@@ -39,7 +39,7 @@ namespace areg::ext {
  * \brief   Separate process that collects and displays log messages from running applications, with
  *          options to save to file or forward to a log viewer.
  **/
-class LogCollector final : public areg::ext::ServiceApplicationBase
+class LogCollector final : public areg::ext::ServiceApplicationBase   // GCOVR_EXCL_LINE: never deleted
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types

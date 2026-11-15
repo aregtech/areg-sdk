@@ -191,7 +191,7 @@ bool Semaphore::_os_unlock()
 
 void CriticalSection::_os_create_critical_section()
 {
-    mSyncObject = static_cast<void *>( new areg::os::CriticalSectionPosix(false) );
+    mSyncObject = static_cast<void *>( new areg::os::CriticalSectionPosix() );
 }
 
 void CriticalSection::_os_release_critical_section()

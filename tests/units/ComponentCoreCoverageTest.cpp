@@ -624,7 +624,9 @@ TEST(ComponentCoreCoverageTest, consumer_without_its_proxy_is_unregistered_and_o
         for (const Record & record : registration.mCalls)
         {
             if (record.kind == Call::UnregisterConsumer)
+            {
                 EXPECT_EQ(DisconnectReason::ConsumerDisconnected, record.reason);
+            }
         }
 
         processor.unregister_missing_local(registration);

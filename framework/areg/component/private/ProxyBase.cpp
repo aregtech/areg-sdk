@@ -290,7 +290,7 @@ namespace
     }
 
     //!< Delivers a queued client notification to its client only while the notification is pending.
-    class NotificationRelay final : public EventConsumer
+    class NotificationRelay final : public EventConsumer   // GCOVR_EXCL_LINE: never deleted
     {
     public:
         NotificationRelay() = default;
@@ -324,7 +324,7 @@ namespace
     constexpr uint32_t  SERVICE_PAYLOAD_SIZE{ SERVICE_PROXY_OFFSET + static_cast<uint32_t>(sizeof(uint32_t)) };
 
     //!< Delivers a queued service available event to its proxy only while the proxy is registered.
-    class ServiceRelay final : public EventConsumer
+    class ServiceRelay final : public EventConsumer   // GCOVR_EXCL_LINE: never deleted
     {
     public:
         ServiceRelay() = default;

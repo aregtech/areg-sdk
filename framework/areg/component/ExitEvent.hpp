@@ -24,7 +24,7 @@ namespace areg {
 /**
  * \brief   Singleton event used to signal thread completion. Shared across multiple threads.
  **/
-class AREG_API ExitEvent final : public Event
+class AREG_API ExitEvent final : public Event   // GCOVR_EXCL_LINE: never deleted
 {
 
     AREG_DECLARE_RUNTIME_EVENT(ExitEvent)
