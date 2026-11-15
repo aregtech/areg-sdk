@@ -228,6 +228,7 @@ collect() {
   local gcov=()
   [ -n "$GCOV" ] && gcov=(--gcov-executable "$GCOV")
   # A line may run more than 2^32 times over the whole suite; a count above 2^48 is rejected as corrupt.
+  # A destructor declared without a body holds only the deleting destructor the MSVC ABI generates.
   ( cd "$SRC" && "$GCOVR" --root . --filter 'framework/' -j "$NPROC" ${gcov[@]+"${gcov[@]}"} \
       --gcov-suspicious-hits-threshold 281474976710656 \
       --exclude-unreachable-branches --exclude-throw-branches \
@@ -235,6 +236,7 @@ collect() {
       --exclude-branches-by-pattern '^\s*static\s' \
       --exclude-branches-by-pattern '^\s*delete\s' \
       --exclude-lines-by-pattern '^\s*ASSERT(_MSG)?\s*\(\s*false\b.*' \
+      --exclude-lines-by-pattern '^\s*(virtual\s+)?~\w+\s*\(\s*\)\s*(noexcept\s*)?(override\s*)?;\s*$' \
       --json "$1" "$BUILD" ) || die "gcovr failed to collect $1"
 }
 
@@ -321,11 +323,11 @@ step_report() {
   local flag adds=() summary=()
   [ -n "${GITHUB_STEP_SUMMARY:-}" ] && summary=(--summary "$GITHUB_STEP_SUMMARY")
   cd "$SRC" || die "no source tree $SRC"
-  # One Cobertura file per Codecov flag, as uploaded.
+  # One Cobertura file per Codecov flag, as uploaded: one entry per source line, its template instances merged.
   for flag in unit examples; do
     [ -f "$OUT/$flag.json" ] || die "missing $OUT/$flag.json: run the '$flag' step first"
-    "$GCOVR" --root . --json-add-tracefile "$OUT/$flag.json" \
-             --cobertura "$OUT/$flag.xml" --json-summary "$OUT/$flag-summary.json" \
+    "$GCOVR" --root . --merge-lines --json-add-tracefile "$OUT/$flag.json" \
+             --cobertura "$OUT/$flag.xml" \
       || die "gcovr failed on $flag.json"
     adds+=(--json-add-tracefile "$OUT/$flag.json")
   done
@@ -337,16 +339,18 @@ step_report() {
   bad=$(grep -ho 'filename="[^"]*"' "$OUT/unit.xml" "$OUT/examples.xml" | grep -E 'filename="(/|[A-Za-z]:|\.\.|[^"]*\\)' | head -3)
   [ -z "$bad" ] || die "Cobertura paths are not repository-relative: $bad"
   mkdir -p "$OUT/html"
-  "$GCOVR" --root . "${adds[@]}" \
+  # One count per source line: the template instances and constructor variants of a line are merged.
+  "$GCOVR" --root . --merge-lines "${adds[@]}" \
            --html-nested "$OUT/html/index.html" --html-title 'Areg SDK framework coverage' \
            --json-summary "$OUT/total-summary.json" --txt-summary \
     || die "gcovr failed on the HTML report"
-  # Codecov reports a line once, so the template instances and constructor variants are merged.
+  # The rule files add the counters of an --only run to the uploaded ones.
   local flag_adds
   for flag in unit examples; do
     flag_adds=(--json-add-tracefile "$OUT/$flag.json")
     [ -f "$OUT/$flag-only.json" ] && flag_adds+=(--json-add-tracefile "$OUT/$flag-only.json")
     "$GCOVR" --root . --merge-lines "${flag_adds[@]}" --cobertura "$OUT/$flag-rule.xml" \
+             --json-summary "$OUT/$flag-summary.json" \
       || die "gcovr failed on $flag-rule.xml"
   done
   "$GCOVR" --root . --merge-lines "${adds[@]}" --cobertura "$OUT/total.xml" \

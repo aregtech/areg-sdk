@@ -35,6 +35,15 @@
 #include <thread>
 #include <vector>
 
+#if defined(_WIN32)
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif  // NOMINMAX
+    #include <Windows.h>
+#else   // !defined(_WIN32)
+    #include <time.h>
+#endif  // defined(_WIN32)
+
 namespace
 {
     using areg::Event;
@@ -1651,4 +1660,85 @@ TEST(EventQueueTest, dispatcher_post_to_own_full_queue_fails_at_once)
     EXPECT_EQ(listener.mOwn.load(), areg::QUEUE_MIN_RING_CAPACITY);
 
     dispatcher.shutdown(areg::WAIT_INFINITE);
+}
+
+namespace
+{
+    //!< Offset of the enqueue cursor in an EventQueue, pinned by a static_assert in EventQueue.cpp.
+    constexpr size_t    ENQUEUE_CURSOR_OFFSET   { 128u };
+
+    //!< Top bit of the enqueue cursor, set while the queue is closed.
+    constexpr size_t    CURSOR_CLOSED           { static_cast<size_t>(1u) << ((sizeof(size_t) * 8u) - 1u) };
+
+    //!< Longest a close waits for a taken slot, EventQueue::CLOSE_WAIT_MS.
+    constexpr long long CLOSE_BOUND_MS          { 1000 };
+
+    //!< A close may use at most one part in this many of its wait as processor time.
+    constexpr uint64_t  CLOSE_CPU_SHARE         { 5u };
+
+    //!< Returns the enqueue cursor of a queue.
+    std::atomic<size_t>& enqueue_cursor(EventQueue& queue)
+    {
+        return *reinterpret_cast<std::atomic<size_t>*>(reinterpret_cast<unsigned char*>(&queue) + ENQUEUE_CURSOR_OFFSET);
+    }
+
+    //!< Returns the processor time the calling thread has used, in microseconds.
+    uint64_t close_thread_cpu_us()
+    {
+#if defined(_WIN32)
+        FILETIME created{}, exited{}, kernel{}, user{};
+        ::GetThreadTimes(::GetCurrentThread(), &created, &exited, &kernel, &user);
+        const uint64_t k{ (static_cast<uint64_t>(kernel.dwHighDateTime) << 32) | kernel.dwLowDateTime };
+        const uint64_t u{ (static_cast<uint64_t>(user.dwHighDateTime) << 32) | user.dwLowDateTime };
+        return (k + u) / 10u;
+#else   // !defined(_WIN32)
+        struct timespec ts {};
+        ::clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
+        return static_cast<uint64_t>(ts.tv_sec) * 1000000u + static_cast<uint64_t>(ts.tv_nsec) / 1000u;
+#endif  // defined(_WIN32)
+    }
+}
+
+/**
+ * \brief   A close waits for a producer that took a ring slot and has not filled it. It sleeps
+ *          while it waits, gives up after its bound, and refuses every push from then on.
+ **/
+TEST(EventQueueTest, close_waits_for_a_slot_taken_before_it_until_the_bound_without_spinning)
+{
+    constexpr uint32_t PUSHED{ 3u };
+    ReadyQueue queue(32u, true);
+    for (uint32_t i = 0u; i < PUSHED; ++i)
+    {
+        Event evt = makeEvent(i);
+        ASSERT_TRUE(queue.push_event(evt));
+    }
+
+    for (uint32_t i = 0u; i < PUSHED; ++i)
+    {
+        ASSERT_EQ(queue.pop_event().event_id(), i);
+    }
+
+    std::atomic<size_t>& cursor{ enqueue_cursor(queue) };
+    ASSERT_EQ(cursor.load(), static_cast<size_t>(PUSHED));
+
+    // A producer takes the next slot and has not filled it yet.
+    cursor.fetch_add(1u);
+
+    const uint64_t cpuStart { close_thread_cpu_us() };
+    const auto     wallStart{ std::chrono::steady_clock::now() };
+    queue.close_lanes();
+    const long long wallMs  { std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - wallStart).count() };
+    const uint64_t  cpuUs   { close_thread_cpu_us() - cpuStart };
+
+    EXPECT_EQ(cursor.load(), static_cast<size_t>(PUSHED + 1u) | CURSOR_CLOSED);
+    EXPECT_GE(wallMs, CLOSE_BOUND_MS);
+    EXPECT_LE(cpuUs * CLOSE_CPU_SHARE, static_cast<uint64_t>(wallMs) * 1000u) << "cpu " << cpuUs << " us in " << wallMs << " ms";
+
+    EXPECT_TRUE(queue.is_closed());
+    Event late = makeEvent(9u);
+    EXPECT_FALSE(queue.push_event(late));
+    EXPECT_TRUE(late.is_valid());
+
+    // The slot is given back, so releasing the lanes does not wait again.
+    cursor.fetch_sub(1u);
 }

@@ -34,7 +34,7 @@
  * \brief   The server side connection service. Used by message router to
  *          accept service connections.
  **/
-class LogCollectorServerService final   : public    areg::ext::ServiceCommunicationBase
+class LogCollectorServerService final   : public    areg::ext::ServiceCommunicationBase   // GCOVR_EXCL_LINE: never deleted
                                         , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////

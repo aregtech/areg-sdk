@@ -39,7 +39,7 @@ class Timer;
  * \brief   Timer event containing an expired timer, created and sent by the Timer Manager for
  *          dispatch to the timer consumer's owner thread.
  **/
-class AREG_API TimerEvent final : public Event
+class AREG_API TimerEvent final : public Event   // GCOVR_EXCL_LINE: never deleted
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare Runtime

@@ -78,7 +78,7 @@ private:
     static constexpr uint32_t       LOG_RECONNECT_TIMEOUT       { areg::TIMEOUT_1_SEC * 5 };
 
     //!< Receives the log messages, which are posted to the logging thread as events.
-    class LogMessageConsumer final : public EventConsumer
+    class LogMessageConsumer final : public EventConsumer   // GCOVR_EXCL_LINE: never deleted
     {
     public:
         explicit LogMessageConsumer(LogManager & logManager) noexcept
@@ -403,9 +403,8 @@ private:
     void wait_thread_end();
 
     /**
-     * \brief   Waits until the queued log messages are written and the thread ends. If they
-     *          are not written within the shutdown drain timeout, stops the thread and gives
-     *          up on the rest.
+     * \brief   Closes the queue for new log messages, then waits until the queued ones are
+     *          written and the thread ends.
      **/
     inline void _wait_logs_written();
 

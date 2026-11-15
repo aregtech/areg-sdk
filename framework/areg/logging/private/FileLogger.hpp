@@ -34,7 +34,7 @@ namespace areg {
  * \brief   Message logger to output messages in the file. At the moment the output logger supports
  *          only ASCII messages and any Unicode character might output wrong.
  **/
-class FileLogger final  : public    LoggerBase
+class FileLogger final  : public    LoggerBase   // GCOVR_EXCL_LINE: never deleted
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

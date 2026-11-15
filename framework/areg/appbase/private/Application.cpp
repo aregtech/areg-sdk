@@ -542,8 +542,8 @@ bool Application::_set_app_state(areg::AppState newState)
         result = true;
         break; // ignore
 
+    // GCOVR_EXCL_START: unreachable default arm
     default:
-        // GCOVR_EXCL_START: unreachable default arm
         ASSERT(false);
         break;
         // GCOVR_EXCL_STOP

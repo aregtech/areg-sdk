@@ -311,8 +311,10 @@ SqliteStatement::ColumnType SqliteStatement::column_type(int32_t index) const no
             return ColumnType::Blob;
         case SQLITE_NULL:
             return ColumnType::Null;
+        // GCOVR_EXCL_START: SQLite returns only the five type codes above
         default:
             return ColumnType::Unknown;
+        // GCOVR_EXCL_STOP
     }
 }
 

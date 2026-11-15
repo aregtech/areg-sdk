@@ -43,11 +43,9 @@ class CriticalSectionPosix   : protected SyncObjectPosix
 public:
 
     /**
-     * \brief   Creates and initializes the critical section with optional initial lock state.
-     *
-     * \param   initLock    If true, the critical section is initially locked.
+     * \brief   Creates and initializes the critical section, unlocked.
      **/
-    explicit CriticalSectionPosix( bool initLock = false );
+    CriticalSectionPosix();
 
     virtual ~CriticalSectionPosix() = default;
 

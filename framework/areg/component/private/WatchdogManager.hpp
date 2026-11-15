@@ -38,7 +38,7 @@ namespace areg {
  * \brief   Singleton that manages watchdog timers for monitoring thread health and restarting
  *          unresponsive components.
  **/
-class WatchdogManager final : protected TimerManagerBase
+class WatchdogManager final : protected TimerManagerBase   // GCOVR_EXCL_LINE: never deleted
 {
 //////////////////////////////////////////////////////////////////////////
 // Predefined constants and types
