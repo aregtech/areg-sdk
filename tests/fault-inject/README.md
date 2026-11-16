@@ -97,7 +97,7 @@ namespace areg_fault
 | `EpollCtl` | `epoll_ctl` | not replaced | not replaced | `errno` |
 | `FileRead` | `read` | not replaced | `ReadFile` | `errno` / `GetLastError()` |
 | `FileWrite` | `write` | not replaced | `WriteFile` | `errno` / `GetLastError()` |
-| `Allocation` | `operator new(std::nothrow)`, `operator new[](std::nothrow)` | not replaced | not replaced | ignored; the call returns null. The tests are skipped in sanitizer builds, whose runtimes define the operators |
+| `Allocation` | `operator new(std::nothrow)`, `operator new[](std::nothrow)` | not replaced | `malloc` of the C runtime (`ucrtbase.dll`, `ucrtbased.dll`): every allocation of a module, a throwing `new` too | ignored; the call returns null. The tests are skipped in sanitizer builds, whose runtimes define the operators |
 | `AlignedAllocation` | aligned `operator new(std::nothrow)`, `operator new[](std::nothrow)` | not replaced | not replaced | ignored; the call returns null. Skipped in sanitizer builds, as `Allocation` |
 | `PipeCreate` | `pipe` | not replaced | not replaced | `errno` |
 | `Poll` | `poll` | not replaced | `WSAPoll`, `select` | `errno` / `WSAGetLastError()`. The AddressSanitizer interceptor does not reach the replacement, so its tests are skipped in that build. `HostName` (`gethostname`) behaves the same |
@@ -310,5 +310,5 @@ point.
 | `bind()` and `listen()` fail in the router | new `SocketBind`, `SocketListen` | all |
 | `connect()` fails with `ECONNREFUSED` / `WSAECONNREFUSED` at once | `SocketConnect` | Linux, Windows done; macOS open |
 | `send()` / `recv()` return an error mid-message | `SocketSend`, `SocketRecv` | Linux, Windows done; macOS open |
-| Memory allocation fails in a `new (std::nothrow)` path | `Allocation` | Linux done (no sanitizer); macOS, Windows open. On Windows `operator new` is linked into each module and calls `malloc` of the C runtime, so failing it means failing every allocation of the module |
+| Memory allocation fails in a `new (std::nothrow)` path | `Allocation` | Linux done (no sanitizer); Windows done for one allocation at a known index: `operator new` is linked into each module and calls `malloc` of the C runtime, so the point fails any allocation of the modules, arm it with a `skip` and a `count` of 1; macOS open |
 | The console of `aregextend` cannot create its interrupt pipe, read or set the terminal modes, or wait for or read a key | `PipeCreate`, `TermGet`, `TermSet`, `Poll`, `FileRead` | Linux done; macOS open |

@@ -991,17 +991,7 @@ inline constexpr ProxyBase::Listener::Listener(const SequenceNumber& seqNr, Noti
 
 inline constexpr bool ProxyBase::Listener::operator == (const ProxyBase::Listener& other) const noexcept
 {
-    if (this == &other)
-        return true;
-
-    if (other.mSequenceNr == areg::SEQUENCE_NUMBER_ANY)
-        return true;
-    else if ((other.mSequenceNr == mSequenceNr) && (other.mListener == mListener))
-        return true;
-    else if ((other.mSequenceNr == areg::SEQUENCE_NUMBER_NOTIFY) && (other.mListener == nullptr))
-        return true;
-    else
-        return false;
+    return (other.mSequenceNr == mSequenceNr) && (other.mListener == mListener);
 }
 
 //////////////////////////////////////////////////////////////////////////

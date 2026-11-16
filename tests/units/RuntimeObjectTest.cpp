@@ -372,6 +372,35 @@ TEST(RuntimeObjectTest, over_aligned_object_is_aligned)
     delete[] items;
 }
 
+/**
+ * \brief   Reproduces the defect: a non-throwing array of an over-aligned runtime class took the
+ *          unaligned allocation function, so its elements were not aligned.
+ **/
+TEST(RuntimeObjectTest, non_throwing_over_aligned_array_is_aligned)
+{
+    constexpr uint32_t ARRAYS{ 16u };
+    RtAligned * arrays[ARRAYS]{ };
+    for (uint32_t i = 0u; i < ARRAYS; ++i)
+    {
+        arrays[i] = new (std::nothrow) RtAligned[2];
+        ASSERT_NE(arrays[i], nullptr);
+        EXPECT_EQ(reinterpret_cast<std::uintptr_t>(&arrays[i][0]) % 64u, 0u);
+        EXPECT_EQ(reinterpret_cast<std::uintptr_t>(&arrays[i][1]) % 64u, 0u);
+        EXPECT_TRUE(arrays[i][1].is_runtime("RtAligned"));
+    }
+
+    for (RtAligned * items : arrays)
+    {
+        delete[] items;
+    }
+
+    constexpr std::align_val_t align{ 128u };
+    void * raw{ RtAlpha::operator new[](256u, align, std::nothrow) };
+    ASSERT_NE(raw, nullptr);
+    EXPECT_EQ(reinterpret_cast<std::uintptr_t>(raw) % 128u, 0u);
+    RtAlpha::operator delete[](raw, align, std::nothrow);
+}
+
 TEST(RuntimeObjectTest, placement_new_uses_the_given_memory)
 {
     alignas(RtAlpha) unsigned char storage[sizeof(RtAlpha)];

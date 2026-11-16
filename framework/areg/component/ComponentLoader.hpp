@@ -30,7 +30,14 @@
 
 #define FUNC_CREATE_COMP(CompType)                                                                          \
                     ([](const areg::ComponentEntry& e, areg::ComponentThread& t) -> areg::Component * {     \
-                        return new CompType(e, t);})
+                        if constexpr (areg::ComponentCreator<CompType>::NOTHROW)                            \
+                        {                                                                                   \
+                            return new (std::nothrow) CompType(e, t);                                       \
+                        }                                                                                   \
+                        else                                                                                \
+                        {                                                                                   \
+                            return new CompType(e, t);                                                      \
+                        }})
 
 #define FUNC_DELETE_COMP                                                                                    \
                     ([](areg::Component& c, const areg::ComponentEntry& /*e*/) -> void {                    \

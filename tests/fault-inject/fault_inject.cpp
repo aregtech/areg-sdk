@@ -1079,6 +1079,7 @@ namespace
     using OpenSCManagerWFunc    = SC_HANDLE (WINAPI *)( LPCWSTR, LPCWSTR, DWORD );
     using OpenServiceWFunc      = SC_HANDLE (WINAPI *)( SC_HANDLE, LPCWSTR, DWORD );
     using SetConsoleModeFunc    = BOOL (WINAPI *)( HANDLE, DWORD );
+    using LeaveSectionFunc      = void (WINAPI *)( LPCRITICAL_SECTION );
 
     using SocketFunc            = SOCKET (WSAAPI *)( int, int, int );
     using ConnectFunc           = int (WSAAPI *)( SOCKET, const sockaddr *, int );
@@ -1096,6 +1097,7 @@ namespace
     using SelectFunc            = int (WSAAPI *)( int, fd_set *, fd_set *, fd_set *, const timeval * );
     using HostNameFunc          = int (WSAAPI *)( char *, int );
     using StartupFunc           = int (WSAAPI *)( WORD, LPWSADATA );
+    using MallocFunc            = void * (__cdecl *)( size_t );
 
     CreateThreadFunc        gCreateThread       { nullptr };
     CreateFileAFunc         gCreateFileA        { nullptr };
@@ -1113,6 +1115,10 @@ namespace
     OpenSCManagerWFunc      gOpenSCManagerW     { nullptr };
     OpenServiceWFunc        gOpenServiceW       { nullptr };
     SetConsoleModeFunc      gSetConsoleMode     { nullptr };
+    LeaveSectionFunc        gLeaveSection       { nullptr };
+
+    //!< The calls of LeaveCriticalSection() by a thread that does not own the section.
+    std::atomic<uint32_t>   gUnownedLeaves      { 0u };
 
     SocketFunc              gSocket             { nullptr };
     ConnectFunc             gConnect            { nullptr };
@@ -1130,6 +1136,8 @@ namespace
     SelectFunc              gSelect             { nullptr };
     HostNameFunc            gHostName           { nullptr };
     StartupFunc             gStartup            { nullptr };
+    MallocFunc              gMalloc             { nullptr };
+    MallocFunc              gMallocDebug        { nullptr };
 
     HANDLE WINAPI _fault_CreateThread( LPSECURITY_ATTRIBUTES security, SIZE_T stack, LPTHREAD_START_ROUTINE routine, LPVOID arg, DWORD flags, LPDWORD id )
     {
@@ -1229,6 +1237,16 @@ namespace
         return _fails( areg_fault::FaultPoint::ConsoleMode ) ? FALSE : gSetConsoleMode( console, mode );
     }
 
+    void WINAPI _fault_LeaveCriticalSection( LPCRITICAL_SECTION section )
+    {
+        if ( section->OwningThread != reinterpret_cast<HANDLE>(static_cast<ULONG_PTR>(::GetCurrentThreadId( ))) )
+        {
+            gUnownedLeaves.fetch_add( 1u, std::memory_order_relaxed );
+        }
+
+        gLeaveSection( section );
+    }
+
     SOCKET WSAAPI _fault_socket( int domain, int type, int protocol )
     {
         return _fails_wsa( areg_fault::FaultPoint::SocketCreate ) ? INVALID_SOCKET : gSocket( domain, type, protocol );
@@ -1325,6 +1343,18 @@ namespace
         return _should_fail( areg_fault::FaultPoint::SocketInit, error ) ? error : gStartup( version, data );
     }
 
+    void * __cdecl _fault_malloc( size_t size )
+    {
+        int error{ 0 };
+        return _should_fail( areg_fault::FaultPoint::Allocation, error ) ? nullptr : gMalloc( size );
+    }
+
+    void * __cdecl _fault_malloc_debug( size_t size )
+    {
+        int error{ 0 };
+        return _should_fail( areg_fault::FaultPoint::Allocation, error ) ? nullptr : gMallocDebug( size );
+    }
+
     //!< A replaced function: its module, its name, the replacement and the saved original.
     struct Hook
     {
@@ -1354,6 +1384,7 @@ namespace
         , AREG_FAULT_HOOK( "advapi32.dll", OpenSCManagerW           , gOpenSCManagerW )
         , AREG_FAULT_HOOK( "advapi32.dll", OpenServiceW             , gOpenServiceW )
         , AREG_FAULT_HOOK( "kernel32.dll", SetConsoleMode           , gSetConsoleMode )
+        , AREG_FAULT_HOOK( "kernel32.dll", LeaveCriticalSection     , gLeaveSection )
         , AREG_FAULT_HOOK( "ws2_32.dll"  , socket                   , gSocket )
         , AREG_FAULT_HOOK( "ws2_32.dll"  , connect                  , gConnect )
         , AREG_FAULT_HOOK( "ws2_32.dll"  , send                     , gSend )
@@ -1370,6 +1401,8 @@ namespace
         , AREG_FAULT_HOOK( "ws2_32.dll"  , select                   , gSelect )
         , AREG_FAULT_HOOK( "ws2_32.dll"  , gethostname              , gHostName )
         , AREG_FAULT_HOOK( "ws2_32.dll"  , WSAStartup               , gStartup )
+        , { "ucrtbase.dll" , "malloc", reinterpret_cast<void *>(&_fault_malloc)      , reinterpret_cast<void **>(&gMalloc) }
+        , { "ucrtbased.dll", "malloc", reinterpret_cast<void *>(&_fault_malloc_debug), reinterpret_cast<void **>(&gMallocDebug) }
     };
 
 #undef AREG_FAULT_HOOK
@@ -1446,6 +1479,7 @@ namespace
         case areg_fault::FaultPoint::ServiceManagerOpen:
         case areg_fault::FaultPoint::ServiceOpen:
         case areg_fault::FaultPoint::ConsoleMode:
+        case areg_fault::FaultPoint::Allocation:
             return true;
 
         default:
@@ -1492,6 +1526,15 @@ namespace
                 _patch_module( modules[i] );
             }
         }
+    }
+}
+
+extern "C"
+{
+    AREG_FAULT_API uint32_t areg_fault_unowned_leaves( )
+    {
+        _install( );
+        return gUnownedLeaves.load( std::memory_order_relaxed );
     }
 }
 

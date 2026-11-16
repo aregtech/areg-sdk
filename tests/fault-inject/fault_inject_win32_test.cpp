@@ -748,6 +748,36 @@ TEST( FaultInjectWin32Test, mutex_is_fatal_while_the_system_cannot_create_it )
 
 namespace
 {
+    void critical_section_is_left_only_by_its_owner( )
+    {
+        // A section left by a thread that does not own it is counted.
+        CRITICAL_SECTION raw{ };
+        ::InitializeCriticalSection( &raw );
+        const uint32_t before{ ::areg_fault_unowned_leaves( ) };
+        ::LeaveCriticalSection( &raw );
+        ::DeleteCriticalSection( &raw );
+        AREG_CHILD_CHECK( (::areg_fault_unowned_leaves( ) == before + 1u) && NOT_REPLACED );
+
+        const uint32_t counted{ ::areg_fault_unowned_leaves( ) };
+        {
+            areg::CriticalSection section;
+            AREG_CHILD_CHECK( section.lock( ) );
+            AREG_CHILD_CHECK( section.unlock( ) );
+            AREG_CHILD_CHECK( section.try_lock( ) );
+            AREG_CHILD_CHECK( section.unlock( ) );
+        }
+
+        AREG_CHILD_CHECK( (::areg_fault_unowned_leaves( ) == counted) && "a section was left by a thread that does not own it" );
+    }
+}
+
+TEST( FaultInjectWin32Test, critical_section_is_left_only_by_its_owner )
+{
+    AREG_EXPECT_IN_CHILD( critical_section_is_left_only_by_its_owner( ) );
+}
+
+namespace
+{
     void event_is_fatal_while_the_system_cannot_create_it( )
     {
         expect_fatal( "a SyncEvent cannot be created" );
@@ -1100,6 +1130,134 @@ TEST( FaultInjectWin32Test, inline_write_reports_a_failed_socket_and_cancels_the
 {
     AREG_EXPECT_IN_CHILD( inline_write_reports_a_failed_socket_and_cancels_the_writes_it_started( ) );
 }
+
+#if !defined(__SANITIZE_ADDRESS__)
+
+namespace
+{
+    void inline_write_without_memory_for_its_waiting_write_fails_and_keeps_the_buffer( )
+    {
+        LoopPair pair;
+        AREG_CHILD_CHECK( pair.open( ) );
+        static_cast<void>( areg::set_send_size( pair.server, areg::PACKET_MIN_SIZE ) );
+        static_cast<void>( areg::set_recv_size( pair.client, areg::PACKET_MIN_SIZE ) );
+        areg::SendQueueGate gate{ };
+        areg::ext::SendBacklog backlog{ gate };
+        AREG_CHILD_CHECK( backlog.attach( pair.server ) );
+
+        // The peer reads nothing: a write waits, and the record of waiting writes, the second allocation, fails.
+        const areg::MessageEnvelope large{ make_message( 4u * areg::ext::SendBacklog::WRITE_CHUNK ) };
+        AREG_CHILD_CHECK( large.header( ) != nullptr );
+        AREG_CHILD_CHECK( large.is_unique( ) );
+        areg_fault::FaultScope faults;
+        int32_t result{ 0 };
+        uint32_t failed{ 0u };
+        {
+            areg::SocketWriteGuard guard{ pair.server };
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 1u, 1u ) );
+            result = backlog.write_inline( 6u, pair.server, large );
+            failed = areg_fault::failed( areg_fault::FaultPoint::Allocation );
+        }
+
+        AREG_CHILD_CHECK( failed == 1u && NOT_REPLACED );
+        AREG_CHILD_CHECK( result == -1 );
+        AREG_CHILD_CHECK( backlog.is_empty( ) );
+        AREG_CHILD_CHECK( large.is_shared( ) );
+    }
+}
+
+TEST( FaultInjectWin32Test, inline_write_without_memory_for_its_waiting_write_fails_and_keeps_the_buffer )
+{
+    AREG_EXPECT_IN_CHILD( inline_write_without_memory_for_its_waiting_write_fails_and_keeps_the_buffer( ) );
+}
+
+namespace
+{
+    void inline_write_without_memory_after_its_waiting_write_is_recorded_fails( )
+    {
+        LoopPair pair;
+        AREG_CHILD_CHECK( pair.open( ) );
+        static_cast<void>( areg::set_send_size( pair.server, areg::PACKET_MIN_SIZE ) );
+        static_cast<void>( areg::set_recv_size( pair.client, areg::PACKET_MIN_SIZE ) );
+        areg::SendQueueGate gate{ };
+        areg::ext::SendBacklog backlog{ gate };
+        AREG_CHILD_CHECK( backlog.attach( pair.server ) );
+
+        // The peer reads nothing: a write waits and is recorded, then every later allocation fails.
+        const areg::MessageEnvelope large{ make_message( 4u * areg::ext::SendBacklog::WRITE_CHUNK ) };
+        AREG_CHILD_CHECK( large.header( ) != nullptr );
+        areg_fault::FaultScope faults;
+        int32_t result{ 0 };
+        uint32_t failed{ 0u };
+        {
+            areg::SocketWriteGuard guard{ pair.server };
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 2u, 0u ) );
+            result = backlog.write_inline( 8u, pair.server, large );
+            failed = areg_fault::failed( areg_fault::FaultPoint::Allocation );
+            ::areg_fault_disarm_all( );
+        }
+
+        AREG_CHILD_CHECK( (failed != 0u) && NOT_REPLACED );
+        AREG_CHILD_CHECK( result == -1 );
+        AREG_CHILD_CHECK( backlog.is_empty( ) );
+    }
+}
+
+TEST( FaultInjectWin32Test, inline_write_without_memory_after_its_waiting_write_is_recorded_fails )
+{
+    AREG_EXPECT_IN_CHILD( inline_write_without_memory_after_its_waiting_write_is_recorded_fails( ) );
+}
+
+namespace
+{
+    void inline_write_whose_message_cannot_be_kept_cancels_its_waiting_write_and_fails( )
+    {
+        LoopPair pair;
+        AREG_CHILD_CHECK( pair.open( ) );
+        static_cast<void>( areg::set_send_size( pair.server, areg::PACKET_MIN_SIZE ) );
+        static_cast<void>( areg::set_recv_size( pair.client, areg::PACKET_MIN_SIZE ) );
+        areg::SendQueueGate gate{ };
+        areg::ext::SendBacklog backlog{ gate };
+        AREG_CHILD_CHECK( backlog.attach( pair.server ) );
+
+        // Another backlog fills the socket, which the peer does not read.
+        areg::ext::SendBacklog filler{ gate };
+        const areg::MessageEnvelope large{ make_message( 4u * areg::ext::SendBacklog::WRITE_CHUNK ) };
+        AREG_CHILD_CHECK( large.header( ) != nullptr );
+        {
+            areg::SocketWriteGuard guard{ pair.server };
+            AREG_CHILD_CHECK( filler.write_inline( 9u, pair.server, large ) == 2 );
+        }
+
+        // One write of the whole message waits and is recorded; keeping the message, the third allocation, fails.
+        const areg::MessageEnvelope message{ make_message( areg::ext::SendBacklog::WRITE_CHUNK / 2u ) };
+        AREG_CHILD_CHECK( message.header( ) != nullptr );
+        areg_fault::FaultScope faults;
+        int32_t result{ 0 };
+        uint32_t failed{ 0u };
+        {
+            areg::SocketWriteGuard guard{ pair.server };
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 2u, 0u ) );
+            result = backlog.write_inline( 10u, pair.server, message );
+            failed = areg_fault::failed( areg_fault::FaultPoint::Allocation );
+            ::areg_fault_disarm_all( );
+        }
+
+        AREG_CHILD_CHECK( (failed != 0u) && NOT_REPLACED );
+        AREG_CHILD_CHECK( result == -1 );
+        AREG_CHILD_CHECK( backlog.is_empty( ) );
+
+        std::deque<ITEM_ID> cut;
+        filler.release_all( cut );
+    }
+}
+
+TEST( FaultInjectWin32Test, inline_write_whose_message_cannot_be_kept_cancels_its_waiting_write_and_fails )
+{
+    AREG_EXPECT_IN_CHILD( inline_write_whose_message_cannot_be_kept_cancels_its_waiting_write_and_fails( ) );
+}
+
+#endif  // !defined(__SANITIZE_ADDRESS__)
 
 //////////////////////////////////////////////////////////////////////////
 // The service control manager

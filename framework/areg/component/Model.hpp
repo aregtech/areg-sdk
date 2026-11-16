@@ -29,6 +29,9 @@
 
 #include <functional>
 #include <any>
+#include <new>
+#include <type_traits>
+#include <utility>
 
 /************************************************************************
  * Declared classes
@@ -1918,12 +1921,68 @@ inline areg::ModelState areg::Model::model_state() const noexcept
     return mLoadState;
 }
 
+namespace areg {
+
+/**
+ * \brief   Creates a component of the given type with the operator new the type declares.
+ *          Used for a type that declares its own operator new without the nothrow form.
+ **/
+template<typename ComponentType, typename = void>
+struct ComponentCreator
+{
+    static constexpr bool   NOTHROW { false };  //!< The nothrow form of operator new is not used.
+
+    /**
+     * \brief   Creates the component.
+     *
+     * \param   entry   The registry entry of the component.
+     * \param   owner   The thread that owns the component.
+     * \return  The created component.
+     **/
+    [[nodiscard]]
+    static inline Component* create(const ComponentEntry& entry, ComponentThread& owner)
+    {
+        return new ComponentType(entry, owner);
+    }
+};
+
+/**
+ * \brief   Creates a component of the given type with the nothrow form of operator new.
+ **/
+template<typename ComponentType>
+struct ComponentCreator<ComponentType, std::void_t<decltype(new (std::nothrow) ComponentType(std::declval<const ComponentEntry&>(), std::declval<ComponentThread&>()))>>
+{
+    static constexpr bool   NOTHROW { true };   //!< The nothrow form of operator new is used.
+
+    /**
+     * \brief   Creates the component.
+     *
+     * \param   entry   The registry entry of the component.
+     * \param   owner   The thread that owns the component.
+     * \return  The created component, or nullptr if no memory is left.
+     **/
+    [[nodiscard]]
+    static inline Component* create(const ComponentEntry& entry, ComponentThread& owner)
+    {
+        return new (std::nothrow) ComponentType(entry, owner);
+    }
+};
+
+} // namespace areg
+
 template<typename ComponentType>
 inline areg::ComponentEntry& areg::ComponentThreadEntry::add_component(const String& roleName)
 {
     return add_component(roleName
         , [](const areg::ComponentEntry& entry, ComponentThread& owner) -> Component* {
-            return new ComponentType(entry, owner);
+            if constexpr (areg::ComponentCreator<ComponentType>::NOTHROW)
+            {
+                return new (std::nothrow) ComponentType(entry, owner);
+            }
+            else
+            {
+                return new ComponentType(entry, owner);
+            }
         }
         , [](Component& comp, const areg::ComponentEntry& /*entry*/) -> void {
             ComponentType* tmp = static_cast<ComponentType *>(&comp);

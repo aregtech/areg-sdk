@@ -20,6 +20,8 @@
 #include "areg/base/MemoryDefs.hpp"
 #include "areg/logging/LogConfiguration.hpp"
 
+#include <new>
+
 //////////////////////////////////////////////////////////////////////////
 // LogCollectorDatabase class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -157,7 +159,10 @@ void LogCollectorDatabase::save_instance_connected(const areg::ConnectedInstance
     record.recKind      = RecordKind::InstanceUp;
     record.recCookie    = instance.ciCookie;
     record.recStamp     = static_cast<TIME64>(areg::DateTime::now());
-    record.recInstance  = std::make_unique<areg::ConnectedInstance>(instance);
+    record.recInstance.reset(new (std::nothrow) areg::ConnectedInstance(instance));
+    if (!record.recInstance)
+        return;
+
     _enqueue(std::move(record));
 }
 

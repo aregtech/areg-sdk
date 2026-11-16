@@ -145,7 +145,9 @@ bool RemoteEventFactory::route_incoming_message( MessageEnvelope & src, const Ch
         bool refused{ false };
         {
             MapLock<StubBase::MapProviderResource> lock(providers);
-            StubBase * stub = providers.find_resource_object(stubKey);
+            const auto & stubs{ providers.data() };
+            const auto stubPos{ stubs.find(stubKey) };
+            StubBase * stub{ stubPos != stubs.end() ? stubPos->second : nullptr };
             if ( stub == nullptr )
                 return false;
 
@@ -195,8 +197,10 @@ bool RemoteEventFactory::route_incoming_message( MessageEnvelope & src, const Ch
         EventDispatcherBase * dispatcher{ nullptr };
         {
             MapLock<ProxyBase::MapProxyResource> lock(proxies);
-            const std::shared_ptr<ProxyBase> proxy{ proxies.find_resource_object(proxyKey) };
-            if ( !proxy )
+            const auto & entries{ proxies.data() };
+            const auto proxyPos{ entries.find(proxyKey) };
+            const ProxyBase * proxy{ proxyPos != entries.end() ? proxyPos->second.get() : nullptr };
+            if ( proxy == nullptr )
                 return false;
 
             const Channel chTarget(proxy->proxy_address().channel());

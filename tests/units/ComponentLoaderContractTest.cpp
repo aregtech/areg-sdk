@@ -9,6 +9,7 @@
 #include "areg/component/ComponentThread.hpp"
 
 #include <any>
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -39,6 +40,28 @@ namespace
     {
         return registry_model(String(name), String("LoaderCreatorThread"), String("LoaderCreatorRole"));
     }
+
+    uint32_t gPoolCalls{ 0u };  //!< Calls of the operator new of the pool component.
+
+    //!< A component whose own operator new has no nothrow form and has no memory.
+    class PoolComponent final : public Component
+    {
+    public:
+        PoolComponent(const ComponentEntry& entry, ComponentThread& owner)
+            : Component(entry, owner)
+        {
+        }
+
+        static void* operator new(std::size_t /*size*/) noexcept
+        {
+            ++gPoolCalls;
+            return nullptr;
+        }
+
+        static void operator delete(void* /*block*/) noexcept
+        {
+        }
+    };
 
     class ComponentLoaderContractTest : public testing::Test
     {
@@ -172,4 +195,25 @@ TEST_F(ComponentLoaderContractTest, model_data_creator_registers_function_and_pr
     ModelDataCreator fromModel(prebuilt);
     EXPECT_TRUE(ComponentLoader::exist(prebuilt.model_name()));
     EXPECT_EQ(prebuilt.model_name(), ComponentLoader::find_model(prebuilt.model_name()).model_name());
+}
+
+/**
+ * \brief   A component type that declares its own operator new without the nothrow form is created
+ *          by that operator, through the registration macro and through add_component(); another
+ *          type is created with the nothrow form.
+ **/
+TEST_F(ComponentLoaderContractTest, component_type_with_its_own_operator_new_is_created_by_that_operator)
+{
+    static_assert(ComponentCreator<Component>::NOTHROW, "a component without its own operator new uses the nothrow form");
+    static_assert(ComponentCreator<PoolComponent>::NOTHROW == false, "the operator new of the type hides the nothrow form");
+
+    ComponentThread thread(String("LoaderPoolThread"));
+    ComponentThreadEntry threadEntry(String("LoaderPoolThread"));
+    const ComponentEntry& entry = threadEntry.add_component<PoolComponent>(String("LoaderPoolRole"));
+
+    gPoolCalls = 0u;
+    EXPECT_EQ(nullptr, entry.mFuncCreate(entry, thread));
+    EXPECT_EQ(1u, gPoolCalls);
+    EXPECT_EQ(nullptr, FUNC_CREATE_COMP(PoolComponent)(entry, thread));
+    EXPECT_EQ(2u, gPoolCalls);
 }

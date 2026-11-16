@@ -65,6 +65,7 @@ public:
      *
      * \param   layoutFormat    The formatting string to parse and create layout objects.
      * \return  Returns true if after parsing the layout manager contains at least one layout object.
+     *          Returns false and contains no layout object if one of them cannot be allocated.
      **/
     bool create_layouts( const char * layoutFormat );
     /**
@@ -72,6 +73,7 @@ public:
      *
      * \param   layoutFormat    The formatting string to parse and create layout objects.
      * \return  Returns true if after parsing the layout manager contains at least one layout object.
+     *          Returns false and contains no layout object if one of them cannot be allocated.
      * \note    Overload with String parameter.
      **/
     bool create_layouts( const String & layoutFormat );
@@ -112,8 +114,9 @@ private:
      * \brief   Instantiates and creates layout objects from layout format string.
      *
      * \param   layoutFormat    The layout string to parse and create objects.
+     * \return  Returns false if a layout object cannot be allocated.
      **/
-    inline void _create_layouts(char* layoutFormat);
+    inline bool _create_layouts(char* layoutFormat);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

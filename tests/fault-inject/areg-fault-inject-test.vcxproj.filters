@@ -61,5 +61,8 @@
     <ClInclude Include="FaultSocketPair.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FaultSweep.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -23,6 +23,7 @@
 #include "areg/logging/areg_log.h"
 
 #include <algorithm>
+#include <new>
 
 DEF_LOG_SCOPE(areg_base_Thread, _report_refused_name);
 
@@ -140,7 +141,14 @@ namespace
 
 ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
 {
-    static AREG_THREAD_LOCAL ThreadLocalStorage* _localStorage {nullptr};
+    //!< The memory of the local storage object of the thread.
+    struct alignas(ThreadLocalStorage) StorageBuffer
+    {
+        unsigned char   bytes[sizeof(ThreadLocalStorage)];
+    };
+
+    static AREG_THREAD_LOCAL StorageBuffer          _storageBuffer;
+    static AREG_THREAD_LOCAL ThreadLocalStorage *   _localStorage {nullptr};
     if ( ownThread == reinterpret_cast<Thread *>(Thread::CURRENT_THREAD) )
     {
         // do nothing, the static local storage item is already instantiated
@@ -150,7 +158,7 @@ ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
     {
         // called only once, when thread starts.
         ASSERT(_localStorage == nullptr );
-        _localStorage = new ThreadLocalStorage( *ownThread );
+        _localStorage = ::new (static_cast<void *>(_storageBuffer.bytes)) ThreadLocalStorage( *ownThread );
     }
     else
     {
@@ -159,7 +167,7 @@ ThreadLocalStorage* Thread::_thread_local_storage( Thread* ownThread )
         if (_localStorage != nullptr)
         {
             _localStorage->clear();
-            delete _localStorage;
+            _localStorage->~ThreadLocalStorage();
             _localStorage = nullptr;
         }
     }

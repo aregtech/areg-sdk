@@ -17,6 +17,7 @@
  * Include files.
  ************************************************************************/
 #include "logobserver/app/LogObserver.hpp"
+#include "aregextend/service/SystemServiceDefs.hpp"
 
 #ifdef _WIN32
 
@@ -35,53 +36,24 @@
 #include <Windows.h>
 #include <tchar.h>
 
+#include <cstdlib>
+
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
 //////////////////////////////////////////////////////////////////////////
 
-namespace
-{
-
-    inline char ** _convert_args( TCHAR ** argv, int32_t argc )
-    {
-        char ** argvTemp = argc != 0 ? new char * [static_cast<uint32_t>(argc)] : nullptr;
-        if ( argvTemp != nullptr )
-        {
-            for ( uint32_t i = 0; i < static_cast<uint32_t>(argc); ++i )
-            {
-                TCHAR * entry = argv[i];
-                uint32_t length = static_cast<uint32_t>(areg::string_length<TCHAR>( entry ));
-                uint32_t size = length + 1u;
-                char * arg = new char[size];
-                areg::copy_string<char, TCHAR>( arg, static_cast<areg::CharCount>(size), entry );
-                argvTemp[i] = arg;
-            }
-        }
-        return argvTemp;
-    }
-
-    inline void _delete_args( char ** argv, int32_t argc )
-    {
-        if ( argv != nullptr )
-        {
-            for ( int i = 0; i < static_cast<int>(argc); ++i )
-            {
-                delete[] argv[i];
-            }
-
-            delete[] argv;
-        }
-    }
-
-} // namespace
-    
 #ifndef _MINGW
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(envp);
-    char** argvTemp = _convert_args(argv, static_cast<int32_t>(argc));
+    char** argvTemp = areg::ext::convert_arguments<TCHAR>(argv, static_cast<int32_t>(argc));
+    if ((argvTemp == nullptr) && (argc > 0))
+    {
+        return EXIT_FAILURE;
+    }
+
     LogObserver::instance().log_main(static_cast<int32_t>(argc), argvTemp);
-    _delete_args(argvTemp, static_cast<int32_t>(argc));
+    areg::ext::delete_arguments(argvTemp, static_cast<int32_t>(argc));
 
     return 0;
 }

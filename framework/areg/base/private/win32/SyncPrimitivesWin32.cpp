@@ -196,14 +196,18 @@ bool Semaphore::_os_unlock()
 
 void CriticalSection::_os_create_critical_section()
 {
-    mSyncObject = static_cast<void *>( new uint8_t [sizeof(CRITICAL_SECTION)] );
+    mSyncObject = static_cast<void *>( new (std::nothrow) uint8_t [sizeof(CRITICAL_SECTION)] );
+    if ( mSyncObject == nullptr )
+    {
+        areg::fatal_error( "no memory, a CriticalSection cannot be created" );
+    }
+
     areg::construct_elems<CRITICAL_SECTION>( mSyncObject, 1 );
     InitializeCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
 }
 
 void CriticalSection::_os_release_critical_section()
 {
-    LeaveCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
     DeleteCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
     delete[] reinterpret_cast<uint8_t *>(mSyncObject);
     mSyncObject = nullptr;

@@ -21,9 +21,14 @@
 #include "units/GUnitTest.hpp"
 #include "units/ChildProcess.hpp"
 #include "fault-inject/FaultInject.hpp"
+#include "fault-inject/FaultSweep.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/FixedArray.hpp"
+#include "areg/base/MemoryDefs.hpp"
+#include "areg/base/SharedBuffer.hpp"
+#include "areg/base/SharedPrimitive.hpp"
+#include "areg/base/Socket.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/Component.hpp"
@@ -47,6 +52,8 @@
 
 #if AREG_LOGGING
     #include "areg/ipc/RemoteServiceDefs.hpp"
+    #include "areg/logging/LoggingDefs.hpp"
+    #include "areg/logging/private/LayoutManager.hpp"
     #include "areglogger/client/LogObserverApi.h"
     #include "areglogger/client/private/LoggerClient.hpp"
     #include "areglogger/client/private/ObserverMessageProcessor.hpp"
@@ -60,6 +67,9 @@
 #include <vector>
 
 #if defined(__linux__)
+    #include <fcntl.h>
+    #include <netinet/in.h>
+    #include <sys/socket.h>
     #include <sys/wait.h>
     #include <unistd.h>
 #endif  // defined(__linux__)
@@ -128,14 +138,18 @@ namespace
     areg::SyncEvent         gHostDone       { true, false };
     //!< True if the new instance of the hung thread could create the worker of the same name.
     std::atomic_bool        gWorkerReplaced { false };
-    //!< The worker threads that could not be created because an allocation failed.
-    std::atomic<uint32_t>   gRefusedWorkers { 0u };
-
     //!< True if the child returned normally.
     bool _controlled_exit( int status )
     {
         return WIFEXITED( status ) && ( WEXITSTATUS( status ) == 0 );
     }
+
+    using areg_sweep::StepResult;
+
+    //!< The allocation the component of the host model fails.
+    uint32_t                gHostSkip       { 0u };
+    //!< The result of the creation of the guarded worker by the component of the host model.
+    std::atomic<StepResult> gHostResult     { StepResult::Survived };
 
     //!< A component whose first user state fails the next allocation and holds the thread.
     class HoldComponent : public areg::Component
@@ -190,7 +204,7 @@ namespace
         { }
     };
 
-    //!< A component that creates a guarded worker with each allocation failing in turn.
+    //!< A component that creates a guarded worker with the allocation gHostSkip failing.
     class HostComponent : public areg::Component
     {
     public:
@@ -203,22 +217,19 @@ namespace
         {
             areg::Component::startup_component( comThread );
             const areg::String name( _hostWorker );
-            for ( uint32_t skip = 0u; skip < REQUEST_COUNT; ++ skip )
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, gHostSkip, 1u ) );
+            areg::WorkerThread * worker{ create_worker_thread( name, mConsumer, comThread, WORKER_WATCH_MS ) };
+            const uint32_t failed{ areg_fault::failed( areg_fault::FaultPoint::Allocation ) };
+            ::areg_fault_disarm_all( );
+            if ( worker == nullptr )
             {
-                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
-                areg::WorkerThread * worker{ create_worker_thread( name, mConsumer, comThread, WORKER_WATCH_MS ) };
-                const uint32_t failed{ areg_fault::failed( areg_fault::FaultPoint::Allocation ) };
-                ::areg_fault_disarm_all( );
-                if ( worker == nullptr )
-                {
-                    AREG_CHILD_CHECK( failed == 1u );
-                    gRefusedWorkers.fetch_add( 1u );
-                    continue;
-                }
-
+                AREG_CHILD_CHECK( failed == 1u );
+                gHostResult.store( StepResult::Refused );
+            }
+            else
+            {
                 delete_worker_thread( name );
-                if ( failed == 0u )
-                    break;
+                gHostResult.store( failed == 0u ? StepResult::Done : StepResult::Survived );
             }
 
             gHostDone.set_signaled( );
@@ -452,36 +463,34 @@ namespace
         areg::Application::release( );
     }
 
-    //!< Fails each allocation of the load of the large model in turn: the model is loaded or left unloaded.
-    void _large_load_survives( )
+    //!< Fails the allocation skip of the load of the large model: the model is loaded or left unloaded, and loads after.
+    StepResult _large_load_step( uint32_t skip )
     {
         areg::Application::setup( false, true, false, true, false );
-        areg_fault::FaultScope faults;
-        uint32_t refused{ 0u };
-        bool finished{ false };
-        for ( uint32_t skip = 0u; ( skip < ATTEMPT_COUNT ) && ( finished == false ); ++ skip )
+        bool loaded{ false };
+        uint32_t failed{ 0u };
         {
+            areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
-            const bool loaded{ areg::Application::load_model( _largeModel, true ) };
-            const uint32_t failed{ areg_fault::failed( areg_fault::FaultPoint::Allocation ) };
-            ::areg_fault_disarm_all( );
-            finished = ( failed == 0u );
-            if ( loaded )
-            {
-                AREG_CHILD_CHECK( areg::Application::model_state( _largeModel ) == areg::ModelState::Loaded );
-                AREG_CHILD_CHECK( areg::Application::unload_model( _largeModel ) );
-            }
-            else
-            {
-                AREG_CHILD_CHECK( finished == false );
-                AREG_CHILD_CHECK( areg::Application::model_state( _largeModel ) == areg::ModelState::Unloaded );
-                ++ refused;
-            }
+            loaded = areg::Application::load_model( _largeModel, true );
+            failed = areg_fault::failed( areg_fault::FaultPoint::Allocation );
         }
 
-        AREG_CHILD_CHECK( finished );
-        AREG_CHILD_CHECK( refused != 0u );
+        if ( loaded )
+        {
+            AREG_CHILD_CHECK( areg::Application::model_state( _largeModel ) == areg::ModelState::Loaded );
+            AREG_CHILD_CHECK( areg::Application::unload_model( _largeModel ) );
+        }
+        else
+        {
+            AREG_CHILD_CHECK( failed != 0u );
+            AREG_CHILD_CHECK( areg::Application::model_state( _largeModel ) == areg::ModelState::Unloaded );
+        }
+
+        AREG_CHILD_CHECK( areg::Application::load_model( _largeModel, true ) );
+        AREG_CHILD_CHECK( areg::Application::unload_model( _largeModel ) );
         areg::Application::release( );
+        return ( failed == 0u ? StepResult::Done : ( loaded ? StepResult::Survived : StepResult::Refused ) );
     }
 
     //!< A guard armed when the watchdog manager stops leaves its list and can be destroyed.
@@ -532,80 +541,85 @@ namespace
         areg::Application::release( );
     }
 
-    //!< Fails each allocation of a watchdog in turn: a watchdog without its parts reports it cannot be armed.
-    void _watchdog_without_parts_cannot_arm( )
+    //!< Fails the allocation skip of a watchdog: a watchdog without its parts reports it cannot be armed.
+    StepResult _watchdog_step( uint32_t skip )
     {
         areg_fault::FaultScope faults;
-        uint32_t refused{ 0u };
-        for ( uint32_t skip = 0u; skip < REQUEST_COUNT; ++ skip )
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+        areg::Watchdog guard{ areg::String( "FaultGuard" ) };
+        const uint32_t failed{ areg_fault::failed( areg_fault::FaultPoint::Allocation ) };
+        ::areg_fault_disarm_all( );
+        if ( failed == 0u )
         {
-            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
-            areg::Watchdog guard{ areg::String( "FaultGuard" ) };
-            const uint32_t failed{ areg_fault::failed( areg_fault::FaultPoint::Allocation ) };
-            ::areg_fault_disarm_all( );
-            if ( failed == 0u )
-            {
-                AREG_CHILD_CHECK( guard.can_arm( ) );
-                break;
-            }
-
-            AREG_CHILD_CHECK( guard.can_arm( ) == false );
-            ++ refused;
+            AREG_CHILD_CHECK( guard.can_arm( ) );
+            return StepResult::Done;
         }
 
-        AREG_CHILD_CHECK( refused != 0u );
+        AREG_CHILD_CHECK( guard.can_arm( ) == false );
+        return StepResult::Refused;
     }
 
-    //!< Fails each allocation of the requests in turn: a refused request returns false and changes nothing.
-    void _refused_requests_change_nothing( )
+    //!< Fails the allocation skip of an unload request: a refused unload returns false and leaves the model loaded.
+    StepResult _unload_request_step( uint32_t skip )
+    {
+        areg::Application::setup( false, true, false, true, false );
+        AREG_CHILD_CHECK( areg::Application::load_model( _sweepModel, true ) );
+        bool unloaded{ false };
+        uint32_t failed{ 0u };
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+            unloaded = areg::Application::unload_model( _sweepModel );
+            failed = areg_fault::failed( areg_fault::FaultPoint::Allocation );
+        }
+
+        StepResult result{ StepResult::Survived };
+        if ( failed == 0u )
+        {
+            AREG_CHILD_CHECK( unloaded );
+            result = StepResult::Done;
+        }
+        else if ( unloaded == false )
+        {
+            AREG_CHILD_CHECK( areg::Application::model_state( _sweepModel ) == areg::ModelState::Loaded );
+            AREG_CHILD_CHECK( areg::Application::unload_model( _sweepModel ) );
+            result = StepResult::Refused;
+        }
+        else
+        {
+            AREG_CHILD_CHECK( areg::Application::model_state( _sweepModel ) == areg::ModelState::Unloaded );
+            AREG_CHILD_CHECK( areg::Application::load_model( _sweepModel, true ) );
+            AREG_CHILD_CHECK( areg::Application::unload_model( _sweepModel ) );
+        }
+
+        AREG_CHILD_CHECK( areg::Application::model_state( _sweepModel ) == areg::ModelState::Unloaded );
+        areg::Application::release( );
+        return result;
+    }
+
+    //!< Fails the allocation skip of a user state request: a refused request returns false and keeps the user state.
+    StepResult _user_state_request_step( uint32_t skip )
     {
         areg::Application::setup( false, true, false, true, false );
         AREG_CHILD_CHECK( areg::Application::load_model( _sweepModel, true ) );
         const uint32_t userState{ areg::Application::user_state( ) };
+        AREG_CHILD_CHECK( areg::Application::unload_model( _sweepModel ) );
 
-        uint32_t refusedState{ 0u };
-        uint32_t refusedUnload{ 0u };
+        StepResult result{ StepResult::Done };
         {
             areg_fault::FaultScope faults;
-            for ( uint32_t skip = 0u; skip < REQUEST_COUNT; ++ skip )
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+            if ( areg::Application::set_user_state( userState + 1u ) == false )
             {
-                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
-                const bool unloaded{ areg::Application::unload_model( _sweepModel ) };
-                const uint32_t failed{ areg_fault::failed( areg_fault::FaultPoint::Allocation ) };
-                ::areg_fault_disarm_all( );
-                if ( failed == 0u )
-                {
-                    AREG_CHILD_CHECK( unloaded );
-                    break;
-                }
-
-                if ( unloaded == false )
-                {
-                    AREG_CHILD_CHECK( areg::Application::model_state( _sweepModel ) == areg::ModelState::Loaded );
-                    ++ refusedUnload;
-                    continue;
-                }
-
-                AREG_CHILD_CHECK( areg::Application::model_state( _sweepModel ) == areg::ModelState::Unloaded );
-                AREG_CHILD_CHECK( areg::Application::load_model( _sweepModel, true ) );
-            }
-
-            for ( uint32_t skip = 0u; skip < REQUEST_COUNT; ++ skip )
-            {
-                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
-                if ( areg::Application::set_user_state( userState + 1u ) )
-                    break;
-
                 AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
                 AREG_CHILD_CHECK( areg::Application::user_state( ) == userState );
-                ++ refusedState;
+                result = StepResult::Refused;
             }
         }
 
-        AREG_CHILD_CHECK( refusedState != 0u );
-        AREG_CHILD_CHECK( refusedUnload != 0u );
         AREG_CHILD_CHECK( areg::Application::model_state( _sweepModel ) == areg::ModelState::Unloaded );
         areg::Application::release( );
+        return result;
     }
 
     //!< Holds a thread until its watchdog expires, with the first report of the expiry refused.
@@ -653,7 +667,8 @@ TEST( FaultInjectSweepTest, model_whose_thread_cannot_be_created_fails_to_load_a
 /**
  * \brief   Reproduces the defect: each nothrow allocation of a model lifecycle fails in turn, one
  *          per child. The load may fail, but no lifecycle event is lost: the process neither
- *          crashes, nor hangs, nor is ended by the failure policy.
+ *          crashes, nor hangs, nor is ended by the failure policy. A synchronization object
+ *          that cannot be allocated ends it with its fatal error.
  **/
 TEST( FaultInjectSweepTest, every_failed_allocation_of_a_model_lifecycle_is_survived )
 {
@@ -667,18 +682,20 @@ TEST( FaultInjectSweepTest, every_failed_allocation_of_a_model_lifecycle_is_surv
         SCOPED_TRACE( "failed allocation " + std::to_string( index ) + " of " + std::to_string( allocations ) );
         ::testing::GTEST_FLAG( death_test_style ) = "threadsafe";
         EXPECT_EXIT( {
+            areg_sweep::accept_sync_fatal( );
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, index, 1u ) );
             _lifecycle( );
             ::areg_child::pass( );
-        }, _controlled_exit, "" );
+        }, areg_sweep::survived_or_sync_fatal, "" );
     }
 }
 
 /**
  * \brief   Reproduces the defect: an allocation that fails while the deadline guard is created or
  *          armed left a hung thread without a deadline, and the load never returned. Each
- *          allocation of the setup and the load fails in turn, and the load always ends.
+ *          allocation of the setup and the load fails in turn, and the load always ends, or a
+ *          synchronization object that cannot be allocated ends the process with its fatal error.
  **/
 TEST( FaultInjectSweepTest, failed_allocation_never_leaves_a_hung_thread_without_a_deadline )
 {
@@ -688,9 +705,10 @@ TEST( FaultInjectSweepTest, failed_allocation_never_leaves_a_hung_thread_without
         SCOPED_TRACE( "failed allocation " + std::to_string( index ) );
         ::testing::GTEST_FLAG( death_test_style ) = "threadsafe";
         EXPECT_EXIT( {
+            areg_sweep::accept_sync_fatal( );
             _hang_lifecycle( index );
             ::areg_child::pass( );
-        }, _controlled_exit, "" );
+        }, areg_sweep::survived_or_sync_fatal, "" );
     }
 }
 
@@ -709,7 +727,7 @@ TEST( FaultInjectSweepTest, arming_a_guard_allocates_nothing )
  **/
 TEST( FaultInjectSweepTest, watchdog_without_its_parts_cannot_be_armed )
 {
-    AREG_EXPECT_IN_CHILD( _watchdog_without_parts_cannot_arm( ) );
+    areg_sweep::sweep_in_children( REQUEST_COUNT, StepResult::Refused, &_watchdog_step );
 }
 
 /**
@@ -770,7 +788,7 @@ TEST( FaultInjectSweepTest, component_thread_that_cannot_be_allocated_fails_the_
 TEST( FaultInjectSweepTest, every_failed_allocation_of_a_large_model_is_survived )
 {
     ASSERT_TRUE( _register_large_model( ) );
-    AREG_EXPECT_IN_CHILD( _large_load_survives( ) );
+    areg_sweep::sweep_in_children( ATTEMPT_COUNT, StepResult::Refused, &_large_load_step );
 }
 
 /**
@@ -780,24 +798,35 @@ TEST( FaultInjectSweepTest, every_failed_allocation_of_a_large_model_is_survived
 TEST( FaultInjectSweepTest, guarded_worker_that_cannot_be_built_is_not_created )
 {
     ASSERT_TRUE( _register_host_model( ) );
-    AREG_EXPECT_IN_CHILD(
+    areg_sweep::sweep_in_children( REQUEST_COUNT, StepResult::Refused, [] ( uint32_t skip ) {
+        gHostSkip = skip;
         areg::Application::setup( false, true, false, true, true );
         AREG_CHILD_CHECK( areg::Application::load_model( _hostModel, true ) );
         AREG_CHILD_CHECK( gHostDone.lock( WAIT_MS ) );
-        AREG_CHILD_CHECK( gRefusedWorkers.load( ) != 0u );
         AREG_CHILD_CHECK( areg::Application::unload_model( _hostModel ) );
         areg::Application::release( );
-    );
+        return gHostResult.load( );
+    } );
 }
 
 /**
- * \brief   Reproduces the defect: a request that cannot be built or posted reports it to the
- *          caller, and the model and the user state stay as they were.
+ * \brief   Reproduces the defect: an unload request that cannot be built or posted reports it to
+ *          the caller, and the model stays loaded.
  **/
 TEST( FaultInjectSweepTest, lifecycle_request_that_cannot_be_posted_returns_false_and_changes_nothing )
 {
     ASSERT_TRUE( _register_model( ) );
-    AREG_EXPECT_IN_CHILD( _refused_requests_change_nothing( ) );
+    areg_sweep::sweep_in_children( REQUEST_COUNT, StepResult::Refused, &_unload_request_step );
+}
+
+/**
+ * \brief   Reproduces the defect: a user state request that cannot be built or posted reports it
+ *          to the caller, and the user state stays as it was.
+ **/
+TEST( FaultInjectSweepTest, user_state_request_that_cannot_be_posted_returns_false_and_keeps_the_state )
+{
+    ASSERT_TRUE( _register_model( ) );
+    areg_sweep::sweep_in_children( REQUEST_COUNT, StepResult::Refused, &_user_state_request_step );
 }
 
 /**
@@ -1167,42 +1196,37 @@ namespace
         return _registered;
     }
 
-    //!< Fails each allocation of the point in the load of a model in turn: the load fails with no thread left, or succeeds, and the next load works.
-    void _single_load_survives( areg_fault::FaultPoint point, const char * modelName, const char * threadName )
+    //!< Fails the allocation skip of the point in the load of a model: the load fails with no thread left, or succeeds, and the next load works.
+    StepResult _single_load_step( areg_fault::FaultPoint point, const char * modelName, const char * threadName, uint32_t skip )
     {
         areg::Application::setup( false, true, false, true, true );
-        areg_fault::FaultScope faults;
         const areg::ThreadAddress address( threadName );
-        uint32_t refused{ 0u };
-        bool finished{ false };
-        for ( uint32_t skip = 0u; ( skip < ATTEMPT_COUNT ) && ( finished == false ); ++ skip )
+        bool loaded{ false };
+        uint32_t failed{ 0u };
         {
+            areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( point, 0, skip, 1u ) );
-            const bool loaded{ areg::Application::load_model( modelName, true ) };
-            const uint32_t failed{ areg_fault::failed( point ) };
-            ::areg_fault_disarm_all( );
-            finished = ( failed == 0u );
-            if ( loaded )
-            {
-                AREG_CHILD_CHECK( areg::Application::model_state( modelName ) == areg::ModelState::Loaded );
-                AREG_CHILD_CHECK( areg::Application::unload_model( modelName ) );
-            }
-            else
-            {
-                AREG_CHILD_CHECK( finished == false );
-                AREG_CHILD_CHECK( areg::Application::model_state( modelName ) == areg::ModelState::Unloaded );
-                AREG_CHILD_CHECK( areg::Thread::find_by_address( address ) == nullptr );
-                ++ refused;
-            }
-
-            AREG_CHILD_CHECK( areg::Application::load_model( modelName, true ) );
-            AREG_CHILD_CHECK( areg::Application::unload_model( modelName ) );
-            AREG_CHILD_CHECK( areg::Application::model_state( modelName ) == areg::ModelState::Unloaded );
+            loaded = areg::Application::load_model( modelName, true );
+            failed = areg_fault::failed( point );
         }
 
-        AREG_CHILD_CHECK( finished );
-        AREG_CHILD_CHECK( refused != 0u );
+        if ( loaded )
+        {
+            AREG_CHILD_CHECK( areg::Application::model_state( modelName ) == areg::ModelState::Loaded );
+            AREG_CHILD_CHECK( areg::Application::unload_model( modelName ) );
+        }
+        else
+        {
+            AREG_CHILD_CHECK( failed != 0u );
+            AREG_CHILD_CHECK( areg::Application::model_state( modelName ) == areg::ModelState::Unloaded );
+            AREG_CHILD_CHECK( areg::Thread::find_by_address( address ) == nullptr );
+        }
+
+        AREG_CHILD_CHECK( areg::Application::load_model( modelName, true ) );
+        AREG_CHILD_CHECK( areg::Application::unload_model( modelName ) );
+        AREG_CHILD_CHECK( areg::Application::model_state( modelName ) == areg::ModelState::Unloaded );
         areg::Application::release( );
+        return ( failed == 0u ? StepResult::Done : ( loaded ? StepResult::Survived : StepResult::Refused ) );
     }
 }
 
@@ -1238,7 +1262,7 @@ TEST( FaultInjectSweepTest, worker_thread_that_cannot_be_allocated_is_not_create
 TEST( FaultInjectSweepTest, every_failed_allocation_of_a_single_thread_load_leaves_nothing_running )
 {
     ASSERT_TRUE( _register_model( ) );
-    AREG_EXPECT_IN_CHILD( _single_load_survives( areg_fault::FaultPoint::Allocation, _sweepModel, _sweepThread ) );
+    areg_sweep::sweep_in_children( ATTEMPT_COUNT, StepResult::Refused, [] ( uint32_t skip ) { return _single_load_step( areg_fault::FaultPoint::Allocation, _sweepModel, _sweepThread, skip ); } );
 }
 
 /**
@@ -1247,7 +1271,7 @@ TEST( FaultInjectSweepTest, every_failed_allocation_of_a_single_thread_load_leav
 TEST( FaultInjectSweepTest, every_failed_aligned_allocation_of_a_single_thread_load_leaves_nothing_running )
 {
     ASSERT_TRUE( _register_model( ) );
-    AREG_EXPECT_IN_CHILD( _single_load_survives( areg_fault::FaultPoint::AlignedAllocation, _sweepModel, _sweepThread ) );
+    areg_sweep::sweep_in_children( ATTEMPT_COUNT, StepResult::Refused, [] ( uint32_t skip ) { return _single_load_step( areg_fault::FaultPoint::AlignedAllocation, _sweepModel, _sweepThread, skip ); } );
 }
 
 /**
@@ -1257,13 +1281,13 @@ TEST( FaultInjectSweepTest, every_failed_aligned_allocation_of_a_single_thread_l
 TEST( FaultInjectSweepTest, every_failed_allocation_of_a_guarded_thread_load_leaves_nothing_running )
 {
     ASSERT_TRUE( _register_guarded_model( ) );
-    AREG_EXPECT_IN_CHILD( _single_load_survives( areg_fault::FaultPoint::Allocation, _guardedModel, _guardedThread ) );
+    areg_sweep::sweep_in_children( ATTEMPT_COUNT, StepResult::Refused, [] ( uint32_t skip ) { return _single_load_step( areg_fault::FaultPoint::Allocation, _guardedModel, _guardedThread, skip ); } );
 }
 
 TEST( FaultInjectSweepTest, every_failed_aligned_allocation_of_a_guarded_thread_load_leaves_nothing_running )
 {
     ASSERT_TRUE( _register_guarded_model( ) );
-    AREG_EXPECT_IN_CHILD( _single_load_survives( areg_fault::FaultPoint::AlignedAllocation, _guardedModel, _guardedThread ) );
+    areg_sweep::sweep_in_children( ATTEMPT_COUNT, StepResult::Refused, [] ( uint32_t skip ) { return _single_load_step( areg_fault::FaultPoint::AlignedAllocation, _guardedModel, _guardedThread, skip ); } );
 }
 
 /**
@@ -1460,85 +1484,79 @@ namespace
             && ( areg::Application::model_state( _serviceModel ) == areg::ModelState::Unloaded );
     }
 
-    //!< Fails each allocation of the point in a load and unload of the model in turn: a failed load leaves no thread, and the next round is served.
-    void _service_lifecycle_survives( areg_fault::FaultPoint point )
+    //!< Fails the allocation skip of the point in a load and unload of the model: a failed load leaves no thread, and the next round is served.
+    StepResult _service_lifecycle_step( areg_fault::FaultPoint point, uint32_t skip )
     {
         areg::Application::setup( false, true, false, true, false );
-        areg_fault::FaultScope faults;
         const areg::ThreadAddress address( _serviceThread );
-        uint32_t refused{ 0u };
-        bool finished{ false };
-        for ( uint32_t skip = 0u; ( skip < SERVICE_ATTEMPTS ) && ( finished == false ); ++ skip )
+        bool loaded{ false };
+        bool unloaded{ false };
+        uint32_t failed{ 0u };
         {
+            areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( point, 0, skip, 1u ) );
-            const bool loaded{ areg::Application::load_model( _serviceModel, true ) };
-            if ( loaded == false )
-                ++ refused;
-            const bool unloaded{ areg::Application::unload_model( _serviceModel ) };
-            const uint32_t failed{ areg_fault::failed( point ) };
-            ::areg_fault_disarm_all( );
-            finished = ( failed == 0u );
-            if ( unloaded == false )
-            {
-                // An unload request that cannot be built changes nothing.
-                AREG_CHILD_CHECK( areg::Application::model_state( _serviceModel ) == areg::ModelState::Loaded );
-                AREG_CHILD_CHECK( areg::Application::unload_model( _serviceModel ) );
-            }
-
-            AREG_CHILD_CHECK( areg::Application::model_state( _serviceModel ) == areg::ModelState::Unloaded );
-            AREG_CHILD_CHECK( areg::Thread::find_by_address( address ) == nullptr );
-            AREG_CHILD_CHECK( _service_round( ) );
+            loaded = areg::Application::load_model( _serviceModel, true );
+            unloaded = areg::Application::unload_model( _serviceModel );
+            failed = areg_fault::failed( point );
         }
 
-        AREG_CHILD_CHECK( finished );
-        AREG_CHILD_CHECK( refused != 0u );
+        if ( unloaded == false )
+        {
+            // An unload request that cannot be built changes nothing.
+            AREG_CHILD_CHECK( areg::Application::model_state( _serviceModel ) == areg::ModelState::Loaded );
+            AREG_CHILD_CHECK( areg::Application::unload_model( _serviceModel ) );
+        }
+
+        AREG_CHILD_CHECK( areg::Application::model_state( _serviceModel ) == areg::ModelState::Unloaded );
+        AREG_CHILD_CHECK( areg::Thread::find_by_address( address ) == nullptr );
+        AREG_CHILD_CHECK( _service_round( ) );
         areg::Application::release( );
+        return ( failed == 0u ? StepResult::Done : ( loaded ? StepResult::Survived : StepResult::Refused ) );
     }
 }
 
 /**
  * \brief   Reproduces the defects: each nothrow allocation of the load and unload of a model with
  *          a local provider and its consumer fails in turn (component thread, components, stub,
- *          proxy, the records and the events of the service manager). A proxy without its state
- *          tables was used, and a service manager request without its data registered an empty
- *          address. Expected: a failed load leaves no thread, and the next load is served.
+ *          proxy, the records and the events of the service manager), one per child. A proxy
+ *          without its state tables was used, and a service manager request without its data
+ *          registered an empty address. Expected: a failed load leaves no thread, and the next
+ *          load is served.
  **/
 TEST( FaultInjectSweepTest, bug_917_every_failed_allocation_of_a_service_model_lifecycle_leaves_the_next_round_served )
 {
     ASSERT_TRUE( _register_service_model( ) );
-    AREG_EXPECT_IN_CHILD( _service_lifecycle_survives( areg_fault::FaultPoint::Allocation ) );
+    areg_sweep::sweep_in_children( SERVICE_ATTEMPTS, StepResult::Refused, [] ( uint32_t skip ) { return _service_lifecycle_step( areg_fault::FaultPoint::Allocation, skip ); } );
 }
 
 namespace
 {
-    //!< Fails each allocation of the point in the unload of a served model in turn: the registry holds no stale entry, and the next round is served.
-    void _service_unload_survives( areg_fault::FaultPoint point )
+    //!< Fails the allocation skip of the point in the unload of a served model: the registry holds no stale entry, and the next round is served.
+    StepResult _service_unload_step( areg_fault::FaultPoint point, uint32_t skip )
     {
         areg::Application::setup( false, true, false, true, false );
-        areg_fault::FaultScope faults;
         const areg::ThreadAddress address( _serviceThread );
-        bool finished{ false };
-        for ( uint32_t skip = 0u; ( skip < SERVICE_ATTEMPTS ) && ( finished == false ); ++ skip )
+        gResponse.reset( );
+        AREG_CHILD_CHECK( areg::Application::load_model( _serviceModel, true ) );
+        AREG_CHILD_CHECK( gResponse.lock( WAIT_MS ) );
+
+        bool unloaded{ false };
+        uint32_t failed{ 0u };
         {
-            gResponse.reset( );
-            AREG_CHILD_CHECK( areg::Application::load_model( _serviceModel, true ) );
-            AREG_CHILD_CHECK( gResponse.lock( WAIT_MS ) );
-
+            areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( point, 0, skip, 1u ) );
-            const bool unloaded{ areg::Application::unload_model( _serviceModel ) };
-            const uint32_t failed{ areg_fault::failed( point ) };
-            ::areg_fault_disarm_all( );
-            finished = ( failed == 0u );
-            if ( unloaded == false )
-                AREG_CHILD_CHECK( areg::Application::unload_model( _serviceModel ) );
-
-            AREG_CHILD_CHECK( areg::Application::model_state( _serviceModel ) == areg::ModelState::Unloaded );
-            AREG_CHILD_CHECK( areg::Thread::find_by_address( address ) == nullptr );
-            AREG_CHILD_CHECK( _service_round( ) );
+            unloaded = areg::Application::unload_model( _serviceModel );
+            failed = areg_fault::failed( point );
         }
 
-        AREG_CHILD_CHECK( finished );
+        if ( unloaded == false )
+            AREG_CHILD_CHECK( areg::Application::unload_model( _serviceModel ) );
+
+        AREG_CHILD_CHECK( areg::Application::model_state( _serviceModel ) == areg::ModelState::Unloaded );
+        AREG_CHILD_CHECK( areg::Thread::find_by_address( address ) == nullptr );
+        AREG_CHILD_CHECK( _service_round( ) );
         areg::Application::release( );
+        return ( failed == 0u ? StepResult::Done : StepResult::Survived );
     }
 }
 
@@ -1550,13 +1568,13 @@ namespace
 TEST( FaultInjectSweepTest, every_failed_allocation_of_a_served_model_unload_leaves_the_next_round_served )
 {
     ASSERT_TRUE( _register_service_model( ) );
-    AREG_EXPECT_IN_CHILD( _service_unload_survives( areg_fault::FaultPoint::Allocation ) );
+    areg_sweep::sweep_in_children( SERVICE_ATTEMPTS, StepResult::Survived, [] ( uint32_t skip ) { return _service_unload_step( areg_fault::FaultPoint::Allocation, skip ); } );
 }
 
 TEST( FaultInjectSweepTest, every_failed_aligned_allocation_of_a_service_model_lifecycle_leaves_the_next_round_served )
 {
     ASSERT_TRUE( _register_service_model( ) );
-    AREG_EXPECT_IN_CHILD( _service_lifecycle_survives( areg_fault::FaultPoint::AlignedAllocation ) );
+    areg_sweep::sweep_in_children( SERVICE_ATTEMPTS, StepResult::Refused, [] ( uint32_t skip ) { return _service_lifecycle_step( areg_fault::FaultPoint::AlignedAllocation, skip ); } );
 }
 
 #endif  // defined(AREG_FAULT_HELLO)
@@ -1609,3 +1627,174 @@ TEST( FaultInjectSweepTest, setup_reports_failure_when_the_timer_cannot_start_fo
 }
 
 #endif  // defined(AREG_FAULT_SWEEP_TESTS)
+
+#if defined(AREG_FAULT_SWEEP_TESTS)
+
+namespace
+{
+    int32_t gClosedValue    { -1 }; //!< The value the closer of the counted handle got last.
+    uint32_t gClosedCount   { 0u }; //!< Calls of the closer of the counted handle.
+
+    void _count_close( int32_t value ) noexcept
+    {
+        gClosedValue = value;
+        ++ gClosedCount;
+    }
+
+    using CountedHandle = areg::SharedPrimitive<int32_t, -1, _count_close>;
+
+    //!< Wraps a value while the control block cannot be allocated: the value is closed once and the object is empty.
+    void _handle_without_control_block_is_closed( )
+    {
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 1u ) );
+            const CountedHandle handle( 42 );
+            _keep_allocation( handle );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
+            AREG_CHILD_CHECK( handle.has_value( ) == false );
+            AREG_CHILD_CHECK( handle.value( ) == -1 );
+            AREG_CHILD_CHECK( handle.use_count( ) == 0 );
+            AREG_CHILD_CHECK( ( gClosedCount == 1u ) && ( gClosedValue == 42 ) );
+        }
+
+        AREG_CHILD_CHECK( gClosedCount == 1u );
+
+        const int fd{ ::socket( AF_INET, SOCK_STREAM, 0 ) };
+        AREG_CHILD_CHECK( fd >= 0 );
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 1u ) );
+            const areg::Socket::SocketHandle handle( static_cast<SOCKETHANDLE>( fd ) );
+            _keep_allocation( handle );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
+            AREG_CHILD_CHECK( handle.has_value( ) == false );
+            errno = 0;
+            AREG_CHILD_CHECK( ( ::fcntl( fd, F_GETFD ) == -1 ) && ( errno == EBADF ) );
+        }
+
+        {
+            const CountedHandle handle( 7 );
+            const CountedHandle copy( handle );
+            AREG_CHILD_CHECK( handle.has_value( ) && ( copy.value( ) == 7 ) && ( handle.use_count( ) == 2 ) );
+            AREG_CHILD_CHECK( gClosedCount == 1u );
+        }
+
+        AREG_CHILD_CHECK( ( gClosedCount == 2u ) && ( gClosedValue == 7 ) );
+    }
+
+    //!< A buffer type with a value set by its constructor.
+    struct ProbeBuffer
+    {
+        uint32_t    value{ 7u };    //!< The value the constructor sets.
+    };
+
+    //!< Allocates a buffer while no memory is left, then with memory.
+    void _buffer_allocator_without_memory_returns_null( )
+    {
+        areg::BufferAllocator<ProbeBuffer> allocate;
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 1u ) );
+            ProbeBuffer * const refused{ allocate( 64u ) };
+            _keep_allocation( refused );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
+            AREG_CHILD_CHECK( refused == nullptr );
+        }
+
+        ProbeBuffer * const buffer{ allocate( 64u ) };
+        AREG_CHILD_CHECK( ( buffer != nullptr ) && ( buffer->value == 7u ) );
+        areg::BufferDeleter<ProbeBuffer>( )( buffer );
+    }
+}
+
+/**
+ * \brief   A shared primitive whose control block cannot be allocated closes the value it was
+ *          given, once, and stays empty; the socket handle closes its descriptor.
+ **/
+TEST( FaultInjectSweepTest, shared_primitive_without_its_control_block_closes_the_value_and_is_empty )
+{
+    AREG_EXPECT_IN_CHILD( _handle_without_control_block_is_closed( ) );
+}
+
+/**
+ * \brief   The buffer allocator returns null when no memory is left, and a constructed buffer otherwise.
+ **/
+TEST( FaultInjectSweepTest, buffer_allocator_without_memory_returns_null )
+{
+    AREG_EXPECT_IN_CHILD( _buffer_allocator_without_memory_returns_null( ) );
+}
+
+#endif  // defined(AREG_FAULT_SWEEP_TESTS)
+
+#if defined(AREG_FAULT_SWEEP_TESTS) && AREG_LOGGING
+
+namespace
+{
+    //!< Returns the text the layouts write for the entry.
+    std::string _render_layouts( const areg::LayoutManager & layouts, const areg::LogEntry & entry )
+    {
+        areg::SharedBuffer buffer;
+        layouts.log_message( entry, buffer );
+        return buffer.size_used( ) == 0u ? std::string( ) : std::string( reinterpret_cast<const char *>( buffer.buffer( ) ), buffer.size_used( ) );
+    }
+
+    //!< Fails each allocation of the layout objects in turn: no layout is created, and all are with memory.
+    void _layouts_without_memory_are_not_created( )
+    {
+        constexpr char format[]{ "a=%a e=%e m=%m p=%p s=%s t=%t x=%x y=%y z=%z 100%% d%d tail%n" };
+
+        ::alarm( CHILD_ALARM_S );
+        areg::LogEntry entry;
+        entry.logDataType   = areg::LogDataType::Remote;
+        entry.logCookie     = 42u;
+        entry.logModuleId   = 0xABCDEFu;
+        entry.logThreadId   = 123u;
+        entry.logScopeId    = 456u;
+        entry.logMessagePrio= areg::LogPriority::PrioWarning;
+        entry.logModuleLen  = static_cast<uint32_t>( areg::copy_string( entry.logModule, areg::LOG_NAME_SIZE, "module" ) );
+        entry.logThreadLen  = static_cast<uint32_t>( areg::copy_string( entry.logThread, areg::LOG_NAME_SIZE, "worker" ) );
+        entry.logMessageLen = static_cast<uint32_t>( areg::copy_string( entry.logMessage, areg::LOG_NAME_SIZE, "payload" ) );
+
+        areg::LayoutManager reference;
+        uint32_t count{ 0u };
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0xFFFF'FFFFu, 1u ) );
+            AREG_CHILD_CHECK( reference.create_layouts( format ) );
+            count = areg_fault::calls( areg_fault::FaultPoint::Allocation );
+        }
+
+        // 10 specifiers and the text before each; the second exclusive specifier creates none.
+        AREG_CHILD_CHECK( count >= 20u );
+        const std::string expected{ _render_layouts( reference, entry ) };
+        AREG_CHILD_CHECK( expected.find( "m=payload" ) != std::string::npos );
+
+        areg::LayoutManager layouts;
+        for ( uint32_t skip = 0u; skip < count; ++ skip )
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+            const bool created{ layouts.create_layouts( format ) };
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
+            AREG_CHILD_CHECK( created == false );
+            AREG_CHILD_CHECK( layouts.is_valid( ) == false );
+            AREG_CHILD_CHECK( _render_layouts( layouts, entry ).empty( ) );
+        }
+
+        AREG_CHILD_CHECK( layouts.create_layouts( areg::String( format ) ) );
+        AREG_CHILD_CHECK( layouts.is_valid( ) );
+        AREG_CHILD_CHECK( _render_layouts( layouts, entry ) == expected );
+    }
+}
+
+/**
+ * \brief   A layout format whose layout object cannot be allocated creates no layout at all and
+ *          returns, for each allocation in turn; the same manager creates all of them with memory.
+ **/
+TEST( FaultInjectSweepTest, layouts_whose_object_cannot_be_allocated_are_not_created )
+{
+    AREG_EXPECT_IN_CHILD( _layouts_without_memory_are_not_created( ) );
+}
+
+#endif  // defined(AREG_FAULT_SWEEP_TESTS) && AREG_LOGGING
