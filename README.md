@@ -8,10 +8,8 @@
 
 # C++ multithreading, IPC and distributed services
 
-**C++ services that don't care where they run.**
-
-Write a service once. Run it in a thread, in a process or on another machine:
-the service code stays, the application model decides.
+**C++ services that don't care where they run.** Write a service once; run it in a thread, in a process or on another machine.
+The service code stays, the application model decides.
 
 [![CMake build](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml)
 [![Coverage](https://codecov.io/gh/aregtech/areg-sdk/graph/badge.svg?branch=master)](https://codecov.io/gh/aregtech/areg-sdk)
@@ -21,12 +19,6 @@ the service code stays, the application model decides.
 C++17 · Linux · macOS · Windows · embedded Linux
 
 **[Run it in 2 minutes](#quick-start)** · [Measure your machine](#measure-your-machine) · [Let an AI agent build an app](#agentic-coding)
-
-The hard part of a C++ system is rarely the algorithm. It is the **threads**, the **IPC** and the **integration code**.
-Areg takes that work off your hands.
-
-Describe a service interface once. The code generator writes the proxies, serialization and dispatch; the framework finds services
-and runs every call in the thread that owns the component. You write the logic.
 
 <div align="center"><a href="./docs/wiki/03-helloservice-walkthrough.md"><img src="./docs/img/areg-one-code-three-deployments.svg" alt="The same provider and consumer in one thread, in two threads, and in separate processes or machines connected through mtrouter over TCP" width="480"/></a></div>
 
@@ -40,6 +32,12 @@ and runs every call in the thread that owns the component. You write the logic.
 [Performance](#performance) · [Embedded ready](#embedded-ready) · [Agentic coding](#agentic-coding)</sub>
 
 </div>
+
+The hard part of a C++ system is rarely the algorithm. It is the **threads**, the **IPC** and the **integration code**.
+Areg takes that work off your hands.
+
+Describe a service interface once. The code generator writes the proxies, serialization and dispatch; the framework finds services
+and runs every call in the thread that owns the component. You write the logic.
 
 **The code you write.** No socket, no address, no lock:
 
@@ -77,6 +75,12 @@ model.add_thread("Thread2")
 or machine behind `mtrouter`, the multi-target message router: the two classes above do not change.
 
 For C++ on devices, desktops and servers in private networks. Not for web services or public internet endpoints.
+
+**Three things to try, each a few commands:**
+
+| [Run it](#quick-start) | [Measure your machine](#measure-your-machine) | [Let an AI agent build an app](#agentic-coding) |
+|---|---|---|
+| One provider and one consumer in one thread, two threads and two processes. Same classes, three deployments. | How fast is your PC? Latency in microseconds and throughput in GB/s, from two short benchmarks. | Twelve ready prompts, scored by hidden tests the agent never sees. The dry run costs nothing. |
 
 ## Quick start[![](./docs/img/pin.svg)](#quick-start)
 
@@ -287,10 +291,10 @@ Each run prints one line: min, p50, p95, p99 and max in microseconds, and the me
 
 ```bash
 ./23_pubclient.elf                                              # terminal 2
-./23_pubservice.elf -w=1024 -h=1024 -l=1024 -t=25 -c=20 -s      # terminal 3: ~2.4 GB/s; raise -c for more
+./23_pubservice.elf -w=1024 -h=1024 -l=1024 -t=25 -c=20 -s      # terminal 3: starts at ~2.4 GB/s; raise -c
 ```
 
-Type `-q` in the provider to stop. Past your machine's ceiling the consumer's memory grows: that point is the result.
+These settings are a starting load, not the limit: raise `-c` step by step. Type `-q` in the provider to stop. Past your machine's ceiling the consumer's memory grows: that point is the result.
 More recipes, small messages included, are in each example's guide; [`35_loglatency`](./examples/35_loglatency/) measures logging.
 
 **Share your numbers:** [post them in this discussion](https://github.com/aregtech/areg-sdk/discussions/885), with your CPU, OS and compiler. ARM boards and servers are the most wanted.
