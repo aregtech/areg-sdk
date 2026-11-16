@@ -2,11 +2,11 @@
 
 <div align="center">
   <a href="https://www.areg.tech">
-    <img src="./docs/img/areg-sdk-logo.svg" alt="Areg SDK" width="400"/>
+    <img src="./docs/img/areg-sdk-logo.svg" alt="Areg SDK" width="100%"/>
   </a>
 </div>
 
-# Areg SDK: C++ multithreading, IPC and distributed services
+# C++ multithreading, IPC and distributed services
 
 **C++ services that don't care where they run.**
 
