@@ -50,26 +50,18 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Define the model to load and instantiate threads and objects
-//////////////////////////////////////////////////////////////////////////
-// Describe model, register the service provider in the thread "Thread1", declare implemented interface
-BEGIN_MODEL("ProviderModel")
-    // Thread 1, provides a service
-    BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
-            REGISTER_IMPLEMENT_SERVICE( HelloService::ServiceName, HelloService::InterfaceVersion )
-        END_REGISTER_COMPONENT( "ServiceProvider" )
-    END_REGISTER_THREAD( "Thread1" )
-// end of model description
-END_MODEL("ProviderModel")
-
-//////////////////////////////////////////////////////////////////////////
 // main method
 //////////////////////////////////////////////////////////////////////////
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
     areg::Application::setup();
+    // The service provider in "Thread1".
+    areg::Model model("ProviderModel");
+    model.add_thread("Thread1")
+         .add_component<ServiceProvider>("ServiceProvider")
+         .add_supported_service(HelloService::ServiceName, HelloService::InterfaceVersion);
+    areg::ComponentLoader::add_model_unique(model);
     // load model to initialize components
     areg::Application::load_model("ProviderModel");
     // wait until Application quit signal is set.

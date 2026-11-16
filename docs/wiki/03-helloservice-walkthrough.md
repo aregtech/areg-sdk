@@ -172,7 +172,7 @@ All paths below are relative to [`examples/03_helloservice`](../../examples/03_h
 | [`CMakeLists.txt`](../../examples/03_helloservice/CMakeLists.txt) | Four targets using the same two implementation files | Selects the entry point for each target |
 
 Compare the two-thread model with the two process models. The provider still registers
-as `ServiceComponent`; the consumer still declares `REGISTER_DEPENDENCY("ServiceComponent")`.
+as `ServiceComponent`; the consumer still declares `add_dependency_service("ServiceComponent")`.
 The consumer process generates its own unique component name, but its dependency is unchanged.
 
 In your application, introducing service boundaries is design work. Once those boundaries

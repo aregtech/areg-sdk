@@ -23,18 +23,6 @@ constexpr char const _modelName[]{ "ServiceModel" };
 //!< Client component name. Let's generate the name for client service, we'll use it later.
 const areg::String _client(areg::generate_name("ServiceClient"));
 
-// Describe model, register the service consumer (client)
-BEGIN_MODEL(_modelName)
-
-    BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( _client, ClientComponent )
-            REGISTER_DEPENDENCY( "ServiceComponent" ) /* reference to the service*/
-        END_REGISTER_COMPONENT( _client )
-    END_REGISTER_THREAD( "Thread1" )
-
-// end of model description
-END_MODEL(_modelName)
-
 //////////////////////////////////////////////////////////////////////////
 // main method
 //////////////////////////////////////////////////////////////////////////
@@ -44,6 +32,13 @@ int main()
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     areg::Application::setup( );
+
+    // The client in "Thread1" of this process, which depends on the remote service.
+    areg::Model model(_modelName);
+    model.add_thread("Thread1")
+         .add_component<ClientComponent>(_client)
+         .add_dependency_service("ServiceComponent");
+    areg::ComponentLoader::add_model_unique(model);
 
     // load model to initialize components
     areg::Application::load_model(_modelName);

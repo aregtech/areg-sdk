@@ -6,7 +6,7 @@
   </a>
 </div>
 
-# Areg SDK: C++ framework for IPC and distributed services
+# Areg SDK: C++ multithreading, IPC and distributed services
 
 **C++ services that don't care where they run.**
 
@@ -32,7 +32,9 @@ and runs every call in the thread that owns the component. You write the logic.
 
 <div align="center">
 
-**~9.9 µs** one-way latency · **~6 GB/s** sustained throughput · **288 KB** service code on ARMv7 · **28 of 28** AI-agent runs passed the hidden tests (gRPC: 12 of 15)
+| **~9.9 µs** | **~6 GB/s** | **288 KB** | **28 of 28** |
+|:---:|:---:|:---:|:---:|
+| one-way latency, P50 | sustained throughput | code of a static service on ARMv7 | AI-agent runs passed every hidden test (gRPC: 12 of 15) |
 
 <sub>Latency and throughput: full API call over TCP loopback, laptop Core i7, Linux; 204-byte messages for latency, ~3 MB for throughput.
 [Performance](#performance) · [Embedded ready](#embedded-ready) · [Agentic coding](#agentic-coding)</sub>
@@ -59,7 +61,7 @@ void ClientComponent::response_hello_service(bool success)
 }
 ```
 
-**You decide where it runs.** Two threads in one process, as a plain C++ model:
+**You decide where it runs.** Two threads in one process, from [`03_helloservice`](./examples/03_helloservice/twothreads/src/main.cpp):
 
 ```cpp
 areg::Model model("ServiceModel");
@@ -70,8 +72,6 @@ model.add_thread("Thread2")
      .add_component<ClientComponent>("ServiceClient")
      .add_dependency_service("ServiceComponent");
 ```
-
-[`03_helloservice`](./examples/03_helloservice/twothreads/src/main.cpp) declares the same model with the registration macros.
 
 **Move it, don't rewrite it.** Put both components in one thread, or each in its own process
 or machine behind `mtrouter`, the multi-target message router: the two classes above do not change.
