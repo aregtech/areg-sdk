@@ -63,6 +63,31 @@ namespace
         }
     };
 
+    //!< A component that derives privately and creates itself through the registration macro.
+    class PrivateComponent final : private Component
+    {
+    public:
+        PrivateComponent(const ComponentEntry& entry, ComponentThread& owner)
+            : Component(entry, owner)
+        {
+        }
+
+        static void* operator new(std::size_t /*size*/) noexcept
+        {
+            ++gPoolCalls;
+            return nullptr;
+        }
+
+        static void operator delete(void* /*block*/) noexcept
+        {
+        }
+
+        static FuncCreateComponent creator()
+        {
+            return FUNC_CREATE_COMP(PrivateComponent);
+        }
+    };
+
     class ComponentLoaderContractTest : public testing::Test
     {
     protected:
@@ -216,4 +241,18 @@ TEST_F(ComponentLoaderContractTest, component_type_with_its_own_operator_new_is_
     EXPECT_EQ(1u, gPoolCalls);
     EXPECT_EQ(nullptr, FUNC_CREATE_COMP(PoolComponent)(entry, thread));
     EXPECT_EQ(2u, gPoolCalls);
+}
+
+/**
+ * \brief   The registration macro used inside a class that derives privately from Component
+ *          creates the component with the access of that class.
+ **/
+TEST_F(ComponentLoaderContractTest, registration_macro_creates_a_privately_derived_component_inside_its_class)
+{
+    ComponentThread thread(String("LoaderPrivateThread"));
+    const ComponentEntry entry(String("LoaderPrivateThread"), String("LoaderPrivateRole"), nullptr, nullptr);
+
+    gPoolCalls = 0u;
+    EXPECT_EQ(nullptr, PrivateComponent::creator()(entry, thread));
+    EXPECT_EQ(1u, gPoolCalls);
 }

@@ -1930,6 +1930,7 @@ namespace areg {
 template<typename ComponentType, typename = void>
 struct ComponentCreator
 {
+    using Type = ComponentType;                 //!< The type of the created component.
     static constexpr bool   NOTHROW { false };  //!< The nothrow form of operator new is not used.
 
     /**
@@ -1952,6 +1953,7 @@ struct ComponentCreator
 template<typename ComponentType>
 struct ComponentCreator<ComponentType, std::void_t<decltype(new (std::nothrow) ComponentType(std::declval<const ComponentEntry&>(), std::declval<ComponentThread&>()))>>
 {
+    using Type = ComponentType;                 //!< The type of the created component.
     static constexpr bool   NOTHROW { true };   //!< The nothrow form of operator new is used.
 
     /**
@@ -1975,14 +1977,7 @@ inline areg::ComponentEntry& areg::ComponentThreadEntry::add_component(const Str
 {
     return add_component(roleName
         , [](const areg::ComponentEntry& entry, ComponentThread& owner) -> Component* {
-            if constexpr (areg::ComponentCreator<ComponentType>::NOTHROW)
-            {
-                return new (std::nothrow) ComponentType(entry, owner);
-            }
-            else
-            {
-                return new ComponentType(entry, owner);
-            }
+            return areg::ComponentCreator<ComponentType>::create(entry, owner);
         }
         , [](Component& comp, const areg::ComponentEntry& /*entry*/) -> void {
             ComponentType* tmp = static_cast<ComponentType *>(&comp);
