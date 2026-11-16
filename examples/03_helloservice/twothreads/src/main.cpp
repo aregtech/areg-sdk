@@ -19,25 +19,6 @@
 //!< The name of model
 constexpr char const _modelName[]{ "ServiceModel" };
 
-// Describe model, register the service and the client in 2 different threads "Thread1" and "Thread2"
-BEGIN_MODEL(_modelName)
-    // Thread 1, provides a service
-    BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "ServiceComponent", ServiceComponent )
-            REGISTER_IMPLEMENT_SERVICE( HelloService::ServiceName, HelloService::InterfaceVersion )
-        END_REGISTER_COMPONENT( "ServiceComponent" )
-    END_REGISTER_THREAD( "Thread1" )
-
-    // Thread 2, is a service client.
-    BEGIN_REGISTER_THREAD( "Thread2" )
-        BEGIN_REGISTER_COMPONENT( "ServiceClient", ClientComponent )
-            REGISTER_DEPENDENCY( "ServiceComponent" ) /* reference to the service*/
-        END_REGISTER_COMPONENT( "ServiceClient" )
-    END_REGISTER_THREAD( "Thread2" )
-
-// end of model description
-END_MODEL(_modelName)
-
 //////////////////////////////////////////////////////////////////////////
 // main method
 //////////////////////////////////////////////////////////////////////////
@@ -47,6 +28,16 @@ int main()
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     areg::Application::setup( );
+
+    // The service in "Thread1" and the client in "Thread2".
+    areg::Model model(_modelName);
+    model.add_thread("Thread1")
+         .add_component<ServiceComponent>("ServiceComponent")
+         .add_supported_service(HelloService::ServiceName, HelloService::InterfaceVersion);
+    model.add_thread("Thread2")
+         .add_component<ClientComponent>("ServiceClient")
+         .add_dependency_service("ServiceComponent");
+    areg::ComponentLoader::add_model_unique(model);
 
     // load model to initialize components
     areg::Application::load_model(_modelName);

@@ -61,34 +61,20 @@ public:
     }
 };
 
-//////////////////////////////////////////////////////////////////////////
-// Define the model to load and instantiate threads and objects
-//////////////////////////////////////////////////////////////////////////
-// Describe model, register the service provider and service consumer in 
-// 2 different threads "Thread1" and "Thread2"
-BEGIN_MODEL("ServiceModel")
-    // Thread 1 without watchdog, contains a service provider
-    BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "ServiceProvider", ServiceProvider )
-            REGISTER_IMPLEMENT_SERVICE( HelloService::ServiceName, HelloService::InterfaceVersion )
-        END_REGISTER_COMPONENT( "ServiceProvider" )
-    END_REGISTER_THREAD( "Thread1" )
-
-    // Thread 2 without watchdog, contains a service consumer
-    BEGIN_REGISTER_THREAD( "Thread2" )
-        BEGIN_REGISTER_COMPONENT( "ServiceConsumer", ServiceConsumer )
-            REGISTER_DEPENDENCY( "ServiceProvider" ) /* dependency reference to the remote service*/
-        END_REGISTER_COMPONENT( "ServiceConsumer" )
-    END_REGISTER_THREAD( "Thread2" )
-
-// end of model description
-END_MODEL("ServiceModel")
-
 //!< main function
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
     areg::Application::setup();
+    // The service provider in "Thread1" and the service consumer in "Thread2".
+    areg::Model model("ServiceModel");
+    model.add_thread("Thread1")
+         .add_component<ServiceProvider>("ServiceProvider")
+         .add_supported_service(HelloService::ServiceName, HelloService::InterfaceVersion);
+    model.add_thread("Thread2")
+         .add_component<ServiceConsumer>("ServiceConsumer")
+         .add_dependency_service("ServiceProvider");
+    areg::ComponentLoader::add_model_unique(model);
     // load model to initialize components
     areg::Application::load_model("ServiceModel");
     // wait until Application quit signal is set.

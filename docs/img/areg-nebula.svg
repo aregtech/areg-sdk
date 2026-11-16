@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="256" viewBox="0 0 640 256" role="img" aria-labelledby="title description">
+  <title id="title">Nebula: device services, edge decisions, cloud integration</title>
+  <desc id="description">An illustrative IoT pattern, not a scale benchmark. Device-service processes connect through mtrouter over TCP to an edge application inside a trusted network. The edge application implements a separate secure connection to a cloud API. Cloud integration and its security are application responsibilities, not a built-in Areg transport.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 1 L7 4 L1 7" fill="none" stroke="#71859a" stroke-width="1.4"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: #24394b; font-size: 21px; }
+      .heading { font-size: 20px; font-weight: 600; }
+      .muted { fill: #5d7083; font-size: 18px; }
+      .canvas { fill: #ffffff; }
+      .zone { fill: #f3f9fa; stroke: #9ebcc9; stroke-width: 1; stroke-dasharray: 5 5; }
+      .device { fill: #e6f4f0; stroke: #bdcdd9; stroke-width: 1; }
+      .edge, .cloud { fill: #e7f2fc; stroke: #bdcdd9; stroke-width: 1; }
+      .router { fill: #174e65; }
+      .router-label { fill: #ffffff; font-size: 21px; }
+      .router-note { fill: #ffffff; font-size: 18px; }
+      .icon { fill: none; stroke: #236879; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+      .link { fill: none; stroke: #71859a; stroke-width: 1.2; }
+      @media (max-width: 420px) {
+        text { font-size: 24px; }
+        .heading { font-size: 22px; }
+        .muted { font-size: 20px; }
+        .router-note { font-size: 20px; }
+      }
+      @media (prefers-color-scheme: dark) {
+        text { fill: #e1eaf2; }
+        .canvas { fill: #101923; }
+        .muted { fill: #a4b8ca; }
+        .zone { fill: #152732; stroke: #50798b; }
+        .device { fill: #1b403e; stroke: #456075; }
+        .edge, .cloud { fill: #1d3854; stroke: #456075; }
+        .router { fill: #215e77; }
+        .icon { stroke: #9ed5dc; }
+      }
+    </style>
+  </defs>
+  <rect class="canvas" width="640" height="256" rx="12"/>
+  <text class="heading" x="22" y="32">IoT to Cloud (Nebula)</text>
+  <text class="heading" x="514" y="32">Cloud</text>
+  <rect class="zone" x="22" y="48" width="402" height="192" rx="12"/>
+  <text class="muted" x="38" y="72">Trusted network: Areg on every node</text>
+
+  <path class="link" d="M74 154 V145 H222 V154 M148 145 V136 M148 145 V154"/>
+  <rect class="device" x="40" y="154" width="68" height="48" rx="8"/>
+  <rect class="device" x="114" y="154" width="68" height="48" rx="8"/>
+  <rect class="device" x="188" y="154" width="68" height="48" rx="8"/>
+  <g class="icon" transform="translate(-2 -36)">
+    <circle cx="76" cy="214" r="5"/>
+    <path d="M67 205 Q58 214 67 223 M85 205 Q94 214 85 223 M63 201 Q50 214 63 227 M89 201 Q102 214 89 227"/>
+    <rect x="138" y="202" width="24" height="24" rx="3"/>
+    <path d="M142 197 V202 M150 197 V202 M158 197 V202 M142 226 V231 M150 226 V231 M158 226 V231 M133 206 H138 M133 214 H138 M133 222 H138 M162 206 H167 M162 214 H167 M162 222 H167"/>
+    <rect x="208" y="204" width="32" height="22" rx="4"/>
+    <path d="M213 204 L216 199 H232 L235 204"/>
+    <circle cx="224" cy="215" r="7"/>
+  </g>
+  <text x="148" y="226" text-anchor="middle">Device services</text>
+
+  <rect class="router" x="76" y="88" width="144" height="48" rx="8"/>
+  <text class="router-label" x="148" y="108" text-anchor="middle">mtrouter</text>
+  <text class="router-note" x="148" y="131" text-anchor="middle">TCP</text>
+  <path class="link" d="M230 112 H278" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <rect class="edge" x="288" y="88" width="120" height="112" rx="8"/>
+  <g class="icon" transform="translate(-3 -10)">
+    <rect x="331" y="111" width="40" height="16" rx="3"/>
+    <rect x="331" y="133" width="40" height="16" rx="3"/>
+    <path d="M338 119 H339 M338 141 H339 M347 119 H363 M347 141 H363"/>
+  </g>
+  <text x="348" y="166" text-anchor="middle">Edge app</text>
+  <text class="muted" x="348" y="192" text-anchor="middle">Decide</text>
+
+  <path class="link" d="M418 112 H488" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+  <path class="cloud" transform="translate(0 -16)" d="M510 153 C482 153 480 117 502 109 C497 84 532 70 549 90 C565 68 599 79 600 104 C630 105 636 145 609 153Z"/>
+  <text x="555" y="108" text-anchor="middle">Cloud API</text>
+  <text x="528" y="176" text-anchor="middle">Results upstream</text>
+  <text class="muted" x="528" y="204" text-anchor="middle">over your own</text>
+  <text class="muted" x="528" y="228" text-anchor="middle">secure link</text>
+</svg>

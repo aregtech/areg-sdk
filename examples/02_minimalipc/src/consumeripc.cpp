@@ -55,26 +55,18 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Define the model to load and instantiate threads and objects
-//////////////////////////////////////////////////////////////////////////
-// Describe model, register the service consumer in the thread "Thread1", declare dependency
-BEGIN_MODEL( "ConsumerModel" )
-    // Thread 1 without watchdog, contains a service consumer
-    BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "ServiceConsumer", ServiceConsumer )
-            REGISTER_DEPENDENCY( "ServiceProvider" ) /* dependency reference to the remote service*/
-        END_REGISTER_COMPONENT( "ServiceConsumer" )
-    END_REGISTER_THREAD( "Thread1" )
-// end of model description
-END_MODEL("ConsumerModel")
-
-//////////////////////////////////////////////////////////////////////////
 // main method
 //////////////////////////////////////////////////////////////////////////
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
     areg::Application::setup();
+    // The service consumer in "Thread1", which depends on the remote "ServiceProvider".
+    areg::Model model("ConsumerModel");
+    model.add_thread("Thread1")
+         .add_component<ServiceConsumer>("ServiceConsumer")
+         .add_dependency_service("ServiceProvider");
+    areg::ComponentLoader::add_model_unique(model);
     // load model to initialize components
     areg::Application::load_model("ConsumerModel");
     // wait until Application quit signal is set.

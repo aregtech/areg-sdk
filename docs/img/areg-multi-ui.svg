@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="256" viewBox="0 0 640 256" role="img" aria-labelledby="title description">
+  <title id="title">Many frontends, one backend service</title>
+  <desc id="description">An operator UI, a monitoring application and a test tool run as separate consumer processes. All three connect through mtrouter over TCP to one backend provider and use the same service interface: requests for commands and subscribed attributes for state.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M1 1 L7 4 L1 7" fill="none" stroke="#71859a" stroke-width="1.4"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: #24394b; font-size: 21px; }
+      .heading { font-size: 20px; font-weight: 600; }
+      .muted { fill: #5d7083; font-size: 18px; }
+      .canvas { fill: #ffffff; }
+      .process { fill: #f7fafc; stroke: #bdcdd9; stroke-width: 1; }
+      .provider { fill: #e6f4f0; }
+      .consumer { fill: #efedfa; }
+      .bus { fill: none; stroke: #71859a; stroke-width: 1.2; }
+      .router { fill: #174e65; }
+      .router-label { fill: #ffffff; font-size: 21px; }
+      .router-note { fill: #ffffff; font-size: 18px; }
+      .link { fill: none; stroke: #71859a; stroke-width: 1.2; marker-start: url(#arrow); marker-end: url(#arrow); }
+      @media (max-width: 420px) {
+        text { font-size: 24px; }
+        .heading { font-size: 22px; }
+        .muted { font-size: 20px; }
+        .router-note { font-size: 20px; }
+      }
+      @media (prefers-color-scheme: dark) {
+        text { fill: #e1eaf2; }
+        .canvas { fill: #101923; }
+        .muted { fill: #a4b8ca; }
+        .process { fill: #172330; stroke: #456075; }
+        .provider { fill: #1b403e; }
+        .consumer { fill: #35304e; }
+        .router { fill: #215e77; }
+      }
+    </style>
+  </defs>
+  <rect class="canvas" width="640" height="256" rx="12"/>
+  <text class="heading" x="22" y="32">Many frontends, one backend service</text>
+  <rect class="process" x="22" y="48" width="180" height="48" rx="8"/>
+  <rect class="consumer" x="30" y="56" width="164" height="32" rx="5"/>
+  <text x="112" y="79" text-anchor="middle">Operator UI</text>
+  <rect class="process" x="22" y="104" width="180" height="48" rx="8"/>
+  <rect class="consumer" x="30" y="112" width="164" height="32" rx="5"/>
+  <text x="112" y="135" text-anchor="middle">Monitoring</text>
+  <rect class="process" x="22" y="160" width="180" height="48" rx="8"/>
+  <rect class="consumer" x="30" y="168" width="164" height="32" rx="5"/>
+  <text x="112" y="191" text-anchor="middle">Test tool</text>
+  <path class="bus" d="M202 72 H225 V184 H202 M202 128 H248"/>
+  <rect class="router" x="248" y="104" width="144" height="48" rx="8"/>
+  <text class="router-label" x="320" y="124" text-anchor="middle">mtrouter</text>
+  <text class="router-note" x="320" y="147" text-anchor="middle">TCP</text>
+  <path class="link" d="M402 128 H428"/>
+  <rect class="process" x="438" y="104" width="180" height="48" rx="8"/>
+  <rect class="provider" x="446" y="112" width="164" height="32" rx="5"/>
+  <text x="528" y="135" text-anchor="middle">Backend</text>
+  <text class="muted" x="320" y="240" text-anchor="middle">Requests for commands, attributes for state</text>
+</svg>
