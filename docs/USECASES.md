@@ -44,7 +44,7 @@ Each stage exposes a typed interface. The application model decides which compon
 share a thread or process; `mtrouter` carries cross-process messages. Moving a stage
 changes its model/build arrangement, not the shared provider and consumer implementations.
 
-<div align="center"><a href="./img/areg-pipeline-deployments.svg"><img src="./img/areg-pipeline-deployments.svg" alt="The same pipeline stages deployed locally or across processes" width="720"/></a></div>
+<div align="center"><a href="./img/areg-pipeline-deployments.svg"><img src="./img/areg-pipeline-deployments.svg" alt="The same pipeline stages deployed locally or across processes" width="480"/></a></div>
 
 **Where it fits:** scientific instruments, machine vision and industrial inspection.
 Measure end-to-end processing capacity, queue growth and acceptable loss on your workload.
@@ -66,7 +66,7 @@ platform integration. It is not a replacement for arbitrary USB or other kernel 
 In the **Nebula / Mist-to-Cloud** pattern, an edge application coordinates device services
 inside a trusted network and manages its own secure connection to a cloud API.
 
-<div align="center"><a href="./img/areg-nebula.svg"><img src="./img/areg-nebula.svg" alt="Device services, router and edge application on a trusted network, with an application-managed cloud connection" width="720"/></a></div>
+<div align="center"><a href="./img/areg-nebula.svg"><img src="./img/areg-nebula.svg" alt="Device services, router and edge application on a trusted network, with an application-managed cloud connection" width="480"/></a></div>
 
 [Original Nebula concept](./img/mist-network.png).
 The illustration is an architecture pattern, not a measured scale or latency guarantee.
@@ -119,7 +119,7 @@ representation reconciles with the physical device.
 Implement the device interface in a simulated provider, using the role name expected
 by the consumer. Later deploy the device-backed provider under that same role.
 
-<div align="center"><a href="./img/areg-device-simulation.svg"><img src="./img/areg-device-simulation.svg" alt="One consumer using either a simulated provider or a real device provider" width="720"/></a></div>
+<div align="center"><a href="./img/areg-device-simulation.svg"><img src="./img/areg-device-simulation.svg" alt="One consumer using either a simulated provider or a real device provider" width="480"/></a></div>
 
 These are alternative deployments, not two providers competing for one role.
 Run locally for iteration, then across processes to exercise the IPC path.
@@ -200,7 +200,7 @@ and the current router transport is intended for trusted peers.
 Operator interfaces, monitoring applications and test tools can consume the same
 backend contract. Requests carry commands; subscribed attributes deliver state updates.
 
-<div align="center"><a href="./img/areg-multi-ui.svg"><img src="./img/areg-multi-ui.svg" alt="An operator UI, a monitoring application and a test tool consuming one backend service through mtrouter" width="720"/></a></div>
+<div align="center"><a href="./img/areg-multi-ui.svg"><img src="./img/areg-multi-ui.svg" alt="An operator UI, a monitoring application and a test tool consuming one backend service through mtrouter" width="480"/></a></div>
 
 An additional consumer need not introduce another backend protocol.
 The application still handles competing commands, permissions, slow consumers and

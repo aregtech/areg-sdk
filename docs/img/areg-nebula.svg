@@ -8,21 +8,21 @@
     <style>
       text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: #24394b; font-size: 21px; }
       .heading { font-size: 20px; font-weight: 600; }
-      .muted { fill: #5d7083; font-size: 16px; }
+      .muted { fill: #5d7083; font-size: 18px; }
       .canvas { fill: #ffffff; }
       .zone { fill: #f3f9fa; stroke: #9ebcc9; stroke-width: 1; stroke-dasharray: 5 5; }
       .device { fill: #e6f4f0; stroke: #bdcdd9; stroke-width: 1; }
       .edge, .cloud { fill: #e7f2fc; stroke: #bdcdd9; stroke-width: 1; }
       .router { fill: #174e65; }
       .router-label { fill: #ffffff; font-size: 21px; }
-      .router-note { fill: #ffffff; font-size: 16px; }
+      .router-note { fill: #ffffff; font-size: 18px; }
       .icon { fill: none; stroke: #236879; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
       .link { fill: none; stroke: #71859a; stroke-width: 1.2; }
       @media (max-width: 420px) {
         text { font-size: 24px; }
         .heading { font-size: 22px; }
-        .muted { font-size: 18px; }
-        .router-note { font-size: 18px; }
+        .muted { font-size: 20px; }
+        .router-note { font-size: 20px; }
       }
       @media (prefers-color-scheme: dark) {
         text { fill: #e1eaf2; }
@@ -37,10 +37,10 @@
     </style>
   </defs>
   <rect class="canvas" width="640" height="256" rx="12"/>
-  <text class="heading" x="22" y="32">Mist + edge</text>
+  <text class="heading" x="22" y="32">IoT to Cloud (Nebula)</text>
   <text class="heading" x="514" y="32">Cloud</text>
   <rect class="zone" x="22" y="48" width="402" height="192" rx="12"/>
-  <text class="muted" x="38" y="72">Areg / trusted network</text>
+  <text class="muted" x="38" y="72">Trusted network: Areg on every node</text>
 
   <path class="link" d="M74 154 V145 H222 V154 M148 145 V136 M148 145 V154"/>
   <rect class="device" x="40" y="154" width="68" height="48" rx="8"/>
@@ -73,7 +73,7 @@
   <path class="link" d="M418 112 H488" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
   <path class="cloud" transform="translate(0 -16)" d="M510 153 C482 153 480 117 502 109 C497 84 532 70 549 90 C565 68 599 79 600 104 C630 105 636 145 609 153Z"/>
   <text x="555" y="108" text-anchor="middle">Cloud API</text>
-  <text x="522" y="172" text-anchor="middle">Your secure</text>
-  <text x="522" y="202" text-anchor="middle">cloud link</text>
-  <text class="muted" x="522" y="230" text-anchor="middle">Application-managed</text>
+  <text x="528" y="176" text-anchor="middle">Results upstream</text>
+  <text class="muted" x="528" y="204" text-anchor="middle">over your own</text>
+  <text class="muted" x="528" y="228" text-anchor="middle">secure link</text>
 </svg>

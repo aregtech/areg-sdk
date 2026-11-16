@@ -8,7 +8,7 @@
     <style>
       text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: #24394b; font-size: 21px; }
       .heading { font-size: 20px; font-weight: 600; }
-      .muted { fill: #5d7083; font-size: 16px; }
+      .muted { fill: #5d7083; font-size: 18px; }
       .canvas { fill: #ffffff; }
       .process { fill: #f7fafc; stroke: #bdcdd9; stroke-width: 1; }
       .thread { fill: none; stroke: #8ca1b3; stroke-width: 1; stroke-dasharray: 4 4; }
@@ -16,13 +16,13 @@
       .consumer { fill: #efedfa; }
       .router { fill: #174e65; }
       .router-label { fill: #ffffff; font-size: 21px; }
-      .router-note { fill: #ffffff; font-size: 16px; }
+      .router-note { fill: #ffffff; font-size: 18px; }
       .link { fill: none; stroke: #71859a; stroke-width: 1.2; marker-start: url(#arrow); marker-end: url(#arrow); }
       @media (max-width: 420px) {
         text { font-size: 24px; }
         .heading { font-size: 22px; }
-        .muted { font-size: 18px; }
-        .router-note { font-size: 18px; }
+        .muted { font-size: 20px; }
+        .router-note { font-size: 20px; }
       }
       @media (prefers-color-scheme: dark) {
         text { fill: #e1eaf2; }
