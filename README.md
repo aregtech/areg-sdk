@@ -107,16 +107,16 @@ Both print the same round trip:
 Succeeded to output message.
 ```
 
-**2. Two processes.** Same classes, now through the router. One terminal each:
+**2. Two processes.** Same classes, now through the router:
 
 ```bash
-./build/bin/mtrouter.elf --console     # terminal 1
-./build/bin/03_pubservice.elf          # terminal 2
-./build/bin/03_pubclient.elf           # terminal 3
+./build/bin/mtrouter.elf        # the router, in the background
+./build/bin/03_pubservice.elf   # the provider
+./build/bin/03_pubclient.elf    # the consumer
 ```
 
-The greeting crosses the process boundary. Start the provider and the consumer in any order; for two machines,
-set the router address in `areg.init`. Binaries end in `.elf` on Linux, `.mac` on macOS and `.exe` on Windows.
+The greeting crosses the process boundary. Start the provider and the consumer in any order; on Windows, use one terminal
+for each of the three programs. For two machines, set the router address in `areg.init`. Binaries end in `.elf` on Linux, `.mac` on macOS and `.exe` on Windows.
 
 **3. See what changed.** Only the model:
 [one thread](./examples/03_helloservice/onethread/src/main.cpp) ·
