@@ -209,7 +209,7 @@ void RouterClient::failed_send_message(const MessageEnvelope & msgFailed, Socket
     if (Application::is_servicing_ready())
     {
         uint32_t msgId{ msgFailed.message_id() };
-        if ( areg::is_executable_id(msgId) || areg::is_connect_id(msgId) )
+        if ( areg::is_interface_call(msgFailed.call_type()) || (msgId == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)) )
         {
             LOG_WARN("Failed to send message [ %u ] to target [ %u ], source is [ %u ], the target socket [ %u ] is [ %s : %s ]"
                        , msgId
@@ -272,7 +272,7 @@ void RouterClient::failed_process_message( const MessageEnvelope & msgUnprocesse
     if (Application::is_servicing_ready())
     {
         uint32_t msgId{ msgUnprocessed.message_id() };
-        if ( areg::is_executable_id(msgId) )
+        if ( areg::is_interface_call(msgUnprocessed.call_type()) )
         {
             LOG_DBG("The message [ %u ] for target [ %u ] and from source [ %u ] is unprocessed, replying with failed message"
                       , msgId
@@ -330,7 +330,7 @@ namespace
     }
 
     // Logs a registration notice of the router whose service address is not valid.
-    void _report_invalid_notice(const MessageEnvelope & msgReceived, areg::RegistrationAction action)
+    void _report_invalid_notice(const MessageEnvelope & msgReceived, areg::CallType action)
     {
         LOG_SCOPE( areg_ipc_private_RouterClient, report_invalid_notice );
         LOG_WARN("Ignoring the registration notice [ %s ] from source [ %u ]: its service address is not valid"
@@ -350,6 +350,17 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
                         , whichSource.address().host_port( ) );
         return;
         // GCOVR_EXCL_STOP
+    }
+
+    if ( areg::is_interface_call(msgReceived.call_type()) )
+    {
+        // Route directly on the receive thread
+        if ( !RemoteEventFactory::route_incoming_message(msgReceived, mChannel) )
+        {
+            failed_process_message(msgReceived);
+        }
+
+        return;
     }
 
     areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>(msgReceived.message_id()) };
@@ -377,13 +388,13 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
 
         // The channel source of a connected client is the number of its dispatcher thread.
         const ITEM_ID source{ mMessageDispatcher.number() };
-        const areg::RegistrationAction reqType{ static_cast<areg::RegistrationAction>(msgReceived.call_type()) };
+        const areg::CallType reqType{ static_cast<areg::CallType>(msgReceived.call_type()) };
         const areg::DisconnectReason reason{ static_cast<areg::DisconnectReason>(msgReceived.result()) };
         DEBUG_LOG_DBG("Remote routing service registration notification of type [ %s ]", areg::as_string(reqType));
 
         switch ( reqType )
         {
-        case areg::RegistrationAction::RegisterConsumer:
+        case areg::CallType::RegisterConsumer:
         {
             ProxyAddress proxy(*msgReceived.header());
             proxy.set_source( source );
@@ -395,7 +406,7 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         }
         break;
 
-        case areg::RegistrationAction::RegisterProvider:
+        case areg::CallType::RegisterProvider:
         {
             StubAddress stub(*msgReceived.header());
             stub.set_source( source );
@@ -407,7 +418,7 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         }
         break;
 
-        case areg::RegistrationAction::UnregisterConsumer:
+        case areg::CallType::UnregisterConsumer:
         {
             ProxyAddress proxy(*msgReceived.header());
             proxy.set_source( source );
@@ -418,7 +429,7 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
         }
         break;
 
-        case areg::RegistrationAction::UnregisterProvider:
+        case areg::CallType::UnregisterProvider:
         {
             StubAddress stub(*msgReceived.header());
             stub.set_source( source );
@@ -442,7 +453,6 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
     }
     break;
 
-    case areg::FuncIdRange::ServiceLastId:                      // fall through
     case areg::FuncIdRange::SystemServiceQueryInstances:        // fall through
     case areg::FuncIdRange::SystemServiceRequestRegister:       // fall through
     case areg::FuncIdRange::SystemServiceDisconnect:            // fall through
@@ -467,29 +477,10 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
     case areg::FuncIdRange::ServiceLogConfigurationRestored:    // fall through
         break;
 
-    case areg::FuncIdRange::AttributeLastId:          // fall through
-    case areg::FuncIdRange::AttributeFirstId:         // fall through
-    case areg::FuncIdRange::ResponseLastId:           // fall through
-    case areg::FuncIdRange::ResponseFirstId:          // fall through
-    case areg::FuncIdRange::RequestLastId:            // fall through
-    case areg::FuncIdRange::RequestFirstId:           // fall through
     case areg::FuncIdRange::EmptyFunctionId:          // fall through
     default:
-    {
-        if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) )
-        {
-            // Route directly on the receive thread 
-            if ( !RemoteEventFactory::route_incoming_message(msgReceived, mChannel) )
-            {
-                failed_process_message(msgReceived);
-            }
-        }
-        else
-        {
-            DEBUG_LOG_WARN("The message [ %u ] was not processed on client service side", msgId);
-        }
-    }
-    break;
+        DEBUG_LOG_WARN("The message [ %u ] was not processed on client service side", msgId);
+        break;
     }
 }
 

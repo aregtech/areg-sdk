@@ -136,6 +136,10 @@ private:
          * \brief   Pointer to notification event listener object, which should be instance of Proxy client.
          **/
         NotificationConsumer*   mListener{ nullptr };
+        /**
+         * \brief   The request a waiting caller sent; 0 for a subscription.
+         **/
+        uint32_t                mRequestId{ 0u };
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -381,12 +385,13 @@ public:
      *
      * \param   target      The address of the target proxy to receive the failure event.
      * \param   msgId       The message ID of the failed request.
+     * \param   kind        The kind of the message ID of the failed request.
      * \param   errCode     The error code indicating the failure reason.
      * \param   seqNr       The sequence number associated with the request.
      * \return  A ServiceResponseEvent value; check is_valid() before use.
      **/
     [[nodiscard]]
-    static ServiceResponseEvent request_failure_event(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr);
+    static ServiceResponseEvent request_failure_event(const ProxyAddress & target, uint32_t msgId, areg::CallType kind, areg::ResultType errCode, const SequenceNumber & seqNr);
 
     /**
      * \brief   Acquires a lock on proxy resources for thread-safe access to the proxy registry.
@@ -602,10 +607,11 @@ protected:
      * \param   msgId       The message ID to subscribe or unsubscribe. Should be an attribute or
      *                      response ID.
      * \param   reqType     The type of notification request (subscribe or unsubscribe).
+     * \param   kind        The kind of the message ID: Attribute, Broadcast, Response, or Interface to remove all.
      * \return  Returns a valid pointer to the created request event.
      **/
     [[nodiscard]]
-    virtual ServiceRequestEvent create_notification_request( uint32_t msgId, areg::RequestType reqType ) = 0;
+    virtual ServiceRequestEvent create_notification_request( uint32_t msgId, areg::RequestType reqType, areg::CallType kind ) = 0;
 
     /**
      * \brief   Creates an error response event when a remote request fails to reach the target.
@@ -613,12 +619,13 @@ protected:
      *
      * \param   addrProxy       The address of the proxy that sent the failed request.
      * \param   msgId           The message ID of the failed request.
+     * \param   kind            The kind of the message ID of the failed request.
      * \param   reason          The failure reason code.
      * \param   seqNr           The sequence number of the failed request.
      * \return  A ServiceResponseEvent value; check is_valid() before use.
      **/
     [[nodiscard]]
-    virtual ServiceResponseEvent create_request_failed( const ProxyAddress & addrProxy, uint32_t msgId, areg::ResultType reason, const SequenceNumber & seqNr ) const = 0;
+    virtual ServiceResponseEvent create_request_failed( const ProxyAddress & addrProxy, uint32_t msgId, areg::CallType kind, areg::ResultType reason, const SequenceNumber & seqNr ) const = 0;
 
 /************************************************************************/
 // ProxyEventConsumer interface overrides.
@@ -696,7 +703,8 @@ protected:
 protected:
 
     /**
-     * \brief   Sends a request to the stub to start sending update notifications for the  message ID.
+     * \brief   Sends a request to the stub to start sending update notifications for the message ID.
+     *          Nothing is sent for an ID that is not an attribute, a response or a broadcast of the interface.
      *
      * \param   msgId       The attribute or response message ID to start receiving updates for.
      **/
@@ -704,13 +712,15 @@ protected:
 
     /**
      * \brief   Sends a request to the stub to stop sending update notifications for the specified message ID.
+     *          Nothing is sent for an ID that is not an attribute, a response or a broadcast of the interface.
      *
      * \param   msgId       The attribute or response message ID to stop receiving updates for.
      **/
     inline void stop_notification( uint32_t msgId );
 
     /**
-     * \brief   Stops all attribute and response update notifications from the stub.
+     * \brief   Stops all attribute, response and broadcast update notifications from the stub,
+     *          as stop_notification() does for each subscribed message ID.
      **/
     inline void stop_all_notifications();
 
@@ -768,10 +778,11 @@ protected:
      * \param   caller      The notification consumer to add.
      * \param   unique      If true, adds only if the listener does not already exist; if false,
      *                      always adds.
+     * \param   reqId       The request a waiting caller sent; 0 for a subscription.
      * \return  Returns true if the listener was added; false if it already existed and unique was
      *          true.
      **/
-    bool add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique );
+    bool add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique, uint32_t reqId = 0u );
 
     /**
      * \brief   Sets the data state for the specified message ID in the proxy data.
@@ -780,6 +791,16 @@ protected:
      * \param   newState    The new data state to set.
      **/
     inline void set_state( uint32_t msgId, areg::DataState newState ) noexcept;
+
+    /**
+     * \brief   Sets the data state of an attribute, a response or a broadcast by its index.
+     *
+     * \param   kind        Attribute for an index of the attribute list; Response or Broadcast for
+     *                      an index of the response list. Any other kind is ignored.
+     * \param   index       The index in the list of the kind.
+     * \param   newState    The new data state to set.
+     **/
+    inline void set_state( areg::CallType kind, uint32_t index, areg::DataState newState ) noexcept;
 
     /**
      * \brief   Updates the proxy connection status.
@@ -800,15 +821,27 @@ protected:
     void notify_listeners( uint32_t respId, areg::ResultType result, const SequenceNumber & seqNrToSearch );
 
     /**
+     * \brief   Notifies the caller of a failed request and drops its waiting entry. The state of
+     *          the response of the request becomes invalid. An ID that is not a request of the
+     *          interface is logged and ignored.
+     *
+     * \param   reqId       The ID of the failed request.
+     * \param   result      The failure.
+     * \param   seqNr       The sequence number of the failed call.
+     **/
+    void notify_request_failed( uint32_t reqId, areg::ResultType result, const SequenceNumber & seqNr );
+
+    /**
      * \brief   Sends a request event to the stub with serialized arguments and an optional response listener.
      *
      * \param   reqId       The ID of the request.
      * \param   args        The buffer containing serialized request arguments. Can be empty if the request has no parameters.
      * \param   caller      The consumer to receive the response. Must be non-null if the request
      *                      has a response; can be null if the request is one-way.
+     * \param   respId      The ID of the response of the request, areg::RESPONSE_ID_NONE if it has none.
      * \return  The sequence number of the request, or areg::SEQUENCE_NUMBER_ANY if it has no response.
      **/
-    inline SequenceNumber send_request_event( uint32_t reqId, const areg::SharedBuffer & args, NotificationConsumer * caller );
+    inline SequenceNumber send_request_event( uint32_t reqId, const areg::SharedBuffer & args, NotificationConsumer * caller, uint32_t respId );
 
     /**
      * \brief   Sends a request event to the stub with serialized arguments and an optional response listener.
@@ -816,9 +849,10 @@ protected:
      * \param   reqEvent    The prepared request event to send.
      * \param   caller      The consumer to receive the response. Must be non-null if the request
      *                      has a response; can be null if the request is one-way.
+     * \param   respId      The ID of the response of the request, areg::RESPONSE_ID_NONE if it has none.
      * \return  The sequence number of the request, or areg::SEQUENCE_NUMBER_ANY if it has no response.
      **/
-    SequenceNumber send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller);
+    SequenceNumber send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller, uint32_t respId);
 
     /**
      * \brief   Builds an empty, ready-to-fill request event in a single heap allocation
@@ -835,8 +869,9 @@ protected:
      *
      * \param   msgId       The attribute or response message ID to subscribe or unsubscribe.
      * \param   reqType     The request type indicating whether to start or stop notifications.
+     * \param   kind        The kind of the message ID.
      **/
-    void send_notify_request( uint32_t msgId, areg::RequestType reqType );
+    void send_notify_request( uint32_t msgId, areg::RequestType reqType, areg::CallType kind );
 
     /**
      * \brief   Sends a request to the stub to start or stop sending update notifications.
@@ -947,6 +982,12 @@ private:
      **/
     [[nodiscard]]
     inline ProxyBase & self() noexcept;
+
+    /**
+     * \brief   Notifies the listeners of \a listenId, as notify_listeners() does, with \a notifyId
+     *          as the message ID the clients receive.
+     **/
+    void _notify_listeners( uint32_t listenId, uint32_t notifyId, areg::ResultType result, const SequenceNumber & seqNrToSearch );
 
     /**
      * \brief   Returns the global registry of all proxy objects in the system.
@@ -1066,23 +1107,31 @@ inline void ProxyBase::start_notification( uint32_t msgId )
 {
     if (is_connected())
     {
-        send_notify_request( msgId, areg::RequestType::StartNotify );
+        const areg::CallType kind{ mProxyData.mIfData.idFind(msgId).miKind };
+        if ((kind != areg::CallType::Undefined) && (kind != areg::CallType::Request))
+        {
+            send_notify_request( msgId, areg::RequestType::StartNotify, kind );
+        }
     }
 }
 
 inline void ProxyBase::stop_notification( uint32_t msgId )
 {
-    if (is_connected()) 
+    if (is_connected())
     {
-        send_notify_request( msgId, areg::RequestType::StopNotify );
+        const areg::CallType kind{ mProxyData.mIfData.idFind(msgId).miKind };
+        if ((kind != areg::CallType::Undefined) && (kind != areg::CallType::Request))
+        {
+            send_notify_request( msgId, areg::RequestType::StopNotify, kind );
+        }
     }
 }
 
 inline void ProxyBase::stop_all_notifications()
 {
-    if (is_connected()) 
+    if (is_connected())
     {
-        send_notify_request( static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId), areg::RequestType::RemoveAllNotify );
+        send_notify_request( static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId), areg::RequestType::RemoveAllNotify, areg::CallType::Interface );
     }
 }
 
@@ -1119,6 +1168,18 @@ inline void ProxyBase::set_state( uint32_t msgId, areg::DataState newState ) noe
     mProxyData.set_data_state( msgId, newState );
 }
 
+inline void ProxyBase::set_state( areg::CallType kind, uint32_t index, areg::DataState newState ) noexcept
+{
+    if (kind == areg::CallType::Attribute)
+    {
+        mProxyData.set_attribute_state( index, newState );
+    }
+    else if ((kind == areg::CallType::Response) || (kind == areg::CallType::Broadcast))
+    {
+        mProxyData.set_param_state( index, newState );
+    }
+}
+
 inline DispatcherThread & ProxyBase::proxy_dispatcher_thread() const noexcept
 {
     return mDispatcherThread;
@@ -1129,10 +1190,10 @@ inline ServiceRequestEvent ProxyBase::create_request_event(uint32_t reqId, uint3
     return create_request(reqId, reserve);
 }
 
-inline SequenceNumber ProxyBase::send_request_event(uint32_t reqId, const SharedBuffer& args, NotificationConsumer* caller)
+inline SequenceNumber ProxyBase::send_request_event(uint32_t reqId, const SharedBuffer& args, NotificationConsumer* caller, uint32_t respId)
 {
     ServiceRequestEvent reqEvent{ create_request(args, reqId) };
-    return send_request_event(reqEvent, caller);
+    return send_request_event(reqEvent, caller, respId);
 }
 
 #ifdef DEBUG

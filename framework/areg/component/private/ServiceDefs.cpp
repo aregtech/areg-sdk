@@ -154,12 +154,17 @@ void areg::ParameterArray::construct( const uint32_t * params, uint32_t count ) 
 // class areg::ProxyData implementation
 //////////////////////////////////////////////////////////////////////////
 
+AREG_API_IMPL areg::MessageInfo areg::find_no_message(uint32_t /* msgId */) noexcept
+{
+    return areg::MessageInfo{ };
+}
+
 AREG_API_IMPL const areg::InterfaceData & areg::empty_interface() noexcept
 {
     /**
      * \brief   System Service Interface data
      **/
-    static constexpr areg::InterfaceData _InterfaceData = 
+    static constexpr areg::InterfaceData _InterfaceData =
     {
           areg::EmptyServiceName
         , areg::EmptyServiceVersion
@@ -172,6 +177,7 @@ AREG_API_IMPL const areg::InterfaceData & areg::empty_interface() noexcept
         , nullptr
         , nullptr
         , nullptr
+        , &areg::find_no_message
     };
 
     return _InterfaceData;

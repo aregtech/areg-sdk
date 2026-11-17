@@ -160,26 +160,48 @@ static inline constexpr const char* as_string(areg::EventPriority eventPrio) noe
 constexpr areg::EventPriority DefaultPriority { areg::EventPriority::NormalPrio };
 
 /************************************************************************
- * areg::EventCallType
- * Dispatch category for the event runnable path. Bitfield design:
- *   bit 0 (0x01)  IsLocal    same-process inter-thread
- *   bit 1 (0x02)  IsRemote   IPC via mtrouter
- *   bit 2 (0x04)  IsCustom   developer-defined (EventCustomBit set)
- *   bit 3 (0x08)  IsService  framework service-interface call
+ * areg::CallType
+ * The kind of the message ID in the event header.
+ *   0x10 / 0x20  registration of a consumer / a provider
+ *   0x40         service interface call: the ID belongs to the interface
  ************************************************************************/
-enum class EventCallType : uint8_t
+enum class CallType : uint8_t
 {
-      Undefined         = 0x00u   //!< Unclassified; default state.
-    , CallLocal         = 0x01u   //!< Local: same-process inter-thread.
-    , CallRemote        = 0x02u   //!< Remote: IPC via mtrouter.
-    , CallCustom        = 0x05u   //!< Custom local: developer-defined event.
-    , CallService       = 0x08u   //!< Service call base (use Local or Remote variant).
-    , CallServiceLocal  = 0x09u   //!< Service call, local delivery.
-    , CallServiceRemote = 0x0Au   //!< Service call, remote delivery.
+      Undefined             = 0x00u //!< No call. The message ID is a system ID or empty.
+    , RegisterConsumer      = 0x10u //!< A service consumer registers.
+    , UnregisterConsumer    = 0x11u //!< A service consumer unregisters.
+    , RegisterProvider      = 0x20u //!< A service provider registers.
+    , UnregisterProvider    = 0x21u //!< A service provider unregisters.
+    , Interface             = 0x40u //!< A service interface call that names no entry. The message ID is empty.
+    , Request               = 0x41u //!< The message ID is a request.
+    , Response              = 0x42u //!< The message ID is a response.
+    , Broadcast             = 0x43u //!< The message ID is a broadcast.
+    , Attribute             = 0x44u //!< The message ID is an attribute.
 };
 
+//!< The bit of a call type that marks a service interface call.
+constexpr uint8_t   CALL_INTERFACE_MASK { 0x40u };
+
+/**
+ * \brief   Returns true if the call type marks a service interface call.
+ **/
 [[nodiscard]]
-static inline constexpr const char* as_string(areg::EventCallType callType) noexcept;
+inline constexpr bool is_interface_call(uint8_t callType) noexcept;
+
+/**
+ * \brief   Returns true if the call type marks a service interface call.
+ **/
+[[nodiscard]]
+inline constexpr bool is_interface_call(areg::CallType callType) noexcept;
+
+/**
+ * \brief   Returns true if the call type is one of the four service interface kinds.
+ **/
+[[nodiscard]]
+inline constexpr bool is_interface_kind(areg::CallType callType) noexcept;
+
+[[nodiscard]]
+static inline constexpr const char* as_string(areg::CallType callType) noexcept;
 
 /**
  * \brief   Returns true if the event type is matching any bit set of the give event.
@@ -362,7 +384,7 @@ inline constexpr bool is_valid(areg::EventType eventType) noexcept;
 inline constexpr bool is_request_failure(areg::EventType eventType) noexcept;
 
 
-AREG_IMPLEMENT_STREAMABLE(areg::EventCallType)
+AREG_IMPLEMENT_STREAMABLE(areg::CallType)
 AREG_IMPLEMENT_STREAMABLE(areg::EventType)
 
 // Failure events are notifications sent TO the consumer proxy, not the provider stub.
@@ -653,26 +675,48 @@ inline constexpr const char* areg::as_string(areg::EventPriority eventPrio) noex
     }
 }
 
-inline constexpr const char* areg::as_string(areg::EventCallType callType) noexcept
+inline constexpr bool areg::is_interface_call(uint8_t callType) noexcept
+{
+    return ((callType & areg::CALL_INTERFACE_MASK) != 0u);
+}
+
+inline constexpr bool areg::is_interface_call(areg::CallType callType) noexcept
+{
+    return areg::is_interface_call(static_cast<uint8_t>(callType));
+}
+
+inline constexpr bool areg::is_interface_kind(areg::CallType callType) noexcept
+{
+    return (callType == areg::CallType::Request)   || (callType == areg::CallType::Response)
+        || (callType == areg::CallType::Broadcast) || (callType == areg::CallType::Attribute);
+}
+
+inline constexpr const char* areg::as_string(areg::CallType callType) noexcept
 {
     switch (callType)
     {
-    case areg::EventCallType::Undefined:
-        return "areg::EventCallType::Undefined";
-    case areg::EventCallType::CallLocal:
-        return "areg::EventCallType::CallLocal";
-    case areg::EventCallType::CallRemote:
-        return "areg::EventCallType::CallRemote";
-    case areg::EventCallType::CallCustom:
-        return "areg::EventCallType::CallCustom";
-    case areg::EventCallType::CallService:
-        return "areg::EventCallType::CallService";
-    case areg::EventCallType::CallServiceLocal:
-        return "areg::EventCallType::CallServiceLocal";
-    case areg::EventCallType::CallServiceRemote:
-        return "areg::EventCallType::CallServiceRemote";
+    case areg::CallType::Undefined:
+        return "areg::CallType::Undefined";
+    case areg::CallType::RegisterConsumer:
+        return "areg::CallType::RegisterConsumer";
+    case areg::CallType::UnregisterConsumer:
+        return "areg::CallType::UnregisterConsumer";
+    case areg::CallType::RegisterProvider:
+        return "areg::CallType::RegisterProvider";
+    case areg::CallType::UnregisterProvider:
+        return "areg::CallType::UnregisterProvider";
+    case areg::CallType::Interface:
+        return "areg::CallType::Interface";
+    case areg::CallType::Request:
+        return "areg::CallType::Request";
+    case areg::CallType::Response:
+        return "areg::CallType::Response";
+    case areg::CallType::Broadcast:
+        return "areg::CallType::Broadcast";
+    case areg::CallType::Attribute:
+        return "areg::CallType::Attribute";
     default:
-        return "ERR: Undefined areg::EventCallType value!";
+        return "ERR: Undefined areg::CallType value!";
     }
 }
 

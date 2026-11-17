@@ -186,11 +186,13 @@ public:
      * \param   toStub      The address of the target stub to start or stop sending notifications.
      * \param   msgId       The ID of the message (attribute, broadcast, or response). Request IDs cannot be notified.
      * \param   reqType     The request type (subscribe or unsubscribe).
+     * \param   callType    The kind of the message ID: Attribute, Broadcast, Response, or Interface to remove all.
      **/
     inline LocalNotifyRequestEvent( const ProxyAddress & fromProxy
                                   , const StubAddress & toStub
                                   , uint32_t msgId
-                                  , areg::RequestType reqType );
+                                  , areg::RequestType reqType
+                                  , areg::CallType callType );
 
     /**
      * \brief   Constructs from a received MessageEnvelope.
@@ -234,11 +236,13 @@ public:
      * \param   toStub          The address of the target stub to start or stop sending notifications.
      * \param   msgId           The ID of the message (attribute, broadcast, or response). Request IDs cannot be notified.
      * \param   reqType         The request type (subscribe or unsubscribe).
+     * \param   callType        The kind of the message ID: Attribute, Broadcast, Response, or Interface to remove all.
      **/
     inline RemoteNotifyRequestEvent( const ProxyAddress & fromProxy
                                    , const StubAddress & toStub
                                    , uint32_t msgId
-                                   , areg::RequestType reqType );
+                                   , areg::RequestType reqType
+                                   , areg::CallType callType );
 
     /**
      * \brief   Constructs from a received MessageEnvelope.
@@ -262,7 +266,7 @@ private:
 // LocalRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 inline LocalRequestEvent::LocalRequestEvent(const ProxyAddress& fromSource, const StubAddress& toTarget, uint32_t reqId, uint32_t initSize /*= 0*/)
-    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::EventType::EventLocalRequest, initSize)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::CallType::Request, areg::EventType::EventLocalRequest, initSize)
 {
 }
 
@@ -270,7 +274,7 @@ inline LocalRequestEvent::LocalRequestEvent( const SharedBuffer& args
                                            , const ProxyAddress& fromSource
                                            , const StubAddress& toTarget
                                            , uint32_t reqId)
-    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::EventType::EventLocalRequest, 0u)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::CallType::Request, areg::EventType::EventLocalRequest, 0u)
 {
     if (args.is_valid())
         write_data(args.buffer(), args.size_used());
@@ -285,7 +289,7 @@ inline LocalRequestEvent::LocalRequestEvent(const MessageEnvelope& envelope) noe
 // RemoteRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 inline RemoteRequestEvent::RemoteRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId, uint32_t initSize /*= 0u*/ )
-    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::EventType::EventRemoteRequest, initSize)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::CallType::Request, areg::EventType::EventRemoteRequest, initSize)
 {
 }
 
@@ -293,7 +297,7 @@ inline RemoteRequestEvent::RemoteRequestEvent( const SharedBuffer & args
                                              , const ProxyAddress & fromSource
                                              , const StubAddress & toTarget
                                              , uint32_t reqId)
-    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::EventType::EventRemoteRequest, 0u)
+    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, areg::CallType::Request, areg::EventType::EventRemoteRequest, 0u)
 {
     if (args.is_valid())
         write_data(args.buffer(), args.size_used());
@@ -310,8 +314,9 @@ inline RemoteRequestEvent::RemoteRequestEvent( const MessageEnvelope & envelope 
 inline LocalNotifyRequestEvent::LocalNotifyRequestEvent( const ProxyAddress& fromProxy
                                                        , const StubAddress& toStub
                                                        , uint32_t msgId
-                                                       , areg::RequestType reqType)
-    : ServiceRequestEvent(fromProxy, toStub, msgId, reqType, areg::EventType::EventLocalNotifyRequest)
+                                                       , areg::RequestType reqType
+                                                       , areg::CallType callType)
+    : ServiceRequestEvent(fromProxy, toStub, msgId, reqType, callType, areg::EventType::EventLocalNotifyRequest)
 {
 }
 
@@ -326,8 +331,9 @@ inline LocalNotifyRequestEvent::LocalNotifyRequestEvent(const MessageEnvelope& e
 inline RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const ProxyAddress& fromProxy
                                                          , const StubAddress& toStub
                                                          , uint32_t msgId
-                                                         , areg::RequestType reqType)
-    : ServiceRequestEvent(fromProxy, toStub, msgId, reqType, areg::EventType::EventRemoteNotifyRequest)
+                                                         , areg::RequestType reqType
+                                                         , areg::CallType callType)
+    : ServiceRequestEvent(fromProxy, toStub, msgId, reqType, callType, areg::EventType::EventRemoteNotifyRequest)
 {
 }
 

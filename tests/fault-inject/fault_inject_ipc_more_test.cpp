@@ -59,9 +59,14 @@ namespace
     //!< The longest a test waits for the client; a hang guard only.
     constexpr int IO_WAIT_S { 30 };
 
-    //!< A message id that is neither executable nor known to the router client.
+    //!< A system message id that the router client does not know.
     constexpr uint32_t UNKNOWN_ID { 0x00000007u };
-    static_assert( areg::is_executable_id( UNKNOWN_ID ) == false, "the unknown id must not be executable" );
+    static_assert( areg::is_interface_id( UNKNOWN_ID ) == false, "the unknown id must be a system id" );
+
+    //!< The first request id of the tests, above the ids of the system.
+    constexpr uint32_t REQUEST_BASE { areg::crc32_calculate("request_router_client") };
+    static_assert( areg::is_interface_id( REQUEST_BASE ) && areg::is_interface_id( REQUEST_BASE + 0x1000u ) && ( REQUEST_BASE < REQUEST_BASE + 0x1000u )
+                 , "the request ids of the tests must be interface ids" );
 
     //!< A loopback router socket that serves one client at a time.
     struct PeerRouter
@@ -255,6 +260,8 @@ namespace
         areg::EventHeader hdr{ };
         hdr.messageId = messageId;
         hdr.eventType = static_cast<uint16_t>( type );
+        if ( type == areg::EventType::EventRemoteRequest )
+            hdr.callType = static_cast<uint8_t>( areg::CallType::Request );
         hdr.source    = static_cast<uint32_t>( areg::COOKIE_ROUTER );
         hdr.target    = target;
         areg::MessageEnvelope message;
@@ -286,7 +293,7 @@ TEST( FaultInjectIpcMoreTest, router_client_ignores_unexpected_messages_and_keep
     AREG_EXPECT_IN_CHILD(
         constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 201u };
         constexpr ITEM_ID STUB{ areg::COOKIE_REMOTE_SERVICE + 202u };
-        constexpr uint32_t REQUEST{ areg::REQUEST_ID_FIRST + 5u };
+        constexpr uint32_t REQUEST{ REQUEST_BASE + 5u };
         PeerRouter router;
         AREG_CHILD_CHECK( router.open( ) );
         AREG_CHILD_CHECK( start_application( router, COOKIE ) );
@@ -304,11 +311,11 @@ TEST( FaultInjectIpcMoreTest, router_client_ignores_unexpected_messages_and_keep
         const areg::MessageEnvelope ownRejected{ areg::service_unregistered_event( stub, areg::DisconnectReason::ProviderRejected, areg::COOKIE_ROUTER, COOKIE ) };
         AREG_CHILD_CHECK( router.send( ownRejected ) );
 
-        const areg::MessageEnvelope unroutable{ router_message( areg::REQUEST_ID_FIRST + 9u, areg::EventType::EventRemoteRequest, COOKIE, 4u ) };
+        const areg::MessageEnvelope unroutable{ router_message( REQUEST_BASE + 9u, areg::EventType::EventRemoteRequest, COOKIE, 4u ) };
         AREG_CHILD_CHECK( router.send( unroutable ) );
         const areg::MessageEnvelope unknownKind{ router_message( UNKNOWN_ID, areg::EventType::EventRemoteResponse, COOKIE ) };
         AREG_CHILD_CHECK( router.send( unknownKind ) );
-        areg::MessageEnvelope unknownEvent{ router_message( areg::REQUEST_ID_FIRST + 9u, areg::EventType::EventRemoteRequest, COOKIE, 4u ) };
+        areg::MessageEnvelope unknownEvent{ router_message( REQUEST_BASE + 9u, areg::EventType::EventRemoteRequest, COOKIE, 4u ) };
         unknownEvent.header( )->eventType = 0xFFFFu;
         AREG_CHILD_CHECK( router.send( unknownEvent ) );
 
@@ -331,13 +338,13 @@ TEST( FaultInjectIpcMoreTest, router_client_connects_again_when_the_router_close
         AREG_CHILD_CHECK( router.open( ) );
         AREG_CHILD_CHECK( start_application( router, COOKIE ) );
 
-        const areg::MessageEnvelope message{ router_message( areg::REQUEST_ID_FIRST + 9u, areg::EventType::EventRemoteRequest, COOKIE, 64u ) };
+        const areg::MessageEnvelope message{ router_message( REQUEST_BASE + 9u, areg::EventType::EventRemoteRequest, COOKIE, 64u ) };
         const uint32_t half{ areg::wire_size( *message.header( ) ) / 2u };
         AREG_CHILD_CHECK( router.send_raw( areg::wire_data( *message.header( ) ), half ) );
         router.close_peer( );
 
         AREG_CHILD_CHECK( router.answer( COOKIE + 1u ) && wait_router_state( areg::RouterState::Connected ) );
-        AREG_CHILD_CHECK( request_arrives( router, COOKIE + 1u, STUB, areg::REQUEST_ID_FIRST + 10u ) );
+        AREG_CHILD_CHECK( request_arrives( router, COOKIE + 1u, STUB, REQUEST_BASE + 10u ) );
         areg::Application::release( );
     );
 }
@@ -355,20 +362,20 @@ TEST( FaultInjectIpcMoreTest, router_client_connects_again_when_the_router_sends
         AREG_CHILD_CHECK( router.open( ) );
         AREG_CHILD_CHECK( start_application( router, COOKIE ) );
 
-        areg::MessageEnvelope badType{ router_message( areg::REQUEST_ID_FIRST, areg::EventType::EventRemoteRequest, COOKIE ) };
+        areg::MessageEnvelope badType{ router_message( REQUEST_BASE, areg::EventType::EventRemoteRequest, COOKIE ) };
         badType.header( )->eventType = static_cast<uint16_t>( areg::EventType::EventUnknown );
         AREG_CHILD_CHECK( router.send( badType ) );
         AREG_CHILD_CHECK( router.drain_until_closed( ) );
         AREG_CHILD_CHECK( router.answer( COOKIE + 1u ) && wait_router_state( areg::RouterState::Connected ) );
 
-        areg::MessageEnvelope bigBody{ router_message( areg::REQUEST_ID_FIRST, areg::EventType::EventRemoteRequest, COOKIE + 1u ) };
+        areg::MessageEnvelope bigBody{ router_message( REQUEST_BASE, areg::EventType::EventRemoteRequest, COOKIE + 1u ) };
         const areg::EventHeader & original{ *bigBody.header( ) };
         areg::EventHeader wire{ original };
         wire.bufHeader.biUsed = areg::MAX_BUF_LENGTH + 1u;
         AREG_CHILD_CHECK( router.send_raw( areg::wire_header( wire ), areg::WIRE_HEADER_SIZE ) );
         AREG_CHILD_CHECK( router.drain_until_closed( ) );
         AREG_CHILD_CHECK( router.answer( COOKIE + 2u ) && wait_router_state( areg::RouterState::Connected ) );
-        AREG_CHILD_CHECK( request_arrives( router, COOKIE + 2u, STUB, areg::REQUEST_ID_FIRST + 10u ) );
+        AREG_CHILD_CHECK( request_arrives( router, COOKIE + 2u, STUB, REQUEST_BASE + 10u ) );
         areg::Application::release( );
     );
 }
@@ -397,7 +404,7 @@ TEST( FaultInjectIpcMoreTest, router_client_connects_again_when_the_router_confi
         AREG_CHILD_CHECK( areg::Application::router_state( ) != areg::RouterState::Connected );
 
         AREG_CHILD_CHECK( router.answer( COOKIE + 1u ) && wait_router_state( areg::RouterState::Connected ) );
-        AREG_CHILD_CHECK( request_arrives( router, COOKIE + 1u, STUB, areg::REQUEST_ID_FIRST + 10u ) );
+        AREG_CHILD_CHECK( request_arrives( router, COOKIE + 1u, STUB, REQUEST_BASE + 10u ) );
         areg::Application::release( );
     );
 }
@@ -442,7 +449,7 @@ TEST( FaultInjectIpcMoreTest, router_client_tries_again_when_the_system_refuses_
         AREG_CHILD_CHECK( areg::Application::connect_router( ) );
         AREG_CHILD_CHECK( router.answer( COOKIE ) && wait_router_state( areg::RouterState::Connected ) );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::SocketCreate ) == 1u );
-        AREG_CHILD_CHECK( request_arrives( router, COOKIE, STUB, areg::REQUEST_ID_FIRST + 10u ) );
+        AREG_CHILD_CHECK( request_arrives( router, COOKIE, STUB, REQUEST_BASE + 10u ) );
         areg::Application::release( );
     );
 }
@@ -476,7 +483,7 @@ TEST( FaultInjectIpcMoreTest, router_client_delivers_in_order_the_requests_that_
     AREG_EXPECT_IN_CHILD(
         constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 251u };
         constexpr ITEM_ID STUB{ areg::COOKIE_REMOTE_SERVICE + 252u };
-        constexpr uint32_t FIRST{ areg::REQUEST_ID_FIRST + 100u };
+        constexpr uint32_t FIRST{ REQUEST_BASE + 100u };
         PeerRouter router;
         AREG_CHILD_CHECK( router.open( SMALL_RCVBUF ) );
         AREG_CHILD_CHECK( start_application( router, COOKIE ) );
@@ -506,7 +513,7 @@ TEST( FaultInjectIpcMoreTest, release_ends_a_send_blocked_on_a_router_that_does_
     AREG_EXPECT_IN_CHILD(
         constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 261u };
         constexpr ITEM_ID STUB{ areg::COOKIE_REMOTE_SERVICE + 262u };
-        constexpr uint32_t FIRST{ areg::REQUEST_ID_FIRST + 100u };
+        constexpr uint32_t FIRST{ REQUEST_BASE + 100u };
         PeerRouter router;
         AREG_CHILD_CHECK( router.open( SMALL_RCVBUF ) );
         AREG_CHILD_CHECK( start_application( router, COOKIE ) );
@@ -609,7 +616,6 @@ namespace
         , areg::FuncIdRange::SystemServiceNotifyDuplicate
         , areg::FuncIdRange::ServiceLogQueryScopes
         , areg::FuncIdRange::SystemServiceQueryInstances
-        , areg::FuncIdRange::ServiceLastId
         , static_cast<areg::FuncIdRange>( UNKNOWN_ID )
     };
 
@@ -713,7 +719,7 @@ TEST( FaultInjectIpcMoreTest, router_client_connects_on_the_next_request_when_th
         AREG_CHILD_CHECK( areg::Application::router_state( ) != areg::RouterState::Connected );
         AREG_CHILD_CHECK( areg::Application::connect_router( ) );
         AREG_CHILD_CHECK( router.answer( COOKIE ) && wait_router_state( areg::RouterState::Connected ) );
-        AREG_CHILD_CHECK( request_arrives( router, COOKIE, STUB, areg::REQUEST_ID_FIRST + 10u ) );
+        AREG_CHILD_CHECK( request_arrives( router, COOKIE, STUB, REQUEST_BASE + 10u ) );
         areg::Application::release( );
     );
 }

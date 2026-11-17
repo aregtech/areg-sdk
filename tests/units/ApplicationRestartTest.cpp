@@ -49,18 +49,30 @@
 
 namespace
 {
-    constexpr uint32_t REQUEST     { areg::REQUEST_ID_FIRST };
-    constexpr uint32_t RESPONSE    { areg::RESPONSE_ID_FIRST };
-    constexpr uint32_t ATTRIBUTE   { areg::ATTRIBUTE_ID_FIRST };
+    constexpr uint32_t REQUEST     { areg::crc32_calculate("request_restart") };
+    constexpr uint32_t RESPONSE    { areg::crc32_calculate("response_restart") };
+    constexpr uint32_t ATTRIBUTE   { areg::crc32_calculate("attribute_Tag") };
     constexpr uint32_t REQUESTS[]  { REQUEST };
     constexpr uint32_t RESPONSES[] { RESPONSE };
     constexpr uint32_t ATTRIBUTES[]{ ATTRIBUTE };
     constexpr uint32_t PARAMS[]    { 1u };
 
+    //!< The lookup of the test interface.
+    areg::MessageInfo find_restart_message(uint32_t msgId) noexcept
+    {
+        switch (msgId)
+        {
+        case REQUEST:   return areg::MessageInfo{ 0u, areg::CallType::Request, 1u };
+        case RESPONSE:  return areg::MessageInfo{ 0u, areg::CallType::Response, 1u };
+        case ATTRIBUTE: return areg::MessageInfo{ 0u, areg::CallType::Attribute, 1u };
+        default:        return areg::MessageInfo{ };
+        }
+    }
+
     const areg::InterfaceData RESTART_INTERFACE
     {
           "ApplicationRestartService", areg::Version( 1, 0, 0 ), areg::ServiceType::Local
-        , 1, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSES, PARAMS
+        , 1, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSES, PARAMS, &find_restart_message
     };
 
     constexpr char MODEL_ONE[]      { "ApplicationRestartModelOne" };
@@ -182,8 +194,8 @@ class ApplicationRestartNotify final : public areg::LocalNotifyRequestEvent
 {
     AREG_DECLARE_RUNTIME_EVENT( ApplicationRestartNotify )
 public:
-    ApplicationRestartNotify( const areg::ProxyAddress & source, const areg::StubAddress & target, uint32_t message, areg::RequestType type )
-        : LocalNotifyRequestEvent( source, target, message, type )
+    ApplicationRestartNotify( const areg::ProxyAddress & source, const areg::StubAddress & target, uint32_t message, areg::RequestType type, areg::CallType kind )
+        : LocalNotifyRequestEvent( source, target, message, type, kind )
     {
         header( )->eventId = CLASS_ID;
     }
@@ -194,14 +206,14 @@ class ApplicationRestartResponse final : public areg::LocalResponseEvent
 {
     AREG_DECLARE_RUNTIME_EVENT( ApplicationRestartResponse )
 public:
-    ApplicationRestartResponse( const areg::ProxyAddress & target, uint32_t message, areg::ResultType result, uint32_t reserve = 0u )
-        : LocalResponseEvent( target, result, message, areg::SEQUENCE_NUMBER_NOTIFY, reserve )
+    ApplicationRestartResponse( const areg::ProxyAddress & target, uint32_t message, areg::CallType kind, areg::ResultType result, uint32_t reserve = 0u )
+        : LocalResponseEvent( target, result, message, kind, areg::SEQUENCE_NUMBER_NOTIFY, reserve )
     {
         header( )->eventId = CLASS_ID;
     }
 
-    ApplicationRestartResponse( const areg::SharedBuffer & data, const areg::ProxyAddress & target, uint32_t message, areg::ResultType result )
-        : LocalResponseEvent( data, target, result, message )
+    ApplicationRestartResponse( const areg::SharedBuffer & data, const areg::ProxyAddress & target, uint32_t message, areg::CallType kind, areg::ResultType result )
+        : LocalResponseEvent( data, target, result, message, kind )
     {
         header( )->eventId = CLASS_ID;
     }
@@ -229,7 +241,7 @@ namespace
         {
             auto event = create_request_event( REQUEST, sizeof( value ) );
             event.write_stream( ) << value;
-            send_request_event( event, &listener );
+            send_request_event( event, &listener, RESPONSE );
         }
 
         uint32_t response_value( ) const
@@ -298,15 +310,15 @@ namespace
             return ApplicationRestartRequest( proxy_address( ), stub_address( ), request, reserve );
         }
 
-        areg::ServiceRequestEvent create_notification_request( uint32_t message, areg::RequestType type ) override
+        areg::ServiceRequestEvent create_notification_request( uint32_t message, areg::RequestType type, areg::CallType kind ) override
         {
-            return ApplicationRestartNotify( proxy_address( ), stub_address( ), message, type );
+            return ApplicationRestartNotify( proxy_address( ), stub_address( ), message, type, kind );
         }
 
-        areg::ServiceResponseEvent create_request_failed( const areg::ProxyAddress & target, uint32_t message, areg::ResultType reason
+        areg::ServiceResponseEvent create_request_failed( const areg::ProxyAddress & target, uint32_t message, areg::CallType kind, areg::ResultType reason
                                                         , const SequenceNumber & sequence ) const override
         {
-            ApplicationRestartResponse result( target, message, reason );
+            ApplicationRestartResponse result( target, message, kind, reason );
             result.set_sequence_number( sequence );
             return result;
         }
@@ -359,7 +371,7 @@ namespace
         {
             areg::SharedBuffer data;
             data << mTag;
-            send_update_event( message, data, areg::ResultType::DataOK );
+            send_update_event( message, areg::CallType::Attribute, data, areg::ResultType::DataOK );
         }
 
         void error_request( uint32_t, bool ) override
@@ -367,16 +379,16 @@ namespace
         }
 
     protected:
-        areg::ServiceResponseEvent create_response( const areg::ProxyAddress & target, uint32_t message, areg::ResultType result
+        areg::ServiceResponseEvent create_response( const areg::ProxyAddress & target, uint32_t message, areg::CallType kind, areg::ResultType result
                                                   , const areg::SharedBuffer & data ) const override
         {
-            return ApplicationRestartResponse( data, target, message, result );
+            return ApplicationRestartResponse( data, target, message, kind, result );
         }
 
-        areg::ServiceResponseEvent create_response_event( const areg::ProxyAddress & target, uint32_t message
+        areg::ServiceResponseEvent create_response_event( const areg::ProxyAddress & target, uint32_t message, areg::CallType kind
                                                         , areg::ResultType result, uint32_t reserve ) const override
         {
-            return ApplicationRestartResponse( target, message, result, reserve );
+            return ApplicationRestartResponse( target, message, kind, result, reserve );
         }
 
         void process_request_event( areg::ServiceRequestEvent & event ) override
@@ -387,7 +399,7 @@ namespace
             if ( can_execute_request( listener, RESPONSE, event.sequence_number( ) ) )
             {
                 StubListenerList listeners;
-                auto response = prepare_response_event( RESPONSE, areg::ResultType::RequestOK, sizeof( value ), listeners );
+                auto response = prepare_response_event( RESPONSE, areg::CallType::Response, areg::ResultType::RequestOK, sizeof( value ), listeners );
                 if ( response.is_valid( ) )
                 {
                     response.write_stream( ) << (value * 10u + mTag);

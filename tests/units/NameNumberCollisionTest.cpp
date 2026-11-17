@@ -623,14 +623,27 @@ TEST(NameNumberThreadTest, stopping_one_of_two_threads_of_one_name_keeps_the_oth
 
 namespace
 {
-    constexpr uint32_t REQUESTS[]   { REQUEST_ID_FIRST };
-    constexpr uint32_t RESPONSES[]  { RESPONSE_ID_FIRST };
-    constexpr uint32_t ATTRIBUTES[] { ATTRIBUTE_ID_FIRST };
+    constexpr uint32_t REQUESTS[]   { areg::crc32_calculate("request_collision") };
+    constexpr uint32_t RESPONSES[]  { areg::crc32_calculate("response_collision") };
+    constexpr uint32_t ATTRIBUTES[] { areg::crc32_calculate("attribute_Collision") };
     constexpr uint32_t PARAMS[]     { 0 };
+
+    //!< The lookup of the test interface.
+    areg::MessageInfo find_nc_message(uint32_t msgId) noexcept
+    {
+        switch (msgId)
+        {
+        case REQUESTS[0]:   return areg::MessageInfo{ 0u, areg::CallType::Request, 0u };
+        case RESPONSES[0]:  return areg::MessageInfo{ 0u, areg::CallType::Response, 0u };
+        case ATTRIBUTES[0]: return areg::MessageInfo{ 0u, areg::CallType::Attribute, 1u };
+        default:        return areg::MessageInfo{ };
+        }
+    }
+
     const InterfaceData NC_INTERFACE
     {
           SERVICE_NAME, Version(1, 0, 0), ServiceType::Local
-        , 1, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSES, PARAMS
+        , 1, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSES, PARAMS, &find_nc_message
     };
 
     //!< The connection states seen by the consumers, by consumer role name.
@@ -721,14 +734,14 @@ namespace
             return LocalRequestEvent(proxy_address(), stub_address(), reqId, reserve);
         }
 
-        ServiceRequestEvent create_notification_request(uint32_t msgId, RequestType reqType) override
+        ServiceRequestEvent create_notification_request(uint32_t msgId, RequestType reqType, CallType kind) override
         {
-            return LocalNotifyRequestEvent(proxy_address(), stub_address(), msgId, reqType);
+            return LocalNotifyRequestEvent(proxy_address(), stub_address(), msgId, reqType, kind);
         }
 
-        ServiceResponseEvent create_request_failed(const ProxyAddress & addrProxy, uint32_t msgId, ResultType reason, const SequenceNumber & seqNr) const override
+        ServiceResponseEvent create_request_failed(const ProxyAddress & addrProxy, uint32_t msgId, CallType kind, ResultType reason, const SequenceNumber & seqNr) const override
         {
-            return LocalResponseEvent(addrProxy, reason, msgId, seqNr);
+            return LocalResponseEvent(addrProxy, reason, msgId, kind, seqNr);
         }
     };
 

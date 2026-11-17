@@ -19,24 +19,51 @@ namespace
 {
     using namespace areg;
 
-    constexpr uint32_t REQUESTS[]{ REQUEST_ID_FIRST, REQUEST_ID_FIRST + 1 };
-    constexpr uint32_t RESPONSES[]{ RESPONSE_ID_FIRST, RESPONSE_ID_FIRST + 1 };
-    constexpr uint32_t ATTRIBUTES[]{ ATTRIBUTE_ID_FIRST, ATTRIBUTE_ID_FIRST + 1 };
-    constexpr uint32_t RESPONSE_MAP[]{ RESPONSE_ID_FIRST, RESPONSE_ID_FIRST + 1 };
+    constexpr uint32_t REQUESTS[]{ areg::crc32_calculate("request_first"), areg::crc32_calculate("request_second") };
+    constexpr uint32_t RESPONSES[]{ areg::crc32_calculate("response_first"), areg::crc32_calculate("response_second") };
+    constexpr uint32_t ATTRIBUTES[]{ areg::crc32_calculate("attribute_First"), areg::crc32_calculate("attribute_Second") };
+    constexpr uint32_t RESPONSE_MAP[]{ RESPONSES[0], RESPONSES[1] };
     constexpr uint32_t PARAM_COUNTS[]{ 1, 0 };
+    constexpr uint32_t BROADCAST{ areg::crc32_calculate("broadcast_third") };
+
+    //!< The lookup of the test interfaces; the broadcast exists only in the broadcast interface.
+    MessageInfo find_contract_message(uint32_t msgId, bool withBroadcast) noexcept
+    {
+        switch (msgId)
+        {
+        case REQUESTS[0]:   return MessageInfo{ 0u, CallType::Request, 0u };
+        case REQUESTS[1]:   return MessageInfo{ 1u, CallType::Request, 0u };
+        case RESPONSES[0]:  return MessageInfo{ 0u, CallType::Response, 1u };
+        case RESPONSES[1]:  return MessageInfo{ 1u, CallType::Response, 0u };
+        case ATTRIBUTES[0]: return MessageInfo{ 0u, CallType::Attribute, 1u };
+        case ATTRIBUTES[1]: return MessageInfo{ 1u, CallType::Attribute, 1u };
+        case BROADCAST:     return (withBroadcast ? MessageInfo{ 2u, CallType::Broadcast, 0u } : MessageInfo{ });
+        default:            return MessageInfo{ };
+        }
+    }
+
+    MessageInfo find_message(uint32_t msgId) noexcept
+    {
+        return find_contract_message(msgId, false);
+    }
+
+    MessageInfo find_broadcast_message(uint32_t msgId) noexcept
+    {
+        return find_contract_message(msgId, true);
+    }
+
     const InterfaceData INTERFACE
     {
           "StubContractService", Version(1, 2, 3), ServiceType::Local
-        , 2, 2, 2, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSE_MAP, PARAM_COUNTS
+        , 2, 2, 2, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSE_MAP, PARAM_COUNTS, &find_message
     };
 
-    constexpr uint32_t BROADCAST{ RESPONSE_ID_FIRST + 2 };
-    constexpr uint32_t BROADCAST_RESPONSES[]{ RESPONSE_ID_FIRST, RESPONSE_ID_FIRST + 1, BROADCAST };
+    constexpr uint32_t BROADCAST_RESPONSES[]{ RESPONSES[0], RESPONSES[1], BROADCAST };
     constexpr uint32_t BROADCAST_PARAM_COUNTS[]{ 1, 0, 0 };
     const InterfaceData BROADCAST_INTERFACE
     {
           "StubContractBroadcastService", Version(1, 0, 0), ServiceType::Local
-        , 2, 3, 2, REQUESTS, BROADCAST_RESPONSES, ATTRIBUTES, RESPONSE_MAP, BROADCAST_PARAM_COUNTS
+        , 2, 3, 2, REQUESTS, BROADCAST_RESPONSES, ATTRIBUTES, RESPONSE_MAP, BROADCAST_PARAM_COUNTS, &find_broadcast_message
     };
 
     ProxyAddress consumer_address(const ServiceAddress& service, const char* threadName)
@@ -82,6 +109,7 @@ namespace
         using StubBase::prepare_request;
         using StubBase::prepare_response_event;
         using StubBase::remove_notification_listener;
+        using StubBase::remove_notification_listeners;
         using StubBase::request_ids;
         using StubBase::response_ids;
         using StubBase::send_error_notification;
@@ -90,27 +118,28 @@ namespace
         using StubBase::send_update_notification;
         using StubBase::mSessionId;
 
+        //!< Starts the request of the interface that the response answers.
         bool begin_request(const ProxyAddress& proxy, SequenceNumber sequence, uint32_t response = RESPONSES[0])
         {
-            Listener listener(REQUESTS[0], sequence, proxy);
+            Listener listener(response == RESPONSE_MAP[1] ? REQUESTS[1] : REQUESTS[0], sequence, proxy);
             return can_execute_request(listener, response, sequence);
         }
 
         ServiceResponseEvent default_response(const ProxyAddress& proxy) const
         {
-            return StubBase::create_response(proxy, RESPONSES[0], ResultType::RequestOK, SharedBuffer{});
+            return StubBase::create_response(proxy, RESPONSES[0], CallType::Response, ResultType::RequestOK, SharedBuffer{});
         }
 
         ServiceResponseEvent default_response_event(const ProxyAddress& proxy) const
         {
-            return StubBase::create_response_event(proxy, RESPONSES[0], ResultType::RequestOK, 64);
+            return StubBase::create_response_event(proxy, RESPONSES[0], CallType::Response, ResultType::RequestOK, 64);
         }
 
         //!< Returns the targets of the next response or broadcast; empty when it is dropped.
         StubListenerList respond(uint32_t response = RESPONSES[0])
         {
             StubListenerList targets;
-            const ServiceResponseEvent event{ prepare_response_event(response, ResultType::RequestOK, 0, targets) };
+            const ServiceResponseEvent event{ prepare_response_event(response, CallType::Response, ResultType::RequestOK, 0, targets) };
             EXPECT_EQ(event.is_valid(), !targets.is_empty());
             return targets;
         }
@@ -120,7 +149,7 @@ namespace
         {
             StubListenerList listeners;
             if (find_listeners(response, listeners) > 0)
-                send_error_notification(listeners, LocalResponseEvent(listeners[0].proxy(), result, request, SEQUENCE_NUMBER_NOTIFY, 0));
+                send_error_notification(listeners, LocalResponseEvent(listeners[0].proxy(), result, request, CallType::Request, SEQUENCE_NUMBER_NOTIFY, 0));
         }
 
         //!< Returns how many times a response with the result was created for the message.
@@ -146,17 +175,17 @@ namespace
         mutable std::vector<std::pair<uint32_t, ResultType>> mResponseAttempts;
 
     protected:
-        ServiceResponseEvent create_response(const ProxyAddress& proxy, uint32_t message
+        ServiceResponseEvent create_response(const ProxyAddress& proxy, uint32_t message, CallType kind
                                             , ResultType result, const SharedBuffer& data) const override
         {
             mResponseAttempts.emplace_back(message, result);
-            return StubBase::create_response(proxy, message, result, data);
+            return StubBase::create_response(proxy, message, kind, result, data);
         }
 
-        ServiceResponseEvent create_response_event(const ProxyAddress& proxy, uint32_t message
+        ServiceResponseEvent create_response_event(const ProxyAddress& proxy, uint32_t message, CallType kind
                                                   , ResultType result, uint32_t reserve) const override
         {
-            return LocalResponseEvent(proxy, result, message, SEQUENCE_NUMBER_NOTIFY, reserve);
+            return LocalResponseEvent(proxy, result, message, kind, SEQUENCE_NUMBER_NOTIFY, reserve);
         }
 
         void process_request_event(ServiceRequestEvent&) override
@@ -289,25 +318,34 @@ TEST_F(StubBaseContractTest, unsubscribe_compacts_without_removing_other_subscri
     EXPECT_TRUE(mStub.exist(ATTRIBUTES[0], mFirst));
 }
 
-TEST_F(StubBaseContractTest, clearing_proxy_reports_exact_removed_subscriptions_and_keeps_its_request)
+/**
+ * \brief   Removing all subscriptions of a consumer equals removing each of them: the
+ *          subscriptions of other consumers stay, and the waiting request of the consumer
+ *          is still answered to it.
+ **/
+TEST_F(StubBaseContractTest, removing_all_notifications_of_a_proxy_keeps_its_request_answered)
 {
     ASSERT_TRUE(mStub.add_notification_listener(ATTRIBUTES[0], mFirst));
     ASSERT_TRUE(mStub.add_notification_listener(ATTRIBUTES[0], mSecond));
     ASSERT_TRUE(mStub.add_notification_listener(ATTRIBUTES[1], mFirst));
+    ASSERT_TRUE(mStub.add_notification_listener(RESPONSES[0], mFirst));
     ASSERT_TRUE(mStub.begin_request(mFirst, 41));
-    IntegerArray removed;
-    mStub.clear_all_listeners(mFirst, removed);
-    EXPECT_EQ(2u, removed.size());
-    EXPECT_TRUE(removed.contains(ATTRIBUTES[0]));
-    EXPECT_TRUE(removed.contains(ATTRIBUTES[1]));
-    EXPECT_FALSE(removed.contains(RESPONSES[0]));
+    mStub.remove_notification_listeners(mFirst);
     EXPECT_FALSE(mStub.exist(ATTRIBUTES[0], mFirst));
-    EXPECT_TRUE(mStub.is_busy(RESPONSES[0]));
+    EXPECT_FALSE(mStub.exist(ATTRIBUTES[1], mFirst));
+    EXPECT_FALSE(mStub.exist(RESPONSES[0], mFirst));
     EXPECT_TRUE(mStub.exist(ATTRIBUTES[0], mSecond));
-    IntegerArray none;
-    mStub.clear_all_listeners(mFirst, none);
-    EXPECT_TRUE(none.is_empty());
     EXPECT_TRUE(mStub.is_busy(RESPONSES[0]));
+
+    mStub.remove_notification_listeners(mFirst);
+    EXPECT_TRUE(mStub.exist(ATTRIBUTES[0], mSecond));
+    EXPECT_TRUE(mStub.is_busy(RESPONSES[0]));
+
+    const ContractStub::StubListenerList targets{ mStub.respond(RESPONSES[0]) };
+    ASSERT_EQ(1u, targets.size());
+    EXPECT_TRUE(targets[0].proxy_matches(mFirst));
+    EXPECT_EQ(41u, targets[0].mSequenceNr);
+    EXPECT_FALSE(mStub.is_busy(RESPONSES[0]));
 }
 
 TEST_F(StubBaseContractTest, disconnect_clears_only_the_matching_service_consumer)
@@ -369,7 +407,7 @@ TEST_F(StubBaseContractTest, unblock_sessions_are_unique_consumed_once_and_resto
     ASSERT_TRUE(mStub.prepare_response(second));
     EXPECT_FALSE(mStub.prepare_response(second));
     ContractStub::StubListenerList listeners;
-    auto response = mStub.prepare_response_event(RESPONSES[0], ResultType::RequestOK, 64, listeners);
+    auto response = mStub.prepare_response_event(RESPONSES[0], CallType::Response, ResultType::RequestOK, 64, listeners);
     ASSERT_TRUE(response.is_valid());
     ASSERT_EQ(1u, listeners.size());
     EXPECT_TRUE(listeners[0].proxy_matches(mSecond));
@@ -379,7 +417,7 @@ TEST_F(StubBaseContractTest, unblock_sessions_are_unique_consumed_once_and_resto
     EXPECT_FALSE(mStub.is_busy(RESPONSES[0]));
     ASSERT_TRUE(mStub.prepare_response(first));
     listeners.clear();
-    const auto firstResponse = mStub.prepare_response_event(RESPONSES[0], ResultType::RequestOK, 0, listeners);
+    const auto firstResponse = mStub.prepare_response_event(RESPONSES[0], CallType::Response, ResultType::RequestOK, 0, listeners);
     ASSERT_TRUE(firstResponse.is_valid());
     ASSERT_EQ(1u, listeners.size());
     EXPECT_TRUE(listeners[0].proxy_matches(mFirst));
@@ -398,13 +436,12 @@ TEST_F(StubBaseContractTest, unblocked_request_of_a_cleared_consumer_answers_onl
     const SessionID session = mStub.unblock_current_request();
     ASSERT_NE(std::numeric_limits<SessionID>::max(), session);
 
-    IntegerArray removed;
-    mStub.clear_all_listeners(mFirst, removed);
-    EXPECT_TRUE(removed.is_empty());
+    mStub.clear_all_listeners(mFirst);
+    EXPECT_TRUE(mStub.exist(RESPONSES[0], mSecond));
 
     ASSERT_TRUE(mStub.prepare_response(session));
     ContractStub::StubListenerList listeners;
-    const auto response = mStub.prepare_response_event(RESPONSES[0], ResultType::RequestOK, 0, listeners);
+    const auto response = mStub.prepare_response_event(RESPONSES[0], CallType::Response, ResultType::RequestOK, 0, listeners);
     ASSERT_TRUE(response.is_valid());
     ASSERT_EQ(1u, listeners.size());
     EXPECT_TRUE(listeners[0].proxy_matches(mSecond));
@@ -429,18 +466,18 @@ TEST_F(StubBaseContractTest, preparing_response_strips_one_shot_listeners_but_ke
 {
     ASSERT_TRUE(mStub.add_notification_listener(RESPONSES[0], mFirst));
     ContractStub::StubListenerList listeners;
-    EXPECT_FALSE(mStub.prepare_response_event(RESPONSES[0], ResultType::RequestOK, 0, listeners).is_valid());
+    EXPECT_FALSE(mStub.prepare_response_event(RESPONSES[0], CallType::Response, ResultType::RequestOK, 0, listeners).is_valid());
     EXPECT_TRUE(listeners.is_empty());
     EXPECT_TRUE(mStub.exist(RESPONSES[0], mFirst));
     listeners.clear();
-    EXPECT_FALSE(mStub.prepare_response_event(RESPONSES[1], ResultType::RequestOK, 0, listeners).is_valid());
+    EXPECT_FALSE(mStub.prepare_response_event(RESPONSES[1], CallType::Response, ResultType::RequestOK, 0, listeners).is_valid());
     EXPECT_TRUE(listeners.is_empty());
     ASSERT_TRUE(mStub.begin_request(mSecond, 71, RESPONSES[1]));
-    EXPECT_TRUE(mStub.prepare_response_event(RESPONSES[1], ResultType::RequestOK, 0, listeners).is_valid());
+    EXPECT_TRUE(mStub.prepare_response_event(RESPONSES[1], CallType::Response, ResultType::RequestOK, 0, listeners).is_valid());
     EXPECT_EQ(1u, listeners.size());
     EXPECT_FALSE(mStub.is_busy(RESPONSES[1]));
     listeners.clear();
-    EXPECT_FALSE(mStub.prepare_response_event(RESPONSES[1], ResultType::RequestOK, 0, listeners).is_valid());
+    EXPECT_FALSE(mStub.prepare_response_event(RESPONSES[1], CallType::Response, ResultType::RequestOK, 0, listeners).is_valid());
 }
 
 TEST_F(StubBaseContractTest, response_event_reaches_only_a_waiting_caller_and_frees_the_request)
@@ -699,7 +736,7 @@ TEST_F(StubBaseContractTest, response_error_fails_waiting_callers_and_spares_sub
     ASSERT_TRUE(mStub.begin_request(mFirst, 41));
     ContractStub::StubListenerList listeners;
     ASSERT_EQ(2u, mStub.find_listeners(RESPONSES[0], listeners));
-    mStub.send_error_notification(listeners, LocalResponseEvent(mFirst, ResultType::DataInvalid, RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, 0));
+    mStub.send_error_notification(listeners, LocalResponseEvent(mFirst, ResultType::DataInvalid, RESPONSES[0], CallType::Response, SEQUENCE_NUMBER_NOTIFY, 0));
     EXPECT_EQ(1u, mStub.attempts(REQUESTS[0], ResultType::RequestError));
     EXPECT_FALSE(mStub.is_busy(RESPONSES[0]));
     EXPECT_TRUE(mStub.exist(RESPONSES[0], mSecond));

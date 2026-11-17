@@ -63,12 +63,14 @@ public:
      * \param   result          The type of result to indicate whether it is response or update
      *                          event, as well as to specify message validation flag.
      * \param   respId          The ID of response. Can also be update ID.
+     * \param   callType        The kind of the message ID.
      * \param   seqNr           The call sequence number.
      * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
     inline LocalResponseEvent( const ProxyAddress & proxyTarget
                              , areg::ResultType result
                              , uint32_t respId
+                             , areg::CallType callType
                              , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                              , uint32_t initSize = 0);
 
@@ -80,12 +82,14 @@ public:
      * \param   result          The type of result to indicate whether it is response or update
      *                          event, as well as to specify message validation flag.
      * \param   respId          The ID of response. Can also be update ID.
+     * \param   callType        The kind of the message ID.
      * \param   seqNr           The call sequence number.
      **/
     inline LocalResponseEvent( const SharedBuffer & args
                              , const ProxyAddress & proxyTarget
                              , areg::ResultType result
                              , uint32_t respId
+                             , areg::CallType callType
                              , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
 
     /**
@@ -104,6 +108,7 @@ public:
      * \param   result          The type of result to indicate whether it is response or update
      *                          event, as well as to specify message validation flag.
      * \param   respId          The ID of response. Can also be update ID.
+     * \param   callType        The kind of the message ID.
      * \param   seqNr           The call sequence number.
      * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
@@ -111,6 +116,7 @@ public:
                              , const areg::RawService& service
                              , areg::ResultType result
                              , uint32_t respId
+                             , areg::CallType callType
                              , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                              , uint32_t initSize = 0);
 
@@ -123,6 +129,7 @@ public:
      * \param   result          The type of result to indicate whether it is response or update
      *                          event, as well as to specify message validation flag.
      * \param   respId          The ID of response. Can also be update ID.
+     * \param   callType        The kind of the message ID.
      * \param   seqNr           The call sequence number.
      **/
     inline LocalResponseEvent( const SharedBuffer & args
@@ -130,6 +137,7 @@ public:
                              , const areg::RawService& service
                              , areg::ResultType result
                              , uint32_t respId
+                             , areg::CallType callType
                              , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
 
     /**
@@ -184,12 +192,14 @@ public:
      * \param   result          The type of result to indicate whether it is response or update
      *                          event, as well as to specify message validation flag.
      * \param   respId          The ID of response. Can also be update ID.
+     * \param   callType        The kind of the message ID.
      * \param   seqNr           The call sequence number.
      * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
     inline RemoteResponseEvent( const ProxyAddress & proxyTarget
                               , areg::ResultType result
                               , uint32_t respId
+                              , areg::CallType callType
                               , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                               , uint32_t initSize = 0u );
 
@@ -201,12 +211,14 @@ public:
      * \param   result          The type of result to indicate whether it is response or update
      *                          event, as well as to specify message validation flag.
      * \param   respId          The ID of response. Can also be update ID.
+     * \param   callType        The kind of the message ID.
      * \param   seqNr           The call sequence number.
      **/
     inline RemoteResponseEvent( const SharedBuffer & args
                               , const ProxyAddress & proxyTarget
                               , areg::ResultType result
                               , uint32_t respId
+                              , areg::CallType callType
                               , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
 
     /**
@@ -226,6 +238,7 @@ public:
      * \param   result          The type of result to indicate whether it is response or update
      *                          event, as well as to specify message validation flag.
      * \param   respId          The ID of response. Can also be update ID.
+     * \param   callType        The kind of the message ID.
      * \param   seqNr           The call sequence number.
      * \param   initSize        Payload bytes to reserve after the header for serialized parameters.
      **/
@@ -233,6 +246,7 @@ public:
                               , const areg::RawService& service
                               , areg::ResultType result
                               , uint32_t respId
+                              , areg::CallType callType
                               , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                               , uint32_t initSize = 0);
 
@@ -245,6 +259,7 @@ public:
      * \param   result          The type of result to indicate whether it is response or update
      *                          event, as well as to specify message validation flag.
      * \param   respId          The ID of response. Can also be update ID.
+     * \param   callType        The kind of the message ID.
      * \param   seqNr           The call sequence number.
      **/
     inline RemoteResponseEvent( const SharedBuffer & args
@@ -252,6 +267,7 @@ public:
                               , const areg::RawService& service
                               , areg::ResultType result
                               , uint32_t respId
+                              , areg::CallType callType
                               , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
 
     /**
@@ -287,9 +303,10 @@ private:
 inline LocalResponseEvent::LocalResponseEvent( const ProxyAddress & proxyTarget
                                              , areg::ResultType result
                                              , uint32_t respId
+                                             , areg::CallType callType
                                              , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/
                                              , uint32_t initSize /*= 0*/)
-    : ServiceResponseEvent(proxyTarget, result, respId, areg::EventType::EventLocalResponse, seqNr, initSize)
+    : ServiceResponseEvent(proxyTarget, result, respId, callType, areg::EventType::EventLocalResponse, seqNr, initSize)
 {
 }
 
@@ -297,8 +314,9 @@ inline LocalResponseEvent::LocalResponseEvent( const SharedBuffer & args
                                              , const ProxyAddress & proxyTarget
                                              , areg::ResultType result
                                              , uint32_t respId
+                                             , areg::CallType callType
                                              , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-    : ServiceResponseEvent(proxyTarget, result, respId, areg::EventType::EventLocalResponse, seqNr, 0u)
+    : ServiceResponseEvent(proxyTarget, result, respId, callType, areg::EventType::EventLocalResponse, seqNr, 0u)
 {
     if (args.is_valid())
         write_data(args.buffer(), args.size_used());
@@ -313,9 +331,10 @@ inline LocalResponseEvent::LocalResponseEvent( const areg::Endpoint& consumer
                                              , const areg::RawService& service
                                              , areg::ResultType result
                                              , uint32_t respId
+                                             , areg::CallType callType
                                              , const SequenceNumber& seqNr
                                              , uint32_t initSize)
-    : ServiceResponseEvent(consumer, service, result, respId, areg::EventType::EventLocalResponse, seqNr, initSize)
+    : ServiceResponseEvent(consumer, service, result, respId, callType, areg::EventType::EventLocalResponse, seqNr, initSize)
 {
 }
 
@@ -324,8 +343,9 @@ inline LocalResponseEvent::LocalResponseEvent( const SharedBuffer& args
                                              , const areg::RawService& service
                                              , areg::ResultType result
                                              , uint32_t respId
+                                             , areg::CallType callType
                                              , const SequenceNumber& seqNr)
-    : ServiceResponseEvent(consumer, service, result, respId, areg::EventType::EventLocalResponse, seqNr, 0u)
+    : ServiceResponseEvent(consumer, service, result, respId, callType, areg::EventType::EventLocalResponse, seqNr, 0u)
 {
     if (args.is_valid())
         write_data(args.buffer(), args.size_used());
@@ -347,9 +367,10 @@ inline LocalResponseEvent::LocalResponseEvent(const MessageEnvelope& envelope) n
 inline RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress & proxyTarget
                                                , areg::ResultType result
                                                , uint32_t respId
+                                               , areg::CallType callType
                                                , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
                                                , uint32_t initSize             /*= 0u*/ )
-    : ServiceResponseEvent(proxyTarget, result, respId, areg::EventType::EventRemoteResponse, seqNr, initSize)
+    : ServiceResponseEvent(proxyTarget, result, respId, callType, areg::EventType::EventRemoteResponse, seqNr, initSize)
 {
 }
 
@@ -357,8 +378,9 @@ inline RemoteResponseEvent::RemoteResponseEvent( const SharedBuffer & args
                                                , const ProxyAddress & proxyTarget
                                                , areg::ResultType result
                                                , uint32_t respId
+                                               , areg::CallType callType
                                                , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-    : ServiceResponseEvent(proxyTarget, result, respId, areg::EventType::EventRemoteResponse, seqNr)
+    : ServiceResponseEvent(proxyTarget, result, respId, callType, areg::EventType::EventRemoteResponse, seqNr)
 {
     if (args.is_valid())
         write_data(args.buffer(), args.size_used());
@@ -373,9 +395,10 @@ inline RemoteResponseEvent::RemoteResponseEvent( const areg::Endpoint& consumer
                                              , const areg::RawService& service
                                              , areg::ResultType result
                                              , uint32_t respId
+                                             , areg::CallType callType
                                              , const SequenceNumber& seqNr
                                              , uint32_t initSize)
-    : ServiceResponseEvent(consumer, service, result, respId, areg::EventType::EventRemoteResponse, seqNr, initSize)
+    : ServiceResponseEvent(consumer, service, result, respId, callType, areg::EventType::EventRemoteResponse, seqNr, initSize)
 {
 }
 
@@ -384,8 +407,9 @@ inline RemoteResponseEvent::RemoteResponseEvent( const SharedBuffer& args
                                              , const areg::RawService& service
                                              , areg::ResultType result
                                              , uint32_t respId
+                                             , areg::CallType callType
                                              , const SequenceNumber& seqNr)
-    : ServiceResponseEvent(consumer, service, result, respId, areg::EventType::EventRemoteResponse, seqNr, 0u)
+    : ServiceResponseEvent(consumer, service, result, respId, callType, areg::EventType::EventRemoteResponse, seqNr, 0u)
 {
     if (args.is_valid())
         write_data(args.buffer(), args.size_used());

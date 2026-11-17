@@ -34,6 +34,7 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target
     : ServiceResponseEvent  ( target
                             , areg::ResultType::DataOK
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
+                            , areg::CallType::Undefined
                             , server.is_local_address() ? areg::EventType::EventLocalConsumerConnect
                                                         : areg::EventType::EventRemoteConsumerConnect )
 {

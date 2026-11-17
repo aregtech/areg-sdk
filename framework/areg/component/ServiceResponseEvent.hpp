@@ -68,6 +68,7 @@ public:
      * \param   target      The event target proxy address
      * \param   result      The response result
      * \param   respId      The response message ID
+     * \param   callType    The kind of the message ID.
      * \param   eventType   The type of event.
      * \param   seqNr       The sequence number of call.
      * \param   initSize    Payload bytes to reserve after the header for serialized parameters.
@@ -75,6 +76,7 @@ public:
     inline ServiceResponseEvent( const ProxyAddress & target
                                , areg::ResultType result
                                , uint32_t respId
+                               , areg::CallType callType
                                , areg::EventType eventType
                                , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                                , uint32_t initSize = 0u );
@@ -109,6 +111,7 @@ public:
      * \param   service     The raw service structure
      * \param   result      The response result
      * \param   respId      The response message ID
+     * \param   callType    The kind of the message ID.
      * \param   eventType   The type of event.
      * \param   seqNr       The sequence number of call.
      * \param   initSize    Payload bytes to reserve after the header for serialized parameters.
@@ -117,6 +120,7 @@ public:
                                , const areg::RawService& service
                                , areg::ResultType result
                                , uint32_t respId
+                               , areg::CallType callType
                                , areg::EventType eventType
                                , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                                , uint32_t initSize = 0u );
@@ -141,6 +145,12 @@ public:
      **/
     [[nodiscard]]
     inline uint32_t response_id() const noexcept;
+
+    /**
+     * \brief   Returns the kind of the message ID of the event.
+     **/
+    [[nodiscard]]
+    inline areg::CallType call_kind() const noexcept;
 
     /**
      * \brief   Returns sequence number stored in the EventHeader.
@@ -185,6 +195,7 @@ private:
 inline ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
                                                  , areg::ResultType result
                                                  , uint32_t respId
+                                                 , areg::CallType callType
                                                  , areg::EventType eventType
                                                  , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/
                                                  , uint32_t initSize               /*= 0u*/ )
@@ -195,6 +206,7 @@ inline ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
     {
         hdr->messageId  = respId;
         hdr->result     = static_cast<uint32_t>(result);
+        hdr->callType   = static_cast<uint8_t>(callType);
         hdr->sequenceNr = seqNr;
     }
 }
@@ -218,6 +230,7 @@ inline ServiceResponseEvent::ServiceResponseEvent( const areg::Endpoint& consume
                                                  , const areg::RawService& service
                                                  , areg::ResultType result
                                                  , uint32_t respId
+                                                 , areg::CallType callType
                                                  , areg::EventType eventType
                                                  , const SequenceNumber& seqNr
                                                  , uint32_t initSize)
@@ -228,6 +241,7 @@ inline ServiceResponseEvent::ServiceResponseEvent( const areg::Endpoint& consume
     {
         hdr->messageId = respId;
         hdr->result = static_cast<uint32_t>(result);
+        hdr->callType = static_cast<uint8_t>(callType);
         hdr->sequenceNr = seqNr;
     }
 }
@@ -255,6 +269,11 @@ inline ServiceResponseEvent ServiceResponseEvent::clone_for_target(const areg::E
 inline uint32_t ServiceResponseEvent::response_id() const noexcept
 {
     return message_id();
+}
+
+inline areg::CallType ServiceResponseEvent::call_kind() const noexcept
+{
+    return static_cast<areg::CallType>(call_type());
 }
 
 inline const SequenceNumber & ServiceResponseEvent::sequence_number() const noexcept

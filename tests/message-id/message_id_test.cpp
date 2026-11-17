@@ -9,6 +9,8 @@
  *   shared-error-response  error_request(done) of a waiting second: request_second_failed(RequestError)
  *   shared-unavailable     second called with no provider: request_second_failed(ServiceUnavailable)
  *   unknown-request        a request ID the interface does not have leaves the provider serving
+ *   unsupported-request    a consumer of a newer interface calls a request the provider does not have:
+ *                          the call fails once with RequestUnsupported and its own sequence number
  *   remove-all             after stop_all_notifications() the provider sends no attribute update
  *
  * In every shared case request_first_failed must not run.
@@ -21,6 +23,7 @@
 #include "areg/component/ProxyBase.hpp"
 #include "tests/message-id/services/SharedResponseConsumerBase.hpp"
 #include "tests/message-id/services/SharedResponseProviderBase.hpp"
+#include "tests/message-id/services/private/SharedResponseEvents.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -52,7 +55,56 @@ namespace
     constexpr uint32_t      TAG_BUSY        { 2 };
     constexpr uint32_t      TAG_SYNC        { 7 };
 
-    enum class Case : uint32_t { Busy, Cancel, ErrorRequest, ErrorResponse, Unavailable, Unknown, RemoveAll };
+    //!< A request ID that the SharedResponse interface does not have.
+    constexpr uint32_t      UNKNOWN_REQUEST { areg::crc32_calculate("request_not_in_the_interface") };
+
+    enum class Case : uint32_t { Busy, Cancel, ErrorRequest, ErrorResponse, Unavailable, Unknown, RemoveAll, Unsupported };
+
+    constexpr char const    _modelNewer[]   { "MiModelNewer" };
+    constexpr char const    _newerThread[]  { "MiNewerThread" };
+    constexpr char const    _newerRole[]    { "MiNewerConsumer" };
+    constexpr char const    _newerProviderThread[]{ "MiNewerProviderThread" };
+    constexpr char const    _newerProvider[]{ "MiNewerProvider" };
+
+    //!< The entries of a newer SharedResponse: sync, and a request with a response the provider does not have.
+    constexpr uint32_t      REQ_SYNC        { static_cast<uint32_t>(SharedResponse::MessageIDs::MsgId_request_sync) };
+    constexpr uint32_t      RESP_SYNCED     { static_cast<uint32_t>(SharedResponse::MessageIDs::MsgId_response_synced) };
+    constexpr uint32_t      REQ_ADDED       { areg::crc32_calculate("request_added") };
+    constexpr uint32_t      RESP_ADDED      { areg::crc32_calculate("response_added") };
+    constexpr uint32_t      NEWER_REQUESTS[]    { REQ_SYNC, REQ_ADDED };
+    constexpr uint32_t      NEWER_RESPONSES[]   { RESP_SYNCED, RESP_ADDED };
+    constexpr uint32_t      NEWER_PARAMS[]      { 1u, 0u };
+    static_assert(areg::is_unique_interface_id(NEWER_REQUESTS, REQ_ADDED) && areg::is_unique_interface_id(NEWER_RESPONSES, RESP_ADDED), "the added entries are interface ids");
+
+    //!< The lookup of the newer interface.
+    areg::MessageInfo find_newer_message(uint32_t msgId) noexcept
+    {
+        switch (msgId)
+        {
+        case REQ_SYNC:      return areg::MessageInfo{ 0u, areg::CallType::Request, 1u };
+        case REQ_ADDED:     return areg::MessageInfo{ 1u, areg::CallType::Request, 0u };
+        case RESP_SYNCED:   return areg::MessageInfo{ 0u, areg::CallType::Response, 1u };
+        case RESP_ADDED:    return areg::MessageInfo{ 1u, areg::CallType::Response, 0u };
+        default:            return areg::MessageInfo{ };
+        }
+    }
+
+    const areg::InterfaceData & newer_interface()
+    {
+        static const areg::InterfaceData ifData
+        {
+              SharedResponse::ServiceName, SharedResponse::InterfaceVersion, SharedResponse::interface_data().idServiceType
+            , 2u, 2u, 0u, NEWER_REQUESTS, NEWER_RESPONSES, nullptr, NEWER_RESPONSES, NEWER_PARAMS, &find_newer_message
+        };
+
+        return ifData;
+    }
+
+    std::atomic_uint32_t    gUnsupported    { 0 };  //!< RequestUnsupported failures of the added request.
+    std::atomic_uint32_t    gOtherFailures  { 0 };  //!< any other failure seen by the newer consumer.
+    std::atomic<SequenceNumber> gAddedSeq   { 0 };  //!< sequence number of the added request.
+    std::atomic<SequenceNumber> gFailedSeq  { 0 };  //!< sequence number of its failure.
+    std::atomic_bool        gAddedLeft      { true };   //!< the proxy still had a listener of the added response.
 
     std::atomic<Case>       gCase           { Case::Busy };
 
@@ -94,9 +146,9 @@ namespace
         static void send_raw_request(areg::ProxyBase & proxy, uint32_t reqId)
         {
             areg::ServiceRequestEvent evt{ (proxy.*(&ProxyAccess::create_request_event))(reqId, 0u) };
-            using SendFunc = SequenceNumber (areg::ProxyBase::*)(areg::ServiceRequestEvent &, areg::NotificationConsumer *);
+            using SendFunc = SequenceNumber (areg::ProxyBase::*)(areg::ServiceRequestEvent &, areg::NotificationConsumer *, uint32_t);
             const SendFunc send{ &ProxyAccess::send_request_event };
-            static_cast<void>((proxy.*send)(evt, nullptr));
+            static_cast<void>((proxy.*send)(evt, nullptr, areg::RESPONSE_ID_NONE));
         }
     };
 }
@@ -211,7 +263,7 @@ protected:
             break;
 
         case Case::Unknown:
-            ProxyAccess::send_raw_request(proxy, areg::REQUEST_ID_FIRST + SharedResponse::interface_data().idRequestCount);
+            ProxyAccess::send_raw_request(proxy, UNKNOWN_REQUEST);
             request_sync(TAG_SYNC);
             break;
 
@@ -286,6 +338,154 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Consumer of a newer interface
+//////////////////////////////////////////////////////////////////////////
+
+//!< A proxy of SharedResponse built from the newer interface data.
+class NewerProxy final : public areg::ProxyBase
+{
+public:
+    static areg::ProxyBase * create(const areg::String & role, areg::DispatcherThread * owner)
+    {
+        return new NewerProxy(role, owner);
+    }
+
+    SequenceNumber request(uint32_t reqId, uint32_t respId, areg::NotificationConsumer & caller)
+    {
+        areg::SharedBuffer args;
+        if (reqId == REQ_SYNC)
+            args << TAG_SYNC;
+
+        areg::ServiceRequestEvent evt{ create_request(args, reqId) };
+        return send_request_event(evt, &caller, respId);
+    }
+
+protected:
+    NewerProxy(const areg::String & role, areg::DispatcherThread * owner)
+        : areg::ProxyBase(role, newer_interface(), owner)
+    {
+    }
+
+    void process_response_event(areg::ServiceResponseEvent & eventElem) override
+    {
+        const areg::ResultType result{ static_cast<areg::ResultType>(eventElem.envelope().result()) };
+        if (eventElem.call_kind() == areg::CallType::Request)
+            notify_request_failed(eventElem.response_id(), result, eventElem.sequence_number());
+        else
+            notify_listeners(eventElem.response_id(), result, eventElem.sequence_number());
+    }
+
+    void process_custom_event(areg::Event &) override
+    {
+    }
+
+    void register_service_listeners() override
+    {
+        areg::ProxyBase::register_service_listeners();
+        SharedResponseResponseEvent::add_listener(static_cast<areg::EventConsumer &>(*this), proxy_dispatcher_thread());
+    }
+
+    void unregister_service_listeners() noexcept override
+    {
+        SharedResponseResponseEvent::remove_listener(static_cast<areg::EventConsumer &>(*this), proxy_dispatcher_thread());
+        areg::ProxyBase::unregister_service_listeners();
+    }
+
+    ServiceAvailableEvent create_service_available(areg::NotificationConsumer & consumer) override
+    {
+        return ServiceAvailableEvent(consumer);
+    }
+
+    areg::NotificationEvent create_client_notification(const areg::NotificationEventData & data) const override
+    {
+        return areg::NotificationEvent(data);
+    }
+
+    areg::ServiceRequestEvent create_request(const areg::SharedBuffer & args, uint32_t reqId) override
+    {
+        return SharedResponseRequestEvent(args, proxy_address(), stub_address(), reqId);
+    }
+
+    areg::ServiceRequestEvent create_request(uint32_t reqId, uint32_t reserve) override
+    {
+        return SharedResponseRequestEvent(proxy_address(), stub_address(), reqId, reserve);
+    }
+
+    areg::ServiceRequestEvent create_notification_request(uint32_t msgId, areg::RequestType reqType, areg::CallType kind) override
+    {
+        return SharedResponseNotifyRequestEvent(proxy_address(), stub_address(), msgId, reqType, kind);
+    }
+
+    areg::ServiceResponseEvent create_request_failed(const areg::ProxyAddress & target, uint32_t msgId, areg::CallType kind, areg::ResultType reason, const SequenceNumber & seqNr) const override
+    {
+        return SharedResponseResponseEvent(target, reason, msgId, kind, seqNr);
+    }
+};
+
+//!< Calls the added request, then sync, through the newer proxy.
+class MiNewerConsumer final : public areg::Component
+                            , public areg::ProxyListener
+{
+public:
+    MiNewerConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+        : areg::Component   ( entry, owner )
+        , areg::ProxyListener( )
+        , mProxy            ( areg::ProxyBase::acquire_proxy(areg::String(_newerProvider), newer_interface(), *this, &NewerProxy::create, owner) )
+    {
+    }
+
+    ~MiNewerConsumer() override
+    {
+        if (mProxy != nullptr)
+            mProxy->free_proxy(*this);
+    }
+
+protected:
+    bool service_connected(areg::ServiceConnectionState status, areg::ProxyBase & /* proxy */) override
+    {
+        if (areg::is_service_connected(status) && (mProxy != nullptr))
+            gAddedSeq.store(proxy().request(REQ_ADDED, RESP_ADDED, *this));
+
+        return true;
+    }
+
+    void process_notification_event(areg::NotificationEvent & eventElem) override
+    {
+        const areg::NotificationEventData & data{ static_cast<const areg::NotificationEvent &>(eventElem).data() };
+        process_notification(data.notify_id(), data.notify_type(), data.sequence());
+    }
+
+    void process_notification(uint32_t msgId, areg::ResultType result, SequenceNumber seqNr) override
+    {
+        if ((msgId == REQ_ADDED) && (result == areg::ResultType::RequestUnsupported))
+        {
+            gUnsupported.fetch_add(1);
+            gFailedSeq.store(seqNr);
+            gAddedLeft.store(mProxy->has_any_listener(RESP_ADDED));
+            static_cast<void>(proxy().request(REQ_SYNC, RESP_SYNCED, *this));
+        }
+        else if ((msgId == RESP_SYNCED) && (result == areg::ResultType::RequestOK))
+        {
+            gSynced.fetch_add(1);
+        }
+        else
+        {
+            gOtherFailures.fetch_add(1);
+        }
+
+        changed();
+    }
+
+private:
+    NewerProxy & proxy()
+    {
+        return static_cast<NewerProxy &>(*mProxy);
+    }
+
+    std::shared_ptr<areg::ProxyBase> mProxy;
+};
+
+//////////////////////////////////////////////////////////////////////////
 // Models
 //////////////////////////////////////////////////////////////////////////
 
@@ -304,6 +504,22 @@ BEGIN_MODEL(_model)
         END_REGISTER_COMPONENT(_consumerRole)
     END_REGISTER_THREAD(_consumerThread)
 END_MODEL(_model)
+}
+
+namespace mi_model_newer
+{
+BEGIN_MODEL(_modelNewer)
+    BEGIN_REGISTER_THREAD(_newerProviderThread)
+        BEGIN_REGISTER_COMPONENT(_newerProvider, MiProvider)
+            REGISTER_IMPLEMENT_SERVICE(SharedResponse::ServiceName, SharedResponse::InterfaceVersion)
+        END_REGISTER_COMPONENT(_newerProvider)
+    END_REGISTER_THREAD(_newerProviderThread)
+
+    BEGIN_REGISTER_THREAD(_newerThread)
+        BEGIN_REGISTER_COMPONENT(_newerRole, MiNewerConsumer)
+        END_REGISTER_COMPONENT(_newerRole)
+    END_REGISTER_THREAD(_newerThread)
+END_MODEL(_modelNewer)
 }
 
 namespace mi_model_alone
@@ -355,6 +571,7 @@ int main(int argc, char * argv[])
         , { "shared-unavailable"    , Case::Unavailable  , areg::ResultType::ServiceUnavailable }
         , { "unknown-request"       , Case::Unknown      , areg::ResultType::RequestOK          }
         , { "remove-all"            , Case::RemoveAll    , areg::ResultType::RequestOK          }
+        , { "unsupported-request"   , Case::Unsupported  , areg::ResultType::RequestUnsupported }
     };
 
     const char * name{ argc > 1 ? argv[1] : "shared-busy" };
@@ -372,7 +589,7 @@ int main(int argc, char * argv[])
     }
 
     gCase.store(selected->which);
-    const char * model{ selected->which == Case::Unavailable ? _modelAlone : _model };
+    const char * model{ selected->which == Case::Unavailable ? _modelAlone : (selected->which == Case::Unsupported ? _modelNewer : _model) };
     areg::Application::setup(false, true, false, true, false, nullptr);
     bool ok{ areg::Application::load_model(model) };
     if (ok)
@@ -384,6 +601,15 @@ int main(int argc, char * argv[])
             areg::Application::unload_model(model);
             print();
             ok = ok && (gSynced.load() == 1);
+            break;
+
+        case Case::Unsupported:
+            ok = wait_until([] { return gSynced.load() >= 1; });
+            areg::Application::unload_model(model);
+            printf("unsupported, other failures ...........: %u, %u\n", gUnsupported.load(), gOtherFailures.load());
+            printf("sequence of call, of failure ..........: %llu, %llu\n", static_cast<unsigned long long>(gAddedSeq.load()), static_cast<unsigned long long>(gFailedSeq.load()));
+            ok = ok && (gUnsupported.load() == 1) && (gOtherFailures.load() == 0) && (gSynced.load() == 1)
+                    && (gAddedSeq.load() != areg::SEQUENCE_NUMBER_ANY) && (gFailedSeq.load() == gAddedSeq.load()) && (gAddedLeft.load() == false);
             break;
 
         case Case::RemoveAll:

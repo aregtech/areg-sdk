@@ -90,6 +90,7 @@ namespace
         return (result == areg::ResultType::RequestError)
             || (result == areg::ResultType::RequestBusy)
             || (result == areg::ResultType::RequestCanceled)
+            || (result == areg::ResultType::RequestUnsupported)
             || (result == areg::ResultType::MessageUndelivered)
             || (result == areg::ResultType::ServiceUnavailable);
     }
@@ -542,12 +543,12 @@ int32_t ProxyBase::find_thread_proxies(DispatcherThread & ownerThread, ArrayList
     return result;
 }
 
-ServiceResponseEvent ProxyBase::request_failure_event(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr)
+ServiceResponseEvent ProxyBase::request_failure_event(const ProxyAddress & target, uint32_t msgId, areg::CallType kind, areg::ResultType errCode, const SequenceNumber & seqNr)
 {
     LOG_SCOPE( areg_component_ProxyBase, request_failure_event);
 
     std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(static_cast<uint32_t>(target));
-    return (proxy.get() != nullptr ? proxy->create_request_failed(target, msgId, errCode, seqNr) : ServiceResponseEvent(MessageEnvelope{}));
+    return (proxy.get() != nullptr ? proxy->create_request_failed(target, msgId, kind, errCode, seqNr) : ServiceResponseEvent(MessageEnvelope{}));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -602,7 +603,7 @@ bool ProxyBase::has_notification_listener( uint32_t msgId ) const noexcept
     return false;
 }
 
-bool ProxyBase::add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique )
+bool ProxyBase::add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique, uint32_t reqId /*= 0u*/ )
 {
     ASSERT(caller != nullptr);
     if (caller == nullptr)
@@ -610,6 +611,7 @@ bool ProxyBase::add_listener( uint32_t msgId, const SequenceNumber & seqNr, Noti
 
     Lock lock(mListenerLock);
     ProxyBase::Listener listener{ seqNr, caller };
+    listener.mRequestId = reqId;
     ProxyListenerList & subVec = mListenerMap[msgId];
     if (unique)
         return subVec.add_if_unique(listener);
@@ -805,7 +807,7 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
                 {
                     if (subVec.value_at(i).mSequenceNr != areg::SEQUENCE_NUMBER_NOTIFY)
                     {
-                        pendingIds.add(mapPos->first);
+                        pendingIds.add(subVec.value_at(i).mRequestId);
                         pendingRequests.add(subVec.value_at(i));
                     }
                 }
@@ -816,7 +818,7 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
     // Fails every pending request; the failures are dispatched after the connection callbacks below.
     for (uint32_t i = 0u; i < pendingIds.size(); ++i)
     {
-        ServiceResponseEvent failure{ create_request_failed(mProxyAddress, pendingIds[i], areg::ResultType::ServiceUnavailable, pendingRequests[i].mSequenceNr) };
+        ServiceResponseEvent failure{ create_request_failed(mProxyAddress, pendingIds[i], areg::CallType::Request, areg::ResultType::ServiceUnavailable, pendingRequests[i].mSequenceNr) };
         if (failure.is_valid())
         {
             failure.deliver_event();
@@ -852,7 +854,8 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
 
 void ProxyBase::set_notification( uint32_t msgId, NotificationConsumer* caller, bool alwaysNotify /*= false*/ )
 {
-    if (!is_connected())
+    const areg::MessageInfo info{ mProxyData.mIfData.idFind(msgId) };
+    if (!is_connected() || !info.is_valid() || (info.miKind == areg::CallType::Request))
         return;
 
     bool hasListener;
@@ -866,7 +869,7 @@ void ProxyBase::set_notification( uint32_t msgId, NotificationConsumer* caller, 
     if ( added )
     {
         // new listener, if attribute, send actual data.
-        if (areg::is_attribute_id(msgId))
+        if (info.miKind == areg::CallType::Attribute)
         {
             send_notification_event( msgId
                                    , mProxyData.attribute_state(msgId) == areg::DataState::DataIsOK ? areg::ResultType::DataOK : areg::ResultType::DataInvalid
@@ -882,13 +885,13 @@ void ProxyBase::set_notification( uint32_t msgId, NotificationConsumer* caller, 
     else if ( alwaysNotify )
     {
         // the listener already exists
-        if ( areg::is_attribute_id(msgId) )
+        if ( info.miKind == areg::CallType::Attribute )
         {
             send_notification_event( msgId
                                    , mProxyData.attribute_state(msgId) == areg::DataState::DataIsOK ? areg::ResultType::DataOK : areg::ResultType::DataInvalid
                                    , areg::SEQUENCE_NUMBER_NOTIFY, caller);
         }
-        else if ( areg::is_response_id(msgId) && (mProxyData.param_state(msgId) == areg::DataState::DataIsOK) )
+        else if ( mProxyData.param_state(msgId) == areg::DataState::DataIsOK )
         {
             send_notification_event(  msgId, areg::ResultType::RequestOK, areg::SEQUENCE_NUMBER_NOTIFY, caller);
         }
@@ -969,11 +972,37 @@ void ProxyBase::unregister_listener( NotificationConsumer *consumer )
 
 void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, const SequenceNumber & seqNrToSearch )
 {
+    _notify_listeners(respId, respId, result, seqNrToSearch);
+}
+
+void ProxyBase::notify_request_failed( uint32_t reqId, areg::ResultType result, const SequenceNumber & seqNr )
+{
+    const areg::InterfaceData & ifData{ mProxyData.mIfData };
+    const areg::MessageInfo info{ ifData.idFind(reqId) };
+    if ((info.miKind != areg::CallType::Request) || (info.miIndex >= ifData.idRequestCount))
+    {
+        LOG_SCOPE(areg_component_ProxyBase, notify_listeners);
+        LOG_WARN("Proxy [ %s ] received a failure of the unknown request [ %u ], it is dropped"
+                    , ProxyAddress::to_path(mProxyAddress).as_string()
+                    , reqId);
+        return;
+    }
+
+    const uint32_t respId{ ifData.idRequestToResponseMap[info.miIndex] };
+    if (respId == areg::RESPONSE_ID_NONE)
+        return;
+
+    mProxyData.set_data_state(respId, areg::DataState::DataIsInvalid);
+    _notify_listeners(respId, reqId, result, seqNr);
+}
+
+void ProxyBase::_notify_listeners( uint32_t listenId, uint32_t notifyId, areg::ResultType result, const SequenceNumber & seqNrToSearch )
+{
     SnapshotBuffer buffer;
-    Snapshot listeners{ this, respId };
+    Snapshot listeners{ this, listenId };
     {
         Lock lock(mListenerLock);
-        ProxyListenerMap::MAPPOS pos = mListenerMap.find(respId);
+        ProxyListenerMap::MAPPOS pos = mListenerMap.find(listenId);
         if (!mListenerMap.is_valid_position(pos))
             return;
 
@@ -981,7 +1010,7 @@ void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, cons
         listeners.entries = buffer.reserve(subVec.size());
         if (listeners.entries == nullptr)
         {
-            _drop_notification(subVec, respId, seqNrToSearch);
+            _drop_notification(subVec, listenId, seqNrToSearch);
             return;
         }
 
@@ -1015,7 +1044,7 @@ void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, cons
         NotificationConsumer * client{ listeners.entries[i].client };
         if (client != nullptr)
         {
-            client->process_notification(respId, result, seqNrToSearch);
+            client->process_notification(notifyId, result, seqNrToSearch);
         }
     }
 }
@@ -1076,7 +1105,7 @@ void ProxyBase::process_generic_event( Event& eventElem )
     }
 }
 
-SequenceNumber ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller)
+SequenceNumber ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller, uint32_t respId)
 {
     LOG_SCOPE( areg_component_ProxyBase, send_request_event );
 
@@ -1084,15 +1113,13 @@ SequenceNumber ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, Noti
         return areg::SEQUENCE_NUMBER_ANY;
 
     const uint32_t msgId{ reqEvent.message_id() };
-    const uint32_t respId{ proxy_data().response_id(msgId) };
-
-    const bool hasResponse{ areg::is_valid_response_id(respId) };
+    const bool hasResponse{ respId != areg::RESPONSE_ID_NONE };
     SequenceNumber seqNr{ areg::SEQUENCE_NUMBER_ANY };
     if (hasResponse)
     {
         Lock lock(mListenerLock);
         ++mSequenceCount;
-        static_cast<void>(add_listener(respId, mSequenceCount, caller, false)); // recursive lock: safe
+        static_cast<void>(add_listener(respId, mSequenceCount, caller, false, msgId)); // recursive lock: safe
         reqEvent.set_sequence_number(mSequenceCount);
         seqNr = mSequenceCount;
     }
@@ -1108,7 +1135,7 @@ SequenceNumber ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, Noti
         if (hasResponse)
         {
             const areg::ResultType reason{ connected ? areg::ResultType::MessageUndelivered : areg::ResultType::ServiceUnavailable };
-            ServiceResponseEvent failure{ create_request_failed(mProxyAddress, msgId, reason, seqNr) };
+            ServiceResponseEvent failure{ create_request_failed(mProxyAddress, msgId, areg::CallType::Request, reason, seqNr) };
             if (failure.is_valid())
             {
                 failure.deliver_event();
@@ -1119,9 +1146,9 @@ SequenceNumber ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, Noti
     return seqNr;
 }
 
-void ProxyBase::send_notify_request( uint32_t msgId, areg::RequestType reqType )
+void ProxyBase::send_notify_request( uint32_t msgId, areg::RequestType reqType, areg::CallType kind )
 {
-    ServiceRequestEvent notifyEvent{ create_notification_request(msgId, reqType) };
+    ServiceRequestEvent notifyEvent{ create_notification_request(msgId, reqType, kind) };
     send_notify_request(notifyEvent);
 }
 

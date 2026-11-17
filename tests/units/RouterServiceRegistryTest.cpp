@@ -396,7 +396,7 @@ namespace
         struct Case
         {
             areg::MessageEnvelope message;
-            areg::RegistrationAction action;
+            areg::CallType action;
             bool provider;
             bool notification;
             areg::DisconnectReason reason;
@@ -404,21 +404,21 @@ namespace
         const Case cases[]
         {
             { areg::router_register_service(provider, 0x100u, areg::COOKIE_ROUTER),
-              areg::RegistrationAction::RegisterProvider, true, false, areg::DisconnectReason::UndefinedReason },
+              areg::CallType::RegisterProvider, true, false, areg::DisconnectReason::UndefinedReason },
             { areg::router_unregister_service(provider, areg::DisconnectReason::ProviderRestarting, 0x100u, areg::COOKIE_ROUTER),
-              areg::RegistrationAction::UnregisterProvider, true, false, areg::DisconnectReason::ProviderRestarting },
+              areg::CallType::UnregisterProvider, true, false, areg::DisconnectReason::ProviderRestarting },
             { areg::router_register_consumer(consumer, 0x100u, areg::COOKIE_ROUTER),
-              areg::RegistrationAction::RegisterConsumer, false, false, areg::DisconnectReason::UndefinedReason },
+              areg::CallType::RegisterConsumer, false, false, areg::DisconnectReason::UndefinedReason },
             { areg::router_unregister_consumer(consumer, areg::DisconnectReason::ConsumerDisconnected, 0x100u, areg::COOKIE_ROUTER),
-              areg::RegistrationAction::UnregisterConsumer, false, false, areg::DisconnectReason::ConsumerDisconnected },
+              areg::CallType::UnregisterConsumer, false, false, areg::DisconnectReason::ConsumerDisconnected },
             { areg::service_registered_event(provider, areg::COOKIE_ROUTER, 0x100u),
-              areg::RegistrationAction::RegisterProvider, true, true, areg::DisconnectReason::UndefinedReason },
+              areg::CallType::RegisterProvider, true, true, areg::DisconnectReason::UndefinedReason },
             { areg::service_unregistered_event(provider, areg::DisconnectReason::ProviderRestarting, areg::COOKIE_ROUTER, 0x100u),
-              areg::RegistrationAction::UnregisterProvider, true, true, areg::DisconnectReason::ProviderRestarting },
+              areg::CallType::UnregisterProvider, true, true, areg::DisconnectReason::ProviderRestarting },
             { areg::client_registered_event(consumer, areg::COOKIE_ROUTER, 0x100u),
-              areg::RegistrationAction::RegisterConsumer, false, true, areg::DisconnectReason::UndefinedReason },
+              areg::CallType::RegisterConsumer, false, true, areg::DisconnectReason::UndefinedReason },
             { areg::client_unregistered_event(consumer, areg::DisconnectReason::ConsumerDisconnected, areg::COOKIE_ROUTER, 0x100u),
-              areg::RegistrationAction::UnregisterConsumer, false, true, areg::DisconnectReason::ConsumerDisconnected }
+              areg::CallType::UnregisterConsumer, false, true, areg::DisconnectReason::ConsumerDisconnected }
         };
         for (const Case & entry : cases)
         {

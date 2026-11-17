@@ -204,6 +204,10 @@ protected:
          * \brief   Compact proxy endpoint.
          **/
         areg::Endpoint      mConsumer   { };
+        /**
+         * \brief   The request the entry waits for; 0 for a subscription.
+         **/
+        uint32_t            mRequestId  { 0 };
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -214,6 +218,8 @@ protected:
      *          cache-friendly traversal.
      **/
     using StubListenerList  = ArrayList<StubBase::Listener>;
+
+    static_assert(sizeof(StubBase::Listener) == 48, "The request ID of a stub listener must fit in the tail padding.");
 
     /**
      * \brief   HashMap keyed by message ID mapping to its listener list.
@@ -420,12 +426,13 @@ protected:
      *
      * \param   proxy       The address of the client proxy to receive the response.
      * \param   msgId       The message ID of the response.
+     * \param   kind        The kind of the message ID.
      * \param   result      The result code of the response.
      * \param   data        The serialized response data. Can be an empty/invalid buffer.
      * \return  A ServiceResponseEvent value; check is_valid() before use.
      **/
     [[nodiscard]]
-    virtual ServiceResponseEvent create_response( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const areg::SharedBuffer & data ) const;
+    virtual ServiceResponseEvent create_response( const areg::ProxyAddress & proxy, uint32_t msgId, areg::CallType kind, areg::ResultType result, const areg::SharedBuffer & data ) const;
 
     /**
      * \brief   Creates an empty (no-payload) response event of the stub's concrete type, with the
@@ -433,12 +440,13 @@ protected:
      *
      * \param   proxy       The address of the client proxy to receive the response.
      * \param   msgId       The message ID of the response.
+     * \param   kind        The kind of the message ID.
      * \param   result      The result code of the response.
      * \param   reserve     Payload bytes to reserve after the header for the serialized parameters.
      * \return  A typed empty ServiceResponseEvent; check is_valid() before use.
      **/
     [[nodiscard]]
-    virtual ServiceResponseEvent create_response_event( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, uint32_t reserve ) const;
+    virtual ServiceResponseEvent create_response_event( const areg::ProxyAddress & proxy, uint32_t msgId, areg::CallType kind, areg::ResultType result, uint32_t reserve ) const;
 
 /************************************************************************/
 // StubEventConsumer interface overrides.
@@ -571,13 +579,14 @@ protected:
      *          A response with no waiting request is dropped.
      *
      * \param   respId          The response / broadcast message ID.
+     * \param   kind            The kind of the message ID: Response or Broadcast.
      * \param   result          The result code to stamp into the response.
      * \param   reserve         Payload bytes to reserve after the header for serialized parameters.
      * \param[out] listeners    Receives the targets, the answered caller first (empty if none).
      * \return  A typed response event; invalid (is_valid()==false) when there are no targets.
      **/
     [[nodiscard]]
-    ServiceResponseEvent prepare_response_event( uint32_t respId, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & listeners );
+    ServiceResponseEvent prepare_response_event( uint32_t respId, areg::CallType kind, areg::ResultType result, uint32_t reserve, StubBase::StubListenerList & listeners );
 
     /**
      * \brief   Returns true if a notification listener with the specified message ID and proxy address exists.
@@ -608,21 +617,19 @@ protected:
     void remove_notification_listener( uint32_t msgId, const ProxyAddress & notifySource ) noexcept;
 
     /**
+     * \brief   Removes every subscription of the specified proxy, as remove_notification_listener()
+     *          does for one message ID. The waiting requests of the proxy are not changed.
+     *
+     * \param   notifySource    The address of the proxy to unsubscribe.
+     **/
+    void remove_notification_listeners( const ProxyAddress & notifySource ) noexcept;
+
+    /**
      * \brief   Removes the subscriptions of the specified proxy and marks its waiting requests and
      *          sessions orphaned. An orphaned request stays busy until it is answered, and its
      *          response reaches only the subscribers.
      *
      * \param   whichProxy      The address of the disconnected proxy.
-     * \param[out] removedIDs   Receives the message IDs of the removed subscriptions.
-     **/
-    void clear_all_listeners(const ProxyAddress & whichProxy, IntegerArray& removedIDs);
-
-    /**
-     * \brief   Removes the subscriptions of the specified proxy and marks its waiting requests and
-     *          sessions orphaned.
-     *
-     * \param   whichProxy      The address of the disconnected proxy.
-     * \note    Overload that does not return the list of removed IDs.
      **/
     void clear_all_listeners(const ProxyAddress & whichProxy) noexcept;
 
@@ -683,20 +690,22 @@ protected:
      * \brief   Sends an update event to all proxy clients subscribed to the specified message ID.
      *
      * \param   msgId       The message ID of the update.
+     * \param   kind        The kind of the message ID.
      * \param   data        The serialized update data. Can be an empty/invalid buffer.
      * \param   result      The result code of the update.
      **/
-    void send_update_event(uint32_t msgId, const areg::SharedBuffer & data, areg::ResultType result) const;
+    void send_update_event(uint32_t msgId, areg::CallType kind, const areg::SharedBuffer & data, areg::ResultType result) const;
 
     /**
      * \brief   Sends an update notification to a single target proxy.
      *
      * \param   target      The address of the proxy to notify.
      * \param   msgId       The message ID of the update.
+     * \param   kind        The kind of the message ID.
      * \param   data        The serialized update data. Can be an empty/invalid buffer.
      * \param   result      The result code of the update.
      **/
-    void send_notify_once( const ProxyAddress & target, uint32_t msgId, const areg::SharedBuffer & data, areg::ResultType result ) const;
+    void send_notify_once( const ProxyAddress & target, uint32_t msgId, areg::CallType kind, const areg::SharedBuffer & data, areg::ResultType result ) const;
 
     /**
      * \brief   Sends a response event to the targets prepare_response_event() would collect.
@@ -726,6 +735,17 @@ protected:
      **/
     [[nodiscard]]
     bool can_execute_request( StubBase::Listener & whichListener, uint32_t whichResponse, const SequenceNumber & seqNr);
+
+    /**
+     * \brief   Creates the response that tells a consumer the provider has no such request.
+     *
+     * \param   proxy   The address of the consumer proxy that sent the request.
+     * \param   msgId   The ID of the unknown request.
+     * \param   seqNr   The sequence number of the request.
+     * \return  A RequestUnsupported response; check is_valid() before use.
+     **/
+    [[nodiscard]]
+    ServiceResponseEvent create_unsupported_response( const ProxyAddress & proxy, uint32_t msgId, const SequenceNumber & seqNr ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -766,7 +786,7 @@ private:
      * \param   proxy   The address of the consumer proxy that sent the request.
      * \param   msgId   The ID of the refused request.
      * \param   seqNr   The sequence number of the refused request.
-     * \return  A MessageUndelivered response; invalid if msgId is not a request ID.
+     * \return  A MessageUndelivered response; check is_valid() before use.
      **/
     [[nodiscard]]
     ServiceResponseEvent create_undelivered_response( const ProxyAddress & proxy, uint32_t msgId, const SequenceNumber & seqNr ) const;
@@ -779,9 +799,10 @@ private:
     /**
      * \brief   Returns the index of the request a response answers: the prepared one, otherwise the
      *          one not unblocked. Returns the size of \a subVec if no request waits.
+     *          A \a reqId other than 0 looks only at the entries of that request.
      **/
     [[nodiscard]]
-    static uint32_t _find_target( const StubListenerList & subVec ) noexcept;
+    static uint32_t _find_target( const StubListenerList & subVec, uint32_t reqId = 0u ) noexcept;
 
     /**
      * \brief   Returns the index of the request not unblocked and not prepared, checking \a hint first.
@@ -791,15 +812,8 @@ private:
     static uint32_t _find_unprepared( const StubListenerList & subVec, uint32_t hint ) noexcept;
 
     /**
-     * \brief   Returns the first request of the interface answered by \a respId, or INVALID_MESSAGE_ID
-     *          if \a respId is a broadcast.
-     **/
-    [[nodiscard]]
-    uint32_t _request_of( uint32_t respId ) const noexcept;
-
-    /**
-     * \brief   Removes the sessions of the response \a respId and sends RequestCanceled of \a reqId
-     *          to their callers.
+     * \brief   Removes the sessions of the request \a reqId waiting for the response \a respId and
+     *          sends RequestCanceled of \a reqId to their callers.
      **/
     void _cancel_sessions( uint32_t reqId, uint32_t respId );
 

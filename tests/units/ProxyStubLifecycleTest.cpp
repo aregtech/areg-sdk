@@ -39,17 +39,36 @@ namespace
     constexpr char PROVIDER_ROLE[]{ "ContractProviderRole" };
     constexpr char CONSUMER_THREAD[]{ "ContractConsumerThread" };
     constexpr char PROVIDER_THREAD[]{ "ContractProviderThread" };
-    constexpr uint32_t REQUEST = REQUEST_ID_FIRST;
-    constexpr uint32_t RESPONSE = RESPONSE_ID_FIRST;
-    constexpr uint32_t ATTRIBUTE = ATTRIBUTE_ID_FIRST;
+    constexpr uint32_t REQUEST = areg::crc32_calculate("request_value");
+    constexpr uint32_t RESPONSE = areg::crc32_calculate("response_value");
+    constexpr uint32_t ATTRIBUTE = areg::crc32_calculate("attribute_Value");
     constexpr uint32_t REQUESTS[]{ REQUEST };
     constexpr uint32_t RESPONSES[]{ RESPONSE };
     constexpr uint32_t ATTRIBUTES[]{ ATTRIBUTE };
     constexpr uint32_t PARAM_COUNTS[]{ 1 };
+
+    //!< The lookup of the test interface.
+    MessageInfo find_lifecycle_message(uint32_t msgId) noexcept
+    {
+        switch (msgId)
+        {
+        case REQUEST:   return MessageInfo{ 0u, CallType::Request, 1u };
+        case RESPONSE:  return MessageInfo{ 0u, CallType::Response, 1u };
+        case ATTRIBUTE: return MessageInfo{ 0u, CallType::Attribute, 1u };
+        default:        return MessageInfo{ };
+        }
+    }
+
+    //!< The kind of a message ID of the test interface.
+    CallType kind_of(uint32_t msgId) noexcept
+    {
+        return find_lifecycle_message(msgId).miKind;
+    }
+
     const InterfaceData INTERFACE
     {
           "LifecycleContractService", Version(1, 0, 0), ServiceType::Local
-        , 1, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSES, PARAM_COUNTS
+        , 1, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSES, PARAM_COUNTS, &find_lifecycle_message
     };
 
     enum class ObservationKind
@@ -152,8 +171,8 @@ class ProxyStubLifecycleNotify final : public areg::LocalNotifyRequestEvent
     AREG_DECLARE_RUNTIME_EVENT(ProxyStubLifecycleNotify)
 public:
     ProxyStubLifecycleNotify(const areg::ProxyAddress& source, const areg::StubAddress& target
-                             , uint32_t message, areg::RequestType type)
-        : LocalNotifyRequestEvent(source, target, message, type)
+                             , uint32_t message, areg::RequestType type, areg::CallType kind)
+        : LocalNotifyRequestEvent(source, target, message, type, kind)
     {
         header()->eventId = CLASS_ID;
     }
@@ -164,14 +183,14 @@ class ProxyStubLifecycleResponse final : public areg::LocalResponseEvent
 {
     AREG_DECLARE_RUNTIME_EVENT(ProxyStubLifecycleResponse)
 public:
-    ProxyStubLifecycleResponse(const areg::ProxyAddress& target, uint32_t message, areg::ResultType result, uint32_t reserve = 0)
-        : LocalResponseEvent(target, result, message, areg::SEQUENCE_NUMBER_NOTIFY, reserve)
+    ProxyStubLifecycleResponse(const areg::ProxyAddress& target, uint32_t message, areg::CallType kind, areg::ResultType result, uint32_t reserve = 0)
+        : LocalResponseEvent(target, result, message, kind, areg::SEQUENCE_NUMBER_NOTIFY, reserve)
     {
         header()->eventId = CLASS_ID;
     }
 
-    ProxyStubLifecycleResponse(const areg::SharedBuffer& data, const areg::ProxyAddress& target, uint32_t message, areg::ResultType result)
-        : LocalResponseEvent(data, target, result, message)
+    ProxyStubLifecycleResponse(const areg::SharedBuffer& data, const areg::ProxyAddress& target, uint32_t message, areg::CallType kind, areg::ResultType result)
+        : LocalResponseEvent(data, target, result, message, kind)
     {
         header()->eventId = CLASS_ID;
     }
@@ -199,7 +218,7 @@ namespace
         {
             auto event = create_request_event(REQUEST, sizeof(value));
             event.write_stream() << value;
-            return send_request_event(event, &listener);
+            return send_request_event(event, &listener, RESPONSE);
         }
 
         uint32_t response_value() const { return mResponseValue; }
@@ -260,15 +279,15 @@ namespace
             return ProxyStubLifecycleRequest(proxy_address(), stub_address(), request, reserve);
         }
 
-        ServiceRequestEvent create_notification_request(uint32_t message, RequestType type) override
+        ServiceRequestEvent create_notification_request(uint32_t message, RequestType type, CallType kind) override
         {
-            return ProxyStubLifecycleNotify(proxy_address(), stub_address(), message, type);
+            return ProxyStubLifecycleNotify(proxy_address(), stub_address(), message, type, kind);
         }
 
-        ServiceResponseEvent create_request_failed(const ProxyAddress& target, uint32_t message, ResultType reason
+        ServiceResponseEvent create_request_failed(const ProxyAddress& target, uint32_t message, CallType kind, ResultType reason
                                                   , const SequenceNumber& sequence) const override
         {
-            ProxyStubLifecycleResponse result(target, message, reason);
+            ProxyStubLifecycleResponse result(target, message, kind, reason);
             result.set_sequence_number(sequence);
             return result;
         }
@@ -329,7 +348,7 @@ namespace
         void complete(uint32_t value, ResultType result = ResultType::RequestOK)
         {
             StubListenerList listeners;
-            auto event = prepare_response_event(RESPONSE, result, sizeof(value), listeners);
+            auto event = prepare_response_event(RESPONSE, CallType::Response, result, sizeof(value), listeners);
             if (event.is_valid())
             {
                 if (result == ResultType::RequestOK)
@@ -373,7 +392,7 @@ namespace
         {
             SharedBuffer data;
             data << mValue;
-            send_update_event(message, data, message == ATTRIBUTE ? ResultType::DataOK : ResultType::RequestOK);
+            send_update_event(message, kind_of(message), data, message == ATTRIBUTE ? ResultType::DataOK : ResultType::RequestOK);
         }
 
         void error_request(uint32_t message, bool canceled) override
@@ -383,16 +402,16 @@ namespace
         }
 
     protected:
-        ServiceResponseEvent create_response(const ProxyAddress& target, uint32_t message, ResultType result
+        ServiceResponseEvent create_response(const ProxyAddress& target, uint32_t message, CallType kind, ResultType result
                                             , const SharedBuffer& data) const override
         {
-            return ProxyStubLifecycleResponse(data, target, message, result);
+            return ProxyStubLifecycleResponse(data, target, message, kind, result);
         }
 
-        ServiceResponseEvent create_response_event(const ProxyAddress& target, uint32_t message
+        ServiceResponseEvent create_response_event(const ProxyAddress& target, uint32_t message, CallType kind
                                                   , ResultType result, uint32_t reserve) const override
         {
-            return ProxyStubLifecycleResponse(target, message, result, reserve);
+            return ProxyStubLifecycleResponse(target, message, kind, result, reserve);
         }
 
         void process_request_event(ServiceRequestEvent& event) override

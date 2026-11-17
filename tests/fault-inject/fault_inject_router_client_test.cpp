@@ -374,7 +374,7 @@ TEST( FaultInjectTest, router_client_reconnects_when_the_system_refuses_to_send_
     AREG_EXPECT_IN_CHILD(
         constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 101u };
         constexpr ITEM_ID STUB{ areg::COOKIE_REMOTE_SERVICE + 102u };
-        constexpr uint32_t REQUEST{ areg::REQUEST_ID_FIRST + 3u };
+        constexpr uint32_t REQUEST{ areg::crc32_calculate("request_refused_send") };
         TestRouter router;
         AREG_CHILD_CHECK( router.open( ) );
         AREG_CHILD_CHECK( start_application( router, COOKIE ) );
@@ -1671,7 +1671,7 @@ namespace
         areg::MessageEnvelope message;
         while ( router.receive( message ) )
         {
-            if ( areg::is_register_message( message ) && ( static_cast<areg::RegistrationAction>( message.call_type( ) ) == areg::RegistrationAction::RegisterProvider ) )
+            if ( areg::is_register_message( message ) && ( static_cast<areg::CallType>( message.call_type( ) ) == areg::CallType::RegisterProvider ) )
             {
                 provider = areg::StubAddress( *message.header( ) );
                 return true;
@@ -1754,7 +1754,7 @@ namespace
         while ( router.receive_raw( header, body ) )
         {
             if ( ( header.messageId == static_cast<uint32_t>( areg::FuncIdRange::SystemServiceRequestRegister ) )
-              && ( static_cast<areg::RegistrationAction>( header.callType ) == areg::RegistrationAction::RegisterConsumer ) )
+              && ( static_cast<areg::CallType>( header.callType ) == areg::CallType::RegisterConsumer ) )
             {
                 return header.source == static_cast<uint32_t>( cookie );
             }

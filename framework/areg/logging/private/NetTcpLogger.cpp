@@ -342,7 +342,6 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
         break;
 
     case areg::FuncIdRange::SystemServiceNotifyRegister:      // fall through
-    case areg::FuncIdRange::ServiceLastId:                    // fall through
     case areg::FuncIdRange::SystemServiceQueryInstances:      // fall through
     case areg::FuncIdRange::SystemServiceRequestRegister:     // fall through
     case areg::FuncIdRange::SystemServiceDisconnect:          // fall through
@@ -360,12 +359,6 @@ void NetTcpLogger::process_received_message(MessageEnvelope & msgReceived, Socke
     case areg::FuncIdRange::ServiceLogMessage:                // fall through
     case areg::FuncIdRange::ServiceLogSourceStateUpdated:     // fall through
     case areg::FuncIdRange::ServiceLogConfigurationRestored:  // fall through
-    case areg::FuncIdRange::AttributeLastId:                  // fall through
-    case areg::FuncIdRange::AttributeFirstId:                 // fall through
-    case areg::FuncIdRange::ResponseLastId:                   // fall through
-    case areg::FuncIdRange::ResponseFirstId:                  // fall through
-    case areg::FuncIdRange::RequestLastId:                    // fall through
-    case areg::FuncIdRange::RequestFirstId:                   // fall through
     case areg::FuncIdRange::EmptyFunctionId:                  // fall through
     case areg::FuncIdRange::SystemServiceNotifyDuplicate:
     default:

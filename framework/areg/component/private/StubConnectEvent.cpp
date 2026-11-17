@@ -26,6 +26,7 @@ StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, areg::Service
                             , stubTarget
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
                             , areg::RequestType::ServiceConnection
+                            , areg::CallType::Undefined
                             , areg::EventType::EventLocalProviderConnect)
 {
     areg::EventHeader* hdr{ header() };
@@ -41,6 +42,7 @@ StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubA
                             , stubTarget
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
                             , areg::RequestType::ClientConnection
+                            , areg::CallType::Undefined
                             , areg::EventType::EventLocalProviderConnect)
 {
     areg::EventHeader* hdr{ header() };

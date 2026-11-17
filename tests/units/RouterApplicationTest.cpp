@@ -80,7 +80,7 @@ namespace
         AREG_CHILD_CHECK(peer.socket.send(areg::wire_data(*header), size) == size);
     }
 
-    void expect_registration(ConnectedPeer& peer, areg::RegistrationAction action, areg::DisconnectReason reason)
+    void expect_registration(ConnectedPeer& peer, areg::CallType action, areg::DisconnectReason reason)
     {
         areg::EventHeader received{};
         AREG_CHILD_CHECK(peer.socket.receive(areg::wire_header(received), areg::WIRE_HEADER_SIZE) == areg::WIRE_HEADER_SIZE);
@@ -346,15 +346,15 @@ TEST(RouterApplicationTest, disconnect_request_releases_only_its_sender)
         consumer.set_source(otherCookie);
         send_to_router(owner, areg::router_register_service(provider, ownerCookie, areg::COOKIE_ROUTER));
         send_to_router(other, areg::router_register_consumer(consumer, otherCookie, areg::COOKIE_ROUTER));
-        expect_registration(owner, areg::RegistrationAction::RegisterConsumer, areg::DisconnectReason::UndefinedReason);
-        expect_registration(other, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason);
+        expect_registration(owner, areg::CallType::RegisterConsumer, areg::DisconnectReason::UndefinedReason);
+        expect_registration(other, areg::CallType::RegisterProvider, areg::DisconnectReason::UndefinedReason);
 
         areg::MessageEnvelope bye{ areg::create_disconnect_request(otherCookie, areg::COOKIE_ROUTER) };
         AREG_CHILD_CHECK(bye.header() != nullptr);
         bye.header()->source = static_cast<uint32_t>(ownerCookie);
         send_to_router(owner, std::move(bye));
 
-        expect_registration(other, areg::RegistrationAction::UnregisterProvider, areg::DisconnectReason::ProviderDisconnected);
+        expect_registration(other, areg::CallType::UnregisterProvider, areg::DisconnectReason::ProviderDisconnected);
         const auto instances = application().communication_controller().instances();
         areg::ConnectedInstance survivor;
         AREG_CHILD_CHECK(instances.size() == 1u && instances.find(otherCookie, survivor));
@@ -365,6 +365,7 @@ TEST(RouterApplicationTest, disconnect_request_releases_only_its_sender)
 /**
  * \brief   System messages the router only accepts are not forwarded, nor is a message that is not
  *          executable, and neither is a connection response without a target; a connection response with a target reaches the target.
+ *          A service interface call is forwarded whatever its message ID is, also an ID equal to a system ID.
  **/
 TEST(RouterApplicationTest, only_executable_messages_with_a_target_are_forwarded)
 {
@@ -386,25 +387,59 @@ TEST(RouterApplicationTest, only_executable_messages_with_a_target_are_forwarded
             return message;
         };
 
-        send_to_router(sender, make(areg::FuncIdRange::ServiceLastId, targetCookie));
+        send_to_router(sender, make(static_cast<areg::FuncIdRange>(areg::SYSTEM_ID_LAST), targetCookie));
+        send_to_router(sender, make(static_cast<areg::FuncIdRange>(0x00ABCDEFu), targetCookie));
         send_to_router(sender, make(areg::FuncIdRange::SystemServiceQueryInstances, targetCookie));
         send_to_router(sender, make(areg::FuncIdRange::SystemServiceNotifyDuplicate, targetCookie));
         send_to_router(sender, make(areg::FuncIdRange::ResponseServiceProviderConnection, areg::TARGET_UNKNOWN));
         send_to_router(sender, make(areg::FuncIdRange::ResponseServiceProviderConnection, targetCookie));
 
-        const auto expect_forwarded = [&](areg::FuncIdRange id)
+        std::vector<uint32_t> systemIds;
+        systemIds.push_back(static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId));
+        systemIds.push_back(static_cast<uint32_t>(areg::FuncIdRange::ComponentCleanup));
+        for (uint32_t id = static_cast<uint32_t>(areg::FuncIdRange::RequestRegisterService); id <= static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate); ++id)
+            systemIds.push_back(id);
+
+        for (uint32_t id : systemIds)
+        {
+            areg::MessageEnvelope call{ make(static_cast<areg::FuncIdRange>(id), targetCookie) };
+            call.header()->eventType = static_cast<uint16_t>(areg::EventType::EventRemoteRequest);
+            call.header()->callType  = static_cast<uint8_t>(areg::CallType::Request);
+            send_to_router(sender, std::move(call));
+        }
+
+        const auto receive_forwarded = [&]() -> areg::EventHeader
         {
             areg::EventHeader received{};
             AREG_CHILD_CHECK(target.socket.receive(areg::wire_header(received), areg::WIRE_HEADER_SIZE) == areg::WIRE_HEADER_SIZE);
-            AREG_CHILD_CHECK(received.messageId == static_cast<uint32_t>(id));
             AREG_CHILD_CHECK(received.source == static_cast<uint32_t>(senderCookie));
             AREG_CHILD_CHECK(received.target == static_cast<uint32_t>(targetCookie));
             std::vector<uint8_t> payload(received.bufHeader.biUsed);
             if (payload.empty() == false)
                 AREG_CHILD_CHECK(target.socket.receive(payload.data(), static_cast<int32_t>(payload.size())) == static_cast<int32_t>(payload.size()));
+            return received;
         };
 
-        expect_forwarded(areg::FuncIdRange::ResponseServiceProviderConnection);
+        // The interface calls keep their order; the system message may come between them.
+        uint32_t connections{ 0u };
+        size_t next{ 0u };
+        for (size_t i = 0u; i <= systemIds.size(); ++i)
+        {
+            const areg::EventHeader received{ receive_forwarded() };
+            if (received.callType == static_cast<uint8_t>(areg::CallType::Request))
+            {
+                AREG_CHILD_CHECK(next < systemIds.size());
+                AREG_CHILD_CHECK(received.messageId == systemIds[next]);
+                ++next;
+            }
+            else
+            {
+                AREG_CHILD_CHECK(received.messageId == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection));
+                ++connections;
+            }
+        }
+
+        AREG_CHILD_CHECK((connections == 1u) && (next == systemIds.size()));
         console.quit();
     );
 }
@@ -449,8 +484,8 @@ TEST(RouterApplicationTest, registration_request_of_an_unknown_type_is_ignored)
             AREG_CHILD_CHECK(other.socket.receive(payload.data(), static_cast<int32_t>(payload.size())) == static_cast<int32_t>(payload.size()));
 
         send_to_router(owner, areg::router_register_service(provider, ownerCookie, areg::COOKIE_ROUTER));
-        expect_registration(owner, areg::RegistrationAction::RegisterConsumer, areg::DisconnectReason::UndefinedReason);
-        expect_registration(other, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason);
+        expect_registration(owner, areg::CallType::RegisterConsumer, areg::DisconnectReason::UndefinedReason);
+        expect_registration(other, areg::CallType::RegisterProvider, areg::DisconnectReason::UndefinedReason);
         console.quit();
     );
 }

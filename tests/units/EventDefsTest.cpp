@@ -338,19 +338,6 @@ TEST(EventDefsTest, event_priority_names_and_order)
     EXPECT_EQ(std::strncmp(areg::as_string(static_cast<areg::EventPriority>(3u)), "ERR:", 4), 0);
 }
 
-TEST(EventDefsTest, event_call_type_names)
-{
-    EXPECT_STREQ(areg::as_string(areg::EventCallType::Undefined), "areg::EventCallType::Undefined");
-    EXPECT_STREQ(areg::as_string(areg::EventCallType::CallLocal), "areg::EventCallType::CallLocal");
-    EXPECT_STREQ(areg::as_string(areg::EventCallType::CallRemote), "areg::EventCallType::CallRemote");
-    EXPECT_STREQ(areg::as_string(areg::EventCallType::CallCustom), "areg::EventCallType::CallCustom");
-    EXPECT_STREQ(areg::as_string(areg::EventCallType::CallService), "areg::EventCallType::CallService");
-    EXPECT_STREQ(areg::as_string(areg::EventCallType::CallServiceLocal), "areg::EventCallType::CallServiceLocal");
-    EXPECT_STREQ(areg::as_string(areg::EventCallType::CallServiceRemote), "areg::EventCallType::CallServiceRemote");
-
-    EXPECT_EQ(std::strncmp(areg::as_string(static_cast<areg::EventCallType>(0x7Fu)), "ERR:", 4), 0);
-}
-
 //////////////////////////////////////////////////////////////////////////
 // 3. Service manager event data
 //////////////////////////////////////////////////////////////////////////

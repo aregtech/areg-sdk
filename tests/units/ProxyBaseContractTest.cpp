@@ -39,15 +39,29 @@ namespace
 {
     using namespace areg;
 
-    constexpr uint32_t REQUESTS[]{ REQUEST_ID_FIRST, REQUEST_ID_FIRST + 1 };
-    constexpr uint32_t RESPONSES[]{ RESPONSE_ID_FIRST };
-    constexpr uint32_t ATTRIBUTES[]{ ATTRIBUTE_ID_FIRST };
-    constexpr uint32_t RESPONSE_MAP[]{ RESPONSE_ID_FIRST, RESPONSE_ID_NONE };
+    constexpr uint32_t REQUESTS[]{ areg::crc32_calculate("request_first"), areg::crc32_calculate("request_second") };
+    constexpr uint32_t RESPONSES[]{ areg::crc32_calculate("response_first") };
+    constexpr uint32_t ATTRIBUTES[]{ areg::crc32_calculate("attribute_Value") };
+    constexpr uint32_t RESPONSE_MAP[]{ RESPONSES[0], RESPONSE_ID_NONE };
     constexpr uint32_t PARAM_COUNTS[]{ 1 };
+
+    //!< The lookup of the test interface.
+    MessageInfo find_contract_message(uint32_t msgId) noexcept
+    {
+        switch (msgId)
+        {
+        case REQUESTS[0]:   return MessageInfo{ 0u, CallType::Request, 0u };
+        case REQUESTS[1]:   return MessageInfo{ 1u, CallType::Request, 0u };
+        case RESPONSES[0]:  return MessageInfo{ 0u, CallType::Response, 1u };
+        case ATTRIBUTES[0]: return MessageInfo{ 0u, CallType::Attribute, 1u };
+        default:            return MessageInfo{ };
+        }
+    }
+
     const InterfaceData INTERFACE
     {
           "ProxyContractService", Version(1, 0, 0), ServiceType::Local
-        , 2, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSE_MAP, PARAM_COUNTS
+        , 2, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSE_MAP, PARAM_COUNTS, &find_contract_message
     };
 
     class ContractListener final : public ProxyListener
@@ -159,17 +173,17 @@ namespace
             return LocalRequestEvent(proxy_address(), stub_address(), request, reserve);
         }
 
-        ServiceRequestEvent create_notification_request(uint32_t message, RequestType type) override
+        ServiceRequestEvent create_notification_request(uint32_t message, RequestType type, CallType /* kind */) override
         {
             mSubscriptions.emplace_back(message, type, mWatched != nullptr ? mWatched->mConnections.size() : 0u);
             return ServiceRequestEvent(MessageEnvelope{});
         }
 
-        ServiceResponseEvent create_request_failed(const ProxyAddress& target, uint32_t message
+        ServiceResponseEvent create_request_failed(const ProxyAddress& target, uint32_t message, CallType kind
                                                   , ResultType reason, const SequenceNumber& sequence) const override
         {
             mFailures.emplace_back(message, reason, sequence);
-            return LocalResponseEvent(target, reason, message, sequence);
+            return LocalResponseEvent(target, reason, message, kind, sequence);
         }
     };
 
@@ -432,7 +446,7 @@ TEST(ProxyBaseContractTest, invalid_request_does_not_allocate_a_sequence_or_list
         ProxyLease proxy(listener, owner);
         ASSERT_NE(nullptr, proxy.pointer());
         ServiceRequestEvent invalid(MessageEnvelope{});
-        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(invalid, &listener));
+        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(invalid, &listener, RESPONSES[0]));
         EXPECT_FALSE(proxy->has_any_listener(RESPONSES[0]));
         EXPECT_TRUE(proxy->mFailures.empty());
     });
@@ -447,8 +461,8 @@ TEST(ProxyBaseContractTest, disconnected_requests_have_distinct_sequences_and_on
         ASSERT_NE(nullptr, proxy.pointer());
         LocalRequestEvent first(proxy->proxy_address(), StubAddress{}, REQUESTS[0]);
         LocalRequestEvent second(proxy->proxy_address(), StubAddress{}, REQUESTS[0]);
-        const SequenceNumber firstSequence = proxy->send_request_event(first, &listener);
-        const SequenceNumber secondSequence = proxy->send_request_event(second, &listener);
+        const SequenceNumber firstSequence = proxy->send_request_event(first, &listener, RESPONSES[0]);
+        const SequenceNumber secondSequence = proxy->send_request_event(second, &listener, RESPONSES[0]);
         EXPECT_NE(firstSequence, secondSequence);
         EXPECT_EQ(firstSequence + 1, secondSequence);
         EXPECT_EQ(firstSequence, first.sequence_number());
@@ -457,7 +471,7 @@ TEST(ProxyBaseContractTest, disconnected_requests_have_distinct_sequences_and_on
         EXPECT_EQ(std::make_tuple(REQUESTS[0], ResultType::ServiceUnavailable, firstSequence), proxy->mFailures[0]);
         EXPECT_EQ(std::make_tuple(REQUESTS[0], ResultType::ServiceUnavailable, secondSequence), proxy->mFailures[1]);
         LocalRequestEvent oneWay(proxy->proxy_address(), StubAddress{}, REQUESTS[1]);
-        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(oneWay, nullptr));
+        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(oneWay, nullptr, RESPONSE_ID_NONE));
         EXPECT_EQ(2u, proxy->mFailures.size());
         proxy->clear_all_notifications(listener);
         EXPECT_FALSE(proxy->has_any_listener(RESPONSES[0]));
@@ -471,7 +485,7 @@ TEST(ProxyBaseContractTest, failure_factory_preserves_target_reason_and_sequence
         ContractListener listener;
         ProxyLease proxy(listener, owner);
         ASSERT_NE(nullptr, proxy.pointer());
-        auto failure = ProxyBase::request_failure_event(proxy->proxy_address(), REQUESTS[0], ResultType::MessageUndelivered, 55);
+        auto failure = ProxyBase::request_failure_event(proxy->proxy_address(), REQUESTS[0], CallType::Request, ResultType::MessageUndelivered, 55);
         ASSERT_TRUE(failure.is_valid());
         EXPECT_EQ(REQUESTS[0], failure.response_id());
         EXPECT_EQ(55u, failure.sequence_number());
@@ -480,7 +494,7 @@ TEST(ProxyBaseContractTest, failure_factory_preserves_target_reason_and_sequence
         EXPECT_FALSE(owner.is_ready());
         EXPECT_FALSE(failure.deliver_event());
         ProxyAddress unknown(INTERFACE, String("ProxyContractUnknown"), owner.name());
-        EXPECT_FALSE(ProxyBase::request_failure_event(unknown, REQUESTS[0], ResultType::ServiceUnavailable, 55).is_valid());
+        EXPECT_FALSE(ProxyBase::request_failure_event(unknown, REQUESTS[0], CallType::Request, ResultType::ServiceUnavailable, 55).is_valid());
     });
 }
 
@@ -706,7 +720,7 @@ TEST(ProxyBaseContractTest, connected_request_to_missing_provider_reports_undeli
         const Channel channel(static_cast<uint32_t>(owner.address()), missing.source(), COOKIE_LOCAL);
         proxy->service_connection_updated(missing, channel, ServiceConnectionState::Connected);
         LocalRequestEvent request(proxy->proxy_address(), missing, REQUESTS[0]);
-        const SequenceNumber sequence = proxy->send_request_event(request, &listener);
+        const SequenceNumber sequence = proxy->send_request_event(request, &listener, RESPONSES[0]);
         EXPECT_NE(SEQUENCE_NUMBER_ANY, sequence);
         ASSERT_EQ(1u, proxy->mFailures.size());
         EXPECT_EQ(std::make_tuple(REQUESTS[0], ResultType::MessageUndelivered, sequence), proxy->mFailures[0]);
@@ -895,14 +909,14 @@ TEST(ProxyBaseContractTest, request_built_from_arguments_carries_them_and_fails_
         ASSERT_NE(nullptr, proxy.pointer());
         SharedBuffer args;
         args << uint32_t{ 0x1234u };
-        const SequenceNumber sequence = proxy->send_request_event(REQUESTS[0], args, &listener);
+        const SequenceNumber sequence = proxy->send_request_event(REQUESTS[0], args, &listener, RESPONSES[0]);
         EXPECT_NE(SEQUENCE_NUMBER_ANY, sequence);
         ASSERT_EQ(1u, proxy->mRequests.size());
         EXPECT_EQ(std::make_pair(REQUESTS[0], args.size_used()), proxy->mRequests[0]);
         ASSERT_EQ(1u, proxy->mFailures.size());
         EXPECT_EQ(std::make_tuple(REQUESTS[0], ResultType::ServiceUnavailable, sequence), proxy->mFailures[0]);
 
-        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(REQUESTS[1], SharedBuffer{}, nullptr));
+        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(REQUESTS[1], SharedBuffer{}, nullptr, RESPONSE_ID_NONE));
         ASSERT_EQ(2u, proxy->mRequests.size());
         EXPECT_EQ(std::make_pair(REQUESTS[1], 0u), proxy->mRequests[1]);
         EXPECT_EQ(1u, proxy->mFailures.size());

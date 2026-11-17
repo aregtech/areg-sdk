@@ -371,6 +371,7 @@ static void route_remote_request(SequenceNumber seqNr)
     areg::EventHeader * hdr{ wire.header() };
     hdr->provider.number = gStubKey.load();
     hdr->messageId       = static_cast<uint32_t>(HelloService::MessageIDs::MsgId_request_hello_service);
+    hdr->callType        = static_cast<uint8_t>(areg::CallType::Request);
     hdr->sequenceNr      = seqNr;
     hdr->source          = REMOTE_COOKIE;
     hdr->consumer.number = REMOTE_MAGIC;
