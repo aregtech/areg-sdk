@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="OrderForward" Version="1.0.0" Category="Public">
+        <Description>Order fixture with one request, its response, one broadcast and one attribute added.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute ID="11" Name="Count" DataType="uint32" Notify="OnChange"/>
+        <Attribute ID="12" Name="Extra" DataType="uint32" Notify="OnChange"/>
+        <Attribute ID="13" Name="Level" DataType="uint32" Notify="OnChange"/>
+        <Attribute ID="14" Name="Mode" DataType="uint32" Notify="OnChange"/>
+    </AttributeList>
+    <MethodList>
+        <Method ID="15" Name="alpha" MethodType="Request" Response="alpha">
+            <ParamList>
+                <Parameter ID="16" Name="a" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="17" Name="beta" MethodType="Request">
+            <ParamList>
+                <Parameter ID="18" Name="b" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="19" Name="delta" MethodType="Request" Response="delta">
+            <ParamList>
+                <Parameter ID="20" Name="d" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="21" Name="gamma" MethodType="Request" Response="gamma">
+            <ParamList>
+                <Parameter ID="22" Name="g" DataType="uint32"/>
+                <Parameter ID="23" Name="h" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="24" Name="alpha" MethodType="Response">
+            <ParamList>
+                <Parameter ID="25" Name="ra" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="26" Name="delta" MethodType="Response">
+            <ParamList>
+                <Parameter ID="27" Name="rd" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="28" Name="gamma" MethodType="Response">
+            <ParamList>
+                <Parameter ID="29" Name="rg" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="30" Name="alpha" MethodType="Broadcast">
+            <ParamList>
+                <Parameter ID="31" Name="ba" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="32" Name="added" MethodType="Broadcast">
+            <ParamList>
+                <Parameter ID="33" Name="bd" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="34" Name="changed" MethodType="Broadcast">
+            <ParamList>
+                <Parameter ID="35" Name="bc" DataType="uint32"/>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>
