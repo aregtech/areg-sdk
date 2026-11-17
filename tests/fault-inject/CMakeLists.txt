@@ -50,6 +50,13 @@ if (AREG_LOGGING)
         "${AREG_FRAMEWORK}/areglogger/client/private/LoggerClient.cpp"
         "${AREG_FRAMEWORK}/areglogger/client/private/ObserverMessageProcessor.cpp"
     )
+    # Private logging helpers are not exported by the shared library.
+    if (AREG_LIB_TYPE STREQUAL "shared")
+        target_sources(${AREG_FAULT_INJECT_TEST} PRIVATE
+            "${AREG_FRAMEWORK}/areg/logging/private/Layouts.cpp"
+            "${AREG_FRAMEWORK}/areg/logging/private/LayoutManager.cpp"
+        )
+    endif()
 endif()
 
 # The consumer of a remote service uses the generated code of example 02.
