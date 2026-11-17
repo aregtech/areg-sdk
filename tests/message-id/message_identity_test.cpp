@@ -167,8 +167,7 @@ TEST(MessageIdentityTest, find_message_knows_no_other_value)
         others.push_back(msgId + 1u);
     }
 
-    others.push_back(static_cast<uint32_t>(areg::FuncIdRange::ComponentCleanup));
-    for (uint32_t sysId = static_cast<uint32_t>(areg::FuncIdRange::RequestRegisterService); sysId <= static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate); ++sysId)
+    for (uint32_t sysId = static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection); sysId <= static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate); ++sysId)
     {
         others.push_back(sysId);
     }

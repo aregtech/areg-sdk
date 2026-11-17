@@ -192,11 +192,6 @@ void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::
         break;
 
     case areg::FuncIdRange::EmptyFunctionId:                  // fall through
-    case areg::FuncIdRange::ComponentCleanup:                 // fall through
-    case areg::FuncIdRange::RequestRegisterService:           // fall through
-    case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
-    case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
-    case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
     case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
     case areg::FuncIdRange::SystemServiceConnect:             // fall through
     case areg::FuncIdRange::SystemServiceDisconnect:          // fall through
@@ -287,17 +282,11 @@ void LogCollectorServerService::on_message_received(const areg::MessageEnvelope 
         break;
 
     case areg::FuncIdRange::SystemServiceNotifyInstances:
-
-    case areg::FuncIdRange::RequestRegisterService:           // fall through
-    case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
-    case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
-    case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
     case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
     case areg::FuncIdRange::SystemServiceNotifyConnection:    // fall through
     case areg::FuncIdRange::SystemServiceRequestRegister:     // fall through
     case areg::FuncIdRange::SystemServiceNotifyRegister:      // fall through
     case areg::FuncIdRange::EmptyFunctionId:                  // fall through
-    case areg::FuncIdRange::ComponentCleanup:                 // fall through
     case areg::FuncIdRange::SystemServiceNotifyDuplicate:
     default:
         break;

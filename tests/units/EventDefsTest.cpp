@@ -54,15 +54,11 @@ namespace
     constexpr uint32_t M_PROV  = bits(EventType::EventToProviderMask);
     constexpr uint32_t M_CONS  = bits(EventType::EventToConsumerMask);
     constexpr uint32_t M_SERV  = bits(EventType::EventToServiceMask);
-    constexpr uint32_t M_SYS   = bits(EventType::EventToSystemMask);
     constexpr uint32_t M_REQ   = bits(EventType::EventRequestMask);
     constexpr uint32_t M_RESP  = bits(EventType::EventResponseMask);
-    constexpr uint32_t M_BCAST = bits(EventType::EventBroadcastMask);
-    constexpr uint32_t M_ATTR  = bits(EventType::EventAttributeMask);
     constexpr uint32_t M_NOTE  = bits(EventType::EventNotifyMask);
     constexpr uint32_t M_CONN  = bits(EventType::EventConnectMask);
     constexpr uint32_t M_CUST  = bits(EventType::EventCustomMask);
-    constexpr uint32_t M_FAIL  = bits(EventType::EventFailureMask);
 
     //!< Every event type except the two without a name (see the disabled test).
     const TypeRow gNamedTypes[] =
@@ -75,47 +71,30 @@ namespace
         , { EventType::EventToProviderMask,        M_PROV,"areg::EventType::EventToProviderMask" }
         , { EventType::EventToConsumerMask,        M_CONS,"areg::EventType::EventToConsumerMask" }
         , { EventType::EventToServiceMask,         M_SERV,"areg::EventType::EventToServiceMask" }
-        , { EventType::EventToSystemMask,          M_SYS, "areg::EventType::EventToSystemMask" }
         , { EventType::EventRequestMask,           M_REQ, "areg::EventType::EventRequestMask" }
         , { EventType::EventResponseMask,          M_RESP,"areg::EventType::EventResponseMask" }
-        , { EventType::EventBroadcastMask,         M_BCAST,"areg::EventType::EventBroadcastMask" }
-        , { EventType::EventAttributeMask,         M_ATTR,"areg::EventType::EventAttributeMask" }
         , { EventType::EventNotifyMask,            M_NOTE,"areg::EventType::EventNotifyMask" }
         , { EventType::EventConnectMask,           M_CONN,"areg::EventType::EventConnectMask" }
         , { EventType::EventCustomMask,            M_CUST,"areg::EventType::EventCustomMask" }
-        , { EventType::EventFailureMask,           M_FAIL,"areg::EventType::EventFailureMask" }
         , { EventType::EventNotifyClient,          M_INT | M_LOC | M_NOTE, "areg::EventType::EventNotifyClient" }
         , { EventType::EventLocalRequest,          M_EXT | M_LOC | M_PROV | M_REQ, "areg::EventType::EventLocalRequest" }
         , { EventType::EventRemoteRequest,         M_EXT | M_REM | M_PROV | M_REQ, "areg::EventType::EventRemoteRequest" }
         , { EventType::EventLocalNotifyRequest,    M_EXT | M_LOC | M_PROV | M_REQ | M_NOTE, "areg::EventType::EventLocalNotifyRequest" }
         , { EventType::EventRemoteNotifyRequest,   M_EXT | M_REM | M_PROV | M_REQ | M_NOTE, "areg::EventType::EventRemoteNotifyRequest" }
-        , { EventType::EventLocalNotifyResponse,   M_EXT | M_LOC | M_PROV | M_REQ | M_RESP | M_NOTE, "areg::EventType::EventLocalNotifyResponse" }
-        , { EventType::EventRemoteNotifyResponse,  M_EXT | M_REM | M_PROV | M_REQ | M_RESP | M_NOTE, "areg::EventType::EventRemoteNotifyResponse" }
-        , { EventType::EventLocalNotifyBroadcast,  M_EXT | M_LOC | M_PROV | M_REQ | M_BCAST | M_NOTE, "areg::EventType::EventLocalNotifyBroadcast" }
-        , { EventType::EventRemoteNotifyBroadcast, M_EXT | M_REM | M_PROV | M_REQ | M_BCAST | M_NOTE, "areg::EventType::EventRemoteNotifyBroadcast" }
-        , { EventType::EventLocalNotifyAttribute,  M_EXT | M_LOC | M_PROV | M_REQ | M_ATTR | M_NOTE, "areg::EventType::EventLocalNotifyAttribute" }
-        , { EventType::EventRemoteNotifyAttribute, M_EXT | M_REM | M_PROV | M_REQ | M_ATTR | M_NOTE, "areg::EventType::EventRemoteNotifyAttribute" }
         , { EventType::EventLocalResponse,         M_EXT | M_LOC | M_CONS | M_RESP, "areg::EventType::EventLocalResponse" }
         , { EventType::EventRemoteResponse,        M_EXT | M_REM | M_CONS | M_RESP, "areg::EventType::EventRemoteResponse" }
-        , { EventType::EventLocalBroadcast,        M_EXT | M_LOC | M_CONS | M_BCAST, "areg::EventType::EventLocalBroadcast" }
-        , { EventType::EventRemoteBroadcast,       M_EXT | M_REM | M_CONS | M_BCAST, "areg::EventType::EventRemoteBroadcast" }
-        , { EventType::EventLocalAttribute,        M_EXT | M_LOC | M_CONS | M_ATTR, "areg::EventType::EventLocalAttribute" }
-        , { EventType::EventRemoteAttribute,       M_EXT | M_REM | M_CONS | M_ATTR, "areg::EventType::EventRemoteAttribute" }
         , { EventType::EventLocalProviderConnect,  M_EXT | M_LOC | M_PROV | M_NOTE | M_CONN, "areg::EventType::EventLocalProviderConnect" }
         , { EventType::EventRemoteProviderConnect, M_EXT | M_REM | M_PROV | M_NOTE | M_CONN, "areg::EventType::EventRemoteProviderConnect" }
         , { EventType::EventLocalConsumerConnect,  M_EXT | M_LOC | M_CONS | M_NOTE | M_CONN, "areg::EventType::EventLocalConsumerConnect" }
         , { EventType::EventRemoteConsumerConnect, M_EXT | M_REM | M_CONS | M_NOTE | M_CONN, "areg::EventType::EventRemoteConsumerConnect" }
         , { EventType::EventCustomInternal,        M_INT | M_LOC | M_CUST, "areg::EventType::EventCustomInternal" }
         , { EventType::EventCustomExternal,        M_EXT | M_LOC | M_CUST, "areg::EventType::EventCustomExternal" }
-        , { EventType::EventLocalRequestFailed,    M_EXT | M_LOC | M_CONS | M_REQ | M_FAIL, "areg::EventType::EventLocalRequestFailed" }
-        , { EventType::EventRemoteRequestFailed,   M_EXT | M_REM | M_CONS | M_REQ | M_FAIL, "areg::EventType::EventRemoteRequestFailed" }
     };
 
     //!< The connection event types, composed as documented.
     const TypeRow gConnectionTypes[] =
     {
-          { EventType::EventLocalConnection,  M_EXT | M_LOC | M_CONS | M_PROV | M_SERV | M_NOTE | M_CONN, "areg::EventType::EventLocalConnection" }
-        , { EventType::EventRemoteConnection, M_EXT | M_REM | M_CONS | M_PROV | M_SERV | M_NOTE | M_CONN, "areg::EventType::EventRemoteConnection" }
+          { EventType::EventRemoteConnection, M_EXT | M_REM | M_CONS | M_PROV | M_SERV | M_NOTE | M_CONN, "areg::EventType::EventRemoteConnection" }
     };
 
     //!< Checks the type is in the set, the set holds the types the predicate must accept.
@@ -205,15 +184,11 @@ TEST(EventDefsTest, mask_predicates_follow_the_masks)
         , { "is_to_provider", [](EventType t) { return areg::is_to_provider(t); }, M_PROV }
         , { "is_to_consumer", [](EventType t) { return areg::is_to_consumer(t); }, M_CONS }
         , { "is_to_service",  [](EventType t) { return areg::is_to_service(t); },  M_SERV }
-        , { "is_to_system",   [](EventType t) { return areg::is_to_system(t); },   M_SYS }
         , { "is_request",     [](EventType t) { return areg::is_request(t); },     M_REQ }
         , { "is_response",    [](EventType t) { return areg::is_response(t); },    M_RESP }
-        , { "is_broadcast",   [](EventType t) { return areg::is_broadcast(t); },   M_BCAST }
-        , { "is_attribute",   [](EventType t) { return areg::is_attribute(t); },   M_ATTR }
         , { "is_notify",      [](EventType t) { return areg::is_notify(t); },      M_NOTE }
         , { "is_connect",     [](EventType t) { return areg::is_connect(t); },     M_CONN }
         , { "is_custom",      [](EventType t) { return areg::is_custom(t); },      M_CUST }
-        , { "is_failure",     [](EventType t) { return areg::is_failure(t); },     M_FAIL }
     };
 
     for (const MaskPredicate& predicate : predicates)
@@ -236,32 +211,11 @@ TEST(EventDefsTest, notify_client_predicate)
                   , { EventType::EventNotifyClient });
 }
 
-TEST(EventDefsTest, notify_response_predicate)
-{
-    check_predicate("is_notify_response", [](EventType t) { return areg::is_notify_response(t); }
-                  , { EventType::EventLocalNotifyResponse, EventType::EventRemoteNotifyResponse });
-}
-
-TEST(EventDefsTest, notify_broadcast_predicate)
-{
-    check_predicate("is_notify_broadcast", [](EventType t) { return areg::is_notify_broadcast(t); }
-                  , { EventType::EventLocalNotifyBroadcast, EventType::EventRemoteNotifyBroadcast });
-}
-
-TEST(EventDefsTest, notify_attribute_predicate)
-{
-    check_predicate("is_notify_attribute", [](EventType t) { return areg::is_notify_attribute(t); }
-                  , { EventType::EventLocalNotifyAttribute, EventType::EventRemoteNotifyAttribute });
-}
-
 TEST(EventDefsTest, request_call_predicate)
 {
     check_predicate("is_request_call", [](EventType t) { return areg::is_request_call(t); }
                   , { EventType::EventLocalRequest, EventType::EventRemoteRequest
-                    , EventType::EventLocalNotifyRequest, EventType::EventRemoteNotifyRequest
-                    , EventType::EventLocalNotifyResponse, EventType::EventRemoteNotifyResponse
-                    , EventType::EventLocalNotifyBroadcast, EventType::EventRemoteNotifyBroadcast
-                    , EventType::EventLocalNotifyAttribute, EventType::EventRemoteNotifyAttribute });
+                    , EventType::EventLocalNotifyRequest, EventType::EventRemoteNotifyRequest });
 }
 
 TEST(EventDefsTest, response_call_predicate)
@@ -270,36 +224,71 @@ TEST(EventDefsTest, response_call_predicate)
                   , { EventType::EventLocalResponse, EventType::EventRemoteResponse });
 }
 
-TEST(EventDefsTest, broadcast_call_predicate)
+TEST(EventDefsTest, notify_request_call_predicate)
 {
-    check_predicate("is_broadcast_call", [](EventType t) { return areg::is_broadcast_call(t); }
-                  , { EventType::EventLocalBroadcast, EventType::EventRemoteBroadcast });
+    check_predicate("is_notify_request_call", [](EventType t) { return areg::is_notify_request_call(t); }
+                  , { EventType::EventLocalNotifyRequest, EventType::EventRemoteNotifyRequest });
 }
 
-TEST(EventDefsTest, attribute_call_predicate)
+/**
+ * \brief   A broadcast, an attribute update and a request failure travel on the response channel
+ *          and differ by the call type; a subscription travels on the notify request channel.
+ *          Each predicate accepts only its channel with its call type.
+ **/
+TEST(EventDefsTest, kind_predicates_need_the_channel_and_the_call_type)
 {
-    check_predicate("is_attribute_call", [](EventType t) { return areg::is_attribute_call(t); }
-                  , { EventType::EventLocalAttribute, EventType::EventRemoteAttribute });
+    const std::set<EventType> responses{ EventType::EventLocalResponse, EventType::EventRemoteResponse };
+    const std::set<EventType> notifies { EventType::EventLocalNotifyRequest, EventType::EventRemoteNotifyRequest };
+
+    struct KindPredicate
+    {
+        const char*                 name;
+        bool                        (*pred)(EventType, areg::CallType);
+        const std::set<EventType>&  channel;
+        areg::CallType              kind;
+    };
+
+    const KindPredicate predicates[] =
+    {
+          { "is_broadcast_call",   [](EventType t, areg::CallType c) { return areg::is_broadcast_call(t, c); },   responses, areg::CallType::Broadcast }
+        , { "is_attribute_call",   [](EventType t, areg::CallType c) { return areg::is_attribute_call(t, c); },   responses, areg::CallType::Attribute }
+        , { "is_request_failure",  [](EventType t, areg::CallType c) { return areg::is_request_failure(t, c); },  responses, areg::CallType::Request }
+        , { "is_notify_response",  [](EventType t, areg::CallType c) { return areg::is_notify_response(t, c); },  notifies,  areg::CallType::Response }
+        , { "is_notify_broadcast", [](EventType t, areg::CallType c) { return areg::is_notify_broadcast(t, c); }, notifies,  areg::CallType::Broadcast }
+        , { "is_notify_attribute", [](EventType t, areg::CallType c) { return areg::is_notify_attribute(t, c); }, notifies,  areg::CallType::Attribute }
+    };
+
+    for (const KindPredicate& predicate : predicates)
+    {
+        for (uint32_t value = 0u; value <= 0xFFu; ++value)
+        {
+            const areg::CallType callType{ static_cast<areg::CallType>(value) };
+            for (const TypeRow& row : gNamedTypes)
+            {
+                const bool expected{ contains(predicate.channel, row.type) && (callType == predicate.kind) };
+                EXPECT_EQ(predicate.pred(row.type, callType), expected) << predicate.name << " of " << row.name << ", call type " << value;
+            }
+
+            for (const TypeRow& row : gConnectionTypes)
+            {
+                EXPECT_FALSE(predicate.pred(row.type, callType)) << predicate.name << " of " << row.name << ", call type " << value;
+            }
+        }
+    }
 }
 
 TEST(EventDefsTest, provider_connect_predicate)
 {
     check_predicate("is_provider_connect", [](EventType t) { return areg::is_provider_connect(t); }
                   , { EventType::EventLocalProviderConnect, EventType::EventRemoteProviderConnect
-                    , EventType::EventLocalConnection, EventType::EventRemoteConnection });
+                    , EventType::EventRemoteConnection });
 }
 
 TEST(EventDefsTest, consumer_connect_predicate)
 {
     check_predicate("is_consumer_connect", [](EventType t) { return areg::is_consumer_connect(t); }
                   , { EventType::EventLocalConsumerConnect, EventType::EventRemoteConsumerConnect
-                    , EventType::EventLocalConnection, EventType::EventRemoteConnection });
-}
-
-TEST(EventDefsTest, request_failure_predicate)
-{
-    check_predicate("is_request_failure", [](EventType t) { return areg::is_request_failure(t); }
-                  , { EventType::EventLocalRequestFailed, EventType::EventRemoteRequestFailed });
+                    , EventType::EventRemoteConnection });
 }
 
 TEST(EventDefsTest, matching_any_and_exact)

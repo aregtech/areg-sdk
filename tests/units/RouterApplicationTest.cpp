@@ -396,8 +396,7 @@ TEST(RouterApplicationTest, only_executable_messages_with_a_target_are_forwarded
 
         std::vector<uint32_t> systemIds;
         systemIds.push_back(static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId));
-        systemIds.push_back(static_cast<uint32_t>(areg::FuncIdRange::ComponentCleanup));
-        for (uint32_t id = static_cast<uint32_t>(areg::FuncIdRange::RequestRegisterService); id <= static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate); ++id)
+        for (uint32_t id = static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection); id <= static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate); ++id)
             systemIds.push_back(id);
 
         for (uint32_t id : systemIds)

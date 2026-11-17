@@ -822,14 +822,15 @@ protected:
 
     /**
      * \brief   Notifies the caller of a failed request and drops its waiting entry. The state of
-     *          the response of the request becomes invalid. An ID that is not a request of the
-     *          interface is logged and ignored.
+     *          the response of the request becomes invalid.
      *
      * \param   reqId       The ID of the failed request.
+     * \param   respId      The ID of the response of the request.
+     * \param   respIndex   The index of the response in the response list of the interface.
      * \param   result      The failure.
      * \param   seqNr       The sequence number of the failed call.
      **/
-    void notify_request_failed( uint32_t reqId, areg::ResultType result, const SequenceNumber & seqNr );
+    void notify_request_failed( uint32_t reqId, uint32_t respId, uint32_t respIndex, areg::ResultType result, const SequenceNumber & seqNr );
 
     /**
      * \brief   Sends a request event to the stub with serialized arguments and an optional response listener.

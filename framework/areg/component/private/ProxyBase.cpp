@@ -975,24 +975,9 @@ void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, cons
     _notify_listeners(respId, respId, result, seqNrToSearch);
 }
 
-void ProxyBase::notify_request_failed( uint32_t reqId, areg::ResultType result, const SequenceNumber & seqNr )
+void ProxyBase::notify_request_failed( uint32_t reqId, uint32_t respId, uint32_t respIndex, areg::ResultType result, const SequenceNumber & seqNr )
 {
-    const areg::InterfaceData & ifData{ mProxyData.mIfData };
-    const areg::MessageInfo info{ ifData.idFind(reqId) };
-    if ((info.miKind != areg::CallType::Request) || (info.miIndex >= ifData.idRequestCount))
-    {
-        LOG_SCOPE(areg_component_ProxyBase, notify_listeners);
-        LOG_WARN("Proxy [ %s ] received a failure of the unknown request [ %u ], it is dropped"
-                    , ProxyAddress::to_path(mProxyAddress).as_string()
-                    , reqId);
-        return;
-    }
-
-    const uint32_t respId{ ifData.idRequestToResponseMap[info.miIndex] };
-    if (respId == areg::RESPONSE_ID_NONE)
-        return;
-
-    mProxyData.set_data_state(respId, areg::DataState::DataIsInvalid);
+    mProxyData.set_param_state(respIndex, areg::DataState::DataIsInvalid);
     _notify_listeners(respId, reqId, result, seqNr);
 }
 

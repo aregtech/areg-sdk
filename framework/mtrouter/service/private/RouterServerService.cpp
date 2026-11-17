@@ -164,11 +164,6 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
 
     case areg::FuncIdRange::SystemServiceQueryInstances:        // fall through
     case areg::FuncIdRange::SystemServiceConnect:               // fall through
-    case areg::FuncIdRange::RequestServiceProviderConnection:   // fall through
-    case areg::FuncIdRange::ResponseServiceProviderVersion:     // fall through
-    case areg::FuncIdRange::RequestServiceProviderVersion:      // fall through
-    case areg::FuncIdRange::RequestRegisterService:             // fall through
-    case areg::FuncIdRange::ComponentCleanup:                   // fall through
     case areg::FuncIdRange::SystemServiceNotifyRegister:        // fall through
     case areg::FuncIdRange::SystemServiceNotifyConnection:      // fall through
     case areg::FuncIdRange::SystemServiceNotifyInstances:       // fall through

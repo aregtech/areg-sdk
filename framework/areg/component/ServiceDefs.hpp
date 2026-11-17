@@ -321,23 +321,10 @@ inline constexpr bool is_unique_interface_id(const uint32_t (&list)[N], uint32_t
  **/
 enum class FuncIdRange  : uint32_t
 {
-    // Reserved system calls.
-
     //!< Empty function ID.
       EmptyFunctionId       = RESPONSE_ID_NONE
-    //!< A call to remove pointer in a component thread context.
-    , ComponentCleanup      = 0x00000100
-
-    //!< The service registration call. Service calls should start from this ID.
-    , RequestRegisterService= 0x00008000
-    //!< Sent by client to Stub to get supported version information
-    , RequestServiceProviderVersion
-    //!< Sent by Stub to clients as a reply to get service version and notifies interface implemented version
-    , ResponseServiceProviderVersion
-    //!< Sent by client or stub to request service manager connection.
-    , RequestServiceProviderConnection
     //!< Sent by service manager to targets (client or stub) to notify connection status update.
-    , ResponseServiceProviderConnection
+    , ResponseServiceProviderConnection = 0x00008004
     //!< Called by service manager when connecting Remove Service like message router or log collector (handshake procedure)
     , SystemServiceConnect
     //!< Called by service manager when disconnecting Remove Service like message router or log collector (graceful shutdown procedure)
@@ -833,7 +820,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    areg::DataState             mImplVersion;   //!< Implementation version
     const areg::InterfaceData&  mIfData;        //!< Service Interface data
     areg::AttrState             mAttrState;     //!< Table of attribute states
     areg::ParamState            mParamState;    //!< Table of response parameter state
@@ -1113,8 +1099,7 @@ inline void areg::ParameterArray::reset(uint32_t whichParam) noexcept
 //////////////////////////////////////////////////////////////////////////
 
 inline areg::ProxyData::ProxyData(const areg::InterfaceData& ifData)
-    : mImplVersion(areg::DataState::DataIsUnavailable)
-    , mIfData     (ifData)
+    : mIfData     (ifData)
     , mAttrState  (static_cast<uint32_t>(ifData.idAttributeCount))
     , mParamState (ifData)
 {
@@ -1123,7 +1108,6 @@ inline areg::ProxyData::ProxyData(const areg::InterfaceData& ifData)
 
 inline void areg::ProxyData::reset() noexcept
 {
-    mImplVersion = areg::DataState::DataIsUnavailable;
     mAttrState.reset();
     mParamState.reset();
 }
@@ -1434,16 +1418,6 @@ inline constexpr const char* areg::as_string( areg::FuncIdRange value ) noexcept
     {
     case areg::FuncIdRange::EmptyFunctionId:
         return "areg::FuncIdRange::EmptyFunctionId";
-    case areg::FuncIdRange::ComponentCleanup:
-        return "areg::FuncIdRange::ComponentCleanup";
-    case areg::FuncIdRange::RequestRegisterService:
-        return "areg::FuncIdRange::RequestRegisterService";
-    case areg::FuncIdRange::RequestServiceProviderVersion:
-        return "areg::FuncIdRange::RequestServiceProviderVersion";
-    case areg::FuncIdRange::ResponseServiceProviderVersion:
-        return "areg::FuncIdRange::ResponseServiceProviderVersion";
-    case areg::FuncIdRange::RequestServiceProviderConnection:
-        return "areg::FuncIdRange::RequestServiceProviderConnection";
     case areg::FuncIdRange::ResponseServiceProviderConnection:
         return "areg::FuncIdRange::ResponseServiceProviderConnection";
     case areg::FuncIdRange::SystemServiceConnect:

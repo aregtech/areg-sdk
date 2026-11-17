@@ -9,7 +9,7 @@
  *   shared-error-response  error_request(done) of a waiting second: request_second_failed(RequestError)
  *   shared-unavailable     second called with no provider: request_second_failed(ServiceUnavailable)
  *   unknown-request        a request ID the interface does not have leaves the provider serving
- *   unsupported-request    a consumer of a newer interface calls a request the provider does not have:
+ *   unsupported-request    a foreign proxy calls a request ID the provider does not have:
  *                          the call fails once with RequestUnsupported and its own sequence number
  *   remove-all             after stop_all_notifications() the provider sends no attribute update
  *
@@ -60,24 +60,24 @@ namespace
 
     enum class Case : uint32_t { Busy, Cancel, ErrorRequest, ErrorResponse, Unavailable, Unknown, RemoveAll, Unsupported };
 
-    constexpr char const    _modelNewer[]   { "MiModelNewer" };
-    constexpr char const    _newerThread[]  { "MiNewerThread" };
-    constexpr char const    _newerRole[]    { "MiNewerConsumer" };
-    constexpr char const    _newerProviderThread[]{ "MiNewerProviderThread" };
-    constexpr char const    _newerProvider[]{ "MiNewerProvider" };
+    constexpr char const    _modelForeign[]   { "MiModelForeign" };
+    constexpr char const    _foreignThread[]  { "MiForeignThread" };
+    constexpr char const    _foreignRole[]    { "MiForeignConsumer" };
+    constexpr char const    _foreignProviderThread[]{ "MiForeignProviderThread" };
+    constexpr char const    _foreignProvider[]{ "MiForeignProvider" };
 
-    //!< The entries of a newer SharedResponse: sync, and a request with a response the provider does not have.
+    //!< The entries a foreign proxy sends: sync, and a request with a response the provider does not have.
     constexpr uint32_t      REQ_SYNC        { static_cast<uint32_t>(SharedResponse::MessageIDs::MsgId_request_sync) };
     constexpr uint32_t      RESP_SYNCED     { static_cast<uint32_t>(SharedResponse::MessageIDs::MsgId_response_synced) };
     constexpr uint32_t      REQ_ADDED       { areg::crc32_calculate("request_added") };
     constexpr uint32_t      RESP_ADDED      { areg::crc32_calculate("response_added") };
-    constexpr uint32_t      NEWER_REQUESTS[]    { REQ_SYNC, REQ_ADDED };
-    constexpr uint32_t      NEWER_RESPONSES[]   { RESP_SYNCED, RESP_ADDED };
-    constexpr uint32_t      NEWER_PARAMS[]      { 1u, 0u };
-    static_assert(areg::is_unique_interface_id(NEWER_REQUESTS, REQ_ADDED) && areg::is_unique_interface_id(NEWER_RESPONSES, RESP_ADDED), "the added entries are interface ids");
+    constexpr uint32_t      FOREIGN_REQUESTS[]    { REQ_SYNC, REQ_ADDED };
+    constexpr uint32_t      FOREIGN_RESPONSES[]   { RESP_SYNCED, RESP_ADDED };
+    constexpr uint32_t      FOREIGN_PARAMS[]      { 1u, 0u };
+    static_assert(areg::is_unique_interface_id(FOREIGN_REQUESTS, REQ_ADDED) && areg::is_unique_interface_id(FOREIGN_RESPONSES, RESP_ADDED), "the added entries are interface ids");
 
-    //!< The lookup of the newer interface.
-    areg::MessageInfo find_newer_message(uint32_t msgId) noexcept
+    //!< The lookup of the foreign interface.
+    areg::MessageInfo find_foreign_message(uint32_t msgId) noexcept
     {
         switch (msgId)
         {
@@ -89,19 +89,19 @@ namespace
         }
     }
 
-    const areg::InterfaceData & newer_interface()
+    const areg::InterfaceData & foreign_interface()
     {
         static const areg::InterfaceData ifData
         {
               SharedResponse::ServiceName, SharedResponse::InterfaceVersion, SharedResponse::interface_data().idServiceType
-            , 2u, 2u, 0u, NEWER_REQUESTS, NEWER_RESPONSES, nullptr, NEWER_RESPONSES, NEWER_PARAMS, &find_newer_message
+            , 2u, 2u, 0u, FOREIGN_REQUESTS, FOREIGN_RESPONSES, nullptr, FOREIGN_RESPONSES, FOREIGN_PARAMS, &find_foreign_message
         };
 
         return ifData;
     }
 
     std::atomic_uint32_t    gUnsupported    { 0 };  //!< RequestUnsupported failures of the added request.
-    std::atomic_uint32_t    gOtherFailures  { 0 };  //!< any other failure seen by the newer consumer.
+    std::atomic_uint32_t    gOtherFailures  { 0 };  //!< any other failure seen by the foreign consumer.
     std::atomic<SequenceNumber> gAddedSeq   { 0 };  //!< sequence number of the added request.
     std::atomic<SequenceNumber> gFailedSeq  { 0 };  //!< sequence number of its failure.
     std::atomic_bool        gAddedLeft      { true };   //!< the proxy still had a listener of the added response.
@@ -338,16 +338,16 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// Consumer of a newer interface
+// Consumer with a foreign interface
 //////////////////////////////////////////////////////////////////////////
 
-//!< A proxy of SharedResponse built from the newer interface data.
-class NewerProxy final : public areg::ProxyBase
+//!< A proxy of SharedResponse built from foreign interface data.
+class ForeignProxy final : public areg::ProxyBase
 {
 public:
     static areg::ProxyBase * create(const areg::String & role, areg::DispatcherThread * owner)
     {
-        return new NewerProxy(role, owner);
+        return new ForeignProxy(role, owner);
     }
 
     SequenceNumber request(uint32_t reqId, uint32_t respId, areg::NotificationConsumer & caller)
@@ -361,18 +361,23 @@ public:
     }
 
 protected:
-    NewerProxy(const areg::String & role, areg::DispatcherThread * owner)
-        : areg::ProxyBase(role, newer_interface(), owner)
+    ForeignProxy(const areg::String & role, areg::DispatcherThread * owner)
+        : areg::ProxyBase(role, foreign_interface(), owner)
     {
     }
 
     void process_response_event(areg::ServiceResponseEvent & eventElem) override
     {
         const areg::ResultType result{ static_cast<areg::ResultType>(eventElem.envelope().result()) };
-        if (eventElem.call_kind() == areg::CallType::Request)
-            notify_request_failed(eventElem.response_id(), result, eventElem.sequence_number());
+        const uint32_t msgId{ eventElem.response_id() };
+        if (eventElem.call_kind() != areg::CallType::Request)
+            notify_listeners(msgId, result, eventElem.sequence_number());
+        else if (msgId == REQ_ADDED)
+            notify_request_failed(REQ_ADDED, RESP_ADDED, 1u, result, eventElem.sequence_number());
+        else if (msgId == REQ_SYNC)
+            notify_request_failed(REQ_SYNC, RESP_SYNCED, 0u, result, eventElem.sequence_number());
         else
-            notify_listeners(eventElem.response_id(), result, eventElem.sequence_number());
+            gOtherFailures.fetch_add(1u);
     }
 
     void process_custom_event(areg::Event &) override
@@ -422,19 +427,19 @@ protected:
     }
 };
 
-//!< Calls the added request, then sync, through the newer proxy.
-class MiNewerConsumer final : public areg::Component
+//!< Calls the added request, then sync, through the foreign proxy.
+class MiForeignConsumer final : public areg::Component
                             , public areg::ProxyListener
 {
 public:
-    MiNewerConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    MiForeignConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component   ( entry, owner )
         , areg::ProxyListener( )
-        , mProxy            ( areg::ProxyBase::acquire_proxy(areg::String(_newerProvider), newer_interface(), *this, &NewerProxy::create, owner) )
+        , mProxy            ( areg::ProxyBase::acquire_proxy(areg::String(_foreignProvider), foreign_interface(), *this, &ForeignProxy::create, owner) )
     {
     }
 
-    ~MiNewerConsumer() override
+    ~MiForeignConsumer() override
     {
         if (mProxy != nullptr)
             mProxy->free_proxy(*this);
@@ -477,9 +482,9 @@ protected:
     }
 
 private:
-    NewerProxy & proxy()
+    ForeignProxy & proxy()
     {
-        return static_cast<NewerProxy &>(*mProxy);
+        return static_cast<ForeignProxy &>(*mProxy);
     }
 
     std::shared_ptr<areg::ProxyBase> mProxy;
@@ -506,20 +511,20 @@ BEGIN_MODEL(_model)
 END_MODEL(_model)
 }
 
-namespace mi_model_newer
+namespace mi_model_foreign
 {
-BEGIN_MODEL(_modelNewer)
-    BEGIN_REGISTER_THREAD(_newerProviderThread)
-        BEGIN_REGISTER_COMPONENT(_newerProvider, MiProvider)
+BEGIN_MODEL(_modelForeign)
+    BEGIN_REGISTER_THREAD(_foreignProviderThread)
+        BEGIN_REGISTER_COMPONENT(_foreignProvider, MiProvider)
             REGISTER_IMPLEMENT_SERVICE(SharedResponse::ServiceName, SharedResponse::InterfaceVersion)
-        END_REGISTER_COMPONENT(_newerProvider)
-    END_REGISTER_THREAD(_newerProviderThread)
+        END_REGISTER_COMPONENT(_foreignProvider)
+    END_REGISTER_THREAD(_foreignProviderThread)
 
-    BEGIN_REGISTER_THREAD(_newerThread)
-        BEGIN_REGISTER_COMPONENT(_newerRole, MiNewerConsumer)
-        END_REGISTER_COMPONENT(_newerRole)
-    END_REGISTER_THREAD(_newerThread)
-END_MODEL(_modelNewer)
+    BEGIN_REGISTER_THREAD(_foreignThread)
+        BEGIN_REGISTER_COMPONENT(_foreignRole, MiForeignConsumer)
+        END_REGISTER_COMPONENT(_foreignRole)
+    END_REGISTER_THREAD(_foreignThread)
+END_MODEL(_modelForeign)
 }
 
 namespace mi_model_alone
@@ -589,7 +594,7 @@ int main(int argc, char * argv[])
     }
 
     gCase.store(selected->which);
-    const char * model{ selected->which == Case::Unavailable ? _modelAlone : (selected->which == Case::Unsupported ? _modelNewer : _model) };
+    const char * model{ selected->which == Case::Unavailable ? _modelAlone : (selected->which == Case::Unsupported ? _modelForeign : _model) };
     areg::Application::setup(false, true, false, true, false, nullptr);
     bool ok{ areg::Application::load_model(model) };
     if (ok)

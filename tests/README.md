@@ -46,6 +46,7 @@ Built with `-DAREG_TESTS=ON` (the default). "ctest" says whether `ctest` runs it
 | `internal-events/` | Internal events sent outside a dispatch and from foreign threads | always | yes |
 | `stub-teardown/` | Service events routed from a foreign thread while the target is loaded, unloaded, deleted, created | always | yes |
 | `router-io/` | The router service in the test process, driven by raw TCP clients, per case and pool size | always | yes |
+| `message-id/` | Generated message IDs: identity, requests sharing one response, unknown IDs, `stop_all_notifications()`; `areg-message-id-rate` measures | always | yes, except the rate |
 | `log-observer/` | The log observer C API and `LogObserverBase` against a real `logcollector` and log sources started as child processes; an application linking only `areglogger` | logging on | yes |
 | `client-stop/` | A router client stopped in every way an application can, against a fake router | always | yes |
 | `client-link/` | A client built without LTO links and finds every devirtualized target | shared `areg` only | yes |

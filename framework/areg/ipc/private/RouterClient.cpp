@@ -458,11 +458,6 @@ void RouterClient::process_received_message( MessageEnvelope & msgReceived, Sock
     case areg::FuncIdRange::SystemServiceDisconnect:            // fall through
     case areg::FuncIdRange::SystemServiceConnect:               // fall through
     case areg::FuncIdRange::ResponseServiceProviderConnection:  // fall through
-    case areg::FuncIdRange::RequestServiceProviderConnection:   // fall through
-    case areg::FuncIdRange::ResponseServiceProviderVersion:     // fall through
-    case areg::FuncIdRange::RequestServiceProviderVersion:      // fall through
-    case areg::FuncIdRange::RequestRegisterService:             // fall through
-    case areg::FuncIdRange::ComponentCleanup:                   // fall through
     case areg::FuncIdRange::SystemServiceNotifyInstances:       // fall through
     case areg::FuncIdRange::ServiceLogRegisterScopes:           // fall through
     case areg::FuncIdRange::ServiceLogUpdateScopes:             // fall through

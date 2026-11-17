@@ -215,11 +215,6 @@ TEST(ServiceDefsTest, function_id_names)
     static const NameRow<areg::FuncIdRange> table[] =
     {
           { areg::FuncIdRange::EmptyFunctionId,                 "areg::FuncIdRange::EmptyFunctionId" }
-        , { areg::FuncIdRange::ComponentCleanup,                "areg::FuncIdRange::ComponentCleanup" }
-        , { areg::FuncIdRange::RequestRegisterService,          "areg::FuncIdRange::RequestRegisterService" }
-        , { areg::FuncIdRange::RequestServiceProviderVersion,   "areg::FuncIdRange::RequestServiceProviderVersion" }
-        , { areg::FuncIdRange::ResponseServiceProviderVersion,  "areg::FuncIdRange::ResponseServiceProviderVersion" }
-        , { areg::FuncIdRange::RequestServiceProviderConnection,"areg::FuncIdRange::RequestServiceProviderConnection" }
         , { areg::FuncIdRange::ResponseServiceProviderConnection,"areg::FuncIdRange::ResponseServiceProviderConnection" }
         , { areg::FuncIdRange::SystemServiceConnect,            "areg::FuncIdRange::SystemServiceConnect" }
         , { areg::FuncIdRange::SystemServiceDisconnect,         "areg::FuncIdRange::SystemServiceDisconnect" }
@@ -261,8 +256,8 @@ TEST(ServiceDefsTest, system_ids_are_in_the_reserved_range)
 {
     EXPECT_EQ(areg::RESPONSE_ID_NONE, 0u);
     EXPECT_EQ(static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId), 0u);
-    EXPECT_EQ(static_cast<uint32_t>(areg::FuncIdRange::RequestRegisterService), 0x8000u);
-    for (uint32_t id = static_cast<uint32_t>(areg::FuncIdRange::RequestRegisterService); id <= static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate); ++id)
+    EXPECT_EQ(static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection), 0x8004u);
+    for (uint32_t id = static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection); id <= static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate); ++id)
     {
         EXPECT_LE(id, areg::SYSTEM_ID_LAST);
         EXPECT_FALSE(areg::is_interface_id(id));
@@ -630,7 +625,6 @@ TEST(ServiceDefsTest, proxy_data_starts_unavailable)
 {
     areg::ProxyData data(test_interface());
 
-    EXPECT_EQ(data.mImplVersion, areg::DataState::DataIsUnavailable);
     EXPECT_EQ(data.attribute_state(ATTR_A), areg::DataState::DataIsUnavailable);
     EXPECT_EQ(data.attribute_state(ATTR_B), areg::DataState::DataIsUnavailable);
     EXPECT_EQ(data.param_state(RESP_A), areg::DataState::DataIsUnavailable);
@@ -679,11 +673,9 @@ TEST(ServiceDefsTest, proxy_data_reset)
     areg::ProxyData data(test_interface());
     data.set_data_state(ATTR_A, areg::DataState::DataIsOK);
     data.set_data_state(RESP_C, areg::DataState::DataIsInvalid);
-    data.mImplVersion = areg::DataState::DataIsOK;
 
     data.reset();
 
-    EXPECT_EQ(data.mImplVersion, areg::DataState::DataIsUnavailable);
     EXPECT_EQ(data.attribute_state(ATTR_A), areg::DataState::DataIsUnavailable);
     EXPECT_EQ(data.param_state(RESP_C), areg::DataState::DataIsUnavailable);
 }

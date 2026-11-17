@@ -769,11 +769,6 @@ void LoggerClient::process_received_message(MessageEnvelope& msgReceived, Socket
         case areg::FuncIdRange::SystemServiceDisconnect:          // fall through
         case areg::FuncIdRange::SystemServiceConnect:             // fall through
         case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
-        case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
-        case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
-        case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
-        case areg::FuncIdRange::RequestRegisterService:           // fall through
-        case areg::FuncIdRange::ComponentCleanup:                 // fall through
         case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
         case areg::FuncIdRange::EmptyFunctionId:                  // fall through
         case areg::FuncIdRange::ServiceLogUpdateScopes:           // fall through

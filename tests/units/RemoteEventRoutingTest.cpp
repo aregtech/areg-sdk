@@ -430,21 +430,6 @@ TEST(ProxyEventRoutingTest, local_and_remote_responses_filter_the_target_identit
     verify_response_family(areg::EventType::EventLocalResponse, areg::EventType::EventRemoteResponse, RESPONSE_ID);
 }
 
-TEST(ProxyEventRoutingTest, local_and_remote_broadcasts_filter_the_target_identity)
-{
-    verify_response_family(areg::EventType::EventLocalBroadcast, areg::EventType::EventRemoteBroadcast, RESPONSE_ID);
-}
-
-TEST(ProxyEventRoutingTest, local_and_remote_attributes_filter_the_target_identity)
-{
-    verify_response_family(areg::EventType::EventLocalAttribute, areg::EventType::EventRemoteAttribute, ATTRIBUTE_ID);
-}
-
-TEST(ProxyEventRoutingTest, local_and_remote_failures_filter_the_target_identity)
-{
-    verify_response_family(areg::EventType::EventLocalRequestFailed, areg::EventType::EventRemoteRequestFailed, REQUEST_ID);
-}
-
 TEST(ProxyEventRoutingTest, connection_events_reconstruct_local_and_remote_return_channels)
 {
     const areg::ProxyAddress proxy{ proxy_address() };
@@ -489,22 +474,69 @@ TEST(ProxyEventRoutingTest, custom_generic_and_unknown_consumer_events_have_dist
     EXPECT_TRUE(receiver.mTypes.empty());
 }
 
+/**
+ * \brief   Events built by the framework answer the kind queries by their channel and call type:
+ *          a response, a broadcast, an attribute update and a request failure on the response
+ *          channel, a subscription on the notify request channel.
+ **/
+TEST(EventApiTest, kind_queries_of_built_events_follow_the_call_type)
+{
+    struct Kinds
+    {
+        bool broadcast;
+        bool attribute;
+        bool failure;
+        bool notifyResponse;
+        bool notifyBroadcast;
+        bool notifyAttribute;
+    };
+
+    const auto check = [](const areg::Event & event, const Kinds & expected, const char * what)
+        {
+            EXPECT_EQ(event.is_broadcast_call(),      expected.broadcast)       << what;
+            EXPECT_EQ(event.is_attribute_call(),      expected.attribute)       << what;
+            EXPECT_EQ(event.is_request_failed_call(), expected.failure)         << what;
+            EXPECT_EQ(event.is_notify_response(),     expected.notifyResponse)  << what;
+            EXPECT_EQ(event.is_notify_broadcast(),    expected.notifyBroadcast) << what;
+            EXPECT_EQ(event.is_notify_attribute(),    expected.notifyAttribute) << what;
+        };
+
+    const areg::ProxyAddress proxy{ proxy_address() };
+    const areg::StubAddress stub{ stub_address() };
+    for (areg::EventType type : { areg::EventType::EventLocalResponse, areg::EventType::EventRemoteResponse })
+    {
+        check(areg::ServiceResponseEvent(proxy, areg::ResultType::RequestOK, RESPONSE_ID, areg::CallType::Response, type, SEQUENCE)
+            , { false, false, false, false, false, false }, "response");
+        check(areg::ServiceResponseEvent(proxy, areg::ResultType::DataOK, RESPONSE_ID, areg::CallType::Broadcast, type, SEQUENCE)
+            , { true, false, false, false, false, false }, "broadcast");
+        check(areg::ServiceResponseEvent(proxy, areg::ResultType::DataOK, ATTRIBUTE_ID, areg::CallType::Attribute, type, SEQUENCE)
+            , { false, true, false, false, false, false }, "attribute update");
+        check(areg::ServiceResponseEvent(proxy, areg::ResultType::RequestBusy, REQUEST_ID, areg::CallType::Request, type, SEQUENCE)
+            , { false, false, true, false, false, false }, "request failure");
+    }
+
+    check(areg::LocalNotifyRequestEvent(proxy, stub, RESPONSE_ID, areg::RequestType::StartNotify, areg::CallType::Response)
+        , { false, false, false, true, false, false }, "local response subscription");
+    check(areg::RemoteNotifyRequestEvent(proxy, stub, RESPONSE_ID, areg::RequestType::StopNotify, areg::CallType::Broadcast)
+        , { false, false, false, false, true, false }, "remote broadcast subscription");
+    check(areg::LocalNotifyRequestEvent(proxy, stub, ATTRIBUTE_ID, areg::RequestType::StartNotify, areg::CallType::Attribute)
+        , { false, false, false, false, false, true }, "local attribute subscription");
+    check(areg::RemoteNotifyRequestEvent(proxy, stub, static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId), areg::RequestType::RemoveAllNotify, areg::CallType::Interface)
+        , { false, false, false, false, false, false }, "removal of all subscriptions");
+    check(areg::LocalRequestEvent(proxy, stub, REQUEST_ID)
+        , { false, false, false, false, false, false }, "request");
+}
+
 TEST(EventApiTest, type_queries_agree_with_the_event_type_and_an_empty_event_answers_no)
 {
     constexpr areg::EventType TYPES[]
     {
           areg::EventType::EventNotifyClient, areg::EventType::EventLocalRequest, areg::EventType::EventRemoteRequest
         , areg::EventType::EventLocalNotifyRequest, areg::EventType::EventRemoteNotifyRequest
-        , areg::EventType::EventLocalNotifyResponse, areg::EventType::EventRemoteNotifyResponse
-        , areg::EventType::EventLocalNotifyBroadcast, areg::EventType::EventRemoteNotifyBroadcast
-        , areg::EventType::EventLocalNotifyAttribute, areg::EventType::EventRemoteNotifyAttribute
         , areg::EventType::EventLocalResponse, areg::EventType::EventRemoteResponse
-        , areg::EventType::EventLocalBroadcast, areg::EventType::EventRemoteBroadcast
-        , areg::EventType::EventLocalAttribute, areg::EventType::EventRemoteAttribute
         , areg::EventType::EventLocalProviderConnect, areg::EventType::EventRemoteConsumerConnect
-        , areg::EventType::EventLocalConnection, areg::EventType::EventRemoteConnection
+        , areg::EventType::EventRemoteConnection
         , areg::EventType::EventCustomInternal, areg::EventType::EventCustomExternal
-        , areg::EventType::EventLocalRequestFailed, areg::EventType::EventRemoteRequestFailed
     };
 
     areg::Event event(areg::EventType::EventCustomInternal);
@@ -519,13 +551,7 @@ TEST(EventApiTest, type_queries_agree_with_the_event_type_and_an_empty_event_ans
         EXPECT_EQ(event.is_custom(), areg::is_custom(type));
         EXPECT_EQ(event.is_request_call(), areg::is_request_call(type));
         EXPECT_EQ(event.is_response_call(), areg::is_response_call(type));
-        EXPECT_EQ(event.is_broadcast_call(), areg::is_broadcast_call(type));
-        EXPECT_EQ(event.is_attribute_call(), areg::is_attribute_call(type));
-        EXPECT_EQ(event.is_request_failed_call(), areg::is_request_failure(type));
         EXPECT_EQ(event.is_notify_call(), areg::is_notify(type));
-        EXPECT_EQ(event.is_notify_response(), areg::is_notify_response(type));
-        EXPECT_EQ(event.is_notify_broadcast(), areg::is_notify_broadcast(type));
-        EXPECT_EQ(event.is_notify_attribute(), areg::is_notify_attribute(type));
         EXPECT_EQ(event.is_connect_call(), areg::is_connect(type));
     }
 
@@ -715,7 +741,11 @@ TEST(StubEventValueTest, stub_event_addresses_its_provider_and_the_consumer_sees
     StubReceiver receiver(stub);
     EXPECT_EQ(receiver.current_event(), nullptr);
 
-    StubEventProbe event(stub, areg::EventType::EventLocalNotifyResponse);
+    // A provider event type that the stub dispatch has no dedicated arm for.
+    constexpr areg::EventType STUB_EVENT{ static_cast<areg::EventType>(static_cast<uint32_t>(areg::EventType::EventExternalMask)
+                                                                     | static_cast<uint32_t>(areg::EventType::EventLocalMask)
+                                                                     | static_cast<uint32_t>(areg::EventType::EventToProviderMask)) };
+    StubEventProbe event(stub, STUB_EVENT);
     ASSERT_TRUE(event.is_valid());
     EXPECT_EQ(event.target_stub(), static_cast<uint32_t>(stub));
     static_cast<areg::EventConsumer &>(receiver).start_event_processing(event);
@@ -726,11 +756,11 @@ TEST(StubEventValueTest, stub_event_addresses_its_provider_and_the_consumer_sees
     areg::MessageEnvelope envelope{ event.envelope() };
     StubEventProbe moved(std::move(envelope));
     EXPECT_EQ(moved.target_stub(), static_cast<uint32_t>(stub));
-    EXPECT_EQ(moved.event_type(), areg::EventType::EventLocalNotifyResponse);
+    EXPECT_EQ(moved.event_type(), STUB_EVENT);
 
     const areg::StubAddress other(0x613A2001u, areg::Version(1u, 2u, 3u), areg::ServiceType::Public
                                  , 0x613A3001u, 0x613A4002u, 0x613A1009u);
-    StubEventProbe foreign(other, areg::EventType::EventLocalNotifyResponse);
+    StubEventProbe foreign(other, STUB_EVENT);
     receiver.mSeen = nullptr;
     static_cast<areg::EventConsumer &>(receiver).start_event_processing(foreign);
     EXPECT_EQ(receiver.mStubEvents, 1u);
