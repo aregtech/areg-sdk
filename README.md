@@ -472,12 +472,12 @@ Libraries: `areg` (core framework), `aregextend` (extended utilities, SQLite wra
 |---|---|
 | **Build** | [![CMake build](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml) [![MS Build](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml) [![Platforms](https://github.com/aregtech/areg-sdk/actions/workflows/platforms.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/platforms.yml) |
 | **Quality** | [![CodeQL](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml) [![Sanitizers](https://github.com/aregtech/areg-sdk/actions/workflows/sanitizers.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/sanitizers.yml) [![Coverage](https://codecov.io/gh/aregtech/areg-sdk/graph/badge.svg?branch=master)](https://codecov.io/gh/aregtech/areg-sdk) [![Agent docs](https://github.com/aregtech/areg-sdk/actions/workflows/agent-docs.yml/badge.svg?branch=master)](https://github.com/aregtech/areg-sdk/actions/workflows/agent-docs.yml) |
-| **Release** | [`v2.0.0-rc1`](https://github.com/aregtech/areg-sdk/releases/tag/v2.0.0-rc1), the first 2.0 release candidate. Supported: 2.0.0-rc1 and newer, and `master`. Release 1.5.0 and earlier use a different API and are not supported. |
+| **Release** | [`v2.0.0-rc2`](https://github.com/aregtech/areg-sdk/releases/tag/v2.0.0-rc2), the second 2.0 release candidate. Supported: 2.0.0-rc2 and newer, and `master`. Release 1.5.0 and earlier use a different API and are not supported. |
 | **Packages** | Build from source, or let CMake fetch Areg. |
 | **Security** | `mtrouter` connections are plain TCP, with no encryption or authentication today: run Areg in trusted networks. |
 
 <a id="roadmap"></a>
-**Next:** the 2.0.0 release and the vcpkg port · RTOS support, starting with Zephyr.
+**Next:** After the 2.0.0 release and the vcpkg port · RTOS support, starting with Zephyr.
 **Planned:** shared memory transport (zero-copy on one machine) · optional TLS for `mtrouter` connections.
 **Open for community input:** language bindings (Python, Rust) · WebSocket transport · cloud-native deployment patterns.
 
