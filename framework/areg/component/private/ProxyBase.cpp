@@ -37,6 +37,7 @@
 #include <cstring>
 #include <functional>
 #include <memory>
+#include <new>
 #include <unordered_map>
 
 namespace areg {
@@ -52,6 +53,7 @@ DEF_LOG_SCOPE(areg_component_ProxyBase, unregister_listener);
 DEF_LOG_SCOPE(areg_component_ProxyBase, process_available_event);
 DEF_LOG_SCOPE(areg_component_ProxyBase, stop_proxy);
 DEF_LOG_SCOPE(areg_component_ProxyBase, send_request_event);
+DEF_LOG_SCOPE(areg_component_ProxyBase, notify_listeners);
 
 namespace
 {
@@ -108,6 +110,22 @@ namespace
         return nullptr;
     }
 
+    //!< Removes the listener of the answered request and reports the notification that is not delivered.
+    template <typename LIST>
+    AREG_NO_INLINE void _drop_notification(LIST & subVec, [[maybe_unused]] uint32_t respId, const SequenceNumber & seqNr) noexcept
+    {
+        for (uint32_t i = 0; (seqNr != areg::SEQUENCE_NUMBER_NOTIFY) && (i < subVec.size()); )
+        {
+            if (subVec.value_at(i).mSequenceNr == seqNr)
+                subVec.remove_at(i);
+            else
+                ++i;
+        }
+
+        LOG_SCOPE(areg_component_ProxyBase, notify_listeners);
+        LOG_ERR("No memory to notify [ %u ] listeners of message [ %u ], the notification is dropped", subVec.size(), respId);
+    }
+
     //!< A listener copied out of the listener map; nullptr once its client is removed.
     struct SnapshotEntry
     {
@@ -134,14 +152,20 @@ namespace
     public:
         SnapshotBuffer() = default;
 
-        //!< Returns storage for 'count' listeners.
-        SnapshotEntry * reserve(uint32_t count)
+        //!< Returns storage for 'count' listeners, or nullptr if no memory is left.
+        SnapshotEntry * reserve(uint32_t count) noexcept
         {
             if (count <= SNAPSHOT_INLINE)
                 return mInline;
 
-            mHeap.reset(new SnapshotEntry[count]);
+            mHeap.reset(new (std::nothrow) SnapshotEntry[count]);
             return mHeap.get();
+        }
+
+        //!< Returns the storage for SNAPSHOT_INLINE listeners.
+        SnapshotEntry * inline_storage() noexcept
+        {
+            return mInline;
         }
 
     private:
@@ -285,8 +309,8 @@ namespace
     //!< Returns the queued client notifications of the process. Never destroyed.
     PendingNotifications & _pending_notifications()
     {
-        static PendingNotifications * _pending{ new PendingNotifications() };
-        return *_pending;
+        static NeverDestroyed<PendingNotifications> _pending;
+        return _pending.object();
     }
 
     //!< Delivers a queued client notification to its client only while the notification is pending.
@@ -315,8 +339,8 @@ namespace
     //!< Returns the consumer of every queued client notification. Never destroyed.
     EventConsumer & _notification_relay()
     {
-        static NotificationRelay * _relay{ new NotificationRelay() };
-        return *_relay;
+        static NeverDestroyed<NotificationRelay> _relay;
+        return _relay.object();
     }
 
     //!< The payload of a queued service available event: the client, then the proxy ID.
@@ -348,8 +372,8 @@ namespace
     //!< Returns the consumer of every queued service available event. Never destroyed.
     EventConsumer & _service_relay()
     {
-        static ServiceRelay * _relay{ new ServiceRelay() };
-        return *_relay;
+        static NeverDestroyed<ServiceRelay> _relay;
+        return _relay.object();
     }
 }
 
@@ -750,12 +774,18 @@ void ProxyBase::service_connection_updated( const StubAddress & server, const Ch
         {
             const ProxyListenerList & subVec = mapPos->second;
             connectListeners.entries = connectBuffer.reserve(subVec.size());
-            for (uint32_t i = 0u; i < subVec.size(); ++i)
+            connectListeners.count   = subVec.size();
+            if (connectListeners.entries == nullptr)
+            {
+                // No memory for every listener: the first ones are notified.
+                connectListeners.entries = connectBuffer.inline_storage();
+                connectListeners.count   = SNAPSHOT_INLINE;
+            }
+
+            for (uint32_t i = 0u; i < connectListeners.count; ++i)
             {
                 connectListeners.entries[i] = SnapshotEntry{ subVec.value_at(i).mSequenceNr, subVec.value_at(i).mListener };
             }
-
-            connectListeners.count = subVec.size();
         }
 
         if (nowConnected && (wasConnected == false))
@@ -949,6 +979,12 @@ void ProxyBase::notify_listeners( uint32_t respId, areg::ResultType result, cons
 
         ProxyListenerList & subVec = pos->second;
         listeners.entries = buffer.reserve(subVec.size());
+        if (listeners.entries == nullptr)
+        {
+            _drop_notification(subVec, respId, seqNrToSearch);
+            return;
+        }
+
         NotificationConsumer * const requester{ _requester_of(subVec, seqNrToSearch) };
         const bool callerOnly{ (seqNrToSearch != areg::SEQUENCE_NUMBER_NOTIFY) && _is_request_failure(result) };
         for (uint32_t i = 0; i < subVec.size(); )
@@ -1056,7 +1092,7 @@ SequenceNumber ProxyBase::send_request_event(ServiceRequestEvent& reqEvent, Noti
     {
         Lock lock(mListenerLock);
         ++mSequenceCount;
-        static_cast<void>(add_listener(respId, mSequenceCount, caller, true));  // recursive lock: safe
+        static_cast<void>(add_listener(respId, mSequenceCount, caller, false)); // recursive lock: safe
         reqEvent.set_sequence_number(mSequenceCount);
         seqNr = mSequenceCount;
     }
@@ -1170,13 +1206,19 @@ void ProxyBase::stop_proxy()
     if ( mIsConnected )
     {
         connected.entries = buffer.reserve(mListConnect.size());
-        for (uint32_t i = 0 ; i < mListConnect.size(); ++ i)
+        connected.count   = mListConnect.size();
+        if (connected.entries == nullptr)
+        {
+            // No memory for every listener: the first ones are notified.
+            connected.entries = buffer.inline_storage();
+            connected.count   = SNAPSHOT_INLINE;
+        }
+
+        for (uint32_t i = 0 ; i < connected.count; ++ i)
         {
             ASSERT(mListConnect.value_at(i) != nullptr);
             connected.entries[i] = SnapshotEntry{ areg::SEQUENCE_NUMBER_NOTIFY, static_cast<NotificationConsumer *>(mListConnect.value_at(i)) };
         }
-
-        connected.count = mListConnect.size();
     }
 
     mListConnect.clear();

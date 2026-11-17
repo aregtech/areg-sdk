@@ -25,6 +25,7 @@
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/SyncObject.hpp"
+#include "areg/base/FatalError.hpp"
 #include "areg/base/private/posix/WaitableEventPosix.hpp"
 #include "areg/base/private/posix/WaitableMutexPosix.hpp"
 #include "areg/base/private/posix/WaitableSemaphorePosix.hpp"
@@ -36,6 +37,8 @@
 
 #include <climits>
 #include <cstdint>
+#include <new>
+#include <utility>
 #include <string.h>
 #include <time.h>
 
@@ -68,6 +71,23 @@ namespace
 }
 
 #endif  // defined(__APPLE__) / defined(__CYGWIN__) / Linux
+
+namespace
+{
+    //!< Creates the OS object of a synchronization object; ends the process with the reason when there is no memory.
+    template<typename SyncType, typename ... Args>
+    SyncType * _create_sync_object( const char * reason, Args && ... args )
+    {
+        SyncType * result{ new (std::nothrow) SyncType( std::forward<Args>( args ) ... ) };
+        if ( result == nullptr )
+        {
+            areg::fatal_error( reason );
+        }
+
+        return result;
+    }
+}
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -96,7 +116,7 @@ void SyncObject::_os_destroy()
 
 void Mutex::_os_create_mutex( bool initLock )
 {
-    mSyncObject = new areg::os::WaitableMutexPosix(initLock);
+    mSyncObject = _create_sync_object<areg::os::WaitableMutexPosix>( "no memory, a Mutex cannot be created", initLock );
 }
 
 bool Mutex::_os_lock_mutex( uint32_t timeout )
@@ -118,7 +138,7 @@ bool Mutex::_os_unlock_mutex()
 
 void SyncEvent::_os_create_event( bool initLock )
 {
-    mSyncObject    = static_cast<void *>( new areg::os::WaitableEventPosix(!initLock, mAutoReset) );
+    mSyncObject    = _create_sync_object<areg::os::WaitableEventPosix>( "no memory, a SyncEvent cannot be created", !initLock, mAutoReset );
 }
 
 bool SyncEvent::_os_unlock_event( void * eventHandle ) noexcept
@@ -165,7 +185,7 @@ int32_t SyncEvent::_os_wait_any( SyncEvent** events, int32_t count, uint32_t tim
 
 void Semaphore::_os_create_semaphore( )
 {
-    mSyncObject = new areg::os::WaitableSemaphorePosix(static_cast<int32_t>(mMaxCount), static_cast<int32_t>(mCurrCount.load()));
+    mSyncObject = _create_sync_object<areg::os::WaitableSemaphorePosix>( "no memory, a Semaphore cannot be created", static_cast<int32_t>(mMaxCount), static_cast<int32_t>(mCurrCount.load()) );
 }
 
 void Semaphore::_os_release_semaphore()
@@ -191,7 +211,7 @@ bool Semaphore::_os_unlock()
 
 void CriticalSection::_os_create_critical_section()
 {
-    mSyncObject = static_cast<void *>( new areg::os::CriticalSectionPosix() );
+    mSyncObject = _create_sync_object<areg::os::CriticalSectionPosix>( "no memory, a CriticalSection cannot be created" );
 }
 
 void CriticalSection::_os_release_critical_section()
@@ -220,7 +240,7 @@ bool CriticalSection::_os_try_lock()
 
 void SyncTimer::_os_create_timer( bool /* isSteady */ )
 {
-    mSyncObject= static_cast<void *>(new areg::os::WaitableTimerPosix( mIsAutoReset ));
+    mSyncObject = _create_sync_object<areg::os::WaitableTimerPosix>( "no memory, a SyncTimer cannot be created", mIsAutoReset );
 }
 
 void SyncTimer::_os_release_time()

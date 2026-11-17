@@ -875,7 +875,10 @@ template<typename BufType>
 struct BufferAllocator
 {
     /**
-     * \brief   Allocates a buffer of the specified size.
+     * \brief   Allocates a buffer of the specified size and constructs BufType in it.
+     *
+     * \param   space   The size of the buffer in bytes.
+     * \return  The constructed buffer, or nullptr if no memory is left.
      **/
     BufType* operator ( ) (uint32_t space);
 };
@@ -1264,8 +1267,8 @@ inline void zero_elements( ELEM * elemList, uint32_t elemCount )
 template<typename BufType>
 BufType* areg::BufferAllocator<BufType>::operator ( ) (uint32_t space)
 {
-    uint8_t* result = new uint8_t[space];
-    return ::new(result) BufType;
+    uint8_t* result = new (std::nothrow) uint8_t[space];
+    return (result != nullptr ? ::new(result) BufType : nullptr);
 }
 
 template<typename BufType>

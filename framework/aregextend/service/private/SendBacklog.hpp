@@ -21,6 +21,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/areg_global.h"
+#include "areg/base/ChunkQueue.hpp"
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/Socket.hpp"
 #include "areg/base/SocketDefs.hpp"
@@ -154,13 +155,14 @@ public:
         ITEM_ID                             cookie      { 0u };     //!< The connection.
         SOCKETHANDLE                        socket      { areg::InvalidSocketHandle };  //!< Its socket.
         areg::Socket::SocketHandle          hold        { };        //!< Keeps the socket open while the entry exists.
-        std::deque<areg::MessageEnvelope>   messages    { };        //!< Not completed, in order.
+        areg::ChunkQueue<areg::MessageEnvelope> messages{ };        //!< Not completed, in order.
         uint32_t                            headDone    { 0u };     //!< Completed bytes of the first message.
         uint64_t                            bytes       { 0u };     //!< Bytes not completed.
         uint64_t                            sinceMs     { 0u };     //!< When the backlog started.
         uint64_t                            progressMs  { 0u };     //!< When a byte was last completed.
         SendBacklogOsPtr                    os          { };        //!< Writes in progress.
         bool                                held        { false };  //!< True while the connection is held, see is_held().
+        bool                                kept        { false };  //!< True if a write not in os may still read the messages: they are never released.
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -353,6 +355,9 @@ private:
     //!< Releases the writes and the messages of an entry that is no longer in the map.
     void release_entry(Entry & entry) noexcept;
 
+    //!< Cancels the started writes of a failed write; keeps the messages for ever if a write may still read them.
+    void abandon_writes(SendBacklogOsPtr & os, SOCKETHANDLE hSocket, bool kept, const areg::MessageEnvelope * const * messages, uint32_t count) noexcept;
+
     //!< Cancels the writes in progress. Returns false if one did not end and its buffers must not be freed.
     bool cancel_writes(SendBacklogOsPtr & os, SOCKETHANDLE hSocket) noexcept;
 
@@ -431,6 +436,9 @@ private:
 // Operating system calls of the backlog
 //////////////////////////////////////////////////////////////////////////
 
+//!< The result of backlog_os_start() when the socket failed and a write may still use the buffers.
+constexpr int64_t BACKLOG_OS_KEPT   { -2 };
+
 /**
  * \brief   Starts writing \a count buffers into \a hSocket without waiting.
  *
@@ -442,7 +450,8 @@ private:
  * \param   count       The number of buffers, at most areg::DEFAULT_DRAIN_LIMIT.
  * \param   maxInFlight The most bytes that may be in progress after the call.
  * \param   started     On return, the bytes handed to the operating system, completed or not.
- * \return  The bytes completed now, or -1 if the socket failed.
+ * \return  The bytes completed now, -1 if the socket failed, or BACKLOG_OS_KEPT if it failed and a
+ *          write not in \a os may still use the buffers: they must never be released.
  **/
 int64_t backlog_os_start( SendBacklogOsPtr & os
                         , SOCKETHANDLE hSocket

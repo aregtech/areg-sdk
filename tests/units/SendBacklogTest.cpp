@@ -33,10 +33,12 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <cstdlib>
 #include <cstring>
 #include <deque>
 #include <future>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -171,12 +173,6 @@ namespace
             stalled = steady_ms() - entry.progressMs;
             closed.store(true, std::memory_order_release);
         }
-
-        //!< Pumps that found the socket and moved nothing.
-        uint32_t idle_pumps() const
-        {
-            return pumps.load(std::memory_order_relaxed) - moves.load(std::memory_order_relaxed);
-        }
     };
 
     //!< Pumps until the backlog is empty or the connection is closed, or nothing has moved for
@@ -215,25 +211,41 @@ namespace
     {
         areg::EventQueue        queue;
         SendBacklog &           backlog;
-        std::atomic<uint32_t>   waits   { 0u };
+        const Owner &           owner;
+        std::mutex              lock    { };
+        std::condition_variable signal  { };
+        uint32_t                waits   { 0u };     //!< The waits of the thread. Guarded by lock.
+        uint32_t                idle    { 0u };     //!< The pumps before a wait that moved nothing. Guarded by lock.
+        uint32_t                moves   { 0u };     //!< The moves of the owner at the last wait. Send thread only.
 
-        explicit Sender(SendBacklog & backlog_)
+        Sender(SendBacklog & backlog_, const Owner & owner_)
             : queue     ( 0u )
             , backlog   ( backlog_ )
+            , owner     ( owner_ )
         {
             queue.acquire_lanes();
         }
 
         //!< Returns true once the thread has gone to wait at least \a count times.
-        bool waited(uint32_t count) const
+        bool waited(uint32_t count)
         {
-            const Clock::time_point started{ Clock::now() };
-            while ((waits.load(std::memory_order_acquire) < count) && (elapsed_ms(started) < DEADLINE_MS))
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
+            std::unique_lock<std::mutex> guard(lock);
+            return signal.wait_for(guard, std::chrono::milliseconds(DEADLINE_MS), [&] { return (waits >= count); });
+        }
 
-            return (waits.load(std::memory_order_acquire) >= count);
+        //!< Returns the pumps so far that moved nothing.
+        uint32_t idle_pumps()
+        {
+            std::lock_guard<std::mutex> guard(lock);
+            return idle;
+        }
+
+        //!< Waits at most \a ms for more than \a limit pumps after \a base that move nothing; returns their number.
+        uint32_t idle_pumps_within(uint32_t base, uint32_t limit, uint32_t ms)
+        {
+            std::unique_lock<std::mutex> guard(lock);
+            static_cast<void>(signal.wait_for(guard, std::chrono::milliseconds(ms), [&] { return (idle - base > limit); }));
+            return (idle - base);
         }
 
         bool has_queued_events() const noexcept
@@ -248,10 +260,19 @@ namespace
 
         void wait_backlog(uint32_t /*timeoutMs*/)
         {
+            // The pump before this wait moved nothing if the owner counted no move since the last wait.
+            const uint32_t moved{ owner.moves.load(std::memory_order_relaxed) };
             backlog.reset_wake();
             if (queue.arm_waiter(backlog, true))
             {
-                waits.fetch_add(1u, std::memory_order_release);
+                {
+                    std::lock_guard<std::mutex> guard(lock);
+                    idle += (moved == moves ? 1u : 0u);
+                    ++ waits;
+                }
+
+                moves = moved;
+                signal.notify_all();
                 backlog.wait(areg::WAIT_INFINITE);
             }
 
@@ -268,6 +289,7 @@ namespace
             uint8_t * data{ message.init_envelope(areg::notify_client_connection(), MESSAGE_BYTES) };
             if (data != nullptr)
             {
+                std::memset(data, 0xA5, MESSAGE_BYTES);
                 message.header()->bufHeader.biUsed = MESSAGE_BYTES;
             }
         }
@@ -403,7 +425,9 @@ namespace
                 return StallEnd::Kept;
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            // Waits as a send thread does: until the socket takes data or the nearest deadline.
+            backlog.reset_wake();
+            backlog.wait(backlog.prepare_wait());
         }
 
         return StallEnd::Closed;
@@ -432,7 +456,7 @@ namespace
         areg::SendQueueGate                 gate    { };
         SendBacklog                         backlog { gate };
         Owner                               owner   { };
-        Sender                              sender  { backlog };
+        Sender                              sender  { backlog, owner };
         std::vector<areg::MessageEnvelope>  messages{ make_messages() };
         uint64_t                            kept    { 0u };
 
@@ -486,11 +510,10 @@ TEST(SendBacklogTest, wait_sleeps_while_paused_and_resumes_when_read)
         done.set_value();
     });
 
-    // Counts only the pumps that move nothing.
+    // A thread that does not sleep pumps without moving anything: waits for that, at most PAUSE_MS.
     const bool waiting{ test.sender.waited(1u) };
-    const uint32_t idleBefore{ test.owner.idle_pumps() };
-    std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_MS));
-    const uint32_t idlePumps{ test.owner.idle_pumps() - idleBefore };
+    const uint32_t idleBefore{ test.sender.idle_pumps() };
+    const uint32_t idlePumps{ test.sender.idle_pumps_within(idleBefore, 2u, PAUSE_MS) };
     const bool waitedWhilePaused{ waiting && still_waits(returned) };
 
     // The reader resumes: only the socket taking data can end the wait, so the backlog drains.
@@ -532,7 +555,6 @@ TEST(SendBacklogTest, queued_message_ends_the_wait)
     });
 
     const bool waiting{ test.sender.waited(1u) };
-    std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_MS));
     const bool waitedBefore{ waiting && still_waits(returned) };
     areg::MessageEnvelope wake;
     ASSERT_NE(wake.init_envelope(areg::notify_client_connection(), 0u), nullptr);
@@ -566,7 +588,6 @@ TEST(SendBacklogTest, exit_ends_the_wait)
     });
 
     const bool waiting{ test.sender.waited(1u) };
-    std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_MS));
     const bool waitedBefore{ waiting && still_waits(returned) };
     test.sender.queue.exit_queue(true);
     const bool ended{ returns(returned) };
@@ -1042,8 +1063,10 @@ namespace
     areg::MessageEnvelope make_message(uint32_t bytes)
     {
         areg::MessageEnvelope message;
-        if (message.init_envelope(areg::notify_client_connection(), bytes) != nullptr)
+        uint8_t * data{ message.init_envelope(areg::notify_client_connection(), bytes) };
+        if (data != nullptr)
         {
+            std::memset(data, 0x5A, bytes);
             message.header()->bufHeader.biUsed = bytes;
         }
 

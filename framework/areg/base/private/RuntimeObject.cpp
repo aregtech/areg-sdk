@@ -101,6 +101,11 @@ void* RuntimeObject::operator new(size_t size, std::align_val_t align, const std
     return ::operator new(size, align, tag);
 }
 
+void* RuntimeObject::operator new[](size_t size, std::align_val_t align, const std::nothrow_t & tag) noexcept
+{
+    return ::operator new[](size, align, tag);
+}
+
 void RuntimeObject::operator delete(void* ptr, const std::nothrow_t & tag) noexcept
 {
     ::operator delete(ptr, tag);
@@ -114,6 +119,11 @@ void RuntimeObject::operator delete[](void* ptr, const std::nothrow_t & tag) noe
 void RuntimeObject::operator delete(void* ptr, std::align_val_t align, const std::nothrow_t & tag) noexcept
 {
     ::operator delete(ptr, align, tag);
+}
+
+void RuntimeObject::operator delete[](void* ptr, std::align_val_t align, const std::nothrow_t & tag) noexcept
+{
+    ::operator delete[](ptr, align, tag);
 }
 
 void RuntimeObject::operator delete(void* ptr)

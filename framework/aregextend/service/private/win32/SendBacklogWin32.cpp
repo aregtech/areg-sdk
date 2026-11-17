@@ -44,8 +44,9 @@ namespace
     //!< One overlapped write. Its address must not change while the write is in progress.
     struct SendOp
     {
-        WSAOVERLAPPED   overlapped  { };    //!< The overlapped structure, no event.
-        uint64_t        bytes       { 0u }; //!< The bytes of the write.
+        WSAOVERLAPPED   overlapped  { };        //!< The overlapped structure, no event.
+        uint64_t        bytes       { 0u };     //!< The bytes of the write.
+        SendOp *        next        { nullptr };//!< The write started after this one, or nullptr.
     };
 
     //!< The number of completions taken from the port by one call.
@@ -54,8 +55,59 @@ namespace
 
 struct SendBacklogOs
 {
-    std::deque<std::unique_ptr<SendOp>> ops     { };    //!< Writes in progress, in the order they started.
-    uint64_t                            inFlight{ 0u }; //!< The bytes of the writes in progress.
+    SendOp *    head    { nullptr };    //!< The oldest write in progress, or nullptr.
+    SendOp *    tail    { nullptr };    //!< The newest write in progress, or nullptr.
+    uint64_t    inFlight{ 0u };         //!< The bytes of the writes in progress.
+
+    SendBacklogOs() = default;
+
+    ~SendBacklogOs()
+    {
+        while (head != nullptr)
+        {
+            SendOp * const op{ head };
+            head = op->next;
+            delete op;
+        }
+    }
+
+    //!< Returns true if no write is in progress.
+    bool empty() const noexcept
+    {
+        return (head == nullptr);
+    }
+
+    //!< Appends a started write. Allocates nothing.
+    void push_back(SendOp * op) noexcept
+    {
+        op->next = nullptr;
+        if (tail == nullptr)
+        {
+            head = op;
+        }
+        else
+        {
+            tail->next = op;
+        }
+
+        tail = op;
+    }
+
+    //!< Removes and deletes the oldest write.
+    void pop_front() noexcept
+    {
+        SendOp * const op{ head };
+        head = op->next;
+        if (head == nullptr)
+        {
+            tail = nullptr;
+        }
+
+        delete op;
+    }
+
+    SendBacklogOs(const SendBacklogOs &) = delete;
+    SendBacklogOs & operator = (const SendBacklogOs &) = delete;
 };
 
 void SendBacklogOsDelete::operator () (SendBacklogOs * os) const noexcept
@@ -91,7 +143,7 @@ int64_t backlog_os_start( SendBacklogOsPtr & os
     std::unique_ptr<SendOp> op{ };
     while (index < count)
     {
-        if ((os != nullptr) && (os->ops.empty() == false) && (os->inFlight >= maxInFlight))
+        if ((os != nullptr) && (os->empty() == false) && (os->inFlight >= maxInFlight))
             break;
 
         WSABUF wsaBuffers[areg::DEFAULT_DRAIN_LIMIT];
@@ -137,7 +189,7 @@ int64_t backlog_os_start( SendBacklogOsPtr & os
         }
 
         started += chunk;
-        if ((result == 0) && ((os == nullptr) || os->ops.empty()))
+        if ((result == 0) && ((os == nullptr) || os->empty()))
         {
             // Completed now, and nothing started before it is still in progress.
             completed += static_cast<int64_t>(chunk);
@@ -146,11 +198,18 @@ int64_t backlog_os_start( SendBacklogOsPtr & os
 
         if (os == nullptr)
         {
-            os = SendBacklogOsPtr(new SendBacklogOs());
+            os.reset(new (std::nothrow) SendBacklogOs());
+            if (os == nullptr)
+            {
+                // Cancels the pending write and keeps the operation it uses.
+                static_cast<void>(::CancelIoEx(reinterpret_cast<HANDLE>(hSocket), &op->overlapped));
+                static_cast<void>(op.release());
+                return BACKLOG_OS_KEPT;
+            }
         }
 
         os->inFlight += chunk;
-        os->ops.push_back(std::move(op));
+        os->push_back(op.release());
     }
 
     return completed;
@@ -159,9 +218,9 @@ int64_t backlog_os_start( SendBacklogOsPtr & os
 int64_t backlog_os_collect(SendBacklogOs * os, SOCKETHANDLE hSocket)
 {
     int64_t completed{ 0 };
-    while ((os != nullptr) && (os->ops.empty() == false))
+    while ((os != nullptr) && (os->empty() == false))
     {
-        SendOp & op{ *os->ops.front() };
+        SendOp & op{ *os->head };
         if (HasOverlappedIoCompleted(&op.overlapped) == FALSE)
             break;
 
@@ -174,7 +233,7 @@ int64_t backlog_os_collect(SendBacklogOs * os, SOCKETHANDLE hSocket)
 
         completed    += static_cast<int64_t>(op.bytes);
         os->inFlight -= op.bytes;
-        os->ops.pop_front();
+        os->pop_front();
     }
 
     return completed;
@@ -190,7 +249,7 @@ void backlog_os_cancel(SendBacklogOs * os, SOCKETHANDLE hSocket) noexcept
     if (os == nullptr)
         return;
 
-    for (const auto & op : os->ops)
+    for (SendOp * op = os->head; op != nullptr; op = op->next)
     {
         if (HasOverlappedIoCompleted(&op->overlapped) == FALSE)
         {
@@ -204,7 +263,7 @@ bool backlog_os_done(const SendBacklogOs * os) noexcept
     if (os == nullptr)
         return true;
 
-    for (const auto & op : os->ops)
+    for (const SendOp * op = os->head; op != nullptr; op = op->next)
     {
         if (HasOverlappedIoCompleted(&op->overlapped) == FALSE)
             return false;

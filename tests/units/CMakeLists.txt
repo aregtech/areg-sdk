@@ -113,6 +113,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     PropertyTest.cpp
     ReceiveCacheTest.cpp
     ReceivedHeaderTest.cpp
+    ChunkQueueTest.cpp
     RingStackTest.cpp
     RouterApplicationTest.cpp
     ServiceConsoleHarness.cpp

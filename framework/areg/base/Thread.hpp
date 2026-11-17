@@ -480,6 +480,8 @@ public:
 
     /**
      * \brief   Returns the thread-local storage object of the current thread.
+     *          Call it only on a thread started by a Thread object: any other thread,
+     *          such as the one of main(), has no storage and the behavior is undefined.
      **/
     [[nodiscard]]
     static ThreadLocalStorage & current_thread_storage() noexcept;

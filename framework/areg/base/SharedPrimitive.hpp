@@ -21,6 +21,7 @@
 #include "areg/base/areg_global.h"
 #include <atomic>
 #include <cstdint>
+#include <new>
 
 namespace areg {
 
@@ -113,11 +114,13 @@ public:
 
     /**
      * \brief   Constructs with a live value. Allocates one control block
-     *          containing the reference counter and the value.
+     *          containing the reference counter and the value. If the block
+     *          cannot be allocated, Closer is invoked on the value and the
+     *          instance is empty.
      *
      * \param   value   The primitive value to manage.
      **/
-    inline explicit SharedPrimitive(Primitive value);
+    inline explicit SharedPrimitive(Primitive value) noexcept;
 
     /**
      * \brief   Copy constructor. Shares ownership with \a other; increments
@@ -206,9 +209,13 @@ inline SharedPrimitive<Primitive, InvalidValue, Closer>::SharedPrimitive() noexc
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>
-inline SharedPrimitive<Primitive, InvalidValue, Closer>::SharedPrimitive(Primitive value)
-    : mCtrl( new ControlBlock(value) )
+inline SharedPrimitive<Primitive, InvalidValue, Closer>::SharedPrimitive(Primitive value) noexcept
+    : mCtrl( new (std::nothrow) ControlBlock(value) )
 {
+    if (mCtrl.load(std::memory_order_relaxed) == nullptr)
+    {
+        CloserInvoker<Closer, Primitive>::invoke(value);
+    }
 }
 
 template<typename Primitive, Primitive InvalidValue, void(*Closer)(Primitive) noexcept /*= nullptr*/>

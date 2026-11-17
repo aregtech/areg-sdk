@@ -135,7 +135,9 @@ SendBacklog::Result SendBacklog::write(ITEM_ID cookie, SOCKETHANDLE hSocket, con
     {
         for (uint32_t i = 0u; i < count; ++i)
         {
-            entry->messages.push_back(*messages[i]);
+            if (entry->messages.push_back(*messages[i]) == false)
+                return Result::Failed;
+
             entry->bytes += wire_size(*messages[i]);
         }
 
@@ -160,16 +162,7 @@ SendBacklog::Result SendBacklog::write(ITEM_ID cookie, SOCKETHANDLE hSocket, con
     const int64_t written{ backlog_os_start(os, hSocket, buffers, count, in_flight_limit(), started) };
     if (written < 0)
     {
-        if (cancel_writes(os, hSocket) == false)
-        {
-            // The operating system may still read these buffers: they are never released.
-            auto * kept{ new (std::nothrow) std::deque<areg::MessageEnvelope>() };
-            for (uint32_t i = 0u; (kept != nullptr) && (i < count); ++i)
-            {
-                kept->push_back(*messages[i]);
-            }
-        }
-
+        abandon_writes(os, hSocket, written == BACKLOG_OS_KEPT, messages, count);
         return Result::Failed;
     }
 
@@ -186,13 +179,17 @@ SendBacklog::Result SendBacklog::write(ITEM_ID cookie, SOCKETHANDLE hSocket, con
     prepared.socket     = hSocket;
     prepared.hold       = hold;
     prepared.sinceMs    = nowMs;
-    prepared.os         = std::move(os);
     for (uint32_t i = 0u; i < count; ++i)
     {
-        prepared.messages.push_back(*messages[i]);
+        if (prepared.messages.push_back(*messages[i]) == false)
+        {
+            abandon_writes(os, hSocket, false, messages, count);
+            return Result::Failed;
+        }
     }
 
-    prepared.bytes = total;
+    prepared.os     = std::move(os);
+    prepared.bytes  = total;
     msgsDone = complete(prepared, bytesDone, nowMs);
     update_hold(prepared);
     insert(std::move(prepared));
@@ -209,14 +206,10 @@ int32_t SendBacklog::write_inline(ITEM_ID cookie, SOCKETHANDLE hSocket, const ar
     SendBacklogOsPtr os{ };
     uint64_t started{ 0u };
     const int64_t written{ backlog_os_start(os, hSocket, &buffer, 1u, in_flight_limit(), started) };
+    const areg::MessageEnvelope * const list[]{ &message };
     if (written < 0)
     {
-        if (cancel_writes(os, hSocket) == false)
-        {
-            // The operating system may still read this buffer: it is never released.
-            static_cast<void>(new (std::nothrow) areg::MessageEnvelope(message));
-        }
-
+        abandon_writes(os, hSocket, written == BACKLOG_OS_KEPT, list, 1u);
         return -1;
     }
     else if (static_cast<uint64_t>(written) == size)
@@ -234,8 +227,13 @@ int32_t SendBacklog::write_inline(ITEM_ID cookie, SOCKETHANDLE hSocket, const ar
     prepared.socket     = hSocket;
     prepared.hold       = hold;
     prepared.sinceMs    = nowMs;
+    if (prepared.messages.push_back(message) == false)
+    {
+        abandon_writes(os, hSocket, false, list, 1u);
+        return -1;
+    }
+
     prepared.os         = std::move(os);
-    prepared.messages.push_back(message);
     prepared.bytes      = size;
     complete(prepared, static_cast<uint64_t>(written), nowMs);
     update_hold(prepared);
@@ -461,10 +459,10 @@ void SendBacklog::remove(ITEM_ID cookie)
 
 void SendBacklog::release_entry(Entry & entry) noexcept
 {
-    if (cancel_writes(entry.os, entry.socket) == false)
+    if ((cancel_writes(entry.os, entry.socket) == false) || entry.kept)
     {
         // The operating system may still read these buffers: they are never released.
-        static_cast<void>(new (std::nothrow) std::deque<areg::MessageEnvelope>(std::move(entry.messages)));
+        static_cast<void>(new (std::nothrow) areg::ChunkQueue<areg::MessageEnvelope>(std::move(entry.messages)));
     }
 
     for (areg::MessageEnvelope & message : entry.messages)
@@ -474,6 +472,18 @@ void SendBacklog::release_entry(Entry & entry) noexcept
 
     entry.messages.clear();
     entry.bytes = 0u;
+}
+
+void SendBacklog::abandon_writes(SendBacklogOsPtr & os, SOCKETHANDLE hSocket, bool kept, const areg::MessageEnvelope * const * messages, uint32_t count) noexcept
+{
+    if ((cancel_writes(os, hSocket) == false) || kept)
+    {
+        // The operating system may still read these buffers: they are never released.
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            static_cast<void>(new (std::nothrow) areg::MessageEnvelope(*messages[i]));
+        }
+    }
 }
 
 bool SendBacklog::cancel_writes(SendBacklogOsPtr & os, SOCKETHANDLE hSocket) noexcept
@@ -602,8 +612,15 @@ bool SendBacklog::start_writes(Entry & entry, uint64_t & bytesDone)
 
         uint64_t started{ 0u };
         const int64_t written{ backlog_os_start(entry.os, entry.socket, buffers, count, limit, started) };
-        if (written < 0)
+        if (written == BACKLOG_OS_KEPT)
+        {
+            entry.kept = true;
             return false;
+        }
+        else if (written < 0)
+        {
+            return false;
+        }
 
         bytesDone += static_cast<uint64_t>(written);
         complete(entry, static_cast<uint64_t>(written), nowMs);

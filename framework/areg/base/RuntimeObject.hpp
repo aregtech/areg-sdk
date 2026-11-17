@@ -270,6 +270,8 @@ public:
 
     void * operator new( size_t size, std::align_val_t align, const std::nothrow_t & tag ) noexcept;
 
+    void * operator new []( size_t size, std::align_val_t align, const std::nothrow_t & tag ) noexcept;
+
     /**
      * \brief   Debug placement new: records file and line for MSVC leak detection.
      *          In non-debug builds, falls through to the standard operator new.
@@ -313,6 +315,8 @@ public:
     void operator delete []( void * ptr, const std::nothrow_t & tag ) noexcept;
 
     void operator delete( void * ptr, std::align_val_t align, const std::nothrow_t & tag ) noexcept;
+
+    void operator delete []( void * ptr, std::align_val_t align, const std::nothrow_t & tag ) noexcept;
 
     void operator delete []( void * ptr );
 

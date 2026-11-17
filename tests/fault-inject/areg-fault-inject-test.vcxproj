@@ -58,6 +58,7 @@
     <ClInclude Include="..\units\ChildProcess.hpp" />
     <ClInclude Include="FaultInject.hpp" />
     <ClInclude Include="FaultSocketPair.hpp" />
+    <ClInclude Include="FaultSweep.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(AregSdkRoot)framework\areg.vcxproj">

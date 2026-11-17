@@ -284,6 +284,16 @@ namespace
         AREG_CHILD_CHECK( false && "the mutex was created" );
     }
 
+    template<typename SyncType, typename ... Args>
+    void sync_object_is_fatal_without_memory( const char * reason, Args ... args )
+    {
+        expect_fatal( reason );
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0 ) );
+        SyncType object( args ... );
+        AREG_CHILD_CHECK( false && "the synchronization object was created" );
+    }
+
     //////////////////////////////////////////////////////////////////////////
     // The service of the waitable timers
     //////////////////////////////////////////////////////////////////////////
@@ -635,6 +645,40 @@ TEST( FaultInjectPosixSyncTest, mutex_is_fatal_while_the_type_of_its_lock_cannot
 TEST( FaultInjectPosixSyncTest, mutex_is_fatal_while_its_lock_cannot_be_created )
 {
     AREG_EXPECT_IN_CHILD( mutex_is_fatal_while_its_lock_cannot_be_created( areg_fault::FaultPoint::MutexInit ) );
+}
+
+/**
+ * \brief   A synchronization object whose OS object cannot be allocated ends the process with
+ *          the fatal error that names it.
+ **/
+TEST( FaultInjectPosixSyncTest, mutex_is_fatal_without_memory )
+{
+    AREG_SKIP_WITHOUT_ALLOCATION_FAULT( );
+    AREG_EXPECT_IN_CHILD( sync_object_is_fatal_without_memory<areg::Mutex>( "no memory, a Mutex cannot be created", false ) );
+}
+
+TEST( FaultInjectPosixSyncTest, sync_event_is_fatal_without_memory )
+{
+    AREG_SKIP_WITHOUT_ALLOCATION_FAULT( );
+    AREG_EXPECT_IN_CHILD( sync_object_is_fatal_without_memory<areg::SyncEvent>( "no memory, a SyncEvent cannot be created", true, false ) );
+}
+
+TEST( FaultInjectPosixSyncTest, semaphore_is_fatal_without_memory )
+{
+    AREG_SKIP_WITHOUT_ALLOCATION_FAULT( );
+    AREG_EXPECT_IN_CHILD( sync_object_is_fatal_without_memory<areg::Semaphore>( "no memory, a Semaphore cannot be created", 2, 0 ) );
+}
+
+TEST( FaultInjectPosixSyncTest, critical_section_is_fatal_without_memory )
+{
+    AREG_SKIP_WITHOUT_ALLOCATION_FAULT( );
+    AREG_EXPECT_IN_CHILD( sync_object_is_fatal_without_memory<areg::CriticalSection>( "no memory, a CriticalSection cannot be created" ) );
+}
+
+TEST( FaultInjectPosixSyncTest, sync_timer_is_fatal_without_memory )
+{
+    AREG_SKIP_WITHOUT_ALLOCATION_FAULT( );
+    AREG_EXPECT_IN_CHILD( sync_object_is_fatal_without_memory<areg::SyncTimer>( "no memory, a SyncTimer cannot be created", NEVER_MS ) );
 }
 
 TEST( FaultInjectPosixSyncTest, timers_are_not_set_while_the_attributes_of_the_timer_condition_cannot_be_created )

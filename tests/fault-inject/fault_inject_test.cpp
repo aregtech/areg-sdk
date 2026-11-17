@@ -22,6 +22,7 @@
 #include "fault-inject/FaultSocketPair.hpp"
 
 #include "areg/appbase/Application.hpp"
+#include "areg/base/ChunkQueue.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/FileBuffer.hpp"
 #include "areg/base/MessageEnvelope.hpp"
@@ -34,6 +35,8 @@
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/logging/LoggingDefs.hpp"
+#include "areg/ipc/RemoteServiceDefs.hpp"
+#include "aregextend/service/private/SendBacklog.hpp"
 #include "areg/base/ThreadConsumer.hpp"
 
 #if AREG_LOGGING
@@ -50,9 +53,11 @@
     #include <system_error>
 #endif  // AREG_LOGGING
 
+#include <deque>
 #include <errno.h>
 
 #if defined(__linux__)
+    #include "fault-inject/FaultSweep.hpp"
     #include "aregextend/console/Console.hpp"
     #include "areg/component/DispatcherThread.hpp"
     #include "areg/component/Event.hpp"
@@ -1053,6 +1058,125 @@ TEST( FaultInjectTest, console_read_retries_an_interrupted_read_and_ends_on_a_fa
 
 #if defined(AREG_FAULT_ALLOC_TESTS)
 
+namespace
+{
+    //!< A queue of two elements per block.
+    using SmallQueue = areg::ChunkQueue<uint32_t, 2u>;
+}
+
+TEST( FaultInjectTest, chunk_queue_push_fails_without_memory_and_leaves_the_queue_unchanged )
+{
+    AREG_EXPECT_IN_CHILD(
+        SmallQueue queue;
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        AREG_CHILD_CHECK( queue.push_back( 1u ) == false );
+        AREG_CHILD_CHECK( (areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u) && NOT_REPLACED );
+        AREG_CHILD_CHECK( queue.empty( ) && (queue.size( ) == 0u) && (queue.begin( ) == queue.end( )) );
+        ::areg_fault_disarm_all( );
+
+        AREG_CHILD_CHECK( queue.push_back( 1u ) && queue.push_back( 2u ) );
+
+        // The block is full: the next push needs a block and fails; the queue keeps its elements.
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        const uint32_t third{ 3u };
+        AREG_CHILD_CHECK( queue.push_back( third ) == false );
+        AREG_CHILD_CHECK( (queue.size( ) == 2u) && (queue.front( ) == 1u) );
+
+        // A popped block is kept and reused: these pushes allocate nothing.
+        queue.pop_front( );
+        queue.pop_front( );
+        AREG_CHILD_CHECK( queue.push_back( 4u ) && queue.push_back( 5u ) );
+        AREG_CHILD_CHECK( (areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u) && (queue.front( ) == 4u) );
+        ::areg_fault_disarm_all( );
+    );
+}
+
+namespace
+{
+    //!< Builds a message with a payload of the given size.
+    areg::MessageEnvelope backlog_message( uint32_t bytes )
+    {
+        areg::MessageEnvelope message;
+        uint8_t * data{ message.init_envelope( areg::notify_client_connection( ), bytes ) };
+        if ( data != nullptr )
+        {
+            std::memset( data, 0x3C, bytes );
+            message.header( )->bufHeader.biUsed = bytes;
+        }
+
+        return message;
+    }
+
+    void backlog_without_memory_for_its_messages_fails_the_write( )
+    {
+        fault_test::LoopPair pair;
+        AREG_CHILD_CHECK( pair.open( ) );
+        static_cast<void>( areg::set_send_size( pair.server, areg::PACKET_MIN_SIZE ) );
+        static_cast<void>( areg::set_recv_size( pair.client, areg::PACKET_MIN_SIZE ) );
+        areg::SendQueueGate gate{ };
+        areg::ext::SendBacklog backlog{ gate };
+        const areg::MessageEnvelope large{ backlog_message( 4u * areg::ext::SendBacklog::WRITE_CHUNK ) };
+        const areg::MessageEnvelope small{ backlog_message( 64u ) };
+        AREG_CHILD_CHECK( (large.header( ) != nullptr) && (small.header( ) != nullptr) );
+        const areg::MessageEnvelope * const one[]{ &large };
+        uint64_t bytes{ 0u };
+        uint32_t msgs{ 0u };
+        areg_fault::FaultScope faults;
+
+        // The socket takes a part: the rest cannot be kept, the inline write fails.
+        {
+            areg::SocketWriteGuard guard{ pair.server };
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+            const int32_t result{ backlog.write_inline( 1u, pair.server, large ) };
+            const uint32_t failed{ areg_fault::failed( areg_fault::FaultPoint::Allocation ) };
+            ::areg_fault_disarm_all( );
+            AREG_CHILD_CHECK( (failed != 0u) && NOT_REPLACED );
+            AREG_CHILD_CHECK( result == -1 );
+        }
+
+        AREG_CHILD_CHECK( backlog.is_empty( ) && large.is_unique( ) );
+
+        // The socket takes a part or nothing: the rest cannot be kept, the write fails.
+        {
+            areg::SocketWriteGuard guard{ pair.server };
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+            const areg::ext::SendBacklog::Result result{ backlog.write( 2u, pair.server, one, 1u, bytes, msgs ) };
+            ::areg_fault_disarm_all( );
+            AREG_CHILD_CHECK( result == areg::ext::SendBacklog::Result::Failed );
+        }
+
+        AREG_CHILD_CHECK( backlog.is_empty( ) && large.is_unique( ) );
+
+        // A backlog whose block is full cannot take more messages: the write fails, the backlog stays.
+        {
+            areg::SocketWriteGuard guard{ pair.server };
+            AREG_CHILD_CHECK( backlog.write( 3u, pair.server, one, 1u, bytes, msgs ) == areg::ext::SendBacklog::Result::Kept );
+            constexpr uint32_t COUNT{ 16u };
+            const areg::MessageEnvelope * more[COUNT]{ };
+            for ( uint32_t i = 0u; i < COUNT; ++ i )
+            {
+                more[i] = &small;
+            }
+
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+            const areg::ext::SendBacklog::Result result{ backlog.write( 3u, pair.server, more, COUNT, bytes, msgs ) };
+            ::areg_fault_disarm_all( );
+            AREG_CHILD_CHECK( result == areg::ext::SendBacklog::Result::Failed );
+        }
+
+        AREG_CHILD_CHECK( backlog.is_empty( ) == false );
+        std::deque<ITEM_ID> cut;
+        backlog.release_all( cut );
+        AREG_CHILD_CHECK( backlog.is_empty( ) && small.is_unique( ) );
+    }
+}
+
+TEST( FaultInjectTest, backlog_without_memory_for_its_messages_fails_the_write )
+{
+    AREG_EXPECT_IN_CHILD( backlog_without_memory_for_its_messages_fails_the_write( ) );
+}
+
 TEST( FaultInjectTest, shared_buffer_reserve_returns_zero_and_a_later_reserve_succeeds_when_allocation_fails )
 {
     AREG_EXPECT_IN_CHILD(
@@ -1620,6 +1744,17 @@ namespace
         return (dir / name);
     }
 
+#if defined(AREG_FAULT_ALLOC_TESTS)
+    //!< Returns a database file in the private directory of the parent process.
+    std::filesystem::path parent_database( const char * name )
+    {
+        std::filesystem::path dir{ std::filesystem::temp_directory_path( ) / ("areg-fault-logging-" + std::to_string( static_cast<uint32_t>( ::getppid( ) ) )) };
+        std::error_code error;
+        std::filesystem::create_directories( dir, error );
+        return (dir / name);
+    }
+#endif  // defined(AREG_FAULT_ALLOC_TESTS)
+
     //!< Removes the private directory of the process.
     void remove_private_directory( const std::filesystem::path & file )
     {
@@ -1756,53 +1891,50 @@ namespace
 
 /**
  * \brief   A writing connection of a log database whose background checkpoint cannot be allocated or
- *          whose thread cannot start: each allocation of the connection fails in turn, then the thread.
- *          A connection that succeeds saves rows, the commits checkpoint themselves.
+ *          whose thread cannot start: the thread fails, then each allocation of the connection fails
+ *          in turn, one per child. A connection that succeeds saves rows, the commits checkpoint
+ *          themselves. A synchronization object that cannot be allocated ends the child with its
+ *          fatal error.
  **/
 TEST( FaultInjectTest, log_database_whose_checkpoint_cannot_start_connects_and_saves_rows )
 {
     AREG_EXPECT_IN_CHILD(
         warm_up_threads( );
-        const std::filesystem::path file{ private_database( "checkpoint.sqlog" ) };
+        const std::filesystem::path file{ parent_database( "checkpoint.sqlog" ) };
         const areg::String path( file.string( ).c_str( ) );
-        bool finished{ false };
-        uint32_t refused{ 0u };
-        for ( uint32_t skip = 0u; ( skip < 64u ) && ( finished == false ); ++ skip )
+        areg::ext::LogSqliteDatabase database;
         {
-            areg::ext::LogSqliteDatabase database;
-            bool connected{ false };
-            uint32_t failed{ 0u };
-            {
-                areg_fault::FaultScope faults;
-                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
-                connected = database.connect( path, areg::DatabaseRole::Recorder );
-                failed = areg_fault::failed( areg_fault::FaultPoint::Allocation );
-            }
-
-            finished = ( failed == 0u );
-            refused += ( failed != 0u ) ? 1u : 0u;
-            AREG_CHILD_CHECK( connected );
-            AREG_CHILD_CHECK( write_one_row( database ) );
-            database.disconnect( );
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, THREAD_ERROR ) );
+            AREG_CHILD_CHECK( database.connect( path, areg::DatabaseRole::Recorder ) );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u && NOT_REPLACED );
         }
 
-        AREG_CHILD_CHECK( finished );
-        AREG_CHILD_CHECK( refused != 0u );
-        {
-            areg::ext::LogSqliteDatabase database;
-            {
-                areg_fault::FaultScope faults;
-                AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::ThreadCreate, THREAD_ERROR ) );
-                AREG_CHILD_CHECK( database.connect( path, areg::DatabaseRole::Recorder ) );
-                AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::ThreadCreate ) == 1u && NOT_REPLACED );
-            }
-
-            AREG_CHILD_CHECK( write_one_row( database ) );
-            database.disconnect( );
-        }
-
-        remove_private_directory( file );
+        AREG_CHILD_CHECK( write_one_row( database ) );
+        database.disconnect( );
     );
+
+    areg_sweep::sweep_in_children( 64u, areg_sweep::StepResult::Survived, [] ( uint32_t skip ) {
+        warm_up_threads( );
+        const std::filesystem::path file{ parent_database( "checkpoint.sqlog" ) };
+        const areg::String path( file.string( ).c_str( ) );
+        areg::ext::LogSqliteDatabase database;
+        bool connected{ false };
+        uint32_t failed{ 0u };
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, skip, 1u ) );
+            connected = database.connect( path, areg::DatabaseRole::Recorder );
+            failed = areg_fault::failed( areg_fault::FaultPoint::Allocation );
+        }
+
+        AREG_CHILD_CHECK( connected );
+        AREG_CHILD_CHECK( write_one_row( database ) );
+        database.disconnect( );
+        return ( failed == 0u ? areg_sweep::StepResult::Done : areg_sweep::StepResult::Survived );
+    } );
+
+    remove_private_directory( private_database( "checkpoint.sqlog" ) );
 }
 
 #endif  // defined(AREG_FAULT_ALLOC_TESTS)

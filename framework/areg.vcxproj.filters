@@ -593,6 +593,9 @@
     <ClInclude Include="areg\base\ResourceMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="areg\base\ChunkQueue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="areg\base\RingStack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

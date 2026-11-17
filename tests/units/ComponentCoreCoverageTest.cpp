@@ -225,48 +225,6 @@ namespace
             return LocalResponseEvent(target, result, message, 0u);
         }
     };
-
-    //!< A dispatcher thread that runs one action and ends.
-    class CoreThread final : public DispatcherThread
-    {
-    public:
-        CoreThread(std::function<void(DispatcherThread &)> action, const char * name)
-            : DispatcherThread(String(name), DEFAULT_STACK_SIZE, QUEUE_MIN_RING_CAPACITY, Bool::True, 0)
-            , mAction(std::move(action))
-            , mDone()
-        {
-        }
-
-        std::future<void> completion()
-        {
-            return mDone.get_future();
-        }
-
-    protected:
-        bool post_event(Event & event) override
-        {
-            return EventDispatcher::post_event(event);
-        }
-
-        void on_run() override
-        {
-            mAction(*this);
-            mDone.set_value();
-        }
-
-    private:
-        std::function<void(DispatcherThread &)> mAction;
-        std::promise<void> mDone;
-    };
-
-    void on_core_thread(std::function<void(DispatcherThread &)> action, const char * name = "CoreCoverageThread")
-    {
-        CoreThread thread(std::move(action), name);
-        auto done = thread.completion();
-        ASSERT_TRUE(thread.start(WAIT_INFINITE));
-        EXPECT_EQ(std::future_status::ready, done.wait_for(std::chrono::seconds(30)));
-        EXPECT_EQ(Thread::ThreadCompletion::Completed, thread.shutdown(WAIT_INFINITE));
-    }
 }
 
 /**
@@ -451,6 +409,48 @@ TEST(ComponentCoreCoverageTest, passed_start_deadline_without_the_watchdog_manag
 
 namespace
 {
+    //!< A dispatcher thread that runs one action and ends.
+    class CoreThread final : public DispatcherThread
+    {
+    public:
+        CoreThread(std::function<void(DispatcherThread &)> action, const char * name)
+            : DispatcherThread(String(name), DEFAULT_STACK_SIZE, QUEUE_MIN_RING_CAPACITY, Bool::True, 0)
+            , mAction(std::move(action))
+            , mDone()
+        {
+        }
+
+        std::future<void> completion()
+        {
+            return mDone.get_future();
+        }
+
+    protected:
+        bool post_event(Event & event) override
+        {
+            return EventDispatcher::post_event(event);
+        }
+
+        void on_run() override
+        {
+            mAction(*this);
+            mDone.set_value();
+        }
+
+    private:
+        std::function<void(DispatcherThread &)> mAction;
+        std::promise<void> mDone;
+    };
+
+    void on_core_thread(std::function<void(DispatcherThread &)> action, const char * name = "CoreCoverageThread")
+    {
+        CoreThread thread(std::move(action), name);
+        auto done = thread.completion();
+        ASSERT_TRUE(thread.start(WAIT_INFINITE));
+        EXPECT_EQ(std::future_status::ready, done.wait_for(std::chrono::seconds(30)));
+        EXPECT_EQ(Thread::ThreadCompletion::Completed, thread.shutdown(WAIT_INFINITE));
+    }
+
     enum class Call { RegisterProvider, UnregisterProvider, RegisterConsumer, UnregisterConsumer };
 
     struct Record

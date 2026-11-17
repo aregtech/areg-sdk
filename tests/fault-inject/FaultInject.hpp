@@ -65,7 +65,7 @@ namespace areg_fault
         , EpollCtl          //!< Linux epoll_ctl(). Not replaced elsewhere. Error: errno value.
         , FileRead          //!< Linux read(), Windows ReadFile(). Not replaced on macOS. Error: errno value / Win32 error.
         , FileWrite         //!< Linux write(), Windows WriteFile(). Not replaced on macOS. Error: errno value / Win32 error.
-        , Allocation        //!< Linux operator new(std::nothrow) and operator new[](std::nothrow): returns nullptr. Not replaced elsewhere; the error is ignored.
+        , Allocation        //!< Linux operator new(std::nothrow) and operator new[](std::nothrow), Windows malloc() of the C runtime, which every allocation of a module calls: returns nullptr. Not replaced on macOS; the error is ignored.
         , AlignedAllocation //!< Linux operator new(std::align_val_t, std::nothrow) and new[]: returns nullptr. Not replaced elsewhere; the error is ignored.
         , PipeCreate        //!< Linux pipe(). Not replaced elsewhere. Error: errno value.
         , Poll              //!< Linux poll(), Windows WSAPoll() and select(). Not replaced on macOS. Error: errno value / WSA error.
@@ -172,6 +172,12 @@ extern "C"
      * \brief   Linux only. Returns the calls counted since areg_fault_count_throwing_new().
      **/
     AREG_FAULT_API uint32_t areg_fault_throwing_new_count( );
+
+    /**
+     * \brief   Windows only. Returns the calls of LeaveCriticalSection() made by a thread that does
+     *          not own the section, since this function or areg_fault_arm() was first called. The calls still run.
+     **/
+    AREG_FAULT_API uint32_t areg_fault_unowned_leaves( );
 }
 
 namespace areg_fault

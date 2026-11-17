@@ -228,6 +228,7 @@
     <ClInclude Include="areg\base\private\posix\SocketSendPosix.hpp" />
     <ClInclude Include="areg\base\private\posix\SyncDefsPosix.hpp" />
     <ClInclude Include="areg\base\ResourceListMap.hpp" />
+    <ClInclude Include="areg\base\ChunkQueue.hpp" />
     <ClInclude Include="areg\base\RingStack.hpp" />
     <ClInclude Include="areg\base\StringBase.hpp" />
     <ClInclude Include="areg\base\TEValue.hpp" />
