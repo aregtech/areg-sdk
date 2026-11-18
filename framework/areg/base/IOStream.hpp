@@ -233,7 +233,20 @@ public:
      **/
     virtual void reset() const noexcept = 0;
 
+    /**
+     * \brief   Returns true if a read since the cursor was last set asked for more data than the
+     *          stream held: a value, a string or a container count ran past the end of the data.
+     *          Setting the cursor (reset, seek, assignment) clears it.
+     **/
+    [[nodiscard]]
+    virtual bool is_read_short() const noexcept = 0;
+
 protected:
+    /**
+     * \brief   Marks that a read asked for more data than the stream held. Stays until the cursor is set.
+     **/
+    virtual void mark_read_short() const noexcept = 0;
+
     /**
      * \brief   Returns the number of bytes available to read.
      **/
@@ -743,7 +756,11 @@ inline double areg::InStream::read64_real() const noexcept
 inline uint32_t areg::InStream::bounded_count(uint32_t count) const noexcept
 {
     const uint32_t readable{ size_readable() };
-    return (count < readable ? count : readable);
+    if (count <= readable)
+        return count;
+
+    mark_read_short();
+    return readable;
 }
 
 inline uint32_t areg::InStream::_skip(uint32_t size) const noexcept
@@ -780,7 +797,10 @@ inline uint32_t areg::InStream::read_text(std::basic_string<CharType>& output) c
 
         const uint8_t* const data{ count <= (0xFFFFFFFFu / unitSize) ? read_view(count * unitSize) : nullptr };
         if (data == nullptr)
+        {
+            mark_read_short();
             return headSize + _skip(size_readable());
+        }
 
         if constexpr (sizeof(CharType) == 1u)
         {
@@ -813,7 +833,10 @@ inline uint32_t areg::InStream::read_text(std::basic_string<CharType>& output) c
 
     const uint32_t readable{ size_readable() };
     if (count > (readable / unitSize))
+    {
+        mark_read_short();
         return headSize + _skip(readable);
+    }
 
     output.resize(count);
     if constexpr (sizeof(CharType) != 4u)

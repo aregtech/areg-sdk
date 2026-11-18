@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="ShortPayload" Version="1.0.0" Category="Public">
+        <Description>Entries with more than one parameter, to send payloads that hold fewer bytes than the parameter list.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute ID="2" Name="Value" DataType="uint32" Notify="OnChange"/>
+    </AttributeList>
+    <MethodList>
+        <Method ID="3" Name="pair" MethodType="Request" Response="paired">
+            <ParamList>
+                <Parameter ID="4" Name="first" DataType="uint32"/>
+                <Parameter ID="5" Name="second" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="6" Name="label" MethodType="Request" Response="paired">
+            <ParamList>
+                <Parameter ID="7" Name="text" DataType="String"/>
+                <Parameter ID="8" Name="number" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="9" Name="trigger" MethodType="Request">
+            <ParamList>
+                <Parameter ID="10" Name="what" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="11" Name="paired" MethodType="Response">
+            <ParamList>
+                <Parameter ID="12" Name="first" DataType="uint32"/>
+                <Parameter ID="13" Name="second" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="14" Name="pushed" MethodType="Broadcast">
+            <ParamList>
+                <Parameter ID="15" Name="first" DataType="uint32"/>
+                <Parameter ID="16" Name="second" DataType="uint32"/>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

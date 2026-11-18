@@ -46,6 +46,7 @@ namespace
         bool                    mViews  { true };
         uint32_t                mWriteLimit { 0xFFFFFFFFu };
         uint32_t                mReadCap    { 0xFFFFFFFFu };
+        mutable bool            mShort      { false };
 
         uint32_t read(uint8_t* buffer, uint32_t size) const noexcept override
         {
@@ -53,11 +54,14 @@ namespace
             if (count != 0u)
                 std::memcpy(buffer, mData.data() + mPos, count);
             mPos += count;
+            mShort = mShort || (count < size);
             return count;
         }
 
         uint32_t read(areg::SharedBuffer&) const override { return 0u; }
-        void reset() const noexcept override { mPos = 0u; }
+        void reset() const noexcept override { mPos = 0u; mShort = false; }
+        bool is_read_short() const noexcept override { return mShort; }
+        void mark_read_short() const noexcept override { mShort = true; }
 
         uint32_t write(const uint8_t* buffer, uint32_t size) override
         {
@@ -619,5 +623,30 @@ TEST(StreamTextUnitsTest, wide_string_operators_round_trip)
         static_cast<const areg::InStream&>(stream) >> first >> second;
         EXPECT_EQ(first, text);
         EXPECT_EQ(second, L"literal");
+    }
+}
+
+/**
+ * \brief   A string count larger than the data marks the stream short, with and without direct
+ *          access to the memory; a complete string does not.
+ **/
+TEST(StreamTextUnitsTest, count_beyond_data_marks_the_stream_short)
+{
+    for (bool views : { true, false })
+    {
+        MemoryStream stream(views);
+        const uint32_t count{ 10u };
+        stream.write(reinterpret_cast<const uint8_t*>(&count), HEAD);
+        stream.write(reinterpret_cast<const uint8_t*>("abc"), 3u);
+        std::string text{ "old" };
+        stream >> text;
+        EXPECT_TRUE(text.empty()) << "views " << views;
+        EXPECT_TRUE(stream.is_read_short()) << "views " << views;
+
+        MemoryStream whole(views);
+        whole << std::string("abc");
+        whole >> text;
+        EXPECT_EQ(text, "abc") << "views " << views;
+        EXPECT_FALSE(whole.is_read_short()) << "views " << views;
     }
 }

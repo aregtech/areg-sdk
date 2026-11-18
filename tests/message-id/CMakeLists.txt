@@ -9,16 +9,20 @@
 # requests and 64 attributes. A measurement, not registered with ctest.
 # areg-message-identity-test: the generated IDs are the CRC-32C of kind and name, the same
 # in OrderForward and OrderReverse.
+# areg-short-payload-test: a request, response, broadcast or attribute update whose payload
+# holds fewer bytes than its parameter list. One test per case.
 # ###########################################################################
 
 set(AREG_MESSAGE_ID_PROJECT "areg-message-id-test")
 set(AREG_MESSAGE_ID_RATE    "areg-message-id-rate")
 set(AREG_MESSAGE_IDENTITY   "areg-message-identity-test")
+set(AREG_SHORT_PAYLOAD      "areg-short-payload-test")
 
 addServiceInterface(message_id_generated      tests/message-id/services/SharedResponse.siml)
 addServiceInterface(message_id_wide_generated tests/message-id/services/WideService.siml)
 addServiceInterface(message_id_forward_generated  tests/message-id/services/OrderForward.siml)
 addServiceInterface(message_id_reverse_generated  tests/message-id/services/OrderReverse.siml)
+addServiceInterface(message_id_short_generated    tests/message-id/services/ShortPayload.siml)
 
 addExecutableEx(${AREG_MESSAGE_ID_PROJECT} ""
     "${AREG_TESTS_DIR}/message-id/message_id_test.cpp"
@@ -36,4 +40,13 @@ gtest_discover_tests(${AREG_MESSAGE_IDENTITY} DISCOVERY_TIMEOUT 60 DISCOVERY_MOD
 foreach(_msgid_case shared-busy shared-cancel shared-error-request shared-error-response shared-unavailable unknown-request remove-all unsupported-request)
     add_test(NAME ${AREG_MESSAGE_ID_PROJECT}.${_msgid_case} COMMAND ${AREG_MESSAGE_ID_PROJECT} ${_msgid_case})
     set_tests_properties(${AREG_MESSAGE_ID_PROJECT}.${_msgid_case} PROPERTIES TIMEOUT 300)
+endforeach()
+
+addExecutableEx(${AREG_SHORT_PAYLOAD} ""
+    "${AREG_TESTS_DIR}/message-id/short_payload_test.cpp"
+    "message_id_short_generated")
+
+foreach(_short_case short-request empty-request short-string-request short-response short-broadcast short-attribute)
+    add_test(NAME ${AREG_SHORT_PAYLOAD}.${_short_case} COMMAND ${AREG_SHORT_PAYLOAD} ${_short_case})
+    set_tests_properties(${AREG_SHORT_PAYLOAD}.${_short_case} PROPERTIES TIMEOUT 300)
 endforeach()

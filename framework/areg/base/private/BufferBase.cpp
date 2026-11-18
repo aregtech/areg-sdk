@@ -50,6 +50,7 @@ BufferBase::BufferBase(uint32_t blockSize /* = areg::BLOCK_SIZE */)
     , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
     , mByteBuffer   ( )
     , mPosition     ( 0u )
+    , mReadShort    ( false )
 {
 }
 
@@ -91,7 +92,18 @@ uint32_t BufferBase::read(uint8_t* buf, uint32_t size) const noexcept
 
 void BufferBase::reset() const noexcept
 {
-    mPosition = 0u;
+    mPosition  = 0u;
+    mReadShort = false;
+}
+
+bool BufferBase::is_read_short() const noexcept
+{
+    return mReadShort;
+}
+
+void BufferBase::mark_read_short() const noexcept
+{
+    mReadShort = true;
 }
 
 uint32_t BufferBase::size_readable() const noexcept
@@ -115,6 +127,7 @@ BufferBase::BufferBase(uint32_t reserveSize, uint32_t blockSize)
     , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
     , mByteBuffer   ( )
     , mPosition     ( 0u )
+    , mReadShort    ( false )
 {
     reserve(reserveSize, false);
 }
@@ -125,6 +138,7 @@ BufferBase::BufferBase(const uint8_t* buffer, uint32_t size, uint32_t blockSize 
     , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
     , mByteBuffer   ( )
     , mPosition     ( 0u )
+    , mReadShort    ( false )
 {
     write_data(buffer, size);
 }
@@ -135,6 +149,7 @@ BufferBase::BufferBase(uint32_t reserveSize, const uint8_t* buffer, uint32_t siz
     , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
     , mByteBuffer   ( )
     , mPosition     ( 0u )
+    , mReadShort    ( false )
 {
     reserveSize = std::max(reserveSize, size);
     reserve(reserveSize, false);
@@ -147,6 +162,7 @@ BufferBase::BufferBase(const char* textString, uint32_t blockSize /* = areg::BLO
     , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
     , mByteBuffer   ( )
     , mPosition     ( 0u )
+    , mReadShort    ( false )
 {
     write_text(textString, static_cast<uint32_t>(areg::string_length<char>(textString)));
 }
@@ -157,6 +173,7 @@ BufferBase::BufferBase(const wchar_t* textString, uint32_t blockSize /* = areg::
     , mBlockSize    ( areg::align_size(blockSize, areg::BLOCK_SIZE) )
     , mByteBuffer   ( )
     , mPosition     ( 0u )
+    , mReadShort    ( false )
 {
     write_text(textString, static_cast<uint32_t>(areg::string_length<wchar_t>(textString)));
 }
@@ -167,6 +184,7 @@ BufferBase::BufferBase(const BufferBase& src) noexcept
     , mBlockSize    ( src.mBlockSize )
     , mByteBuffer   ( )
     , mPosition     ( 0u )
+    , mReadShort    ( false )
 {
     mByteBuffer = src.mByteBuffer;   // share the block; read cursor at start
 }
@@ -177,9 +195,11 @@ BufferBase::BufferBase(BufferBase&& src) noexcept
     , mBlockSize    ( src.mBlockSize )
     , mByteBuffer   ( )
     , mPosition     ( 0u )
+    , mReadShort    ( false )
 {
     mByteBuffer     = std::move(src.mByteBuffer);
     src.mPosition   = 0u;
+    src.mReadShort  = false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -194,6 +214,7 @@ BufferBase& BufferBase::operator = (const BufferBase& src) noexcept
         {
             mByteBuffer = src.mByteBuffer;
             mPosition   = 0u;
+            mReadShort  = false;
         }
         else
         {
@@ -212,7 +233,9 @@ BufferBase& BufferBase::operator = (BufferBase&& src) noexcept
         {
             mByteBuffer     = std::move(src.mByteBuffer);
             mPosition       = 0u;
+            mReadShort      = false;
             src.mPosition   = 0u;
+            src.mReadShort  = false;
         }
         else
         {
@@ -251,7 +274,8 @@ uint32_t BufferBase::set_position(int32_t offset, Cursor::SeekOrigin startAt) co
         offset = offset < 0 ? std::max(offset, -rangeSize) : 0;
     }
 
-    mPosition = static_cast<uint32_t>(curPos + offset);
+    mPosition  = static_cast<uint32_t>(curPos + offset);
+    mReadShort = false;
     return mPosition;
 }
 
@@ -285,6 +309,7 @@ uint32_t BufferBase::reserve(uint32_t size, bool copy) noexcept
             mPosition = 0u;
         }
 
+        mReadShort = false;
         return (mByteBuffer->bufHeader.biLength - mPosition);
     }
 
@@ -398,7 +423,14 @@ uint32_t BufferBase::read(SharedBuffer& buf) const noexcept
     }
 
     const areg::RawBuffer* const raw = mByteBuffer.get();
-    if ((length > raw->bufHeader.biUsed - mPosition) || (buf.reserve(length, false) < length))
+    if (length > raw->bufHeader.biUsed - mPosition)
+    {
+        mPosition  = start;
+        mReadShort = true;
+        return 0u;
+    }
+
+    if (buf.reserve(length, false) < length)
     {
         mPosition = start;
         return 0u;
@@ -554,14 +586,29 @@ uint32_t BufferBase::read_data(uint8_t* buf, uint32_t size) const noexcept
 {
     const areg::RawBuffer* const raw = mByteBuffer.get();
     if ((raw == nullptr) || (size == 0u) || (buf == nullptr))
+    {
+        if (size != 0u)
+        {
+            mReadShort = true;
+        }
+
         return 0u;
+    }
 
     const uint32_t limit = raw->bufHeader.biUsed;
     if (mPosition >= limit)
+    {
+        mReadShort = true;
         return 0u;
+    }
 
     const uint32_t avail  = limit - mPosition;
     const uint32_t result = std::min(avail, size);
+    if (result != size)
+    {
+        mReadShort = true;
+    }
+
     areg::mem_copy_exact(buf, size, areg::buffer_data_read(raw) + mPosition, result);
     mPosition += result;
     return result;

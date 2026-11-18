@@ -75,7 +75,8 @@ uint32_t SharedBuffer::read(uint8_t* buf, uint32_t size) const noexcept
 
 void SharedBuffer::reset() const noexcept
 {
-    mPosition = mViewStart;
+    mPosition  = mViewStart;
+    mReadShort = false;
 }
 
 uint32_t SharedBuffer::size_readable() const noexcept
@@ -173,6 +174,7 @@ SharedBuffer& SharedBuffer::operator = (const SharedBuffer& src) noexcept
         {
             mByteBuffer = src.mByteBuffer;
             mPosition   = src.mViewStart;
+            mReadShort  = false;
             mViewStart  = src.mViewStart;
             mViewEnd    = src.mViewEnd;
         }
@@ -193,9 +195,11 @@ SharedBuffer& SharedBuffer::operator = (SharedBuffer&& src) noexcept
         {
             mByteBuffer     = std::move(src.mByteBuffer);
             mPosition       = src.mViewStart;
+            mReadShort      = false;
             mViewStart      = src.mViewStart;
             mViewEnd        = src.mViewEnd;
             src.mPosition   = 0u;
+            src.mReadShort  = false;
             src.mViewStart  = 0u;
             src.mViewEnd    = 0u;
         }
@@ -214,6 +218,7 @@ SharedBuffer& SharedBuffer::operator = (const MessageEnvelope& envelope) noexcep
     {
         mByteBuffer = envelope.share_buffer();
         mPosition   = 0u;
+        mReadShort  = false;
         mViewStart  = 0u;
         mViewEnd    = 0u;
     }
@@ -263,7 +268,8 @@ uint32_t SharedBuffer::set_position(int32_t offset, Cursor::SeekOrigin startAt) 
         offset = offset < 0 ? std::max(offset, -rangeSize) : 0;
     }
 
-    mPosition = viewStart + static_cast<uint32_t>(curPos + offset);
+    mPosition  = viewStart + static_cast<uint32_t>(curPos + offset);
+    mReadShort = false;
     return (mPosition - mViewStart);
 }
 
@@ -297,6 +303,7 @@ uint32_t SharedBuffer::reserve(uint32_t size, bool copy) noexcept
             mPosition = 0u;
         }
 
+        mReadShort = false;
         return (mByteBuffer->bufHeader.biLength - mPosition);
     }
 
@@ -374,7 +381,8 @@ uint32_t SharedBuffer::read(SharedBuffer& buf) const noexcept
     const uint32_t srcEnd = (mViewEnd > 0u ? mViewEnd : raw->bufHeader.biUsed);
     if (length > (srcEnd - mPosition))
     {
-        mPosition = start;
+        mPosition  = start;
+        mReadShort = true;
         return 0u;
     }
 
@@ -383,6 +391,7 @@ uint32_t SharedBuffer::read(SharedBuffer& buf) const noexcept
     buf.mViewStart  = mPosition;
     buf.mViewEnd    = mPosition + length;
     buf.mPosition   = mPosition;
+    buf.mReadShort  = false;
 
     mPosition += length;
     return length;
@@ -435,14 +444,29 @@ uint32_t SharedBuffer::read_data(uint8_t* buf, uint32_t size) const noexcept
 {
     const areg::RawBuffer* const raw = mByteBuffer.get();
     if ((raw == nullptr) || (size == 0u) || (buf == nullptr))
+    {
+        if (size != 0u)
+        {
+            mReadShort = true;
+        }
+
         return 0u;
+    }
 
     const uint32_t limit = (mViewEnd > 0u ? mViewEnd : raw->bufHeader.biUsed);
     if (mPosition >= limit)
+    {
+        mReadShort = true;
         return 0u;
+    }
 
     const uint32_t avail  = limit - mPosition;
     const uint32_t result = std::min(avail, size);
+    if (result != size)
+    {
+        mReadShort = true;
+    }
+
     areg::mem_copy_exact(buf, size, areg::buffer_data_read(raw) + mPosition, result);
     mPosition += result;
     return result;

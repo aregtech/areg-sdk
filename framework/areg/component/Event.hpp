@@ -436,6 +436,12 @@ public:
     inline const InStream & read_stream( ) const noexcept;
 
     /**
+     * \brief   Returns true if a read of the payload asked for more data than the payload held.
+     **/
+    [[nodiscard]]
+    inline bool is_payload_short( ) const noexcept;
+
+    /**
      * \brief   Returns this event cast to OutStream for writing serialized payload.
      **/
     [[nodiscard]]
@@ -612,6 +618,11 @@ inline bool Event::is_custom() const noexcept
 inline const InStream& Event::read_stream() const noexcept
 {
     return static_cast<const InStream&>(*this);
+}
+
+inline bool Event::is_payload_short() const noexcept
+{
+    return mReadShort;
 }
 
 inline OutStream& Event::write_stream() const noexcept

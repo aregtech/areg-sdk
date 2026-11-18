@@ -217,6 +217,18 @@ public:
      **/
     void reset() const noexcept override;
 
+    /**
+     * \brief   Returns true if a read since the cursor was last set asked for more data than the buffer held.
+     **/
+    [[nodiscard]]
+    bool is_read_short() const noexcept override;
+
+protected:
+    /**
+     * \brief   Marks that a read asked for more data than the buffer held.
+     **/
+    void mark_read_short() const noexcept override;
+
 //////////////////////////////////////////////////////////////////////////
 // BufferBase API
 //////////////////////////////////////////////////////////////////////////
@@ -583,6 +595,11 @@ protected:
      **/
     mutable uint32_t    mPosition;
 
+    /**
+     * \brief   True if a read since the cursor was last set asked for more data than the buffer held.
+     **/
+    mutable bool        mReadShort;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -634,6 +651,7 @@ inline bool BufferBase::operator != (const BufferBase& other) const noexcept
 inline void BufferBase::invalidate() noexcept
 {
     mPosition  = 0u;
+    mReadShort = false;
     mByteBuffer.reset();
 }
 
@@ -789,12 +807,12 @@ inline const T* BufferBase::read_array(uint32_t count) noexcept
         return nullptr;
 
     const areg::RawBuffer* const raw = mByteBuffer.get();
-    if (raw == nullptr)
-        return nullptr;
-
     const uint64_t end{ static_cast<uint64_t>(mPosition) + static_cast<uint64_t>(sizeof(T)) * count };
-    if (end > raw->bufHeader.biUsed)
+    if ((raw == nullptr) || (end > raw->bufHeader.biUsed))
+    {
+        mReadShort = true;
         return nullptr;
+    }
 
     const T* result = reinterpret_cast<const T*>(buffer_to_read());
     mPosition = static_cast<uint32_t>(end);

@@ -79,11 +79,13 @@ bool File::open(const String& fileName, uint32_t mode)
 
 bool File::open()
 {
+    mReadShort = false;
     return _os_open_file();
 }
 
 void File::close()
 {
+    mReadShort = false;
     _os_close_file();
 }
 
@@ -368,6 +370,7 @@ uint32_t File::read(uint8_t* buffer, uint32_t size) const noexcept
         }
     }
 
+    mReadShort = mReadShort || (result < size);
     return result;
 }
 
@@ -397,6 +400,7 @@ uint32_t File::write(const uint8_t* buffer, uint32_t size) noexcept
 
 uint32_t File::set_position(int32_t offset, Cursor::SeekOrigin startAt) const noexcept
 {
+    mReadShort = false;
     return (is_opened() ? _os_set_position(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
 }
 
