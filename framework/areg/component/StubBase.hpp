@@ -314,7 +314,7 @@ protected:
 
     private:
         alignas(StubBase::Listener) uint8_t mInline[sizeof(StubBase::Listener) * INLINE_COUNT]; //!< The inline storage.
-        StubBase::Listener *    mHeap       { nullptr };        //!< The heap storage; nullptr while the inline one is used.
+        uint8_t *               mHeap       { nullptr };        //!< The heap storage; nullptr while the inline one is used.
         uint32_t                mCapacity   { INLINE_COUNT };   //!< The number of listeners the storage holds.
         uint32_t                mCount      { 0u };             //!< The number of listeners.
 
@@ -1053,7 +1053,7 @@ inline StubBase::StubListenerList & StubBase::StubListenerList::operator = (Stub
 {
     if (this != &src)
     {
-        ::operator delete(mHeap, std::nothrow);
+        delete [] mHeap;
         mHeap       = src.mHeap;
         mCapacity   = src.mCapacity;
         mCount      = src.mCount;
@@ -1070,7 +1070,7 @@ inline StubBase::StubListenerList & StubBase::StubListenerList::operator = (Stub
 
 inline StubBase::StubListenerList::~StubListenerList()
 {
-    ::operator delete(mHeap, std::nothrow);
+    delete [] mHeap;
 }
 
 inline bool StubBase::StubListenerList::reserve(uint32_t count) noexcept
@@ -1104,12 +1104,12 @@ inline bool StubBase::StubListenerList::append(const StubBase::ListenerSlotList 
 
 inline bool StubBase::StubListenerList::_grow(uint32_t capacity) noexcept
 {
-    Listener * heap{ static_cast<Listener *>(::operator new(sizeof(Listener) * capacity, std::nothrow)) };
+    uint8_t * heap{ new (std::nothrow) uint8_t[sizeof(Listener) * capacity] };
     if (heap == nullptr)
         return false;
 
-    std::memcpy(static_cast<void *>(heap), _data(), sizeof(Listener) * mCount);
-    ::operator delete(mHeap, std::nothrow);
+    std::memcpy(heap, _data(), sizeof(Listener) * mCount);
+    delete [] mHeap;
     mHeap       = heap;
     mCapacity   = capacity;
     return true;
@@ -1148,12 +1148,12 @@ inline const StubBase::Listener & StubBase::StubListenerList::first_entry() cons
 
 inline StubBase::Listener * StubBase::StubListenerList::_data() noexcept
 {
-    return (mHeap != nullptr ? mHeap : reinterpret_cast<StubBase::Listener *>(mInline));
+    return reinterpret_cast<StubBase::Listener *>(mHeap != nullptr ? mHeap : mInline);
 }
 
 inline const StubBase::Listener * StubBase::StubListenerList::_data() const noexcept
 {
-    return (mHeap != nullptr ? mHeap : reinterpret_cast<const StubBase::Listener *>(mInline));
+    return reinterpret_cast<const StubBase::Listener *>(mHeap != nullptr ? mHeap : mInline);
 }
 
 /************************************************************************

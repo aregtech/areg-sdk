@@ -398,15 +398,15 @@ void StubBase::collect_and_strip_response_listeners( areg::CallType kind, uint32
             break;
 
         ListenerSlotList & subVec = *found;
-        const uint32_t index{ _find_target(subVec) };
-        if (index < subVec.size())
+        const uint32_t pos{ _find_target(subVec) };
+        if (pos < subVec.size())
         {
-            const Listener target{ subVec.value_at(index) };
+            const Listener target{ subVec.value_at(pos) };
             const bool reachable{ (target.mFlags & Listener::FLAG_ORPHANED) == 0u };
             if (reachable && !listeners.add(target))
                 break;
 
-            _remove_at(subVec, index);
+            _remove_at(subVec, pos);
             static_cast<void>(listeners.reserve(listeners.size() + subVec.size()));
 
             for (uint32_t i = 0; i < subVec.size(); ++i)

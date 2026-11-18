@@ -65,10 +65,13 @@ addExecutableEx(${AREG_KIND_SHARE} ""
 add_test(NAME ${AREG_KIND_SHARE} COMMAND ${AREG_KIND_SHARE})
 set_tests_properties(${AREG_KIND_SHARE} PROPERTIES TIMEOUT 300)
 
+macro_normalize_path(_msgid_rule_jar    "${AREG_SDK_TOOLS}/codegen.jar")
+macro_normalize_path(_msgid_rule_root   "${AREG_SDK_ROOT}")
+macro_normalize_path(_msgid_rule_target "${CMAKE_CURRENT_BINARY_DIR}/message-id-rule")
 add_test(NAME areg-message-id-rule.same-kind-refused
-         COMMAND ${Java_JAVA_EXECUTABLE} -jar "${AREG_SDK_TOOLS}/codegen.jar"
-                 "--root=${AREG_SDK_ROOT}" "--doc=tests/message-id/rule/SameKindClash.siml"
-                 "--target=${CMAKE_CURRENT_BINARY_DIR}/message-id-rule")
+         COMMAND ${Java_JAVA_EXECUTABLE} -jar "${_msgid_rule_jar}"
+                 "--root=${_msgid_rule_root}" "--doc=tests/message-id/rule/SameKindClash.siml"
+                 "--target=${_msgid_rule_target}")
 set_tests_properties(areg-message-id-rule.same-kind-refused PROPERTIES TIMEOUT 120
     PASS_REGULAR_EXPRESSION "request \\[ value_1371838 \\] and the request \\[ value_2000402 \\].*response \\[ value_1371838 \\] and the response \\[ value_2000402 \\].*broadcast \\[ value_1371838 \\] and the broadcast \\[ value_2000402 \\].*attribute \\[ value_1371838 \\] and the attribute \\[ value_2000402 \\]"
     FAIL_REGULAR_EXPRESSION "pingSDFzY \\]|tickxGUOt \\]")
