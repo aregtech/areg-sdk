@@ -13,8 +13,8 @@
 # holds fewer bytes than its parameter list. One test per case.
 # areg-kind-share-test: a request and a broadcast with one message ID, and IDs below 0x10000,
 # reach their own handlers.
-# areg-message-id-rule.same-kind-refused: the code generator refuses two requests with one ID
-# and accepts a request and a broadcast with one ID.
+# areg-message-id-rule.same-kind-refused: the code generator refuses two requests, two responses,
+# two broadcasts and two attributes with one ID, and accepts a request and a broadcast with one ID.
 # ###########################################################################
 
 set(AREG_MESSAGE_ID_PROJECT "areg-message-id-test")
@@ -69,5 +69,5 @@ add_test(NAME areg-message-id-rule.same-kind-refused
                  "--root=${AREG_SDK_ROOT}" "--doc=tests/message-id/rule/SameKindClash.siml"
                  "--target=${CMAKE_CURRENT_BINARY_DIR}/message-id-rule")
 set_tests_properties(areg-message-id-rule.same-kind-refused PROPERTIES TIMEOUT 120
-    PASS_REGULAR_EXPRESSION "request \\[ value_1371838 \\] and the request \\[ value_2000402 \\]"
+    PASS_REGULAR_EXPRESSION "request \\[ value_1371838 \\] and the request \\[ value_2000402 \\].*response \\[ value_1371838 \\] and the response \\[ value_2000402 \\].*broadcast \\[ value_1371838 \\] and the broadcast \\[ value_2000402 \\].*attribute \\[ value_1371838 \\] and the attribute \\[ value_2000402 \\]"
     FAIL_REGULAR_EXPRESSION "pingSDFzY \\]|tickxGUOt \\]")

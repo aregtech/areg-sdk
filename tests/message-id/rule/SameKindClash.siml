@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.1.0">
     <Overview ID="1" Name="SameKindClash" Version="1.0.0" Category="Public">
-        <Description>Two requests whose names have one CRC-32C: the generator refuses the document.</Description>
+        <Description>Two entries of every kind whose names have one CRC-32C: the generator refuses the document.</Description>
     </Overview>
+    <AttributeList>
+        <Attribute ID="10" Name="value_1371838" DataType="uint32" Notify="OnChange"/>
+        <Attribute ID="11" Name="value_2000402" DataType="uint32" Notify="OnChange"/>
+    </AttributeList>
     <MethodList>
-        <Method ID="2" Name="value_1371838" MethodType="Request"/>
-        <Method ID="3" Name="value_2000402" MethodType="Request"/>
+        <Method ID="2" Name="value_1371838" MethodType="Request" Response="value_1371838"/>
+        <Method ID="3" Name="value_2000402" MethodType="Request" Response="value_2000402"/>
         <Method ID="4" Name="pingSDFzY" MethodType="Request"/>
         <Method ID="5" Name="tickxGUOt" MethodType="Broadcast"/>
+        <Method ID="6" Name="value_1371838" MethodType="Response"/>
+        <Method ID="7" Name="value_2000402" MethodType="Response"/>
+        <Method ID="8" Name="value_1371838" MethodType="Broadcast"/>
+        <Method ID="9" Name="value_2000402" MethodType="Broadcast"/>
     </MethodList>
 </ServiceInterface>
