@@ -489,6 +489,9 @@
     <ClInclude Include="units\GUnitTest.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="units\TestMessageTable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="units\UnitTestUtilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

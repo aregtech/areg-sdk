@@ -258,7 +258,7 @@ public:
             return;
         }
 
-        const bool right{ (hdr->messageId == static_cast<uint32_t>(HelloService::MessageIDs::MsgId_request_hello_service))
+        const bool right{ (hdr->messageId == HelloService::message_id(HelloService::RequestIDs::MsgId_request_hello_service))
                        && (hdr->sequenceNr > 1) && (hdr->sequenceNr <= FLOOD_COUNT + 1)
                        && (hdr->consumer.number == REMOTE_MAGIC)
                        && (hdr->consumer.id == REMOTE_COOKIE) };
@@ -370,7 +370,7 @@ static void route_remote_request(SequenceNumber seqNr)
     wire.set_event_id(HelloServiceRequestEvent::CLASS_ID);
     areg::EventHeader * hdr{ wire.header() };
     hdr->provider.number = gStubKey.load();
-    hdr->messageId       = static_cast<uint32_t>(HelloService::MessageIDs::MsgId_request_hello_service);
+    hdr->messageId       = HelloService::message_id(HelloService::RequestIDs::MsgId_request_hello_service);
     hdr->callType        = static_cast<uint8_t>(areg::CallType::Request);
     hdr->sequenceNr      = seqNr;
     hdr->source          = REMOTE_COOKIE;

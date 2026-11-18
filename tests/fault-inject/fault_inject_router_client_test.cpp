@@ -1445,7 +1445,7 @@ TEST( FaultInjectTest, router_notices_with_invalid_addresses_are_ignored_and_a_v
         AREG_CHILD_CHECK( areg::Application::router_state( ) == areg::RouterState::Connected );
         areg::MessageEnvelope request;
         AREG_CHILD_CHECK( router.receive( request ) );
-        AREG_CHILD_CHECK( request.message_id( ) == static_cast<uint32_t>( HelloService::MessageIDs::MsgId_request_hello_service ) );
+        AREG_CHILD_CHECK( request.message_id( ) == HelloService::message_id( HelloService::RequestIDs::MsgId_request_hello_service ) );
         AREG_CHILD_CHECK( request.target( ) == PROVIDER );
         AREG_CHILD_CHECK( FiHelloClient::sFailures.load( ) == 0u );
 
@@ -1497,7 +1497,7 @@ namespace
         AREG_CHILD_CHECK( router.send( areg::service_registered_event( remote_provider( PROVIDER ), areg::COOKIE_ROUTER, cookie ) ) );
         areg::MessageEnvelope request;
         AREG_CHILD_CHECK( router.receive( request ) );
-        AREG_CHILD_CHECK( request.message_id( ) == static_cast<uint32_t>( HelloService::MessageIDs::MsgId_request_hello_service ) );
+        AREG_CHILD_CHECK( request.message_id( ) == HelloService::message_id( HelloService::RequestIDs::MsgId_request_hello_service ) );
 
         AREG_CHILD_CHECK( router.send( connection_notice( cookie, state ) ) );
         AREG_CHILD_CHECK( router.closed_by_client( ) );
@@ -1771,7 +1771,7 @@ namespace
             areg::MessageEnvelope message;
             if ( router.receive( message ) == false )
                 return false;
-            if ( ( message.message_id( ) == static_cast<uint32_t>( HelloService::MessageIDs::MsgId_request_hello_service ) ) && ( message.target( ) == provider ) )
+            if ( ( message.message_id( ) == HelloService::message_id( HelloService::RequestIDs::MsgId_request_hello_service ) ) && ( message.target( ) == provider ) )
                 return true;
         }
 

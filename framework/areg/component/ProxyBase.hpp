@@ -159,9 +159,9 @@ private:
     using ProxyConnectList  = ArrayList<ProxyListener *>;
 
     /************************************************************************
-     * \brief   HashMap keyed by message ID mapping to per-ID listener lists.
+     * \brief   One listener list per response, broadcast and attribute, by listener slot.
      ************************************************************************/
-    using ProxyListenerMap  = HashMap<uint32_t, ProxyListenerList>;
+    using ProxyListenerSlots= ListenerSlots<ProxyListenerList>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ProxyMap class declaration.
@@ -451,23 +451,22 @@ public:
     inline areg::ServiceConnectionState connection_status() const noexcept;
 
     /**
-     * \brief   Returns true if at least one listener is registered for the specified message ID.
+     * \brief   Returns true if at least one listener is registered for the entry.
      *
-     * \param   msgId       The message ID to check for listeners.
-     * \return  Returns true if listeners are assigned for the message ID; false otherwise.
+     * \param   kind        Response, Broadcast or Attribute. Any other kind has no listener.
+     * \param   index       The index of the entry in its kind.
      **/
     [[nodiscard]]
-    bool has_any_listener(uint32_t msgId) const noexcept;
+    bool has_any_listener(areg::CallType kind, uint32_t index) const noexcept;
 
     /**
-     * \brief   Returns true if at least one listener is registered for attribute update
-     *          notifications of the specified message ID.
+     * \brief   Returns true if at least one subscriber is registered for the update notifications of the entry.
      *
-     * \param   msgId       The attribute or response message ID to check for notification listeners.
-     * \return  Returns true if notification listeners are assigned for the message ID; false otherwise.
+     * \param   kind        Response, Broadcast or Attribute. Any other kind has no subscriber.
+     * \param   index       The index of the entry in its kind.
      **/
     [[nodiscard]]
-    bool has_notification_listener(uint32_t msgId) const noexcept;
+    bool has_notification_listener(areg::CallType kind, uint32_t index) const noexcept;
 
     /**
      * \brief   Returns the dispatcher thread that owns this proxy.
@@ -519,20 +518,22 @@ public:
      * \brief   Registers or updates a notification listener. Requests the stub to start notifications
      *          if this is the first listener, or sends an immediate update if listeners already exist.
      *
-     * \param   msgId           The notification message ID (attribute or response).
+     * \param   kind            Response, Broadcast or Attribute. Any other kind is ignored.
+     * \param   index           The index of the entry in its kind. An index out of range is ignored.
      * \param   caller          The notification consumer to register.
      * \param   alwaysNotify    If true, sends a notification even if one is already pending; if
      *                          false, skips redundant notifications.
      **/
-    void set_notification(uint32_t msgId, NotificationConsumer* caller, bool alwaysNotify = false);
+    void set_notification(areg::CallType kind, uint32_t index, NotificationConsumer* caller, bool alwaysNotify = false);
 
     /**
-     * \brief   Removes all notification listeners for the specified consumer and message ID.
+     * \brief   Removes the subscription of the consumer to the entry.
      *
-     * \param   msgId       The notification message ID.
+     * \param   kind        Response, Broadcast or Attribute.
+     * \param   index       The index of the entry in its kind.
      * \param   caller      The notification consumer to remove.
      **/
-    void clear_notification(uint32_t msgId, NotificationConsumer* caller);
+    void clear_notification(areg::CallType kind, uint32_t index, NotificationConsumer* caller);
 
     /**
      * \brief   Clears all notifications for the specified listener and unregisters it.
@@ -678,12 +679,13 @@ protected:
      * \brief   Creates and sends a notification event to a specific consumer. Can be overridden to
      *          add custom behavior.
      *
-     * \param   msgId       The message ID of the notification.
+     * \param   kind        Response, Broadcast or Attribute.
+     * \param   index       The index of the entry in its kind.
      * \param   resType     The result type to include in the notification.
      * \param   seqNr       The sequence number used to identify the listener.
      * \param   caller      The consumer to be notified.
      **/
-    virtual void send_notification_event( uint32_t msgId, areg::ResultType resType, const SequenceNumber & seqNr, NotificationConsumer * caller );
+    virtual void send_notification_event( areg::CallType kind, uint32_t index, areg::ResultType resType, const SequenceNumber & seqNr, NotificationConsumer * caller );
 
     /**
      * \brief   Registers all service event listeners. Called when the proxy is instantiated.
@@ -703,20 +705,22 @@ protected:
 protected:
 
     /**
-     * \brief   Sends a request to the stub to start sending update notifications for the message ID.
-     *          Nothing is sent for an ID that is not an attribute, a response or a broadcast of the interface.
+     * \brief   Sends a request to the stub to start sending update notifications of the entry.
+     *          Nothing is sent for a kind that is not an attribute, a response or a broadcast, or an index out of range.
      *
-     * \param   msgId       The attribute or response message ID to start receiving updates for.
+     * \param   kind        Response, Broadcast or Attribute.
+     * \param   index       The index of the entry in its kind.
      **/
-    inline void start_notification( uint32_t msgId );
+    inline void start_notification( areg::CallType kind, uint32_t index );
 
     /**
-     * \brief   Sends a request to the stub to stop sending update notifications for the specified message ID.
-     *          Nothing is sent for an ID that is not an attribute, a response or a broadcast of the interface.
+     * \brief   Sends a request to the stub to stop sending update notifications of the entry.
+     *          Nothing is sent for a kind that is not an attribute, a response or a broadcast, or an index out of range.
      *
-     * \param   msgId       The attribute or response message ID to stop receiving updates for.
+     * \param   kind        Response, Broadcast or Attribute.
+     * \param   index       The index of the entry in its kind.
      **/
-    inline void stop_notification( uint32_t msgId );
+    inline void stop_notification( areg::CallType kind, uint32_t index );
 
     /**
      * \brief   Stops all attribute, response and broadcast update notifications from the stub,
@@ -725,13 +729,13 @@ protected:
     inline void stop_all_notifications();
 
     /**
-     * \brief   Stops update notifications for a list of specified message IDs.
+     * \brief   Stops update notifications of a list of entries of one kind.
      *
-     * \param   notifyIds       The array of attribute or response message IDs to stop receiving
-     *                          updates for.
-     * \param   count           The number of IDs in the array.
+     * \param   kind            Response, Broadcast or Attribute.
+     * \param   indexes         The indexes of the entries in their kind.
+     * \param   count           The number of indexes in the array.
      **/
-    inline void stop_notifications( const uint32_t notifyIds[], int32_t count );
+    inline void stop_notifications( areg::CallType kind, const uint32_t indexes[], int32_t count );
 
     /**
      * \brief   Returns read-only access to the proxy data containing attribute and response state.
@@ -761,43 +765,36 @@ protected:
     inline void unregister_for_event( const uint32_t eventClass ) noexcept;
 
     /**
-     * \brief   Removes a specific listener from the listener list.
+     * \brief   Removes a specific listener from the listener list of the entry.
      *
-     * \param   msgId       The message ID of the listener.
+     * \param   kind        Response, Broadcast or Attribute.
+     * \param   index       The index of the entry in its kind.
      * \param   seqNr       The sequence number of the listener.
      * \param   caller      The notification consumer to remove.
      **/
-    void remove_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller ) noexcept;
+    void remove_listener( areg::CallType kind, uint32_t index, const SequenceNumber & seqNr, NotificationConsumer * caller ) noexcept;
 
     /**
-     * \brief   Adds a listener to the listener list, optionally checking for duplicates.
+     * \brief   Adds a listener to the listener list of the entry, optionally checking for duplicates.
      *          GuardedBy(mListenerLock): caller must hold mListenerLock or delegate to a method that does.
      *
-     * \param   msgId       The message ID of the listener.
+     * \param   kind        Response, Broadcast or Attribute.
+     * \param   index       The index of the entry in its kind.
      * \param   seqNr       The sequence number of the listener.
      * \param   caller      The notification consumer to add.
      * \param   unique      If true, adds only if the listener does not already exist; if false,
      *                      always adds.
      * \param   reqId       The request a waiting caller sent; 0 for a subscription.
      * \return  Returns true if the listener was added; false if it already existed and unique was
-     *          true.
+     *          true, or the entry is not a response, broadcast or attribute of the interface.
      **/
-    bool add_listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique, uint32_t reqId = 0u );
-
-    /**
-     * \brief   Sets the data state for the specified message ID in the proxy data.
-     *
-     * \param   msgId       The message ID whose state should be updated.
-     * \param   newState    The new data state to set.
-     **/
-    inline void set_state( uint32_t msgId, areg::DataState newState ) noexcept;
+    bool add_listener( areg::CallType kind, uint32_t index, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique, uint32_t reqId = 0u );
 
     /**
      * \brief   Sets the data state of an attribute, a response or a broadcast by its index.
      *
-     * \param   kind        Attribute for an index of the attribute list; Response or Broadcast for
-     *                      an index of the response list. Any other kind is ignored.
-     * \param   index       The index in the list of the kind.
+     * \param   kind        Attribute, Response or Broadcast. Any other kind is ignored.
+     * \param   index       The index of the entry in its kind.
      * \param   newState    The new data state to set.
      **/
     inline void set_state( areg::CallType kind, uint32_t index, areg::DataState newState ) noexcept;
@@ -813,24 +810,24 @@ protected:
      *          failure (RequestError, RequestBusy, RequestCanceled, MessageUndelivered,
      *          ServiceUnavailable) with a sequence number reaches only that caller.
      *
-     * \param   respId              The message ID to notify.
+     * \param   kind                Response, Broadcast or Attribute.
+     * \param   index               The index of the entry in its kind.
      * \param   result              The result code to include in notifications.
      * \param   seqNrToSearch       The sequence number of the waiting caller. If SEQUENCE_NUMBER_NOTIFY,
      *                              notifies only the subscribers.
      **/
-    void notify_listeners( uint32_t respId, areg::ResultType result, const SequenceNumber & seqNrToSearch );
+    void notify_listeners( areg::CallType kind, uint32_t index, areg::ResultType result, const SequenceNumber & seqNrToSearch );
 
     /**
      * \brief   Notifies the caller of a failed request and drops its waiting entry. The state of
      *          the response of the request becomes invalid.
      *
-     * \param   reqId       The ID of the failed request.
-     * \param   respId      The ID of the response of the request.
-     * \param   respIndex   The index of the response in the response list of the interface.
+     * \param   reqIndex    The index of the failed request.
+     * \param   respIndex   The index of the response of the request.
      * \param   result      The failure.
      * \param   seqNr       The sequence number of the failed call.
      **/
-    void notify_request_failed( uint32_t reqId, uint32_t respId, uint32_t respIndex, areg::ResultType result, const SequenceNumber & seqNr );
+    void notify_request_failed( uint32_t reqIndex, uint32_t respIndex, areg::ResultType result, const SequenceNumber & seqNr );
 
     /**
      * \brief   Sends a request event to the stub with serialized arguments and an optional response listener.
@@ -839,10 +836,10 @@ protected:
      * \param   args        The buffer containing serialized request arguments. Can be empty if the request has no parameters.
      * \param   caller      The consumer to receive the response. Must be non-null if the request
      *                      has a response; can be null if the request is one-way.
-     * \param   respId      The ID of the response of the request, areg::RESPONSE_ID_NONE if it has none.
+     * \param   respIndex   The index of the response of the request, areg::RESPONSE_INDEX_NONE if it has none.
      * \return  The sequence number of the request, or areg::SEQUENCE_NUMBER_ANY if it has no response.
      **/
-    inline SequenceNumber send_request_event( uint32_t reqId, const areg::SharedBuffer & args, NotificationConsumer * caller, uint32_t respId );
+    inline SequenceNumber send_request_event( uint32_t reqId, const areg::SharedBuffer & args, NotificationConsumer * caller, uint32_t respIndex );
 
     /**
      * \brief   Sends a request event to the stub with serialized arguments and an optional response listener.
@@ -850,10 +847,10 @@ protected:
      * \param   reqEvent    The prepared request event to send.
      * \param   caller      The consumer to receive the response. Must be non-null if the request
      *                      has a response; can be null if the request is one-way.
-     * \param   respId      The ID of the response of the request, areg::RESPONSE_ID_NONE if it has none.
+     * \param   respIndex   The index of the response of the request, areg::RESPONSE_INDEX_NONE if it has none.
      * \return  The sequence number of the request, or areg::SEQUENCE_NUMBER_ANY if it has no response.
      **/
-    SequenceNumber send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller, uint32_t respId);
+    SequenceNumber send_request_event(ServiceRequestEvent& reqEvent, NotificationConsumer* caller, uint32_t respIndex);
 
     /**
      * \brief   Builds an empty, ready-to-fill request event in a single heap allocation
@@ -917,12 +914,17 @@ protected:
 #endif  // _MSC_VER
 
     /**
-     * \brief   Per-message-ID listener map.
+     * \brief   The listeners of every response, broadcast and attribute, by listener slot.
      **/
-    ProxyListenerMap        mListenerMap;
+    ProxyListenerSlots      mListeners;
 
     /**
-     * \brief   Guards all accesses to mListenerMap and mSequenceCount.
+     * \brief   The listeners of the service connection.
+     **/
+    ProxyListenerList       mConnectListeners;
+
+    /**
+     * \brief   Guards all accesses to mListeners, mConnectListeners and mSequenceCount.
      **/
     mutable SpinLock        mListenerLock;
 
@@ -985,10 +987,22 @@ private:
     inline ProxyBase & self() noexcept;
 
     /**
-     * \brief   Notifies the listeners of \a listenId, as notify_listeners() does, with \a notifyId
-     *          as the message ID the clients receive.
+     * \brief   Returns the listener slot of the entry, areg::INVALID_MESSAGE_INDEX if it has none.
      **/
-    void _notify_listeners( uint32_t listenId, uint32_t notifyId, areg::ResultType result, const SequenceNumber & seqNrToSearch );
+    [[nodiscard]]
+    inline uint32_t _slot( areg::CallType kind, uint32_t index ) const noexcept;
+
+    /**
+     * \brief   Notifies the listeners of the entry \a listenKind, \a listenIndex, as notify_listeners()
+     *          does, with \a kind and \a index as the entry the clients receive.
+     **/
+    void _notify_listeners( areg::CallType listenKind, uint32_t listenIndex, areg::CallType kind, uint32_t index, areg::ResultType result, const SequenceNumber & seqNrToSearch );
+
+    /**
+     * \brief   Returns true if the slot has a subscriber. GuardedBy(mListenerLock).
+     **/
+    [[nodiscard]]
+    bool _has_subscriber( uint32_t slot ) const noexcept;
 
     /**
      * \brief   Returns the global registry of all proxy objects in the system.
@@ -1104,27 +1118,24 @@ inline areg::ServiceConnectionState ProxyBase::connection_status() const noexcep
     return mConnectionStatus;
 }
 
-inline void ProxyBase::start_notification( uint32_t msgId )
+inline uint32_t ProxyBase::_slot( areg::CallType kind, uint32_t index ) const noexcept
 {
-    if (is_connected())
+    return areg::listener_slot(mProxyData.mIfData, kind, index);
+}
+
+inline void ProxyBase::start_notification( areg::CallType kind, uint32_t index )
+{
+    if (is_connected() && (_slot(kind, index) != areg::INVALID_MESSAGE_INDEX))
     {
-        const areg::CallType kind{ mProxyData.mIfData.idFind(msgId).miKind };
-        if ((kind != areg::CallType::Undefined) && (kind != areg::CallType::Request))
-        {
-            send_notify_request( msgId, areg::RequestType::StartNotify, kind );
-        }
+        send_notify_request( mProxyData.mIfData.message_id(kind, index), areg::RequestType::StartNotify, kind );
     }
 }
 
-inline void ProxyBase::stop_notification( uint32_t msgId )
+inline void ProxyBase::stop_notification( areg::CallType kind, uint32_t index )
 {
-    if (is_connected())
+    if (is_connected() && (_slot(kind, index) != areg::INVALID_MESSAGE_INDEX))
     {
-        const areg::CallType kind{ mProxyData.mIfData.idFind(msgId).miKind };
-        if ((kind != areg::CallType::Undefined) && (kind != areg::CallType::Request))
-        {
-            send_notify_request( msgId, areg::RequestType::StopNotify, kind );
-        }
+        send_notify_request( mProxyData.mIfData.message_id(kind, index), areg::RequestType::StopNotify, kind );
     }
 }
 
@@ -1136,11 +1147,11 @@ inline void ProxyBase::stop_all_notifications()
     }
 }
 
-inline void ProxyBase::stop_notifications( const uint32_t notifyIds[], int32_t count )
+inline void ProxyBase::stop_notifications( areg::CallType kind, const uint32_t indexes[], int32_t count )
 {
     for ( int i = 0; i < count; ++ i ) 
     {
-        stop_notification( notifyIds[i] );
+        stop_notification( kind, indexes[i] );
     }
 }
 
@@ -1164,21 +1175,9 @@ inline void ProxyBase::unregister_for_event( const uint32_t eventClass ) noexcep
     Event::remove_listener( eventClass, static_cast<EventConsumer &>(self( )), static_cast<uint32_t>(mProxyAddress.thread()) );
 }
 
-inline void ProxyBase::set_state( uint32_t msgId, areg::DataState newState ) noexcept
-{
-    mProxyData.set_data_state( msgId, newState );
-}
-
 inline void ProxyBase::set_state( areg::CallType kind, uint32_t index, areg::DataState newState ) noexcept
 {
-    if (kind == areg::CallType::Attribute)
-    {
-        mProxyData.set_attribute_state( index, newState );
-    }
-    else if ((kind == areg::CallType::Response) || (kind == areg::CallType::Broadcast))
-    {
-        mProxyData.set_param_state( index, newState );
-    }
+    mProxyData.set_data_state( kind, index, newState );
 }
 
 inline DispatcherThread & ProxyBase::proxy_dispatcher_thread() const noexcept
@@ -1191,19 +1190,19 @@ inline ServiceRequestEvent ProxyBase::create_request_event(uint32_t reqId, uint3
     return create_request(reqId, reserve);
 }
 
-inline SequenceNumber ProxyBase::send_request_event(uint32_t reqId, const SharedBuffer& args, NotificationConsumer* caller, uint32_t respId)
+inline SequenceNumber ProxyBase::send_request_event(uint32_t reqId, const SharedBuffer& args, NotificationConsumer* caller, uint32_t respIndex)
 {
     ServiceRequestEvent reqEvent{ create_request(args, reqId) };
-    return send_request_event(reqEvent, caller, respId);
+    return send_request_event(reqEvent, caller, respIndex);
 }
 
 #ifdef DEBUG
 
 inline uint32_t ProxyBase::listener_count() const noexcept
 {
-    uint32_t total = 0;
-    for (ProxyListenerMap::MAPPOS pos = mListenerMap.first_position(); mListenerMap.is_valid_position(pos); pos = mListenerMap.next_position(pos))
-        total += pos->second.size();
+    uint32_t total = mConnectListeners.size();
+    for (uint32_t i = 0u; i < mListeners.size(); ++i)
+        total += mListeners.at(i)->size();
     return total;
 }
 

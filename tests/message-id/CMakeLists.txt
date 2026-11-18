@@ -11,18 +11,24 @@
 # in OrderForward and OrderReverse.
 # areg-short-payload-test: a request, response, broadcast or attribute update whose payload
 # holds fewer bytes than its parameter list. One test per case.
+# areg-kind-share-test: a request and a broadcast with one message ID, and IDs below 0x10000,
+# reach their own handlers.
+# areg-message-id-rule.same-kind-refused: the code generator refuses two requests with one ID
+# and accepts a request and a broadcast with one ID.
 # ###########################################################################
 
 set(AREG_MESSAGE_ID_PROJECT "areg-message-id-test")
 set(AREG_MESSAGE_ID_RATE    "areg-message-id-rate")
 set(AREG_MESSAGE_IDENTITY   "areg-message-identity-test")
 set(AREG_SHORT_PAYLOAD      "areg-short-payload-test")
+set(AREG_KIND_SHARE         "areg-kind-share-test")
 
 addServiceInterface(message_id_generated      tests/message-id/services/SharedResponse.siml)
 addServiceInterface(message_id_wide_generated tests/message-id/services/WideService.siml)
 addServiceInterface(message_id_forward_generated  tests/message-id/services/OrderForward.siml)
 addServiceInterface(message_id_reverse_generated  tests/message-id/services/OrderReverse.siml)
 addServiceInterface(message_id_short_generated    tests/message-id/services/ShortPayload.siml)
+addServiceInterface(message_id_kind_share_generated tests/message-id/services/KindShare.siml)
 
 addExecutableEx(${AREG_MESSAGE_ID_PROJECT} ""
     "${AREG_TESTS_DIR}/message-id/message_id_test.cpp"
@@ -50,3 +56,18 @@ foreach(_short_case short-request empty-request short-string-request short-respo
     add_test(NAME ${AREG_SHORT_PAYLOAD}.${_short_case} COMMAND ${AREG_SHORT_PAYLOAD} ${_short_case})
     set_tests_properties(${AREG_SHORT_PAYLOAD}.${_short_case} PROPERTIES TIMEOUT 300)
 endforeach()
+
+addExecutableEx(${AREG_KIND_SHARE} ""
+    "${AREG_TESTS_DIR}/message-id/kind_share_test.cpp"
+    "message_id_kind_share_generated")
+
+add_test(NAME ${AREG_KIND_SHARE} COMMAND ${AREG_KIND_SHARE})
+set_tests_properties(${AREG_KIND_SHARE} PROPERTIES TIMEOUT 300)
+
+add_test(NAME areg-message-id-rule.same-kind-refused
+         COMMAND ${Java_JAVA_EXECUTABLE} -jar "${AREG_SDK_TOOLS}/codegen.jar"
+                 "--root=${AREG_SDK_ROOT}" "--doc=tests/message-id/rule/SameKindClash.siml"
+                 "--target=${CMAKE_CURRENT_BINARY_DIR}/message-id-rule")
+set_tests_properties(areg-message-id-rule.same-kind-refused PROPERTIES TIMEOUT 120
+    PASS_REGULAR_EXPRESSION "request \\[ value_1371838 \\] and the request \\[ value_2000402 \\]"
+    FAIL_REGULAR_EXPRESSION "pingSDFzY \\]|tickxGUOt \\]")

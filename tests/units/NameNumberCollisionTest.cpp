@@ -10,6 +10,7 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "units/EventTestSupport.hpp"
+#include "units/TestMessageTable.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/SharedBuffer.hpp"
@@ -627,23 +628,17 @@ namespace
     constexpr uint32_t RESPONSES[]  { areg::crc32_calculate("response_collision") };
     constexpr uint32_t ATTRIBUTES[] { areg::crc32_calculate("attribute_Collision") };
     constexpr uint32_t PARAMS[]     { 0 };
+    constexpr uint16_t REQUEST_TO_RESPONSE[]{ 0u };
 
-    //!< The lookup of the test interface.
-    areg::MessageInfo find_nc_message(uint32_t msgId) noexcept
-    {
-        switch (msgId)
-        {
-        case REQUESTS[0]:   return areg::MessageInfo{ 0u, areg::CallType::Request, 0u };
-        case RESPONSES[0]:  return areg::MessageInfo{ 0u, areg::CallType::Response, 0u };
-        case ATTRIBUTES[0]: return areg::MessageInfo{ 0u, areg::CallType::Attribute, 1u };
-        default:        return areg::MessageInfo{ };
-        }
-    }
+    const areg_test::TestMessageTable NC_REQUESTS{ REQUESTS, 1u };
+    const areg_test::TestMessageTable NC_RESPONSES{ RESPONSES, 1u };
+    const areg_test::TestMessageTable NC_ATTRIBUTES{ ATTRIBUTES, 1u };
 
     const InterfaceData NC_INTERFACE
     {
-          SERVICE_NAME, Version(1, 0, 0), ServiceType::Local
-        , 1, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSES, PARAMS, &find_nc_message
+        areg_test::make_interface( SERVICE_NAME, Version(1, 0, 0), ServiceType::Local
+                                 , NC_REQUESTS.table(), NC_RESPONSES.table(), areg::MessageTable{ }, NC_ATTRIBUTES.table()
+                                 , REQUEST_TO_RESPONSE, PARAMS )
     };
 
     //!< The connection states seen by the consumers, by consumer role name.
@@ -801,7 +796,7 @@ namespace
         {
         }
 
-        void error_request(uint32_t /*msgId*/, bool /*msgCancel*/) override
+        void error_request(areg::CallType /*kind*/, uint32_t /*index*/, bool /*msgCancel*/) override
         {
         }
 
@@ -857,7 +852,7 @@ namespace
         {
         }
 
-        void process_notification(uint32_t /*msgId*/, ResultType /*result*/, SequenceNumber /*seqNr*/) override
+        void process_notification(areg::CallType /*kind*/, uint32_t /*index*/, ResultType /*result*/, SequenceNumber /*seqNr*/) override
         {
         }
 

@@ -36,6 +36,7 @@
 #include "areg/component/WorkerThreadConsumer.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
+#include "units/TestMessageTable.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -107,29 +108,17 @@ namespace
 
     constexpr uint32_t      REQUEST_ID          { areg::crc32_calculate("request_teardown") };
     constexpr uint32_t      _requestList[]      { REQUEST_ID };
-    constexpr uint32_t      _noResponse[]       { areg::RESPONSE_ID_NONE };
+    constexpr uint16_t      _noResponse[]       { static_cast<uint16_t>(areg::RESPONSE_INDEX_NONE) };
     constexpr uint32_t      RESPONSE_ID         { areg::crc32_calculate("response_teardown") };
 
-    //!< The lookup of the test interface: one request without a response.
-    areg::MessageInfo find_teardown_message(uint32_t msgId) noexcept
-    {
-        return (msgId == REQUEST_ID ? areg::MessageInfo{ 0u, areg::CallType::Request, 0u } : areg::MessageInfo{ });
-    }
+    //!< The test interface: one request without a response.
+    const areg_test::TestMessageTable _requests{ _requestList, 1u };
 
     const areg::InterfaceData _interfaceData
     {
-          _serviceName
-        , _version
-        , areg::ServiceType::Local
-        , 1
-        , 0
-        , 0
-        , _requestList
-        , nullptr
-        , nullptr
-        , _noResponse
-        , nullptr
-        , &find_teardown_message
+        areg_test::make_interface( _serviceName, _version, areg::ServiceType::Local
+                                 , _requests.table(), areg::MessageTable{ }, areg::MessageTable{ }, areg::MessageTable{ }
+                                 , _noResponse, nullptr )
     };
 
     //!< A counter a thread waits on until it reaches a value.
@@ -260,7 +249,7 @@ protected:
     {
     }
 
-    void error_request(uint32_t /*msgId*/, bool /*msgCancel*/) override
+    void error_request(areg::CallType /*kind*/, uint32_t /*index*/, bool /*msgCancel*/) override
     {
     }
 
@@ -425,7 +414,7 @@ public:
     {
     }
 
-    void process_notification(uint32_t /*msgId*/, areg::ResultType /*result*/, SequenceNumber /*seqNr*/) override
+    void process_notification(areg::CallType /*kind*/, uint32_t /*index*/, areg::ResultType /*result*/, SequenceNumber /*seqNr*/) override
     {
     }
 

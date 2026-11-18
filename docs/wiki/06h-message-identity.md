@@ -1,16 +1,16 @@
 # Service Message Identity
 
 Every request, response, broadcast and attribute of a service interface has a **message ID**: a 32-bit number that
-travels in the header of every message and tells the receiver which entry of the interface the message belongs to. This
-page explains how the ID is made, what stops two entries from sharing one, and the one rule a distributed system built
-with Areg must follow.
+travels in the header of every message and, together with the kind of the entry, tells the receiver which entry of the
+interface the message belongs to. This page explains how the ID is made, how a process finds the entry of an ID, what
+stops two entries from sharing one, and the one rule a distributed system built with Areg must follow.
 
 ---
 
 ## Table of Contents
 
 1. [How an ID Is Made](#1-how-an-id-is-made)
-2. [Collisions and Reserved Values](#2-collisions-and-reserved-values)
+2. [Collisions, and No Reserved Value](#2-collisions-and-no-reserved-value)
 3. [What the Header Carries](#3-what-the-header-carries)
 4. [An ID the Receiver Does Not Know](#4-an-id-the-receiver-does-not-know)
 5. [One SDK, One Definition](#5-one-sdk-one-definition)
@@ -28,53 +28,61 @@ The ID is the CRC-32C of the entry's kind and name, written exactly as the `.sim
 | Broadcast | `broadcast_<Name>` | `broadcast_stateChanged` |
 | Attribute | `attribute_<Name>` | `attribute_HelloServiceState` |
 
-The code generator writes the string, and the C++ compiler computes the value:
+The code generator writes the string, and the C++ compiler computes the value. Every kind has an ID space of its own:
+the entries of a kind are numbered `0, 1, 2 ...` in the order of the document, and that **index** is what the code inside
+a process uses. The ID is what travels:
 
 ```cpp
-enum class MessageIDs : MSG_ID
+enum class RequestIDs : uint32_t
 {
-      MsgId_request_identifier  = areg::crc32_calculate("request_identifier")
-    , MsgId_response_identifier = areg::crc32_calculate("response_identifier")
-    , MsgId_HelloServiceState   = areg::crc32_calculate("attribute_HelloServiceState")
-    ...
+      MsgId_request_identifier      // index 0
+    , MsgId_request_hello_ublock    // index 1
 };
+
+constexpr uint32_t RequestIdList[]  // the ID of every request, by index
+{
+      areg::crc32_calculate("request_identifier")
+    , areg::crc32_calculate("request_hello_ublock")
+};
+
+constexpr uint32_t message_id(RequestIDs msgId) noexcept;   // the ID of one request
 ```
 
+`ResponseIDs`, `BroadcastIDs` and `AttributeIDs` follow the same pattern.
+
 ✅ The ID of an entry depends **only on its kind and its name**: not on its position in the document and not on the
-other entries. Reordering the entries of a document does not change any ID.
+other entries. Reordering the entries of a document does not change any ID; it changes the indexes, which never leave
+the process.
 
 ✅ The service name is not part of the string. The same method name in two different interfaces has the same ID, which
-is harmless: an ID is unique **within its service**, and the header carries the service identity beside it.
+is harmless: an ID is unique **within its kind and its service**, and the header carries the service identity beside it.
 
-✅ No CRC is computed at run time. The value is a compile-time constant, so there is no cost on any message path and no
-table in RAM.
+✅ No CRC is computed at run time. Where a message enters a provider or a consumer, the generated code finds the index
+of the ID once, in a small table the code generator builds for every kind: one multiplication, one shift and two reads.
+From there on the provider and the consumer work with the index: the listeners of an entry are one array element, and
+the generated dispatch is a `switch` over consecutive values.
 
 ---
 
-## 2. Collisions and Reserved Values
+## 2. Collisions, and No Reserved Value
 
-Two entries of one interface could, in theory, hash to the same value, or an entry could hash to a value the system
-reserves. Both **stop the build** of the generated code:
+Two entries of **one kind** could, in theory, hash to the same value. That is refused three times:
 
-- one `static_assert` per entry checks that its ID is not reserved and occurs once in the interface. The message names
-  the interface and the entry:
+- **Lusan** reports it while the document is edited (rule 61, "two entries of one kind with the same message ID").
+- **codegen** refuses to generate the document and names both entries.
+- the generated code checks it with one `static_assert` per entry:
   ```
-  HelloUnblock: the ID of request 'identifier' is reserved or equals the ID of another entry. Rename the entry.
+  HelloUnblock: the request 'identifier' has the message ID of another request. Rename one of them.
   ```
-- the generated lookup is a `switch` over every ID, so a duplicate is also a `duplicate case value` error on every
-  compiler.
 
-The fix is to rename one of the two entries. For an interface of 100 entries the chance of any collision is about one in
-a million.
+The fix is to rename one of the two entries. For a kind of 100 entries the chance of a collision is about one in a
+million.
 
-Reserved values:
+Entries of **two kinds** may share an ID: a request and a broadcast with the same value are told apart by the kind the
+header carries, and each is delivered to its own handler.
 
-| Value | Meaning |
-|---|---|
-| `0x00000000` | empty: no message, no response |
-| `0x00000001` … `0x0000FFFF` | system messages (connection, registration, logging) |
-| `0x80000000` | invalid message ID |
-| `0xFFFFFFFF` | reserved |
+No ID value is reserved. `0`, `0x80000000`, `0xFFFFFFFF` and every value below `0x10000` are ordinary IDs of an entry:
+the system messages of the framework carry a call type of their own and never meet an interface entry.
 
 ---
 

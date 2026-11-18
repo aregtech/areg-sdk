@@ -4,6 +4,7 @@
  * Areg SDK is dual-licensed under Apache 2.0 and commercial licenses.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
+#include "units/TestMessageTable.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
@@ -22,48 +23,29 @@ namespace
     constexpr uint32_t REQUESTS[]{ areg::crc32_calculate("request_first"), areg::crc32_calculate("request_second") };
     constexpr uint32_t RESPONSES[]{ areg::crc32_calculate("response_first"), areg::crc32_calculate("response_second") };
     constexpr uint32_t ATTRIBUTES[]{ areg::crc32_calculate("attribute_First"), areg::crc32_calculate("attribute_Second") };
-    constexpr uint32_t RESPONSE_MAP[]{ RESPONSES[0], RESPONSES[1] };
+    constexpr uint16_t RESPONSE_MAP[]{ 0u, 1u };
     constexpr uint32_t PARAM_COUNTS[]{ 1, 0 };
     constexpr uint32_t BROADCAST{ areg::crc32_calculate("broadcast_third") };
+    constexpr uint32_t BROADCASTS[]{ BROADCAST };
 
-    //!< The lookup of the test interfaces; the broadcast exists only in the broadcast interface.
-    MessageInfo find_contract_message(uint32_t msgId, bool withBroadcast) noexcept
-    {
-        switch (msgId)
-        {
-        case REQUESTS[0]:   return MessageInfo{ 0u, CallType::Request, 0u };
-        case REQUESTS[1]:   return MessageInfo{ 1u, CallType::Request, 0u };
-        case RESPONSES[0]:  return MessageInfo{ 0u, CallType::Response, 1u };
-        case RESPONSES[1]:  return MessageInfo{ 1u, CallType::Response, 0u };
-        case ATTRIBUTES[0]: return MessageInfo{ 0u, CallType::Attribute, 1u };
-        case ATTRIBUTES[1]: return MessageInfo{ 1u, CallType::Attribute, 1u };
-        case BROADCAST:     return (withBroadcast ? MessageInfo{ 2u, CallType::Broadcast, 0u } : MessageInfo{ });
-        default:            return MessageInfo{ };
-        }
-    }
-
-    MessageInfo find_message(uint32_t msgId) noexcept
-    {
-        return find_contract_message(msgId, false);
-    }
-
-    MessageInfo find_broadcast_message(uint32_t msgId) noexcept
-    {
-        return find_contract_message(msgId, true);
-    }
+    const areg_test::TestMessageTable CONTRACT_REQUESTS{ REQUESTS, 2u };
+    const areg_test::TestMessageTable CONTRACT_RESPONSES{ RESPONSES, 2u };
+    const areg_test::TestMessageTable CONTRACT_BROADCASTS{ BROADCASTS, 1u };
+    const areg_test::TestMessageTable CONTRACT_ATTRIBUTES{ ATTRIBUTES, 2u };
 
     const InterfaceData INTERFACE
     {
-          "StubContractService", Version(1, 2, 3), ServiceType::Local
-        , 2, 2, 2, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSE_MAP, PARAM_COUNTS, &find_message
+        areg_test::make_interface( "StubContractService", Version(1, 2, 3), ServiceType::Local
+                                 , CONTRACT_REQUESTS.table(), CONTRACT_RESPONSES.table(), MessageTable{ }, CONTRACT_ATTRIBUTES.table()
+                                 , RESPONSE_MAP, PARAM_COUNTS )
     };
 
-    constexpr uint32_t BROADCAST_RESPONSES[]{ RESPONSES[0], RESPONSES[1], BROADCAST };
     constexpr uint32_t BROADCAST_PARAM_COUNTS[]{ 1, 0, 0 };
     const InterfaceData BROADCAST_INTERFACE
     {
-          "StubContractBroadcastService", Version(1, 0, 0), ServiceType::Local
-        , 2, 3, 2, REQUESTS, BROADCAST_RESPONSES, ATTRIBUTES, RESPONSE_MAP, BROADCAST_PARAM_COUNTS, &find_broadcast_message
+        areg_test::make_interface( "StubContractBroadcastService", Version(1, 0, 0), ServiceType::Local
+                                 , CONTRACT_REQUESTS.table(), CONTRACT_RESPONSES.table(), CONTRACT_BROADCASTS.table(), CONTRACT_ATTRIBUTES.table()
+                                 , RESPONSE_MAP, BROADCAST_PARAM_COUNTS )
     };
 
     ProxyAddress consumer_address(const ServiceAddress& service, const char* threadName)
@@ -94,35 +76,93 @@ namespace
 
         using StubBase::Listener;
         using StubBase::StubListenerList;
-        using StubBase::add_notification_listener;
         using StubBase::attribute_ids;
         using StubBase::cancel_current_request;
         using StubBase::clear_all_listeners;
-        using StubBase::exist;
-        using StubBase::find_listeners;
         using StubBase::impl_version;
-        using StubBase::invalidate_attribute;
-        using StubBase::is_busy;
         using StubBase::number_of_attributes;
         using StubBase::number_of_requests;
         using StubBase::number_of_responses;
         using StubBase::prepare_request;
-        using StubBase::prepare_response_event;
-        using StubBase::remove_notification_listener;
         using StubBase::remove_notification_listeners;
         using StubBase::request_ids;
         using StubBase::response_ids;
         using StubBase::send_error_notification;
         using StubBase::send_response_notification;
-        using StubBase::send_response_event;
         using StubBase::send_update_notification;
         using StubBase::mSessionId;
+
+        //!< The kind and the index of an entry of the interface of the stub.
+        struct Entry
+        {
+            CallType    kind;
+            uint32_t    index;
+        };
+
+        //!< Returns the kind and the index of a message ID of the interface of the stub.
+        Entry entry(uint32_t msgId) const noexcept
+        {
+            constexpr CallType kinds[]{ CallType::Request, CallType::Response, CallType::Broadcast, CallType::Attribute };
+            for (const CallType kind : kinds)
+            {
+                const uint32_t index{ mInterface.find(kind, msgId) };
+                if (index != INVALID_MESSAGE_INDEX)
+                    return Entry{ kind, index };
+            }
+
+            return Entry{ CallType::Undefined, INVALID_MESSAGE_INDEX };
+        }
+
+        bool exist(uint32_t msgId, const ProxyAddress& source) const noexcept
+        {
+            const Entry found{ entry(msgId) };
+            return StubBase::exist(found.kind, found.index, source);
+        }
+
+        bool add_notification_listener(uint32_t msgId, const ProxyAddress& source)
+        {
+            const Entry found{ entry(msgId) };
+            return StubBase::add_notification_listener(found.kind, found.index, source);
+        }
+
+        void remove_notification_listener(uint32_t msgId, const ProxyAddress& source) noexcept
+        {
+            const Entry found{ entry(msgId) };
+            StubBase::remove_notification_listener(found.kind, found.index, source);
+        }
+
+        bool is_busy(uint32_t msgId) const noexcept
+        {
+            return StubBase::is_busy(mInterface.find(CallType::Response, msgId));
+        }
+
+        //!< Returns the listeners of a response, broadcast or attribute; none for any other ID.
+        uint32_t find_listeners(uint32_t msgId, StubListenerList& listeners) const
+        {
+            const Entry found{ entry(msgId) };
+            return (found.kind == CallType::Request ? listeners.size() : StubBase::find_listeners(found.kind, found.index, listeners));
+        }
+
+        ServiceResponseEvent prepare_response_event(uint32_t msgId, CallType kind, ResultType result, uint32_t reserve, StubListenerList& listeners)
+        {
+            return StubBase::prepare_response_event(kind, mInterface.find(kind, msgId), result, reserve, listeners);
+        }
+
+        void send_response_event(uint32_t msgId, const SharedBuffer& data)
+        {
+            StubBase::send_response_event(mInterface.find(CallType::Response, msgId), data);
+        }
+
+        void invalidate_attribute(uint32_t msgId)
+        {
+            StubBase::invalidate_attribute(mInterface.find(CallType::Attribute, msgId));
+        }
 
         //!< Starts the request of the interface that the response answers.
         bool begin_request(const ProxyAddress& proxy, SequenceNumber sequence, uint32_t response = RESPONSES[0])
         {
-            Listener listener(response == RESPONSE_MAP[1] ? REQUESTS[1] : REQUESTS[0], sequence, proxy);
-            return can_execute_request(listener, response, sequence);
+            Listener listener(response == RESPONSES[1] ? REQUESTS[1] : REQUESTS[0], sequence, proxy);
+            return can_execute_request(listener, mInterface.find(CallType::Response, response), sequence);
         }
 
         ServiceResponseEvent default_response(const ProxyAddress& proxy) const
@@ -139,7 +179,8 @@ namespace
         StubListenerList respond(uint32_t response = RESPONSES[0])
         {
             StubListenerList targets;
-            const ServiceResponseEvent event{ prepare_response_event(response, CallType::Response, ResultType::RequestOK, 0, targets) };
+            const Entry found{ entry(response) };
+            const ServiceResponseEvent event{ StubBase::prepare_response_event(found.kind, found.index, ResultType::RequestOK, 0, targets) };
             EXPECT_EQ(event.is_valid(), !targets.is_empty());
             return targets;
         }
@@ -165,9 +206,10 @@ namespace
         {
         }
 
-        void error_request(uint32_t message, bool cancel) override
+        //!< Records the message ID of the entry.
+        void error_request(CallType kind, uint32_t index, bool cancel) override
         {
-            mErrors.emplace_back(message, cancel);
+            mErrors.emplace_back(mInterface.message_id(kind, index), cancel);
         }
 
         std::vector<std::pair<uint32_t, bool>> mErrors;

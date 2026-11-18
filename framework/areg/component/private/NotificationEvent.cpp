@@ -25,10 +25,11 @@ namespace areg {
 //////////////////////////////////////////////////////////////////////////
 // NotificationEventData class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-NotificationEventData::NotificationEventData( const ProxyBase & proxy, areg::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr )
+NotificationEventData::NotificationEventData( const ProxyBase & proxy, areg::ResultType notifyType, areg::CallType kind, uint32_t index, const SequenceNumber & seqNr )
     : mProxy        (&proxy)
     , mNotifyType   (notifyType)
-    , mNotifyId     (notifyId)
+    , mNotifyIndex  (static_cast<uint16_t>(index))
+    , mNotifyKind   (kind)
     , mSequenceNr   (seqNr)
 {
 }
@@ -36,7 +37,8 @@ NotificationEventData::NotificationEventData( const ProxyBase & proxy, areg::Res
 NotificationEventData::NotificationEventData( const NotificationEventData& src )
     : mProxy        (src.mProxy)
     , mNotifyType   (src.mNotifyType)
-    , mNotifyId     (src.mNotifyId)
+    , mNotifyIndex  (src.mNotifyIndex)
+    , mNotifyKind   (src.mNotifyKind)
     , mSequenceNr   (src.mSequenceNr)
 {
 }
@@ -44,7 +46,8 @@ NotificationEventData::NotificationEventData( const NotificationEventData& src )
 NotificationEventData::NotificationEventData( NotificationEventData && src ) noexcept
     : mProxy        ( src.mProxy )
     , mNotifyType   ( src.mNotifyType )
-    , mNotifyId     ( src.mNotifyId )
+    , mNotifyIndex  ( src.mNotifyIndex )
+    , mNotifyKind   ( src.mNotifyKind )
     , mSequenceNr   ( src.mSequenceNr )
 {
     src.mProxy = nullptr;
@@ -56,7 +59,8 @@ NotificationEventData & NotificationEventData::operator = ( const NotificationEv
     {
         mProxy      = src.mProxy;
         mNotifyType = src.mNotifyType;
-        mNotifyId   = src.mNotifyId;
+        mNotifyIndex= src.mNotifyIndex;
+        mNotifyKind = src.mNotifyKind;
         mSequenceNr = src.mSequenceNr;
     }
 
@@ -69,7 +73,8 @@ NotificationEventData & NotificationEventData::operator = ( NotificationEventDat
     {
         mProxy      = src.mProxy;
         mNotifyType = src.mNotifyType;
-        mNotifyId   = src.mNotifyId;
+        mNotifyIndex= src.mNotifyIndex;
+        mNotifyKind = src.mNotifyKind;
         mSequenceNr = src.mSequenceNr;
 
         src.mProxy  = nullptr;

@@ -54,7 +54,7 @@ areg::ParameterArray::ParameterArray( const areg::InterfaceData& ifData )
     : mElemCount (0)
     , mParamList(nullptr)
 {
-    construct(ifData.idResponseParamCountMap, ifData.idResponseCount);
+    construct(ifData.idParamCountMap, ifData.responses().mtCount + ifData.broadcasts().mtCount);
 }
 
 areg::ParameterArray::ParameterArray( const uint32_t* paramCountMap, int32_t count )
@@ -154,11 +154,6 @@ void areg::ParameterArray::construct( const uint32_t * params, uint32_t count ) 
 // class areg::ProxyData implementation
 //////////////////////////////////////////////////////////////////////////
 
-AREG_API_IMPL areg::MessageInfo areg::find_no_message(uint32_t /* msgId */) noexcept
-{
-    return areg::MessageInfo{ };
-}
-
 AREG_API_IMPL const areg::InterfaceData & areg::empty_interface() noexcept
 {
     /**
@@ -169,15 +164,9 @@ AREG_API_IMPL const areg::InterfaceData & areg::empty_interface() noexcept
           areg::EmptyServiceName
         , areg::EmptyServiceVersion
         , areg::ServiceType::Public
-        , 0
-        , 0
-        , 0
+        , { }
         , nullptr
         , nullptr
-        , nullptr
-        , nullptr
-        , nullptr
-        , &areg::find_no_message
     };
 
     return _InterfaceData;

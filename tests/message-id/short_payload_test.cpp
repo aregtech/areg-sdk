@@ -8,8 +8,9 @@
  *   empty-request          request_pair with no payload: the same
  *   short-string-request   request_label whose text count runs past the payload: request_label_failed(RequestUnsupported)
  *   short-response         response_paired with only its first parameter: response_paired does not run,
- *                          the waiting call leaves no listener
- *   short-broadcast        broadcast_pushed with only its first parameter: broadcast_pushed does not run
+ *                          invalid_response(response_paired) runs, the waiting call leaves no listener
+ *   short-broadcast        broadcast_pushed with only its first parameter: broadcast_pushed does not run,
+ *                          invalid_broadcast(broadcast_pushed) runs
  *   short-attribute        an update of Value with two bytes: on_value_update(DataIsInvalid)
  *
  * Every case ends with a complete message of the same kind, which must arrive with its own values.
@@ -54,11 +55,13 @@ namespace
     constexpr uint32_t      LAST_SECOND     { 6u };
     constexpr uint32_t      LAST_VALUE      { 7u };
 
-    constexpr uint32_t      REQ_PAIR        { static_cast<uint32_t>(ShortPayload::MessageIDs::MsgId_request_pair) };
-    constexpr uint32_t      REQ_LABEL       { static_cast<uint32_t>(ShortPayload::MessageIDs::MsgId_request_label) };
-    constexpr uint32_t      RESP_PAIRED     { static_cast<uint32_t>(ShortPayload::MessageIDs::MsgId_response_paired) };
-    constexpr uint32_t      BC_PUSHED       { static_cast<uint32_t>(ShortPayload::MessageIDs::MsgId_broadcast_pushed) };
-    constexpr uint32_t      ATTR_VALUE      { static_cast<uint32_t>(ShortPayload::MessageIDs::MsgId_Value) };
+    //!< The message IDs of the requests sent raw.
+    constexpr uint32_t      REQ_PAIR        { ShortPayload::message_id(ShortPayload::RequestIDs::MsgId_request_pair) };
+    constexpr uint32_t      REQ_LABEL       { ShortPayload::message_id(ShortPayload::RequestIDs::MsgId_request_label) };
+    //!< The indexes of the entries sent short.
+    constexpr uint32_t      RESP_PAIRED     { static_cast<uint32_t>(ShortPayload::ResponseIDs::MsgId_response_paired) };
+    constexpr uint32_t      BC_PUSHED       { static_cast<uint32_t>(ShortPayload::BroadcastIDs::MsgId_broadcast_pushed) };
+    constexpr uint32_t      ATTR_VALUE      { static_cast<uint32_t>(ShortPayload::AttributeIDs::MsgId_Value) };
 
     enum class Case : uint32_t { ShortRequest, EmptyRequest, ShortString, ShortResponse, ShortBroadcast, ShortAttribute };
 
@@ -74,6 +77,8 @@ namespace
     std::atomic_uint32_t    gPairedWrong    { 0 };  //!< response_paired calls with values that were not sent.
     std::atomic_uint32_t    gPushed         { 0 };  //!< broadcast_pushed calls.
     std::atomic_uint32_t    gPushedLast     { 0 };  //!< broadcast_pushed calls with the last values.
+    std::atomic_uint32_t    gInvalidResp    { 0 };  //!< invalid_response or invalid_broadcast calls with the entry of the case.
+    std::atomic_uint32_t    gInvalidOther   { 0 };  //!< invalid_response or invalid_broadcast calls with any other entry.
     std::atomic_uint32_t    gValueOk        { 0 };  //!< on_value_update calls with DataIsOK.
     std::atomic_uint32_t    gValueInvalid   { 0 };  //!< on_value_update calls with DataIsInvalid after the first valid value.
     std::atomic_uint32_t    gValueLast      { 0 };  //!< on_value_update calls with the last value.
@@ -140,7 +145,7 @@ protected:
         if ((gCase.load() == Case::ShortResponse) && !mSent)
         {
             mSent = true;
-            send_short(RESP_PAIRED, areg::CallType::Response);
+            send_short(areg::CallType::Response, RESP_PAIRED);
         }
         else
         {
@@ -166,7 +171,7 @@ protected:
             break;
 
         case Case::ShortBroadcast:
-            send_short(BC_PUSHED, areg::CallType::Broadcast);
+            send_short(areg::CallType::Broadcast, BC_PUSHED);
             broadcast_pushed(LAST_FIRST, LAST_SECOND);
             break;
 
@@ -175,7 +180,7 @@ protected:
                 areg::SharedBuffer data;
                 const uint16_t half{ 0xABCDu };
                 data << half;
-                send_update_event(ATTR_VALUE, areg::CallType::Attribute, data, areg::ResultType::DataOK);
+                send_update_event(areg::CallType::Attribute, ATTR_VALUE, data, areg::ResultType::DataOK);
                 set_value(LAST_VALUE);
             }
             break;
@@ -187,10 +192,10 @@ protected:
 
 private:
     //!< Sends a response or a broadcast that holds only its first parameter.
-    void send_short(uint32_t msgId, areg::CallType kind)
+    void send_short(areg::CallType kind, uint32_t index)
     {
         areg::StubBase::StubListenerList listeners;
-        areg::ServiceResponseEvent evt{ prepare_response_event(msgId, kind, areg::ResultType::RequestOK, static_cast<uint32_t>(sizeof(uint32_t)), listeners) };
+        areg::ServiceResponseEvent evt{ prepare_response_event(kind, index, areg::ResultType::RequestOK, static_cast<uint32_t>(sizeof(uint32_t)), listeners) };
         if (!evt.is_valid())
             return;
 
@@ -297,9 +302,29 @@ protected:
         gPushed.fetch_add(1);
         if ((first == LAST_FIRST) && (second == LAST_SECOND))
         {
-            gListenerLeft.store(service_proxy()->has_any_listener(RESP_PAIRED));
+            gListenerLeft.store(service_proxy()->has_any_listener(areg::CallType::Response, RESP_PAIRED));
             gPushedLast.fetch_add(1);
         }
+
+        changed();
+    }
+
+    void invalid_response(ShortPayload::ResponseIDs respId) override
+    {
+        if ((gCase.load() == Case::ShortResponse) && (respId == ShortPayload::ResponseIDs::MsgId_response_paired))
+            gInvalidResp.fetch_add(1);
+        else
+            gInvalidOther.fetch_add(1);
+
+        changed();
+    }
+
+    void invalid_broadcast(ShortPayload::BroadcastIDs broadcastId) override
+    {
+        if ((gCase.load() == Case::ShortBroadcast) && (broadcastId == ShortPayload::BroadcastIDs::MsgId_broadcast_pushed))
+            gInvalidResp.fetch_add(1);
+        else
+            gInvalidOther.fetch_add(1);
 
         changed();
     }
@@ -360,6 +385,7 @@ static void print()
     printf("paired, paired with wrong values .....: %u, %u\n", gPaired.load(), gPairedWrong.load());
     printf("pushed, pushed last, listener left ...: %u, %u, %s\n", gPushed.load(), gPushedLast.load(), gListenerLeft.load() ? "yes" : "no");
     printf("value ok, invalid, last ..............: %u, %u, %u\n", gValueOk.load(), gValueInvalid.load(), gValueLast.load());
+    printf("invalid response, other ID ...........: %u, %u\n", gInvalidResp.load(), gInvalidOther.load());
 }
 
 int main(int argc, char * argv[])
@@ -422,6 +448,7 @@ int main(int argc, char * argv[])
             print();
             ok = ok && (gPaired.load() == 0) && (gPairCalls.load() == 1) && (gWrongArgs.load() == 0)
                     && (gPushed.load() == 1) && (gListenerLeft.load() == false);
+            ok = ok && (gInvalidResp.load() == 1) && (gInvalidOther.load() == 0);
             break;
 
         case Case::ShortBroadcast:
@@ -429,6 +456,7 @@ int main(int argc, char * argv[])
             areg::Application::unload_model(_model);
             print();
             ok = ok && (gPushed.load() == 1) && (gPushedLast.load() == 1);
+            ok = ok && (gInvalidResp.load() == 1) && (gInvalidOther.load() == 0);
             break;
 
         case Case::ShortAttribute:

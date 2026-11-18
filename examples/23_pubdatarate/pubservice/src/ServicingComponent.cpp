@@ -422,7 +422,7 @@ void ServicingComponent::_init_block_list()
 
 uint32_t ServicingComponent::_build_prebuilt_messages()
 {
-    constexpr uint32_t message_id{ static_cast<uint32_t>(LargeData::MessageIDs::MsgId_broadcast_image_block_acquired) };
+    constexpr uint32_t message_id{ LargeData::message_id(LargeData::BroadcastIDs::MsgId_broadcast_image_block_acquired) };
 
     const uint32_t channels { mOptions.mChannels };
     const uint64_t frame_ns { mOptions.nsPerImage() };

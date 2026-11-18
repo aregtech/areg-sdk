@@ -31,6 +31,7 @@
 #include "areg/component/EventDefs.hpp"
 
 #include <limits>
+#include <new>
 
 
 /************************************************************************
@@ -275,22 +276,17 @@ enum class InstanceBitness  : uint16_t
 [[nodiscard]]
 inline constexpr const char* as_string(areg::InstanceBitness bitness) noexcept;
 
-/**
- * \brief   Constant no response. Used to indicate that the request has no response.
- **/
-constexpr uint32_t  RESPONSE_ID_NONE    { 0u };
-
-//!< The highest message ID reserved for the system. A service interface ID is above it.
+//!< The highest message ID of the system. A system message has no interface call type.
 constexpr uint32_t  SYSTEM_ID_LAST      { 0x0000FFFFu };
 
-/**
- * \brief   Returns true if the value may be the message ID of a service interface entry.
- **/
-[[nodiscard]]
-inline constexpr bool is_interface_id(uint32_t msgId) noexcept
-{
-    return (msgId > areg::SYSTEM_ID_LAST) && (msgId != areg::INVALID_MESSAGE_ID) && (msgId != 0xFFFFFFFFu);
-}
+//!< The index of no entry: the ID is not an entry of the kind.
+constexpr uint32_t  INVALID_MESSAGE_INDEX   { 0x0000FFFFu };
+
+//!< The response index of a request without response.
+constexpr uint32_t  RESPONSE_INDEX_NONE     { areg::INVALID_MESSAGE_INDEX };
+
+//!< The number of kinds of service interface entries: request, response, broadcast and attribute.
+constexpr uint32_t  MESSAGE_KIND_COUNT      { 4u };
 
 /**
  * \brief   Returns how many times the ID is in the list.
@@ -307,22 +303,13 @@ inline constexpr uint32_t count_message_id(const uint32_t (&list)[N], uint32_t m
 }
 
 /**
- * \brief   Returns true if the ID is a valid service interface ID and is in the list once.
- **/
-template <size_t N>
-[[nodiscard]]
-inline constexpr bool is_unique_interface_id(const uint32_t (&list)[N], uint32_t msgId) noexcept
-{
-    return areg::is_interface_id(msgId) && (areg::count_message_id(list, msgId) == 1u);
-}
-
-/**
- * \brief   The message IDs of the system. A service interface ID is never one of them.
+ * \brief   The message IDs of the system. A system message is told apart from an interface entry
+ *          by its call type, not by its value.
  **/
 enum class FuncIdRange  : uint32_t
 {
     //!< Empty function ID.
-      EmptyFunctionId       = RESPONSE_ID_NONE
+      EmptyFunctionId       = 0u
     //!< Sent by service manager to targets (client or stub) to notify connection status update.
     , ResponseServiceProviderConnection = 0x00008004
     //!< Called by service manager when connecting Remove Service like message router or log collector (handshake procedure)
@@ -464,35 +451,62 @@ private:
     AREG_NOCOPY_NOMOVE(StateArray);
 };
 
+/**
+ * \brief   Returns the position of an entry kind in InterfaceData::idTables: request 0, response 1,
+ *          broadcast 2, attribute 3, and MESSAGE_KIND_COUNT for any other call type.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t kind_index(areg::CallType kind) noexcept
+{
+    const uint32_t pos{ static_cast<uint32_t>(kind) - static_cast<uint32_t>(areg::CallType::Request) };
+    return (pos < areg::MESSAGE_KIND_COUNT ? pos : areg::MESSAGE_KIND_COUNT);
+}
+
 //////////////////////////////////////////////////////////////////////////
-// MessageInfo structure declaration
+// MessageTable structure declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   What a service interface knows about one of its message IDs.
+ * \brief   The entries of one kind of a service interface: their message IDs by index, and the
+ *          perfect-hash table that finds the index of a message ID.
+ *          The slot of an ID is (ID * mtFactor) >> mtShift. A slot holds an index; a slot no ID
+ *          maps to holds 0, which the comparison of the IDs then refuses.
  **/
-struct MessageInfo
+struct MessageTable
 {
-    uint16_t        miIndex { 0xFFFFu };                    //!< Index in the list of its kind.
-    areg::CallType  miKind  { areg::CallType::Undefined };  //!< Request, Response, Broadcast or Attribute.
-    uint8_t         miParams{ 0u };                         //!< Number of parameters; 1 for an attribute.
+    const uint32_t *    mtIds   { nullptr };    //!< The message ID of every entry, by index. nullptr if there is none.
+    const uint16_t *    mtSlots { nullptr };    //!< The index of every slot of the hash table. nullptr if there is no entry.
+    uint32_t            mtCount { 0u };         //!< The number of entries.
+    uint32_t            mtFactor{ 0u };         //!< The odd multiplier of the hash.
+    uint32_t            mtShift { 0u };         //!< The shift of the hash: 32 minus the bits of the table size.
 
     /**
-     * \brief   Returns true if the ID belongs to the interface.
+     * \brief   Returns the index of the entry with the message ID, or areg::INVALID_MESSAGE_INDEX.
      **/
     [[nodiscard]]
-    constexpr bool is_valid() const noexcept
+    inline constexpr uint32_t find(uint32_t msgId) const noexcept
     {
-        return (miKind != areg::CallType::Undefined);
+        if (mtCount == 0u)
+            return areg::INVALID_MESSAGE_INDEX;
+
+        const uint32_t index{ mtSlots[static_cast<uint32_t>(msgId * mtFactor) >> mtShift] };
+        return (mtIds[index] == msgId ? index : areg::INVALID_MESSAGE_INDEX);
+    }
+
+    /**
+     * \brief   Returns true if every entry is found at its own index.
+     **/
+    [[nodiscard]]
+    inline constexpr bool finds_every_entry() const noexcept
+    {
+        for (uint32_t i = 0u; i < mtCount; ++i)
+        {
+            if (find(mtIds[i]) != i)
+                return false;
+        }
+
+        return true;
     }
 };
-
-//!< Returns the information of a message ID; an invalid one if the interface has no such ID.
-using FuncFindMessage = areg::MessageInfo (*)(uint32_t msgId) noexcept;
-
-/**
- * \brief   Returns an invalid message information for any ID. Used by an interface without entries.
- **/
-AREG_API areg::MessageInfo find_no_message(uint32_t msgId) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // InterfaceData structure declaration
@@ -504,35 +518,229 @@ AREG_API areg::MessageInfo find_no_message(uint32_t msgId) noexcept;
  **/
 struct AREG_API InterfaceData
 {
-    const char *    idServiceName{ nullptr };               //!< The name of service interface.
-    Version         idVersion{ 0, 0, 0 };                   //!< Service interface implementation version
-    ServiceType     idServiceType{ ServiceType::Invalid };  //!< The service type. Should be either local or public / remote.
-    uint32_t        idRequestCount{ 0u };                   //!< Number of requests in service interface
-    uint32_t        idResponseCount{ 0u };                  //!< Number of responses in service interface, including broadcasts
-    uint32_t        idAttributeCount{ 0u };                 //!< Number of attributes in service interface
-    const uint32_t* idRequestList{ nullptr };               //!< The list of requests. It is nullptr if the list is empty.
-    const uint32_t* idResponseList{ nullptr };              //!< The list of responses. It is nullptr if the list is empty.
-    const uint32_t* idAttributeList{ nullptr };             //!< The list of attributes. It is nullptr if the list is empty.
+    const char *        idServiceName{ nullptr };               //!< The name of service interface.
+    Version             idVersion{ 0, 0, 0 };                   //!< Service interface implementation version
+    ServiceType         idServiceType{ ServiceType::Invalid };  //!< The service type. Should be either local or public / remote.
 
     /**
-     * \brief   Request to Response map, accessed by the index of the request in idRequestList.
-     *          A request without response has the value areg::RESPONSE_ID_NONE.
-     *          The size of this map should be equal to idRequestCount.
+     * \brief   The entries of every kind, at the position areg::kind_index() of the kind.
      **/
-    const uint32_t* idRequestToResponseMap{ nullptr };
+    MessageTable        idTables[areg::MESSAGE_KIND_COUNT]{ };
 
     /**
-     * \brief   Map of parameter count in every response, accessed by the index of the
-     *          response in idResponseList. The size of this map should be equal to idResponseCount.
+     * \brief   The response index of every request, by request index.
+     *          A request without response has areg::RESPONSE_INDEX_NONE. nullptr if there is no request.
      **/
-    const uint32_t* idResponseParamCountMap{ nullptr };
+    const uint16_t *    idRequestToResponse{ nullptr };
 
     /**
-     * \brief   Returns the kind and the index of a message ID of this interface.
-     *          Never nullptr.
+     * \brief   The number of parameters of every response, by response index, followed by
+     *          the number of parameters of every broadcast, by broadcast index.
      **/
-    FuncFindMessage idFind{ &areg::find_no_message };
+    const uint32_t *    idParamCountMap{ nullptr };
+
+    /**
+     * \brief   Returns the requests of the interface.
+     **/
+    [[nodiscard]]
+    inline constexpr const MessageTable & requests() const noexcept
+    {
+        return idTables[0u];
+    }
+
+    /**
+     * \brief   Returns the responses of the interface.
+     **/
+    [[nodiscard]]
+    inline constexpr const MessageTable & responses() const noexcept
+    {
+        return idTables[1u];
+    }
+
+    /**
+     * \brief   Returns the broadcasts of the interface.
+     **/
+    [[nodiscard]]
+    inline constexpr const MessageTable & broadcasts() const noexcept
+    {
+        return idTables[2u];
+    }
+
+    /**
+     * \brief   Returns the attributes of the interface.
+     **/
+    [[nodiscard]]
+    inline constexpr const MessageTable & attributes() const noexcept
+    {
+        return idTables[3u];
+    }
+
+    /**
+     * \brief   Returns the number of entries of the kind; 0 for a call type that is no entry kind.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t count(areg::CallType kind) const noexcept
+    {
+        const uint32_t pos{ areg::kind_index(kind) };
+        return (pos < areg::MESSAGE_KIND_COUNT ? idTables[pos].mtCount : 0u);
+    }
+
+    /**
+     * \brief   Returns the index of the entry of the kind with the message ID, or areg::INVALID_MESSAGE_INDEX.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t find(areg::CallType kind, uint32_t msgId) const noexcept
+    {
+        const uint32_t pos{ areg::kind_index(kind) };
+        return (pos < areg::MESSAGE_KIND_COUNT ? idTables[pos].find(msgId) : areg::INVALID_MESSAGE_INDEX);
+    }
+
+    /**
+     * \brief   Returns the message ID of the entry of the kind at the index. The entry must exist.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t message_id(areg::CallType kind, uint32_t index) const noexcept
+    {
+        return idTables[areg::kind_index(kind)].mtIds[index];
+    }
+
+    /**
+     * \brief   Returns the response index of the request at the index, or areg::RESPONSE_INDEX_NONE.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t response_index(uint32_t reqIndex) const noexcept
+    {
+        return (reqIndex < idTables[0u].mtCount ? static_cast<uint32_t>(idRequestToResponse[reqIndex]) : areg::RESPONSE_INDEX_NONE);
+    }
 };
+
+//////////////////////////////////////////////////////////////////////////
+// ListenerSlots class template declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A fixed number of listener lists, one per slot, allocated once at construction.
+ *          Every list starts empty and reserves nothing. The slot of an interface entry is
+ *          areg::listener_slot().
+ **/
+template <typename LIST>
+class ListenerSlots
+{
+public:
+    /**
+     * \brief   Allocates 'count' empty lists. On a failed allocation the object holds none and is invalid.
+     **/
+    explicit ListenerSlots(uint32_t count) noexcept
+        : mLists(count != 0u ? static_cast<LIST *>(::operator new(sizeof(LIST) * count, std::nothrow)) : nullptr)
+        , mCount(count)
+    {
+        if (mLists == nullptr)
+            return;
+
+        for (uint32_t i = 0u; i < mCount; ++i)
+        {
+            new (mLists + i) LIST(0u);
+        }
+    }
+
+    ~ListenerSlots()
+    {
+        if (mLists == nullptr)
+            return;
+
+        for (uint32_t i = 0u; i < mCount; ++i)
+        {
+            mLists[i].~LIST();
+        }
+
+        ::operator delete(mLists);
+    }
+
+    /**
+     * \brief   Returns true if every list is allocated.
+     **/
+    [[nodiscard]]
+    inline bool is_valid() const noexcept
+    {
+        return (mCount == 0u) || (mLists != nullptr);
+    }
+
+    /**
+     * \brief   Returns the number of slots, 0 if the allocation failed.
+     **/
+    [[nodiscard]]
+    inline uint32_t size() const noexcept
+    {
+        return (mLists != nullptr ? mCount : 0u);
+    }
+
+    /**
+     * \brief   Returns the list of the slot, nullptr for a slot out of range.
+     **/
+    [[nodiscard]]
+    inline LIST * at(uint32_t slot) noexcept
+    {
+        return ((mLists != nullptr) && (slot < mCount) ? mLists + slot : nullptr);
+    }
+
+    /**
+     * \brief   Returns the list of the slot, nullptr for a slot out of range.
+     **/
+    [[nodiscard]]
+    inline const LIST * at(uint32_t slot) const noexcept
+    {
+        return ((mLists != nullptr) && (slot < mCount) ? mLists + slot : nullptr);
+    }
+
+    /**
+     * \brief   Removes every entry of every list. Keeps the slots.
+     **/
+    inline void clear() noexcept
+    {
+        for (uint32_t i = 0u; i < size(); ++i)
+        {
+            mLists[i].clear();
+        }
+    }
+
+private:
+    LIST *      mLists; //!< The lists, one per slot.
+    uint32_t    mCount; //!< The number of slots.
+
+    ListenerSlots(const ListenerSlots &) = delete;
+    ListenerSlots & operator = (const ListenerSlots &) = delete;
+};
+
+/**
+ * \brief   Returns the number of listener slots of the interface: one per response, broadcast and attribute.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t listener_slot_count(const InterfaceData & ifData) noexcept
+{
+    return ifData.responses().mtCount + ifData.broadcasts().mtCount + ifData.attributes().mtCount;
+}
+
+/**
+ * \brief   Returns the listener slot of the response, broadcast or attribute at the index of its kind:
+ *          the responses come first, then the broadcasts, then the attributes. Returns
+ *          areg::INVALID_MESSAGE_INDEX for a request, any other kind or an index out of range.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t listener_slot(const InterfaceData & ifData, areg::CallType kind, uint32_t index) noexcept
+{
+    const uint32_t responses { ifData.responses().mtCount };
+    const uint32_t broadcasts{ ifData.broadcasts().mtCount };
+    switch (kind)
+    {
+    case areg::CallType::Response:
+        return (index < responses ? index : areg::INVALID_MESSAGE_INDEX);
+    case areg::CallType::Broadcast:
+        return (index < broadcasts ? responses + index : areg::INVALID_MESSAGE_INDEX);
+    case areg::CallType::Attribute:
+        return (index < ifData.attributes().mtCount ? responses + broadcasts + index : areg::INVALID_MESSAGE_INDEX);
+    default:
+        return areg::INVALID_MESSAGE_INDEX;
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Empty service interface
@@ -762,58 +970,57 @@ public:
     /**
      * \brief   Sets the data state of an attribute, a response or a broadcast of the interface.
      *
-     * \param   msgId       The message ID. An ID the interface does not know, or a request ID, is ignored.
+     * \param   kind        Attribute, Response or Broadcast. Any other kind is ignored.
+     * \param   index       The index of the entry in its kind. An index out of range is ignored.
      * \param   newState    The state to set. For a response or broadcast, the state of all its parameters.
      **/
-    inline void set_data_state(uint32_t msgId, areg::DataState newState) noexcept;
+    inline void set_data_state(areg::CallType kind, uint32_t index, areg::DataState newState) noexcept;
 
     /**
-     * \brief   Sets the state of the attribute at the index of the attribute list.
-     *          An index out of range is ignored.
+     * \brief   Sets the state of the attribute at the index. An index out of range is ignored.
      **/
     inline void set_attribute_state(uint32_t index, areg::DataState newState) noexcept;
 
     /**
-     * \brief   Sets the state of all parameters of the response or broadcast at the index
-     *          of the response list. An index out of range is ignored.
+     * \brief   Sets the state of all parameters of the response or broadcast at the index of its kind.
+     *          Any other kind and an index out of range are ignored.
      **/
-    inline void set_param_state(uint32_t index, areg::DataState newState) noexcept;
+    inline void set_param_state(areg::CallType kind, uint32_t index, areg::DataState newState) noexcept;
 
     /**
-     * \brief   Returns the data state of the given message (attribute, response or broadcast) ID.
-     *          Returns DataUnexpectedError for any other ID.
-     * \param   msgId       The message ID to query.
+     * \brief   Returns the data state of an attribute, a response or a broadcast.
+     *          Returns DataUnexpectedError for any other kind or an index out of range.
      **/
     [[nodiscard]]
-    inline areg::DataState data_state(uint32_t msgId) const noexcept;
+    inline areg::DataState data_state(areg::CallType kind, uint32_t index) const noexcept;
 
     /**
-     * \brief   Returns the response message ID corresponding to the given request message ID.
-     *
-     * \param   reqId       The request message ID to map.
-     * \return  The corresponding response ID, areg::RESPONSE_ID_NONE if the request has no
-     *          response, or areg::INVALID_MESSAGE_ID if the ID is not a request of the interface.
+     * \brief   Returns the response index of the request at the index, or areg::RESPONSE_INDEX_NONE
+     *          if the request has no response or the index is out of range.
      **/
     [[nodiscard]]
-    inline uint32_t response_id(uint32_t reqId) const noexcept;
+    inline uint32_t response_index(uint32_t reqIndex) const noexcept;
 
     /**
-     * \brief   Returns the data state of the given attribute ID.
-     *
-     * \param   msgId       The attribute message ID to query.
-     * \return  The data state of the attribute, or DataUnexpectedError if it is not an attribute.
+     * \brief   Returns the data state of the attribute at the index, or DataUnexpectedError if the index is out of range.
      **/
     [[nodiscard]]
-    inline areg::DataState attribute_state(uint32_t msgId) const noexcept;
+    inline areg::DataState attribute_state(uint32_t index) const noexcept;
 
     /**
-     * \brief   Returns the parameter state of the given response or broadcast ID.
-     *
-     * \param   msgId       The response message ID to query.
-     * \return  The parameter state, or DataUnexpectedError if it is not a response or broadcast.
+     * \brief   Returns the parameter state of the response or broadcast at the index of its kind,
+     *          or DataUnexpectedError for any other kind or an index out of range.
      **/
     [[nodiscard]]
-    inline areg::DataState param_state(uint32_t msgId) const noexcept;
+    inline areg::DataState param_state(areg::CallType kind, uint32_t index) const noexcept;
+
+    /**
+     * \brief   Returns the row of the parameter table of the response or broadcast at the index of
+     *          its kind: the responses come first, then the broadcasts. Returns a row out of range
+     *          for any other kind or an index out of range.
+     **/
+    [[nodiscard]]
+    inline uint32_t param_row(areg::CallType kind, uint32_t index) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1100,7 +1307,7 @@ inline void areg::ParameterArray::reset(uint32_t whichParam) noexcept
 
 inline areg::ProxyData::ProxyData(const areg::InterfaceData& ifData)
     : mIfData     (ifData)
-    , mAttrState  (static_cast<uint32_t>(ifData.idAttributeCount))
+    , mAttrState  (ifData.attributes().mtCount)
     , mParamState (ifData)
 {
     reset();
@@ -1112,22 +1319,15 @@ inline void areg::ProxyData::reset() noexcept
     mParamState.reset();
 }
 
-inline void areg::ProxyData::set_data_state(uint32_t msgId, areg::DataState newState) noexcept
+inline void areg::ProxyData::set_data_state(areg::CallType kind, uint32_t index, areg::DataState newState) noexcept
 {
-    const areg::MessageInfo info{ mIfData.idFind(msgId) };
-    switch (info.miKind)
+    if (kind == areg::CallType::Attribute)
     {
-    case areg::CallType::Attribute:
-        set_attribute_state(info.miIndex, newState);
-        break;
-
-    case areg::CallType::Response:  // fall through
-    case areg::CallType::Broadcast:
-        set_param_state(info.miIndex, newState);
-        break;
-
-    default:
-        break;
+        set_attribute_state(index, newState);
+    }
+    else
+    {
+        set_param_state(kind, index, newState);
     }
 }
 
@@ -1139,54 +1339,48 @@ inline void areg::ProxyData::set_attribute_state(uint32_t index, areg::DataState
     }
 }
 
-inline void areg::ProxyData::set_param_state(uint32_t index, areg::DataState newState) noexcept
+inline uint32_t areg::ProxyData::param_row(areg::CallType kind, uint32_t index) const noexcept
 {
-    if (mParamState.is_valid_index(index))
+    const uint32_t responses{ mIfData.responses().mtCount };
+    if (kind == areg::CallType::Response)
+        return (index < responses ? index : areg::INVALID_MESSAGE_INDEX);
+    else if (kind == areg::CallType::Broadcast)
+        return (index < mIfData.broadcasts().mtCount ? responses + index : areg::INVALID_MESSAGE_INDEX);
+    else
+        return areg::INVALID_MESSAGE_INDEX;
+}
+
+inline void areg::ProxyData::set_param_state(areg::CallType kind, uint32_t index, areg::DataState newState) noexcept
+{
+    const uint32_t row{ param_row(kind, index) };
+    if (mParamState.is_valid_index(row))
     {
-        mParamState.set_param_state(index, newState);
+        mParamState.set_param_state(row, newState);
     }
 }
 
-inline areg::DataState areg::ProxyData::data_state(uint32_t msgId) const noexcept
+inline areg::DataState areg::ProxyData::data_state(areg::CallType kind, uint32_t index) const noexcept
 {
-    const areg::MessageInfo info{ mIfData.idFind(msgId) };
-    switch (info.miKind)
-    {
-    case areg::CallType::Attribute:
-        return (info.miIndex < mAttrState.size() ? mAttrState[info.miIndex] : areg::DataState::DataUnexpectedError);
-
-    case areg::CallType::Response:  // fall through
-    case areg::CallType::Broadcast:
-        return param_state(msgId);
-
-    default:
-        return areg::DataState::DataUnexpectedError;
-    }
+    return (kind == areg::CallType::Attribute ? attribute_state(index) : param_state(kind, index));
 }
 
-inline uint32_t areg::ProxyData::response_id(uint32_t reqId) const noexcept
+inline uint32_t areg::ProxyData::response_index(uint32_t reqIndex) const noexcept
 {
-    const areg::MessageInfo info{ mIfData.idFind(reqId) };
-    return ((info.miKind == areg::CallType::Request) && (info.miIndex < mIfData.idRequestCount)
-                    ? mIfData.idRequestToResponseMap[info.miIndex]
-                    : areg::INVALID_MESSAGE_ID);
+    return mIfData.response_index(reqIndex);
 }
 
-inline areg::DataState areg::ProxyData::attribute_state( uint32_t msgId ) const noexcept
+inline areg::DataState areg::ProxyData::attribute_state( uint32_t index ) const noexcept
 {
-    const areg::MessageInfo info{ mIfData.idFind(msgId) };
-    return ((info.miKind == areg::CallType::Attribute) && (info.miIndex < mAttrState.size())
-                    ? mAttrState[info.miIndex]
-                    : areg::DataState::DataUnexpectedError);
+    return (index < mAttrState.size() ? mAttrState[index] : areg::DataState::DataUnexpectedError);
 }
 
-inline areg::DataState areg::ProxyData::param_state( uint32_t msgId ) const noexcept
+inline areg::DataState areg::ProxyData::param_state( areg::CallType kind, uint32_t index ) const noexcept
 {
-    const areg::MessageInfo info{ mIfData.idFind(msgId) };
-    if (((info.miKind != areg::CallType::Response) && (info.miKind != areg::CallType::Broadcast)) || !mParamState.is_valid_index(info.miIndex))
+    const uint32_t row{ param_row(kind, index) };
+    if (!mParamState.is_valid_index(row))
         return areg::DataState::DataUnexpectedError;
 
-    const areg::StateArray& param = mParamState[info.miIndex];
+    const areg::StateArray& param = mParamState[row];
     return (param.has_params() ? param[0u] : areg::DataState::DataIsUnavailable);
 }
 

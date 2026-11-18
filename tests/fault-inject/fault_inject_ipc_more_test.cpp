@@ -61,12 +61,11 @@ namespace
 
     //!< A system message id that the router client does not know.
     constexpr uint32_t UNKNOWN_ID { 0x00000007u };
-    static_assert( areg::is_interface_id( UNKNOWN_ID ) == false, "the unknown id must be a system id" );
+    static_assert( UNKNOWN_ID <= areg::SYSTEM_ID_LAST, "the unknown id must be a system id" );
 
     //!< The first request id of the tests, above the ids of the system.
     constexpr uint32_t REQUEST_BASE { areg::crc32_calculate("request_router_client") };
-    static_assert( areg::is_interface_id( REQUEST_BASE ) && areg::is_interface_id( REQUEST_BASE + 0x1000u ) && ( REQUEST_BASE < REQUEST_BASE + 0x1000u )
-                 , "the request ids of the tests must be interface ids" );
+    static_assert( REQUEST_BASE < REQUEST_BASE + 0x1000u, "the request ids of the tests must not wrap" );
 
     //!< A loopback router socket that serves one client at a time.
     struct PeerRouter

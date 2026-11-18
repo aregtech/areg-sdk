@@ -21,6 +21,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/ProxyBase.hpp"
+#include "units/TestMessageTable.hpp"
 #include "tests/message-id/services/SharedResponseConsumerBase.hpp"
 #include "tests/message-id/services/SharedResponseProviderBase.hpp"
 #include "tests/message-id/services/private/SharedResponseEvents.hpp"
@@ -67,34 +68,25 @@ namespace
     constexpr char const    _foreignProvider[]{ "MiForeignProvider" };
 
     //!< The entries a foreign proxy sends: sync, and a request with a response the provider does not have.
-    constexpr uint32_t      REQ_SYNC        { static_cast<uint32_t>(SharedResponse::MessageIDs::MsgId_request_sync) };
-    constexpr uint32_t      RESP_SYNCED     { static_cast<uint32_t>(SharedResponse::MessageIDs::MsgId_response_synced) };
+    constexpr uint32_t      REQ_SYNC        { SharedResponse::message_id(SharedResponse::RequestIDs::MsgId_request_sync) };
+    constexpr uint32_t      RESP_SYNCED     { SharedResponse::message_id(SharedResponse::ResponseIDs::MsgId_response_synced) };
     constexpr uint32_t      REQ_ADDED       { areg::crc32_calculate("request_added") };
     constexpr uint32_t      RESP_ADDED      { areg::crc32_calculate("response_added") };
     constexpr uint32_t      FOREIGN_REQUESTS[]    { REQ_SYNC, REQ_ADDED };
     constexpr uint32_t      FOREIGN_RESPONSES[]   { RESP_SYNCED, RESP_ADDED };
     constexpr uint32_t      FOREIGN_PARAMS[]      { 1u, 0u };
-    static_assert(areg::is_unique_interface_id(FOREIGN_REQUESTS, REQ_ADDED) && areg::is_unique_interface_id(FOREIGN_RESPONSES, RESP_ADDED), "the added entries are interface ids");
-
-    //!< The lookup of the foreign interface.
-    areg::MessageInfo find_foreign_message(uint32_t msgId) noexcept
-    {
-        switch (msgId)
-        {
-        case REQ_SYNC:      return areg::MessageInfo{ 0u, areg::CallType::Request, 1u };
-        case REQ_ADDED:     return areg::MessageInfo{ 1u, areg::CallType::Request, 0u };
-        case RESP_SYNCED:   return areg::MessageInfo{ 0u, areg::CallType::Response, 1u };
-        case RESP_ADDED:    return areg::MessageInfo{ 1u, areg::CallType::Response, 0u };
-        default:            return areg::MessageInfo{ };
-        }
-    }
+    constexpr uint16_t      FOREIGN_REQUEST_TO_RESPONSE[]{ 0u, 1u };
+    static_assert((areg::count_message_id(FOREIGN_REQUESTS, REQ_ADDED) == 1u) && (areg::count_message_id(FOREIGN_RESPONSES, RESP_ADDED) == 1u), "the added entries are unique in their kind");
 
     const areg::InterfaceData & foreign_interface()
     {
+        static const areg_test::TestMessageTable requests{ FOREIGN_REQUESTS, 2u };
+        static const areg_test::TestMessageTable responses{ FOREIGN_RESPONSES, 2u };
         static const areg::InterfaceData ifData
         {
-              SharedResponse::ServiceName, SharedResponse::InterfaceVersion, SharedResponse::interface_data().idServiceType
-            , 2u, 2u, 0u, FOREIGN_REQUESTS, FOREIGN_RESPONSES, nullptr, FOREIGN_RESPONSES, FOREIGN_PARAMS, &find_foreign_message
+            areg_test::make_interface( SharedResponse::ServiceName, SharedResponse::InterfaceVersion, SharedResponse::interface_data().idServiceType
+                                     , requests.table(), responses.table(), areg::MessageTable{ }, areg::MessageTable{ }
+                                     , FOREIGN_REQUEST_TO_RESPONSE, FOREIGN_PARAMS )
         };
 
         return ifData;
@@ -148,7 +140,7 @@ namespace
             areg::ServiceRequestEvent evt{ (proxy.*(&ProxyAccess::create_request_event))(reqId, 0u) };
             using SendFunc = SequenceNumber (areg::ProxyBase::*)(areg::ServiceRequestEvent &, areg::NotificationConsumer *, uint32_t);
             const SendFunc send{ &ProxyAccess::send_request_event };
-            static_cast<void>((proxy.*send)(evt, nullptr, areg::RESPONSE_ID_NONE));
+            static_cast<void>((proxy.*send)(evt, nullptr, areg::RESPONSE_INDEX_NONE));
         }
     };
 }
@@ -190,11 +182,11 @@ protected:
             break;
 
         case Case::ErrorRequest:
-            error_request(static_cast<uint32_t>(SharedResponse::MessageIDs::MsgId_request_second), false);
+            error_request(areg::CallType::Request, static_cast<uint32_t>(SharedResponse::RequestIDs::MsgId_request_second), false);
             break;
 
         case Case::ErrorResponse:
-            error_request(static_cast<uint32_t>(SharedResponse::MessageIDs::MsgId_response_done), false);
+            error_request(areg::CallType::Response, static_cast<uint32_t>(SharedResponse::ResponseIDs::MsgId_response_done), false);
             break;
 
         default:
@@ -357,7 +349,7 @@ public:
             args << TAG_SYNC;
 
         areg::ServiceRequestEvent evt{ create_request(args, reqId) };
-        return send_request_event(evt, &caller, respId);
+        return send_request_event(evt, &caller, foreign_interface().find(areg::CallType::Response, respId));
     }
 
 protected:
@@ -370,12 +362,13 @@ protected:
     {
         const areg::ResultType result{ static_cast<areg::ResultType>(eventElem.envelope().result()) };
         const uint32_t msgId{ eventElem.response_id() };
-        if (eventElem.call_kind() != areg::CallType::Request)
-            notify_listeners(msgId, result, eventElem.sequence_number());
+        const areg::CallType kind{ eventElem.call_kind() };
+        if (kind != areg::CallType::Request)
+            notify_listeners(kind, foreign_interface().find(kind, msgId), result, eventElem.sequence_number());
         else if (msgId == REQ_ADDED)
-            notify_request_failed(REQ_ADDED, RESP_ADDED, 1u, result, eventElem.sequence_number());
+            notify_request_failed(1u, 1u, result, eventElem.sequence_number());
         else if (msgId == REQ_SYNC)
-            notify_request_failed(REQ_SYNC, RESP_SYNCED, 0u, result, eventElem.sequence_number());
+            notify_request_failed(0u, 0u, result, eventElem.sequence_number());
         else
             gOtherFailures.fetch_add(1u);
     }
@@ -457,19 +450,20 @@ protected:
     void process_notification_event(areg::NotificationEvent & eventElem) override
     {
         const areg::NotificationEventData & data{ static_cast<const areg::NotificationEvent &>(eventElem).data() };
-        process_notification(data.notify_id(), data.notify_type(), data.sequence());
+        process_notification(data.notify_kind(), data.notify_index(), data.notify_type(), data.sequence());
     }
 
-    void process_notification(uint32_t msgId, areg::ResultType result, SequenceNumber seqNr) override
+    void process_notification(areg::CallType kind, uint32_t index, areg::ResultType result, SequenceNumber seqNr) override
     {
-        if ((msgId == REQ_ADDED) && (result == areg::ResultType::RequestUnsupported))
+        const uint32_t msgId{ foreign_interface().message_id(kind, index) };
+        if ((kind == areg::CallType::Request) && (msgId == REQ_ADDED) && (result == areg::ResultType::RequestUnsupported))
         {
             gUnsupported.fetch_add(1);
             gFailedSeq.store(seqNr);
-            gAddedLeft.store(mProxy->has_any_listener(RESP_ADDED));
+            gAddedLeft.store(mProxy->has_any_listener(areg::CallType::Response, 1u));
             static_cast<void>(proxy().request(REQ_SYNC, RESP_SYNCED, *this));
         }
-        else if ((msgId == RESP_SYNCED) && (result == areg::ResultType::RequestOK))
+        else if ((kind == areg::CallType::Response) && (msgId == RESP_SYNCED) && (result == areg::ResultType::RequestOK))
         {
             gSynced.fetch_add(1);
         }

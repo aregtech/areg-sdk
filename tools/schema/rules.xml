@@ -442,6 +442,12 @@
             <Fix>Answers and broadcasts of one interface share their parameter names. Give the two parameters the same type, or rename one of them.</Fix>
             <Implemented Lusan="true" Codegen="true" CodegenName="RULE_PARAM_TWO_TYPES"/>
         </Rule>
+
+        <Rule Number="61" Name="RULE_MESSAGE_ID" Section="shared" Bands="error" Documents="siml">
+            <Summary>Two entries of one kind of a service interface with the same message ID, or a kind with more entries than its message ID table can hold. The message ID of an entry is the CRC-32C of its kind and its name, so two requests, two responses, two broadcasts or two attributes with one ID cannot be told apart by the receiver. Entries of two kinds may share an ID.</Summary>
+            <Fix>Rename one of the two entries. A kind with too many entries is split into two interfaces.</Fix>
+            <Implemented Lusan="true" Codegen="true" CodegenName="RULE_MESSAGE_ID"/>
+        </Rule>
     </RuleList>
 
     <!--

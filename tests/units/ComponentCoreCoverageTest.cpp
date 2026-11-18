@@ -5,6 +5,7 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "units/ChildProcess.hpp"
+#include "units/TestMessageTable.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/Component.hpp"
@@ -45,23 +46,17 @@ namespace
     constexpr uint32_t RESPONSES[]{ areg::crc32_calculate("response_core") };
     constexpr uint32_t ATTRIBUTES[]{ areg::crc32_calculate("attribute_Core") };
     constexpr uint32_t PARAM_COUNTS[]{ 1 };
+    constexpr uint16_t REQUEST_TO_RESPONSE[]{ 0u };
 
-    //!< The lookup of the test interface.
-    MessageInfo find_core_message(uint32_t msgId) noexcept
-    {
-        switch (msgId)
-        {
-        case REQUESTS[0]:   return MessageInfo{ 0u, CallType::Request, 0u };
-        case RESPONSES[0]:  return MessageInfo{ 0u, CallType::Response, 1u };
-        case ATTRIBUTES[0]: return MessageInfo{ 0u, CallType::Attribute, 1u };
-        default:            return MessageInfo{ };
-        }
-    }
+    const areg_test::TestMessageTable CORE_REQUESTS{ REQUESTS, 1u };
+    const areg_test::TestMessageTable CORE_RESPONSES{ RESPONSES, 1u };
+    const areg_test::TestMessageTable CORE_ATTRIBUTES{ ATTRIBUTES, 1u };
 
     const InterfaceData PUBLIC_INTERFACE
     {
-          "CoreCoverageService", Version(1, 0, 0), ServiceType::Public
-        , 1, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSES, PARAM_COUNTS, &find_core_message
+        areg_test::make_interface( "CoreCoverageService", Version(1, 0, 0), ServiceType::Public
+                                 , CORE_REQUESTS.table(), CORE_RESPONSES.table(), MessageTable{ }, CORE_ATTRIBUTES.table()
+                                 , REQUEST_TO_RESPONSE, PARAM_COUNTS )
     };
 
     //!< A consumer that ignores every notification.
@@ -77,7 +72,7 @@ namespace
         {
         }
 
-        void process_notification(uint32_t, ResultType, SequenceNumber) override
+        void process_notification(CallType, uint32_t, ResultType, SequenceNumber) override
         {
         }
     };
@@ -150,7 +145,7 @@ namespace
         {
         }
 
-        void error_request(uint32_t, bool) override
+        void error_request(CallType, uint32_t, bool) override
         {
         }
 
