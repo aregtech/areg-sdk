@@ -1896,7 +1896,12 @@ namespace
         const timeval timeout{ IO_WAIT_S, 0 };
         AREG_CHILD_CHECK( ::setsockopt( router.handle, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof( timeout ) ) == 0 );
         AREG_CHILD_CHECK( request_connection( router ) );
+        const areg::MessageEnvelope first{ areg::create_connect_notify( areg::COOKIE_ROUTER, areg::COOKIE_REMOTE_SERVICE + 999u ) };
+        AREG_CHILD_CHECK( first.is_valid( ) );
+        // The connection of the setup is accepted and closed, so none of it is left in the backlog.
+        AREG_CHILD_CHECK( accept_requesting_again( router, first ) && wait_connected( ) );
         areg::Application::disconnect_router( );
+        AREG_CHILD_CHECK( router.closed_by_client( ) );
         AREG_CHILD_CHECK( wait_router_state( areg::RouterState::Disconnected ) );
 
         areg_fault::FaultScope faults;
