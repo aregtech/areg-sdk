@@ -39,7 +39,7 @@ enum class RequestIDs : uint32_t
     , MsgId_request_hello_ublock    // index 1
 };
 
-constexpr uint32_t RequestIdList[]  // the ID of every request, by index
+inline constexpr uint32_t RequestIdList[]  // the ID of every request, by index
 {
       areg::crc32_calculate("request_identifier")
     , areg::crc32_calculate("request_hello_ublock")
@@ -70,13 +70,15 @@ Two entries of **one kind** could, in theory, hash to the same value. That is re
 
 - **Lusan** reports it while the document is edited (rule 61, "two entries of one kind with the same message ID").
 - **codegen** refuses to generate the document and names both entries.
-- the generated code checks it with one `static_assert` per entry:
+- the generated code checks it once per kind: the `static_assert` on the lookup table fails when two entries share an
+  ID, because both land in one slot:
   ```
-  HelloUnblock: the request 'identifier' has the message ID of another request. Rename one of them.
+  HelloUnblock: the message ID table of the requests does not find every entry.
   ```
 
 The fix is to rename one of the two entries. For a kind of 100 entries the chance of a collision is about one in a
-million.
+million. A kind holds at most as many entries as a lookup table of 65,536 slots can tell apart, about 1,200; codegen
+refuses a larger kind and asks to split the interface.
 
 Entries of **two kinds** may share an ID: a request and a broadcast with the same value are told apart by the kind the
 header carries, and each is delivered to its own handler.

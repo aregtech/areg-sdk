@@ -76,7 +76,7 @@ namespace
     constexpr uint32_t      FOREIGN_RESPONSES[]   { RESP_SYNCED, RESP_ADDED };
     constexpr uint32_t      FOREIGN_PARAMS[]      { 1u, 0u };
     constexpr uint16_t      FOREIGN_REQUEST_TO_RESPONSE[]{ 0u, 1u };
-    static_assert((areg::count_message_id(FOREIGN_REQUESTS, REQ_ADDED) == 1u) && (areg::count_message_id(FOREIGN_RESPONSES, RESP_ADDED) == 1u), "the added entries are unique in their kind");
+    static_assert((REQ_ADDED != REQ_SYNC) && (RESP_ADDED != RESP_SYNCED), "the added entries are unique in their kind");
 
     const areg::InterfaceData & foreign_interface()
     {

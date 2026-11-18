@@ -75,6 +75,7 @@ namespace
         }
 
         using StubBase::Listener;
+        using StubBase::ListenerSlotList;
         using StubBase::StubListenerList;
         using StubBase::attribute_ids;
         using StubBase::cancel_current_request;
@@ -865,4 +866,81 @@ TEST(StubBaseListenerTest, listener_of_a_message_has_no_sequence_flags_or_consum
     EXPECT_FALSE(listener == otherSequence);
     const ContractStub::Listener anySequence(REQUESTS[0], SEQUENCE_NUMBER_ANY);
     EXPECT_TRUE(listener == anySequence);
+}
+
+TEST(StubBaseListenerTest, listener_list_keeps_the_order_past_the_inline_storage)
+{
+    constexpr uint32_t count{ ContractStub::StubListenerList::INLINE_COUNT * 3u };
+    ContractStub::StubListenerList list;
+    EXPECT_TRUE(list.is_empty());
+    for (uint32_t i = 0u; i < count; ++i)
+    {
+        ASSERT_TRUE(list.add(ContractStub::Listener(i, i + 100u)));
+    }
+
+    ASSERT_EQ(count, list.size());
+    for (uint32_t i = 0u; i < count; ++i)
+    {
+        EXPECT_EQ(i, list[i].mMessageId);
+        EXPECT_EQ(i + 100u, list.value_at(i).mSequenceNr);
+    }
+
+    EXPECT_EQ(0u, list.first_entry().mMessageId);
+    list.clear();
+    EXPECT_TRUE(list.is_empty());
+    ASSERT_TRUE(list.add(ContractStub::Listener(7u)));
+    EXPECT_EQ(7u, list.first_entry().mMessageId);
+}
+
+TEST(StubBaseListenerTest, moved_listener_list_keeps_its_listeners_and_leaves_the_source_empty)
+{
+    for (const uint32_t count : { ContractStub::StubListenerList::INLINE_COUNT, ContractStub::StubListenerList::INLINE_COUNT + 1u })
+    {
+        ContractStub::StubListenerList source;
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            ASSERT_TRUE(source.add(ContractStub::Listener(i)));
+        }
+
+        ContractStub::StubListenerList moved{ std::move(source) };
+        EXPECT_TRUE(source.is_empty());
+        ASSERT_EQ(count, moved.size());
+
+        ContractStub::StubListenerList assigned;
+        ASSERT_TRUE(assigned.add(ContractStub::Listener(99u)));
+        assigned = std::move(moved);
+        EXPECT_TRUE(moved.is_empty());
+        ASSERT_EQ(count, assigned.size());
+        for (uint32_t i = 0u; i < count; ++i)
+        {
+            EXPECT_EQ(i, assigned[i].mMessageId);
+        }
+
+        ASSERT_TRUE(source.add(ContractStub::Listener(5u)));
+        EXPECT_EQ(5u, source.first_entry().mMessageId);
+    }
+}
+
+TEST(StubBaseListenerTest, listener_list_appends_a_slot_after_its_own_listeners)
+{
+    ContractStub::ListenerSlotList slot(0u);
+    for (uint32_t i = 0u; i < 6u; ++i)
+    {
+        slot.add(ContractStub::Listener(i + 10u));
+    }
+
+    ContractStub::StubListenerList list;
+    ASSERT_TRUE(list.add(ContractStub::Listener(1u)));
+    ASSERT_TRUE(list.add(ContractStub::Listener(2u)));
+    ASSERT_TRUE(list.append(slot));
+    ASSERT_EQ(8u, list.size());
+    EXPECT_EQ(1u, list[0].mMessageId);
+    EXPECT_EQ(2u, list[1].mMessageId);
+    for (uint32_t i = 0u; i < 6u; ++i)
+    {
+        EXPECT_EQ(i + 10u, list[i + 2u].mMessageId);
+    }
+
+    ASSERT_TRUE(list.append(ContractStub::ListenerSlotList(0u)));
+    EXPECT_EQ(8u, list.size());
 }

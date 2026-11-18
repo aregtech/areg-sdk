@@ -26,6 +26,7 @@
 
 #include "areg/logging/areg_log.h"
 #include "areg/base/private/NeverDestroyed.hpp"
+
 namespace areg {
 
 //////////////////////////////////////////////////////////////////////////
@@ -54,7 +55,6 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const 
 
     return (areg::SEQUENCE_NUMBER_ANY == other.mSequenceNr) || ((mSequenceNr == other.mSequenceNr) && same_proxy(other));
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 // StubBase implementation
@@ -164,7 +164,7 @@ void StubBase::_detach_thread_providers( const ThreadAddress & thread )
 bool StubBase::is_busy( uint32_t respIndex ) const noexcept
 {
     Lock lock(mListenerLock);
-    const StubListenerList * subVec{ mListeners.at(_slot(areg::CallType::Response, respIndex)) };
+    const ListenerSlotList * subVec{ mListeners.at(_slot(areg::CallType::Response, respIndex)) };
     if (subVec == nullptr)
         return false;
 
@@ -183,7 +183,7 @@ SessionID StubBase::unblock_current_request()
     if (mCurrSlot != INVALID_SLOT)
     {
         Lock lock(mListenerLock);
-        StubListenerList * subVec{ mListeners.at(mCurrSlot) };
+        ListenerSlotList * subVec{ mListeners.at(mCurrSlot) };
         if (subVec != nullptr)
         {
             const uint32_t index{ _find_unprepared(*subVec, mCurrIndex) };
@@ -211,7 +211,7 @@ bool StubBase::prepare_response( SessionID sessionId )
     if (!mMapSessions.is_valid_position(pos))
         return false;
 
-    StubListenerList * subVec{ mListeners.at(pos->second.mSlot) };
+    ListenerSlotList * subVec{ mListeners.at(pos->second.mSlot) };
     if (subVec == nullptr)
         return false;
 
@@ -232,7 +232,7 @@ void StubBase::prepare_request( Listener & listener, const SequenceNumber & seqN
 {
     Lock lock(mListenerLock);
     const uint32_t slot{ _slot(areg::CallType::Response, respIndex) };
-    StubListenerList * subVec{ mListeners.at(slot) };
+    ListenerSlotList * subVec{ mListeners.at(slot) };
     if (subVec == nullptr)
         return;
 
@@ -248,9 +248,9 @@ uint32_t StubBase::find_listeners( areg::CallType kind, uint32_t index, StubList
 {
     const uint32_t slot{ kind == areg::CallType::Request ? _slot(areg::CallType::Response, mInterface.response_index(index)) : _slot(kind, index) };
     Lock lock(mListenerLock);
-    const StubListenerList * subVec{ mListeners.at(slot) };
+    const ListenerSlotList * subVec{ mListeners.at(slot) };
     if (subVec != nullptr)
-        listeners.append(*subVec);
+        static_cast<void>(listeners.append(*subVec));
 
     return listeners.size();
 }
@@ -260,7 +260,7 @@ void StubBase::remove_notification_listeners( const ProxyAddress & notifySource 
     Lock lock(mListenerLock);
     for (uint32_t slot = 0u; slot < mListeners.size(); ++slot)
     {
-        StubListenerList& subVec = *mListeners.at(slot);
+        ListenerSlotList& subVec = *mListeners.at(slot);
         uint32_t i = 0;
         while (i < subVec.size())
         {
@@ -282,7 +282,7 @@ void StubBase::clear_all_listeners( const ProxyAddress & whichProxy ) noexcept
     Lock lock(mListenerLock);
     for (uint32_t slot = 0u; slot < mListeners.size(); ++slot)
     {
-        StubListenerList& subVec = *mListeners.at(slot);
+        ListenerSlotList& subVec = *mListeners.at(slot);
         uint32_t i = 0;
         while (i < subVec.size())
         {
@@ -310,7 +310,7 @@ void StubBase::clear_all_listeners( const ProxyAddress & whichProxy ) noexcept
     }
 }
 
-void StubBase::_remove_at( StubListenerList & subVec, uint32_t index ) noexcept
+void StubBase::_remove_at( ListenerSlotList & subVec, uint32_t index ) noexcept
 {
     const uint32_t last = subVec.size() - 1u;
     if (index != last)
@@ -318,7 +318,7 @@ void StubBase::_remove_at( StubListenerList & subVec, uint32_t index ) noexcept
     subVec.remove_at(last);
 }
 
-uint32_t StubBase::_find_target( const StubListenerList & subVec, bool anyRequest /*= true*/, uint32_t reqId /*= 0u*/ ) noexcept
+uint32_t StubBase::_find_target( const ListenerSlotList & subVec, bool anyRequest /*= true*/, uint32_t reqId /*= 0u*/ ) noexcept
 {
     uint32_t result{ subVec.size() };
     for (uint32_t i = 0; i < subVec.size(); ++i)
@@ -335,7 +335,7 @@ uint32_t StubBase::_find_target( const StubListenerList & subVec, bool anyReques
     return result;
 }
 
-uint32_t StubBase::_find_unprepared( const StubListenerList & subVec, uint32_t hint ) noexcept
+uint32_t StubBase::_find_unprepared( const ListenerSlotList & subVec, uint32_t hint ) noexcept
 {
     const auto isUnprepared = [](const Listener & listener) noexcept -> bool
         {
@@ -363,8 +363,7 @@ void StubBase::_cancel_sessions( uint32_t reqId, uint32_t respSlot )
         {
             if ((pos->second.mSlot == respSlot) && (pos->second.mMessageId == reqId))
             {
-                cancelled.add(pos->second);
-                pos = mMapSessions.remove_at(pos);
+                pos = cancelled.add(pos->second) ? mMapSessions.remove_at(pos) : mMapSessions.next_position(pos);
             }
             else
             {
@@ -394,20 +393,21 @@ void StubBase::collect_and_strip_response_listeners( areg::CallType kind, uint32
     do
     {
         Lock lock(mListenerLock);
-        StubListenerList * found{ mListeners.at(_slot(kind, index)) };
+        ListenerSlotList * found{ mListeners.at(_slot(kind, index)) };
         if (found == nullptr)
             break;
 
-        StubListenerList & subVec = *found;
+        ListenerSlotList & subVec = *found;
         const uint32_t index{ _find_target(subVec) };
         if (index < subVec.size())
         {
             const Listener target{ subVec.value_at(index) };
-            _remove_at(subVec, index);
             const bool reachable{ (target.mFlags & Listener::FLAG_ORPHANED) == 0u };
-            listeners.reserve(subVec.size() + 1u);
-            if (reachable)
-                listeners.add(target);
+            if (reachable && !listeners.add(target))
+                break;
+
+            _remove_at(subVec, index);
+            static_cast<void>(listeners.reserve(listeners.size() + subVec.size()));
 
             for (uint32_t i = 0; i < subVec.size(); ++i)
             {
@@ -422,7 +422,7 @@ void StubBase::collect_and_strip_response_listeners( areg::CallType kind, uint32
         }
         else
         {
-            listeners.append(subVec);
+            static_cast<void>(listeners.append(subVec));
         }
     } while (false);
 
@@ -470,17 +470,16 @@ void StubBase::send_error_notification( const StubListenerList & whichListeners,
     do
     {
         Lock lock(mListenerLock);
-        StubListenerList * found{ mListeners.at(listSlot) };
+        ListenerSlotList * found{ mListeners.at(listSlot) };
         if (found == nullptr)
             break;
 
-        StubListenerList & subVec = *found;
+        ListenerSlotList & subVec = *found;
         if (isRequest && !cancelAll)
         {
             const uint32_t index{ _find_target(subVec, false, msgId) };
-            if (index < subVec.size())
+            if ((index < subVec.size()) && targets.add(subVec.value_at(index)))
             {
-                targets.add(subVec.value_at(index));
                 _remove_at(subVec, index);
             }
         }
@@ -490,9 +489,8 @@ void StubBase::send_error_notification( const StubListenerList & whichListeners,
             while (i < subVec.size())
             {
                 const Listener & listener{ subVec.value_at(i) };
-                if (listener.is_request() && (isResponse || (listener.mMessageId == msgId)))
+                if (listener.is_request() && (isResponse || (listener.mMessageId == msgId)) && targets.add(listener))
                 {
-                    targets.add(subVec.value_at(i));
                     _remove_at(subVec, i);
                 }
                 else
@@ -503,7 +501,7 @@ void StubBase::send_error_notification( const StubListenerList & whichListeners,
         }
         else
         {
-            targets.append(subVec);
+            static_cast<void>(targets.append(subVec));
         }
     } while (false);
 
@@ -711,7 +709,7 @@ bool StubBase::exist( areg::CallType kind, uint32_t index, const ProxyAddress & 
         return false;
 
     Lock lock(mListenerLock);
-    const StubListenerList * subVec{ mListeners.at(_slot(kind, index)) };
+    const ListenerSlotList * subVec{ mListeners.at(_slot(kind, index)) };
     if (subVec == nullptr)
         return false;
 
@@ -734,7 +732,7 @@ bool StubBase::add_notification_listener( areg::CallType kind, uint32_t index, c
     {
         Lock lock(mListenerLock);
         const uint32_t slot{ _slot(kind, index) };
-        StubListenerList * subVec{ mListeners.at(slot) };
+        ListenerSlotList * subVec{ mListeners.at(slot) };
         if (subVec == nullptr)
             return false;
 
@@ -777,11 +775,11 @@ bool StubBase::add_notification_listener( areg::CallType kind, uint32_t index, c
 void StubBase::remove_notification_listener( areg::CallType kind, uint32_t index, const ProxyAddress & notifySource ) noexcept
 {
     Lock lock(mListenerLock);
-    StubListenerList * found{ mListeners.at(_slot(kind, index)) };
+    ListenerSlotList * found{ mListeners.at(_slot(kind, index)) };
     if (found == nullptr)
         return;
 
-    StubListenerList & subVec = *found;
+    ListenerSlotList & subVec = *found;
     for (uint32_t i = 0; i < subVec.size(); ++i)
     {
         const StubBase::Listener & listener = subVec.value_at(i);

@@ -196,10 +196,19 @@ TEST(MessageIdentityTest, a_found_crc_collision_is_detected)
 {
     constexpr uint32_t first{ areg::crc32_calculate("request_value_1371838") };
     constexpr uint32_t second{ areg::crc32_calculate("request_value_2000402") };
-    constexpr uint32_t pair[]{ first, second };
     static_assert(first == second, "the two names have one CRC-32C");
     static_assert(first == 0x48C92302u, "the CRC-32C of the pair");
-    static_assert(areg::count_message_id(pair, first) == 2u, "the generated check refuses the pair in one kind");
+
+    // Two equal IDs share one slot, so the table finds one of them at the index of the other.
+    static constexpr uint32_t pair[]{ first, second };
+    static constexpr uint16_t slots[]{ 0u, 1u };
+    constexpr areg::MessageTable table{ pair, slots, 2u, 0x9E3779B1u, 31u };
+    static_assert(table.finds_every_entry() == false, "the generated check refuses the pair in one kind");
+
+    // The pair has one CRC-32C after every kind prefix.
+    static_assert(areg::crc32_calculate("response_value_1371838") == areg::crc32_calculate("response_value_2000402"), "the pair clashes as responses");
+    static_assert(areg::crc32_calculate("broadcast_value_1371838") == areg::crc32_calculate("broadcast_value_2000402"), "the pair clashes as broadcasts");
+    static_assert(areg::crc32_calculate("attribute_value_1371838") == areg::crc32_calculate("attribute_value_2000402"), "the pair clashes as attributes");
 }
 
 TEST(MessageIdentityTest, a_value_of_the_system_range_is_an_ordinary_id)

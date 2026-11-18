@@ -169,7 +169,6 @@
   "copy_string",
   "copy_string_fast",
   "count",
-  "count_message_id",
   "count_param_space",
   "count_units",
   "cpu_pause",

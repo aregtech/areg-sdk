@@ -289,20 +289,6 @@ constexpr uint32_t  RESPONSE_INDEX_NONE     { areg::INVALID_MESSAGE_INDEX };
 constexpr uint32_t  MESSAGE_KIND_COUNT      { 4u };
 
 /**
- * \brief   Returns how many times the ID is in the list.
- **/
-template <size_t N>
-[[nodiscard]]
-inline constexpr uint32_t count_message_id(const uint32_t (&list)[N], uint32_t msgId) noexcept
-{
-    uint32_t result{ 0u };
-    for (size_t i = 0; i < N; ++i)
-        result += (list[i] == msgId) ? 1u : 0u;
-
-    return result;
-}
-
-/**
  * \brief   The message IDs of the system. A system message is told apart from an interface entry
  *          by its call type, not by its value.
  **/

@@ -27,7 +27,10 @@
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
+#include <cstring>
 #include <limits>
+#include <new>
+#include <type_traits>
 #include <utility>
 
 /************************************************************************
@@ -211,20 +214,114 @@ protected:
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // StubBase::StubListenerList and StubListenerSlots declarations
+    // StubBase::ListenerSlotList, StubListenerSlots and StubListenerList declarations
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Flat list of listeners for a single message ID. Backed by contiguous vector for
-     *          cache-friendly traversal.
+     * \brief   The registered listeners of one listener slot.
      **/
-    using StubListenerList  = ArrayList<StubBase::Listener>;
+    using ListenerSlotList  = ArrayList<StubBase::Listener>;
 
     static_assert(sizeof(StubBase::Listener) <= 48, "A stub listener must not grow.");
+    static_assert(std::is_trivially_copyable<StubBase::Listener>::value && std::is_trivially_destructible<StubBase::Listener>::value
+                , "StubListenerList copies listeners as bytes.");
 
     /**
      * \brief   One listener list per response, broadcast and attribute, by listener slot.
      **/
-    using StubListenerSlots = ListenerSlots<StubListenerList>;
+    using StubListenerSlots = ListenerSlots<ListenerSlotList>;
+
+    /**
+     * \brief   The listeners an event is sent to, copied out of a slot. Holds up to INLINE_COUNT
+     *          listeners without allocating; above that it allocates without throwing.
+     **/
+    class StubListenerList
+    {
+    public:
+        //!< The number of listeners held without an allocation.
+        static constexpr uint32_t   INLINE_COUNT    { 4u };
+
+        StubListenerList() noexcept = default;
+
+        inline StubListenerList(StubListenerList && src) noexcept;
+
+        inline StubListenerList & operator = (StubListenerList && src) noexcept;
+
+        inline ~StubListenerList();
+
+        /**
+         * \brief   Makes room for the given number of listeners.
+         * \return  Returns false if no memory is left; the held listeners stay.
+         **/
+        inline bool reserve(uint32_t count) noexcept;
+
+        /**
+         * \brief   Adds a listener at the end.
+         * \return  Returns false if no memory is left; the listener is not added.
+         **/
+        inline bool add(const StubBase::Listener & listener) noexcept;
+
+        /**
+         * \brief   Adds every listener of a slot at the end.
+         * \return  Returns false if no memory is left for all of them; the first ones that fit are added.
+         **/
+        inline bool append(const StubBase::ListenerSlotList & list) noexcept;
+
+        /**
+         * \brief   Removes every listener and keeps the storage.
+         **/
+        inline void clear() noexcept;
+
+        /**
+         * \brief   Returns the number of listeners.
+         **/
+        [[nodiscard]]
+        inline uint32_t size() const noexcept;
+
+        /**
+         * \brief   Returns true if there is no listener.
+         **/
+        [[nodiscard]]
+        inline bool is_empty() const noexcept;
+
+        /**
+         * \brief   Returns the listener at the index. The index must be less than size().
+         **/
+        [[nodiscard]]
+        inline const StubBase::Listener & value_at(uint32_t index) const noexcept;
+
+        /**
+         * \brief   Returns the listener at the index. The index must be less than size().
+         **/
+        [[nodiscard]]
+        inline const StubBase::Listener & operator [] (uint32_t index) const noexcept;
+
+        /**
+         * \brief   Returns the first listener. The list must not be empty.
+         **/
+        [[nodiscard]]
+        inline const StubBase::Listener & first_entry() const noexcept;
+
+    private:
+        //!< Returns the storage of the listeners.
+        [[nodiscard]]
+        inline StubBase::Listener * _data() noexcept;
+
+        [[nodiscard]]
+        inline const StubBase::Listener * _data() const noexcept;
+
+        //!< Moves the listeners to a heap block of the given capacity. Returns false if no memory is left.
+        inline bool _grow(uint32_t capacity) noexcept;
+
+    private:
+        alignas(StubBase::Listener) uint8_t mInline[sizeof(StubBase::Listener) * INLINE_COUNT]; //!< The inline storage.
+        StubBase::Listener *    mHeap       { nullptr };        //!< The heap storage; nullptr while the inline one is used.
+        uint32_t                mCapacity   { INLINE_COUNT };   //!< The number of listeners the storage holds.
+        uint32_t                mCount      { 0u };             //!< The number of listeners.
+
+    private:
+        StubListenerList(const StubListenerList &) = delete;
+        StubListenerList & operator = (const StubListenerList &) = delete;
+    };
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase session tracking
@@ -809,7 +906,7 @@ private:
     /**
      * \brief   Removes the entry at \a index by moving the last entry into its place. The caller holds the lock.
      **/
-    static void _remove_at( StubListenerList & subVec, uint32_t index ) noexcept;
+    static void _remove_at( ListenerSlotList & subVec, uint32_t index ) noexcept;
 
     /**
      * \brief   Returns the index of the request a response answers: the prepared one, otherwise the
@@ -817,14 +914,14 @@ private:
      *          If \a anyRequest is false, looks only at the entries of the request \a reqId.
      **/
     [[nodiscard]]
-    static uint32_t _find_target( const StubListenerList & subVec, bool anyRequest = true, uint32_t reqId = 0u ) noexcept;
+    static uint32_t _find_target( const ListenerSlotList & subVec, bool anyRequest = true, uint32_t reqId = 0u ) noexcept;
 
     /**
      * \brief   Returns the index of the request not unblocked and not prepared, checking \a hint first.
      *          Returns the size of \a subVec if there is none.
      **/
     [[nodiscard]]
-    static uint32_t _find_unprepared( const StubListenerList & subVec, uint32_t hint ) noexcept;
+    static uint32_t _find_unprepared( const ListenerSlotList & subVec, uint32_t hint ) noexcept;
 
     /**
      * \brief   Removes the sessions of the request \a reqId waiting in the listener slot \a respSlot and
@@ -931,6 +1028,130 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Inline function implementation
 //////////////////////////////////////////////////////////////////////////
+
+/************************************************************************
+ * StubBase::StubListenerList class
+ ************************************************************************/
+
+inline StubBase::StubListenerList::StubListenerList(StubListenerList && src) noexcept
+    : mHeap     ( src.mHeap )
+    , mCapacity ( src.mCapacity )
+    , mCount    ( src.mCount )
+{
+    if (mHeap == nullptr)
+        std::memcpy(mInline, src.mInline, sizeof(Listener) * mCount);
+
+    src.mHeap       = nullptr;
+    src.mCapacity   = INLINE_COUNT;
+    src.mCount      = 0u;
+}
+
+inline StubBase::StubListenerList & StubBase::StubListenerList::operator = (StubListenerList && src) noexcept
+{
+    if (this != &src)
+    {
+        ::operator delete(mHeap, std::nothrow);
+        mHeap       = src.mHeap;
+        mCapacity   = src.mCapacity;
+        mCount      = src.mCount;
+        if (mHeap == nullptr)
+            std::memcpy(mInline, src.mInline, sizeof(Listener) * mCount);
+
+        src.mHeap       = nullptr;
+        src.mCapacity   = INLINE_COUNT;
+        src.mCount      = 0u;
+    }
+
+    return (*this);
+}
+
+inline StubBase::StubListenerList::~StubListenerList()
+{
+    ::operator delete(mHeap, std::nothrow);
+}
+
+inline bool StubBase::StubListenerList::reserve(uint32_t count) noexcept
+{
+    return (count <= mCapacity) || _grow(count);
+}
+
+inline bool StubBase::StubListenerList::add(const StubBase::Listener & listener) noexcept
+{
+    if ((mCount == mCapacity) && !_grow(mCapacity * 2u))
+        return false;
+
+    new (_data() + mCount) Listener(listener);
+    ++ mCount;
+    return true;
+}
+
+inline bool StubBase::StubListenerList::append(const StubBase::ListenerSlotList & list) noexcept
+{
+    const uint32_t count{ list.size() };
+    const bool fits{ reserve(mCount + count) };
+    const uint32_t added{ fits ? count : mCapacity - mCount };
+    if (added != 0u)
+    {
+        std::memcpy(static_cast<void *>(_data() + mCount), &list.value_at(0u), sizeof(Listener) * added);
+        mCount += added;
+    }
+
+    return fits;
+}
+
+inline bool StubBase::StubListenerList::_grow(uint32_t capacity) noexcept
+{
+    Listener * heap{ static_cast<Listener *>(::operator new(sizeof(Listener) * capacity, std::nothrow)) };
+    if (heap == nullptr)
+        return false;
+
+    std::memcpy(static_cast<void *>(heap), _data(), sizeof(Listener) * mCount);
+    ::operator delete(mHeap, std::nothrow);
+    mHeap       = heap;
+    mCapacity   = capacity;
+    return true;
+}
+
+inline void StubBase::StubListenerList::clear() noexcept
+{
+    mCount = 0u;
+}
+
+inline uint32_t StubBase::StubListenerList::size() const noexcept
+{
+    return mCount;
+}
+
+inline bool StubBase::StubListenerList::is_empty() const noexcept
+{
+    return (mCount == 0u);
+}
+
+inline const StubBase::Listener & StubBase::StubListenerList::value_at(uint32_t index) const noexcept
+{
+    ASSERT(index < mCount);
+    return _data()[index];
+}
+
+inline const StubBase::Listener & StubBase::StubListenerList::operator [] (uint32_t index) const noexcept
+{
+    return value_at(index);
+}
+
+inline const StubBase::Listener & StubBase::StubListenerList::first_entry() const noexcept
+{
+    return value_at(0u);
+}
+
+inline StubBase::Listener * StubBase::StubListenerList::_data() noexcept
+{
+    return (mHeap != nullptr ? mHeap : reinterpret_cast<StubBase::Listener *>(mInline));
+}
+
+inline const StubBase::Listener * StubBase::StubListenerList::_data() const noexcept
+{
+    return (mHeap != nullptr ? mHeap : reinterpret_cast<const StubBase::Listener *>(mInline));
+}
 
 /************************************************************************
  * StubBase::Listener class
