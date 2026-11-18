@@ -1,6 +1,6 @@
 /************************************************************************
- * Payloads that hold fewer bytes than the parameter list of their entry.
- * Uses the generated ShortPayload interface.
+ * Payloads that hold fewer bytes than the parameter list of their entry, and an error of a
+ * broadcast. Uses the generated ShortPayload interface.
  *
  * Usage: areg-short-payload-test <case>
  *   short-request          request_pair with only its first parameter: request_pair_failed(RequestUnsupported),
@@ -12,6 +12,8 @@
  *   short-broadcast        broadcast_pushed with only its first parameter: broadcast_pushed does not run,
  *                          invalid_broadcast(broadcast_pushed) runs
  *   short-attribute        an update of Value with two bytes: on_value_update(DataIsInvalid)
+ *   broadcast-error        error_request() of broadcast_pushed: invalid_broadcast(broadcast_pushed) runs
+ *                          once in the subscriber, the next broadcast arrives with its values
  *
  * Every case ends with a complete message of the same kind, which must arrive with its own values.
  ************************************************************************/
@@ -63,7 +65,7 @@ namespace
     constexpr uint32_t      BC_PUSHED       { static_cast<uint32_t>(ShortPayload::BroadcastIDs::MsgId_broadcast_pushed) };
     constexpr uint32_t      ATTR_VALUE      { static_cast<uint32_t>(ShortPayload::AttributeIDs::MsgId_Value) };
 
-    enum class Case : uint32_t { ShortRequest, EmptyRequest, ShortString, ShortResponse, ShortBroadcast, ShortAttribute };
+    enum class Case : uint32_t { ShortRequest, EmptyRequest, ShortString, ShortResponse, ShortBroadcast, ShortAttribute, BroadcastError };
 
     std::atomic<Case>       gCase           { Case::ShortRequest };
 
@@ -175,6 +177,11 @@ protected:
             broadcast_pushed(LAST_FIRST, LAST_SECOND);
             break;
 
+        case Case::BroadcastError:
+            error_request(areg::CallType::Broadcast, BC_PUSHED, false);
+            broadcast_pushed(LAST_FIRST, LAST_SECOND);
+            break;
+
         case Case::ShortAttribute:
             {
                 areg::SharedBuffer data;
@@ -259,7 +266,8 @@ protected:
             request_trigger(0u);
             break;
 
-        case Case::ShortBroadcast:
+        case Case::ShortBroadcast:  // fall through
+        case Case::BroadcastError:
             notify_on_broadcast_pushed(true);
             request_trigger(0u);
             break;
@@ -321,7 +329,7 @@ protected:
 
     void invalid_broadcast(ShortPayload::BroadcastIDs broadcastId) override
     {
-        if ((gCase.load() == Case::ShortBroadcast) && (broadcastId == ShortPayload::BroadcastIDs::MsgId_broadcast_pushed))
+        if (((gCase.load() == Case::ShortBroadcast) || (gCase.load() == Case::BroadcastError)) && (broadcastId == ShortPayload::BroadcastIDs::MsgId_broadcast_pushed))
             gInvalidResp.fetch_add(1);
         else
             gInvalidOther.fetch_add(1);
@@ -401,6 +409,7 @@ int main(int argc, char * argv[])
         , { "short-response"        , Case::ShortResponse   }
         , { "short-broadcast"       , Case::ShortBroadcast  }
         , { "short-attribute"       , Case::ShortAttribute  }
+        , { "broadcast-error"       , Case::BroadcastError  }
     };
 
     const char * name{ argc > 1 ? argv[1] : "short-request" };
@@ -451,7 +460,8 @@ int main(int argc, char * argv[])
             ok = ok && (gInvalidResp.load() == 1) && (gInvalidOther.load() == 0);
             break;
 
-        case Case::ShortBroadcast:
+        case Case::ShortBroadcast:  // fall through
+        case Case::BroadcastError:
             ok = wait_until([] { return gPushedLast.load() >= 1; });
             areg::Application::unload_model(_model);
             print();

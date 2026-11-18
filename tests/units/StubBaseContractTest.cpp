@@ -77,6 +77,10 @@ namespace
         using StubBase::Listener;
         using StubBase::ListenerSlotList;
         using StubBase::StubListenerList;
+
+        //!< The number of listeners a listener list holds without a heap allocation.
+        static constexpr uint32_t LIST_INLINE_COUNT{ StubListenerList::INLINE_COUNT };
+
         using StubBase::attribute_ids;
         using StubBase::cancel_current_request;
         using StubBase::clear_all_listeners;
@@ -785,6 +789,61 @@ TEST_F(StubBaseContractTest, response_error_fails_waiting_callers_and_spares_sub
     EXPECT_TRUE(mStub.exist(RESPONSES[0], mSecond));
 }
 
+TEST_F(StubBaseContractTest, request_error_without_a_waiting_caller_sends_nothing_and_keeps_subscriptions)
+{
+    ASSERT_TRUE(mStub.add_notification_listener(RESPONSES[0], mSecond));
+    mStub.fail_request(ResultType::RequestError);
+    mStub.fail_request(ResultType::RequestCanceled);
+    EXPECT_EQ(0u, mStub.attempts(REQUESTS[0], ResultType::RequestError));
+    EXPECT_EQ(0u, mStub.attempts(REQUESTS[0], ResultType::RequestCanceled));
+    EXPECT_TRUE(mStub.exist(RESPONSES[0], mSecond));
+    EXPECT_TRUE(mStub.begin_request(mFirst, 41));
+}
+
+TEST_F(StubBaseContractTest, response_error_without_a_waiting_caller_sends_nothing_and_keeps_subscriptions)
+{
+    ASSERT_TRUE(mStub.add_notification_listener(RESPONSES[0], mSecond));
+    ContractStub::StubListenerList listeners;
+    ASSERT_EQ(1u, mStub.find_listeners(RESPONSES[0], listeners));
+    mStub.send_error_notification(listeners, LocalResponseEvent(mSecond, ResultType::DataInvalid, RESPONSES[0], CallType::Response, SEQUENCE_NUMBER_NOTIFY, 0));
+    EXPECT_EQ(0u, mStub.attempts(REQUESTS[0], ResultType::RequestError));
+    EXPECT_EQ(0u, mStub.attempts(RESPONSES[0], ResultType::RequestError));
+    EXPECT_TRUE(mStub.exist(RESPONSES[0], mSecond));
+}
+
+TEST_F(StubBaseContractTest, broadcast_error_reaches_every_subscriber_as_invalid_data)
+{
+    Component other(String("StubContractBroadcastErrorProvider"), mThread);
+    ContractStub stub(other, BROADCAST_INTERFACE);
+    const ProxyAddress first{ consumer_address(stub.address(), "StubContractBroadcastErrorA") };
+    const ProxyAddress second{ consumer_address(stub.address(), "StubContractBroadcastErrorB") };
+    ASSERT_TRUE(stub.add_notification_listener(BROADCAST, first));
+    ASSERT_TRUE(stub.add_notification_listener(BROADCAST, second));
+    ContractStub::StubListenerList listeners;
+    ASSERT_EQ(2u, stub.find_listeners(BROADCAST, listeners));
+    stub.send_error_notification(listeners, LocalResponseEvent(first, ResultType::DataInvalid, BROADCAST, CallType::Broadcast, SEQUENCE_NUMBER_NOTIFY, 0));
+    EXPECT_EQ(2u, stub.attempts(BROADCAST, ResultType::DataInvalid));
+    EXPECT_EQ(0u, stub.attempts(BROADCAST, ResultType::RequestError));
+    EXPECT_TRUE(stub.exist(BROADCAST, first));
+    EXPECT_TRUE(stub.exist(BROADCAST, second));
+}
+
+TEST_F(StubBaseContractTest, response_error_fails_the_pending_caller_and_keeps_a_released_session)
+{
+    ASSERT_TRUE(mStub.begin_request(mFirst, 41));
+    const SessionID session = mStub.unblock_current_request();
+    ASSERT_TRUE(mStub.begin_request(mSecond, 42));
+    ContractStub::StubListenerList listeners;
+    ASSERT_EQ(1u, mStub.find_listeners(RESPONSES[0], listeners));
+    mStub.send_error_notification(listeners, LocalResponseEvent(mSecond, ResultType::DataInvalid, RESPONSES[0], CallType::Response, SEQUENCE_NUMBER_NOTIFY, 0));
+    EXPECT_EQ(1u, mStub.attempts(REQUESTS[0], ResultType::RequestError));
+    EXPECT_FALSE(mStub.is_busy(RESPONSES[0]));
+    ASSERT_TRUE(mStub.prepare_response(session));
+    const auto targets = mStub.respond();
+    ASSERT_EQ(1u, targets.size());
+    EXPECT_EQ(41u, targets[0].mSequenceNr);
+}
+
 TEST_F(StubBaseContractTest, disconnected_caller_keeps_the_request_busy_and_only_subscribers_get_the_response)
 {
     const ProxyAddress third{ consumer_address(mStub.address(), "StubContractConsumerC") };
@@ -870,7 +929,7 @@ TEST(StubBaseListenerTest, listener_of_a_message_has_no_sequence_flags_or_consum
 
 TEST(StubBaseListenerTest, listener_list_keeps_the_order_past_the_inline_storage)
 {
-    constexpr uint32_t count{ ContractStub::StubListenerList::INLINE_COUNT * 3u };
+    constexpr uint32_t count{ ContractStub::LIST_INLINE_COUNT * 3u };
     ContractStub::StubListenerList list;
     EXPECT_TRUE(list.is_empty());
     for (uint32_t i = 0u; i < count; ++i)
@@ -894,7 +953,7 @@ TEST(StubBaseListenerTest, listener_list_keeps_the_order_past_the_inline_storage
 
 TEST(StubBaseListenerTest, moved_listener_list_keeps_its_listeners_and_leaves_the_source_empty)
 {
-    for (const uint32_t count : { ContractStub::StubListenerList::INLINE_COUNT, ContractStub::StubListenerList::INLINE_COUNT + 1u })
+    for (const uint32_t count : { ContractStub::LIST_INLINE_COUNT, ContractStub::LIST_INLINE_COUNT + 1u })
     {
         ContractStub::StubListenerList source;
         for (uint32_t i = 0u; i < count; ++i)

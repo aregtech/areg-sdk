@@ -397,7 +397,8 @@ public:
     /**
      * \brief   Calls error_request() with false for every attribute, response and request ID.
      *          Attribute subscribers receive the invalidation; a response or request error reaches
-     *          only the callers waiting for it, and the subscriptions stay.
+     *          only the pending callers, not the sessions released by unblock_current_request(),
+     *          and the subscriptions stay.
      **/
     void error_all_requests();
 
@@ -757,11 +758,13 @@ protected:
 
     /**
      * \brief   Sends the error \a masterEvent of the message ID of \a whichListeners. An attribute error
-     *          reaches every subscriber. RequestCanceled reaches every waiting caller of the request,
-     *          including the unblocked ones, whose sessions become invalid. RequestError reaches only
-     *          the caller the next response would answer. A response error reaches every waiting
-     *          caller as RequestError. Subscriptions of responses never receive a request error, and
-     *          every request that receives an error is removed.
+     *          reaches every subscriber. A broadcast error reaches every subscriber as DataInvalid.
+     *          RequestCanceled reaches every waiting caller of the request, including the unblocked
+     *          ones, whose sessions become invalid. RequestError reaches only the caller the next
+     *          response would answer. A response error reaches every pending caller as RequestError;
+     *          a session released by unblock_current_request() is not failed and stays valid.
+     *          Subscriptions of responses never receive a request error, and every request that
+     *          receives an error is removed.
      *
      * \param   whichListeners      The listeners of the entry, as find_listeners() returns them.
      * \param   masterEvent         The template event; cloned per target. Caller destroys it.

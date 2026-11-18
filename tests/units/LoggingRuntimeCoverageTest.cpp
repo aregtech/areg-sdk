@@ -243,6 +243,8 @@ namespace
                 / ("areg-runtime-" + std::to_string(areg::Process::instance().id())
                    + "-" + std::to_string(serial.fetch_add(1u))), error);
             ASSERT_FALSE(error) << error.message();
+            // Removes a directory of this name that an ended process left.
+            static_cast<void>(fs::remove_all(mDirectory, error));
             mOwnDirectory = fs::create_directory(mDirectory, error);
             ASSERT_TRUE(mOwnDirectory) << error.message();
             mManager.set_configuration(areg::ListProperties(), areg::ListProperties());
@@ -1320,6 +1322,7 @@ TEST_F(LoggingRuntimeCoverageTest, start_logging_without_setup_starts_no_timer_m
         AREG_CHILD_CHECK(areg::Thread::find_by_address(timer) == nullptr);
         areg::stop_logging(true);
         fs::current_path(mWorkingDirectory, error);
+        fs::remove_all(mDirectory, error);
     );
 }
 
@@ -1345,6 +1348,7 @@ TEST_F(LoggingRuntimeCoverageTest, force_start_of_running_logging_returns_true)
         areg::stop_logging(true);
         AREG_CHILD_CHECK(areg::is_started() == false);
         fs::current_path(mWorkingDirectory, error);
+        fs::remove_all(mDirectory, error);
     );
 }
 

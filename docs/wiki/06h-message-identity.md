@@ -113,11 +113,13 @@ A process never asserts on an ID that another process chose. When a message carr
 
 | Receiver | What happens |
 |---|---|
-| Provider, request | the caller gets `request_<name>_failed(RequestUnsupported)` once, with its own sequence number |
+| Provider, request | the caller gets `request_<name>_failed(RequestUnsupported)` once, with its own sequence number; a request without a response has no caller to tell, and the failure is logged and dropped |
 | Provider, subscription | the subscriber gets one `DataInvalid` notification; no subscription is kept |
 | Consumer, response / broadcast / attribute | the message is dropped and a warning is logged |
 
 Such a message comes only from a malformed or foreign peer. The answers keep the receiver alive and leak nothing.
+Every reason a request can fail, and the state of attribute data, are in
+[Request Failures and Data Validity](./06i-request-failures-and-data-validity.md).
 
 ---
 
@@ -136,6 +138,7 @@ This covers applications, `mtrouter`, `logcollector` and log observers alike.
 
 ## See Also
 
+- **[Request Failures and Data Validity](./06i-request-failures-and-data-validity.md)**: every failure reason and data state
 - **[Code Generator](./06b-code-generator.md)**: generating service interface code from `.siml`
 - **[Service Interface Design](./06e-lusan-service-interface.md)**: designing an interface in Lusan
 - **[Multitarget Router](./03a-mtrouter.md)**: how messages travel between processes

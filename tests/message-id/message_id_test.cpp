@@ -12,6 +12,10 @@
  *   unsupported-request    a foreign proxy calls a request ID the provider does not have:
  *                          the call fails once with RequestUnsupported and its own sequence number
  *   remove-all             after stop_all_notifications() the provider sends no attribute update
+ *   foreign-result         a response with a result no provider sends reaches a subscriber:
+ *                          it is dropped, the consumer keeps running and gets the next response
+ *   foreign-failure-on-response  a response that carries a request failure and the sequence
+ *                          number of a pending call: the call stays pending and is answered
  *
  * In every shared case request_first_failed must not run.
  ************************************************************************/
@@ -59,7 +63,7 @@ namespace
     //!< A request ID that the SharedResponse interface does not have.
     constexpr uint32_t      UNKNOWN_REQUEST { areg::crc32_calculate("request_not_in_the_interface") };
 
-    enum class Case : uint32_t { Busy, Cancel, ErrorRequest, ErrorResponse, Unavailable, Unknown, RemoveAll, Unsupported };
+    enum class Case : uint32_t { Busy, Cancel, ErrorRequest, ErrorResponse, Unavailable, Unknown, RemoveAll, Unsupported, ForeignResult, ForeignFailure };
 
     constexpr char const    _modelForeign[]   { "MiModelForeign" };
     constexpr char const    _foreignThread[]  { "MiForeignThread" };
@@ -70,6 +74,7 @@ namespace
     //!< The entries a foreign proxy sends: sync, and a request with a response the provider does not have.
     constexpr uint32_t      REQ_SYNC        { SharedResponse::message_id(SharedResponse::RequestIDs::MsgId_request_sync) };
     constexpr uint32_t      RESP_SYNCED     { SharedResponse::message_id(SharedResponse::ResponseIDs::MsgId_response_synced) };
+    constexpr uint32_t      RESP_DONE       { SharedResponse::message_id(SharedResponse::ResponseIDs::MsgId_response_done) };
     constexpr uint32_t      REQ_ADDED       { areg::crc32_calculate("request_added") };
     constexpr uint32_t      RESP_ADDED      { areg::crc32_calculate("response_added") };
     constexpr uint32_t      FOREIGN_REQUESTS[]    { REQ_SYNC, REQ_ADDED };
@@ -143,6 +148,13 @@ namespace
             static_cast<void>((proxy.*send)(evt, nullptr, areg::RESPONSE_INDEX_NONE));
         }
     };
+
+    //!< Delivers to the proxy a response of the kind Response, as a foreign provider could send it.
+    void send_foreign_response(const areg::ProxyBase & proxy, uint32_t respId, areg::ResultType result, SequenceNumber seqNr)
+    {
+        SharedResponseResponseEvent evt(proxy.proxy_address(), result, respId, areg::CallType::Response, seqNr);
+        evt.deliver_event();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -196,7 +208,7 @@ protected:
 
     void request_sync(uint32_t tag) override
     {
-        if ((gCase.load() == Case::Busy) && (mHeld != 0u))
+        if (((gCase.load() == Case::Busy) || (gCase.load() == Case::ForeignFailure)) && (mHeld != 0u))
         {
             response_done(mHeld);
             mHeld = 0u;
@@ -261,6 +273,17 @@ protected:
 
         case Case::RemoveAll:
             notify_on_counter_update(true);
+            break;
+
+        case Case::ForeignResult:
+            notify_on_response_synced(true);
+            send_foreign_response(proxy, RESP_SYNCED, areg::ResultType::Undefined, areg::SEQUENCE_NUMBER_NOTIFY);
+            request_sync(TAG_SYNC);
+            break;
+
+        case Case::ForeignFailure:
+            send_foreign_response(proxy, RESP_DONE, areg::ResultType::RequestBusy, request_second(TAG_HELD));
+            request_sync(TAG_SYNC);
             break;
 
         default:
@@ -571,6 +594,8 @@ int main(int argc, char * argv[])
         , { "unknown-request"       , Case::Unknown      , areg::ResultType::RequestOK          }
         , { "remove-all"            , Case::RemoveAll    , areg::ResultType::RequestOK          }
         , { "unsupported-request"   , Case::Unsupported  , areg::ResultType::RequestUnsupported }
+        , { "foreign-result"        , Case::ForeignResult, areg::ResultType::RequestOK          }
+        , { "foreign-failure-on-response", Case::ForeignFailure, areg::ResultType::RequestOK    }
     };
 
     const char * name{ argc > 1 ? argv[1] : "shared-busy" };
@@ -620,6 +645,15 @@ int main(int argc, char * argv[])
 
         case Case::Busy:
             ok = run_shared_case(model, selected->expected, true) && (gDone.load() == 1);
+            break;
+
+        case Case::ForeignResult:   // fall through
+        case Case::ForeignFailure:
+            ok = wait_until([] { return gSynced.load() >= 1; });
+            areg::Application::unload_model(model);
+            print();
+            ok = ok && (gSynced.load() == 1) && (gFirstFailed.load() == 0) && (gSecondFailed.load() == 0)
+                    && (gDone.load() == (selected->which == Case::ForeignFailure ? 1u : 0u));
             break;
 
         default:

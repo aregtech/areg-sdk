@@ -627,7 +627,7 @@ project-workspace/
 **Versioning**
 - Use semantic versioning for service interfaces
 - Update version numbers when making incompatible changes
-- Maintain backward compatibility when possible
+- Regenerate and rebuild every process that uses a changed interface
 
 ### Log Management
 

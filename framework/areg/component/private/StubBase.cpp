@@ -463,7 +463,8 @@ void StubBase::send_error_notification( const StubListenerList & whichListeners,
     const uint32_t listSlot{ whichListeners.is_empty() ? INVALID_SLOT : static_cast<uint32_t>(whichListeners.value_at(0).mSlot) };
     const areg::CallType kind{ masterEvent.call_kind() };
     const bool isRequest{ kind == areg::CallType::Request };
-    const bool isResponse{ (kind == areg::CallType::Response) || (kind == areg::CallType::Broadcast) };
+    const bool isResponse{ kind == areg::CallType::Response };
+    const bool isBroadcast{ kind == areg::CallType::Broadcast };
     const bool cancelAll{ isRequest && (static_cast<areg::ResultType>(masterEvent.envelope().result()) == areg::ResultType::RequestCanceled) };
 
     StubListenerList targets;
@@ -513,6 +514,8 @@ void StubBase::send_error_notification( const StubListenerList & whichListeners,
 
         ServiceResponseEvent eventError{ isResponse
                                        ? create_response(listener.proxy(), listener.mMessageId, areg::CallType::Request, areg::ResultType::RequestError, SharedBuffer{})
+                                       : isBroadcast
+                                       ? create_response(listener.proxy(), msgId, areg::CallType::Broadcast, areg::ResultType::DataInvalid, SharedBuffer{})
                                        : masterEvent.clone_for_target(listener.mConsumer, listener.mRawService) };
         if (eventError.is_valid())
         {

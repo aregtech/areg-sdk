@@ -807,8 +807,8 @@ protected:
     /**
      * \brief   Notifies the subscribers of the message ID and the caller waiting for the sequence
      *          number, which is removed. A client is notified once even if it is both. A request
-     *          failure (RequestError, RequestBusy, RequestCanceled, MessageUndelivered,
-     *          ServiceUnavailable) with a sequence number reaches only that caller.
+     *          failure (RequestError, RequestBusy, RequestCanceled, RequestUnsupported,
+     *          MessageUndelivered, ServiceUnavailable) with a sequence number reaches only that caller.
      *
      * \param   kind                Response, Broadcast or Attribute.
      * \param   index               The index of the entry in its kind.
