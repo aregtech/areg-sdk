@@ -29,12 +29,11 @@ cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DAREG_BENCHMARKS=ON -DAREG_TESTS=OF
 cmake --build ./build --target areg-benchmarks -j
 ```
 
-The executable is placed in the Areg binary output directory, for example
-`./product/build/gnu-c++/linux-64-x86_64-release-shared/bin/areg-benchmarks.elf`.
+The executable is placed in `./build/bin/areg-benchmarks.elf`.
 Run it to execute the complete suite:
 
 ```bash
-./product/build/gnu-c++/linux-64-x86_64-release-shared/bin/areg-benchmarks.elf
+./build/bin/areg-benchmarks.elf
 ```
 
 Google Benchmark filters are supported, for example
@@ -49,7 +48,7 @@ contains the source information:
 ```bash
 cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-g \
       -DAREG_BENCHMARKS=ON -DAREG_TESTS=OFF -DAREG_EXAMPLES=OFF \
-      -DAREG_BIN_DIR=$PWD/build/bin -DCODSPEED_MODE=simulation
+      -DCODSPEED_MODE=simulation
 cmake --build ./build --target areg-benchmarks -j
 codspeed run --mode simulation -- ./build/bin/areg-benchmarks.elf
 ```

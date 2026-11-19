@@ -1,17 +1,17 @@
 # CMake Configuration Options for Areg SDK
 
-This guide describes all CMake configuration options for building Areg SDK, including compiler selection, build customization, output directories, and installation settings.
+This guide describes the CMake options of Areg SDK: library type, compiler selection, logging, examples and tests, packages, and installation. Everything else is set with the standard CMake variables.
 
 > [!IMPORTANT]
-> Configuration options are set in [user.cmake](../../conf/cmake/user.cmake) or via command-line arguments. Command-line options take precedence.
+> Options are passed on the command line with `-D<name>=<value>`. Their defaults are in [user.cmake](../../conf/cmake/user.cmake).
 
 ---
 
 ## Table of Contents
 
 1. [Quick Configuration Examples](#quick-configuration-examples)
-2. [Complete Options Reference](#complete-options-reference)
-3. [Options by Category](#options-by-category)
+2. [Options Reference](#options-reference)
+3. [Standard CMake Variables](#standard-cmake-variables)
 4. [Detailed Option Descriptions](#detailed-option-descriptions)
 5. [Advanced Configuration](#advanced-configuration)
 6. [Integration Examples](#integration-examples)
@@ -20,13 +20,12 @@ This guide describes all CMake configuration options for building Areg SDK, incl
 
 ## Quick Configuration Examples
 
-### Common Build Configurations
-
-**1. Default build (GCC, Release, all features):**
+**1. Default build (system compiler, Release, examples and tests):**
 ```bash
 cmake -B ./build
 cmake --build ./build -j20
 ```
+Executables and shared libraries are in `./build/bin`, static libraries in `./build/lib`.
 
 **2. Debug build with Clang:**
 ```bash
@@ -36,25 +35,25 @@ cmake --build ./build -j20
 
 **3. Release build without examples or tests:**
 ```bash
-cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DAREG_EXAMPLES=OFF -DAREG_TESTS=OFF
+cmake -B ./build -DAREG_EXAMPLES=OFF -DAREG_TESTS=OFF
 cmake --build ./build -j20
 ```
 
 **4. Static library build:**
 ```bash
-cmake -B ./build -DAREG_LIB_TYPE=static -DAREG_LOGGER_LIB_TYPE=static
+cmake -B ./build -DAREG_LIB_TYPE=static
 cmake --build ./build -j20
 ```
 
-**5. Cross-compile for ARM:**
+**5. Cross-compile for 32-bit ARM:**
 ```bash
-cmake -B ./build -DAREG_ARCH=arm -DAREG_COMPILER_FAMILY=gnu
+cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake
 cmake --build ./build -j20
 ```
 
-**6. Build and install to custom location:**
+**6. Build and install to a custom location:**
 ```bash
-cmake -B ./build -DAREG_INSTALL=ON -DAREG_INSTALL_DIR=/opt/areg
+cmake -B ./build -DCMAKE_INSTALL_PREFIX=/opt/areg
 cmake --build ./build -j20
 sudo cmake --install ./build
 ```
@@ -63,87 +62,43 @@ sudo cmake --install ./build
 
 ---
 
-## Complete Options Reference
+## Options Reference
 
-All 21 CMake configuration options for Areg SDK:
-
-| #  | Option | Values | Default | Description |
-|----|--------|--------|---------|-------------|
-|  1 | [AREG_LIB_TYPE](#1-areg_lib_type) | `shared`, `static` | `shared` | Areg framework library type |
-|  2 | [AREG_COMPILER_FAMILY](#2-areg_compiler_family) | `gnu`, `llvm`, `msvc`, `cygwin` | System default | Compiler family selection |
-|  3 | [AREG_COMPILER](#3-areg_compiler) | Compiler name or full path | System default | Compiler name or full path |
-|  4 | [AREG_LOGGING](#4-areg_logging) | `ON`, `OFF` | `ON` | Enable logging |
-|  5 | [AREG_EXAMPLES](#5-areg_examples) | `ON`, `OFF` | `ON` | Build example applications |
-|  6 | [AREG_TESTS](#6-areg_tests) | `ON`, `OFF` | `ON` | Build unit tests |
-|  7 | [AREG_INSTALL](#7-areg_install) | `ON`, `OFF` | `ON` | Enable installation |
-|  8 | [AREG_INSTALL_DIR](#8-areg_install_dir) | Directory path | `<user-profile>/areg-sdk` | Installation directory |
-|  9 | [AREG_SYSTEM_PACKAGES](#9-areg_system_packages) | `ON`, `OFF` | `ON` | Use system packages |
-| 10 | [AREG_SYSTEM_GTEST](#10-areg_system_gtest) | `ON`, `OFF` | `ON` | Use system Google Test |
-| 11 | [AREG_SYSTEM_SQLITE](#11-areg_system_sqlite) | `ON`, `OFF` | `ON` | Use system SQLite3 |
-| 12 | [AREG_BUILD_DIR](#12-areg_build_dir) | Directory path | `<areg-sdk>/product` | Root build directory |
-| 13 | [AREG_OUTPUT_DIR](#13-areg_output_dir) | Directory path | Auto-generated | Output directory |
-| 14 | [AREG_BIN_DIR](#14-areg_bin_dir) | Directory path | `{AREG_OUTPUT_DIR}/bin` | Executable output directory |
-| 15 | [AREG_LIB_DIR](#15-areg_lib_dir) | Directory path | `{AREG_OUTPUT_DIR}/lib` | Library output directory |
-| 16 | [AREG_DEPS_DIR](#16-areg_deps_dir) | Directory path | `{CMAKE_BINARY_DIR}/packages` | Third-party packages directory |
-| 17 | [AREG_OUTPUT_LAYOUT](#17-areg_output_layout) | `ON`, `OFF` | `ON` | Use Areg output paths |
-| 18 | [AREG_LOGGER_LIB_TYPE](#18-areg_logger_lib_type) | `shared`, `static` | Value of `AREG_LIB_TYPE` | Logger library type |
-| 19 | [AREG_TARGET](#19-areg_target) | Architecture string | System default | Compiler architecture target |
-| 20 | [AREG_ARCH](#20-areg_arch) | `x86`, `x64`, `arm`, `aarch64` | System default | Target CPU architecture |
-| 21 | [AREG_ARCH_NATIVE](#21-areg_arch_native) | `ON`, `OFF` | `OFF` | Optimize Release builds for the build machine CPU (GNU/Clang) |
+| Option | Values | Default | Description |
+|--------|--------|---------|-------------|
+| [AREG_LIB_TYPE](#areg_lib_type) | `shared`, `static` | `shared` | `areg` and `areglogger` library type |
+| [AREG_COMPILER_FAMILY](#areg_compiler_family) | `gnu`, `llvm`, `msvc`, `cygwin`, `mingw` | System default | Compiler family |
+| [AREG_LOGGING](#areg_logging) | `ON`, `OFF` | `ON` | Compile with logs |
+| [AREG_EXAMPLES](#areg_examples) | `ON`, `OFF` | `ON` top level, `OFF` in another project | Build the examples |
+| [AREG_TESTS](#areg_tests) | `ON`, `OFF` | `ON` top level, `OFF` in another project | Build the unit tests |
+| [AREG_BENCHMARKS](#areg_benchmarks) | `ON`, `OFF` | `OFF` | Build the performance benchmarks |
+| [AREG_INSTALL](#areg_install) | `ON`, `OFF` | `ON` | Create the install rules |
+| [AREG_SYSTEM_SQLITE](#areg_system_sqlite) | `ON`, `OFF` | `ON` | Use the installed SQLite3 |
+| [AREG_SYSTEM_GTEST](#areg_system_gtest) | `ON`, `OFF` | `ON` | Use the installed GoogleTest |
+| [AREG_NO_EXCEPTIONS](#areg_no_exceptions) | `ON`, `OFF` | `OFF` | Compile without exceptions and RTTI (GNU/Clang) |
+| [AREG_OUTPUT_DIR](#areg_output_dir) | Directory path | The build directory | Root of `bin/` and `lib/` |
+| [AREG_ARCH](#areg_arch) | `x86`, `x64`, `arm`, `aarch64` | System default | Target processor |
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-## Options by Category
+## Standard CMake Variables
 
-For easier navigation, options are grouped by purpose:
+Areg SDK follows these variables and adds no option of its own for them:
 
-### Compiler and Processor Options
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `CMAKE_BUILD_TYPE` | `Release` | `Debug`, `Release`, `RelWithDebInfo`, `MinSizeRel` |
+| `CMAKE_CXX_COMPILER` | System default | C++ compiler by name or path; the C compiler is derived from it |
+| `CMAKE_TOOLCHAIN_FILE` | none | Cross-compilation; ready files are in [conf/toolchains](../../conf/toolchains/) |
+| `CMAKE_CXX_COMPILER_TARGET` | Derived from the processor | Compiler target triple, such as `arm-linux-gnueabihf` |
+| `CMAKE_RUNTIME_OUTPUT_DIRECTORY` | `<AREG_OUTPUT_DIR>/bin` | Executables and shared libraries |
+| `CMAKE_ARCHIVE_OUTPUT_DIRECTORY` | `<AREG_OUTPUT_DIR>/lib` | Static libraries |
+| `CMAKE_INSTALL_PREFIX` | `/usr/local`, `C:/Program Files/areg-sdk` | Installation directory; `cmake --install <build> --prefix <dir>` overrides it |
+| `FETCHCONTENT_BASE_DIR` | `<build>/_deps` | Where fetched sources, such as GoogleTest, are placed |
 
-| # | Option | Short Description |
-|---|--------|-------------------|
-|  2 | [AREG_COMPILER_FAMILY](#2-areg_compiler_family) | Select compiler by family |
-|  3 | [AREG_COMPILER](#3-areg_compiler) | Select compiler by name or path |
-| 19 | [AREG_TARGET](#19-areg_target) | Compiler architecture target |
-| 20 | [AREG_ARCH](#20-areg_arch) | Target processor and bitness |
-| 21 | [AREG_ARCH_NATIVE](#21-areg_arch_native) | Build machine CPU optimization (GNU/Clang) |
-
-### Build Configuration Options
-
-| # | Option | Short Description |
-|---|--------|-------------------|
-|  1 | [AREG_LIB_TYPE](#1-areg_lib_type) | `areg` library type (shared/static) |
-| 18 | [AREG_LOGGER_LIB_TYPE](#18-areg_logger_lib_type) | `areglogger` library type |
-|  4 | [AREG_LOGGING](#4-areg_logging) | Build binaries with logs |
-|  5 | [AREG_EXAMPLES](#5-areg_examples) | Build or skip examples |
-|  6 | [AREG_TESTS](#6-areg_tests) | Build or skip unit tests |
-
-### Package Management Options
-
-| # | Option | Short Description |
-|---|--------|-------------------|
-|  9 | [AREG_SYSTEM_PACKAGES](#9-areg_system_packages) | Use installed packages when possible |
-| 10 | [AREG_SYSTEM_GTEST](#10-areg_system_gtest) | Try using installed Google Test |
-| 11 | [AREG_SYSTEM_SQLITE](#11-areg_system_sqlite) | Try using installed SQLite3 |
-
-### Output Directory Options
-
-| # | Option | Short Description |
-|---|--------|-------------------|
-| 12 | [AREG_BUILD_DIR](#12-areg_build_dir) | Build root directory |
-| 13 | [AREG_OUTPUT_DIR](#13-areg_output_dir) | Output directory for binaries |
-| 14 | [AREG_BIN_DIR](#14-areg_bin_dir) | Executable output directory |
-| 15 | [AREG_LIB_DIR](#15-areg_lib_dir) | Static library output directory |
-| 16 | [AREG_DEPS_DIR](#16-areg_deps_dir) | Third-party packages directory |
-| 17 | [AREG_OUTPUT_LAYOUT](#17-areg_output_layout) | Allow Areg-specific output paths |
-
-### Installation Options
-
-| # | Option | Short Description |
-|---|--------|-------------------|
-|  7 | [AREG_INSTALL](#7-areg_install) | Enable install target |
-|  8 | [AREG_INSTALL_DIR](#8-areg_install_dir) | Installation location |
+Everything of a build goes to the directory given to `cmake -B`: the CMake cache, the objects, the generated code in `<build>/generate`, and the binaries. A build in the Areg SDK root itself is refused. The configure step runs the code generator on every `.siml` and `.fsml` document and rewrites `<build>/generate`; `cmake --build` compiles.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -151,11 +106,11 @@ For easier navigation, options are grouped by purpose:
 
 ## Detailed Option Descriptions
 
-### 1. AREG_LIB_TYPE
+### AREG_LIB_TYPE
 
-**Description:** Specify Areg framework library type.
+**Description:** Library type of the `areg` framework and of the log observer API library `areglogger`. The two always have the same type, so a process never holds two copies of the framework.
 **Possible Values:**
-- `shared` - Dynamic library (`.so`, `.dll`)
+- `shared` - Dynamic library (`.so`, `.dll`, `.dylib`)
 - `static` - Static library (`.a`, `.lib`)
 
 **Default:** `shared`
@@ -164,55 +119,41 @@ For easier navigation, options are grouped by purpose:
 cmake -B ./build -DAREG_LIB_TYPE=static
 ```
 
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
+<div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
 
 ---
 
-### 2. AREG_COMPILER_FAMILY
+### AREG_COMPILER_FAMILY
 
-**Description:** Select compiler family for C++ and C sources.
-
+**Description:** Selects the C++ and C compilers by family in one word.
 **Possible Values:**
-- `gnu` - GCC compiler family (`g++`, `gcc`)
-- `llvm` - LLVM/Clang compiler family (`clang++`, `clang`)
+- `gnu` - GCC (`g++`, `gcc`)
+- `llvm` - Clang (`clang++`, `clang`); `clang-cl` and the `ClangCL` toolset with Visual Studio
 - `msvc` - Microsoft Visual C++ (`cl`)
-- `cygwin` - GCC for Cygwin on Windows
+- `cygwin` - GCC under Cygwin
+- `mingw` - GCC under MinGW
 
-**Default:** `gnu` on Linux/Cygwin, `msvc` on Windows
+**Default:** The system default compiler
 **Example:**
 ```bash
 cmake -B ./build -DAREG_COMPILER_FAMILY=llvm
 ```
 
-> [!NOTE]
-> This option is ignored if `CMAKE_CXX_COMPILER` is set and `user.cmake` is included after the first `project()` call.
-
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
-
----
-
-### 3. AREG_COMPILER
-
-**Description:** Specify compiler by name, executable, or full path. Sets both C++ and C compilers.
-**Possible Values:** `g++`, `gcc`, `clang++`, `clang`, `c++`, `cc`, `cl`, `clang-cl`, or full path
-**Default:** System default compiler
-**Example:**
+To name one compiler by path or version, use the standard variable instead:
 ```bash
-cmake -B ./build -DAREG_COMPILER=/usr/bin/clang++-14
-cmake -B ./build -DAREG_COMPILER=clang
-cmake -B ./build -DAREG_COMPILER=cl
+cmake -B ./build -DCMAKE_CXX_COMPILER=/usr/bin/clang++-18
 ```
 
 > [!NOTE]
-> Setting `CMAKE_CXX_COMPILER` directly achieves the same effect. If `CMAKE_CXX_COMPILER` is set and `user.cmake` is included after `project()`, this option is ignored.
+> `CMAKE_CXX_COMPILER` wins over `AREG_COMPILER_FAMILY` when both are set.
 
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
+<div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
 
 ---
 
-### 4. AREG_LOGGING
+### AREG_LOGGING
 
-**Description:** Enable logging capabilities in Areg framework.
+**Description:** Compiles the framework and the applications with logs.
 **Possible Values:** `ON`, `OFF`
 **Default:** `ON`
 **Example:**
@@ -220,45 +161,60 @@ cmake -B ./build -DAREG_COMPILER=cl
 cmake -B ./build -DAREG_LOGGING=OFF
 ```
 
-**Use case:** Disable logging to reduce overhead in production builds where logging isn't needed.
+**Use case:** Disable logging in builds where no log is needed and every cycle counts.
 
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
+<div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
 
 ---
 
-### 5. AREG_EXAMPLES
+### AREG_EXAMPLES
 
-**Description:** Enable or disable building example applications.
+**Description:** Builds the example applications.
 **Possible Values:** `ON`, `OFF`
-**Default:** `ON`
+**Default:** `ON` when Areg SDK is the top-level project; `OFF` when it is part of another project (FetchContent, `add_subdirectory`)
 **Dependencies:** Some examples require MFC (Microsoft Foundation Classes) on Windows
 **Example:**
 ```bash
 cmake -B ./build -DAREG_EXAMPLES=OFF
 ```
 
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
+<div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
 
 ---
 
-### 6. AREG_TESTS
+### AREG_TESTS
 
-**Description:** Enable or disable building unit tests.
+**Description:** Builds the unit tests.
 **Possible Values:** `ON`, `OFF`
-**Default:** `ON`
-**Dependencies:** Requires Google Test (fetched automatically if `AREG_SYSTEM_GTEST=OFF`)
+**Default:** `ON` when Areg SDK is the top-level project; `OFF` when it is part of another project
+**Dependencies:** GoogleTest, installed or fetched (see [AREG_SYSTEM_GTEST](#areg_system_gtest))
 **Example:**
 ```bash
 cmake -B ./build -DAREG_TESTS=OFF
 ```
 
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
+<div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
 
 ---
 
-### 7. AREG_INSTALL
+### AREG_BENCHMARKS
 
-**Description:** Enable SDK installation process.
+**Description:** Builds the performance benchmarks in [tests/benchmarks](../../tests/benchmarks/).
+**Possible Values:** `ON`, `OFF`
+**Default:** `OFF`
+**Example:**
+```bash
+cmake -B ./build -DAREG_BENCHMARKS=ON
+cmake --build ./build --target areg-benchmarks -j20
+```
+
+<div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
+
+---
+
+### AREG_INSTALL
+
+**Description:** Creates the install rules of the SDK: headers, libraries, tools and the CMake package.
 **Possible Values:** `ON`, `OFF`
 **Default:** `ON`
 **Example - Disable installation:**
@@ -266,84 +222,26 @@ cmake -B ./build -DAREG_TESTS=OFF
 cmake -B ./build -DAREG_INSTALL=OFF
 ```
 
-**Example - Custom location install:**
-```bash
-cmake -B ./build -DAREG_INSTALL=ON -DAREG_INSTALL_DIR=/opt/areg
-cmake --build ./build -j20
-sudo cmake --install ./build
-```
-
-**Example - Default location install:**
+**Example - Install to a custom location:**
 ```bash
 cmake -B ./build
 cmake --build ./build -j20
-sudo cmake --install ./build
-```
-
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
-
----
-
-### 8. AREG_INSTALL_DIR
-
-**Description:** Directory where Areg SDK will be installed.
-**Default:** `<user-profile>/areg-sdk`
-**Example:**
-```bash
-cmake -B ./build -DAREG_INSTALL_DIR=/usr/local
-cmake --build ./build -j20
-sudo cmake --install ./build
+cmake --install ./build --prefix /opt/areg
 ```
 
 **Installed components:**
-- Headers → `{AREG_INSTALL_DIR}/include/`
-- Libraries → `{AREG_INSTALL_DIR}/lib/`
-- Executables → `{AREG_INSTALL_DIR}/bin/`
-- CMake config → `{AREG_INSTALL_DIR}/lib/cmake/areg/`
+- Headers → `<prefix>/include/`
+- Libraries → `<prefix>/lib/`
+- Executables → `<prefix>/bin/`
+- CMake package → `<prefix>/share/areg/`
 
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
-
----
-
-### 9. AREG_SYSTEM_PACKAGES
-
-**Description:** Enable using pre-installed system packages for dependencies.
-**Possible Values:** `ON`, `OFF`
-**Default:** `ON`
-**Example:**
-```bash
-cmake -B ./build -DAREG_SYSTEM_PACKAGES=OFF
-```
-
-**Behavior:**
-- `ON` - Use system packages if found, otherwise fetch from source
-- `OFF` - Always build dependencies from source
-
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
+<div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
 
 ---
 
-### 10. AREG_SYSTEM_GTEST
+### AREG_SYSTEM_SQLITE
 
-**Description:** Use system-installed Google Test package.
-**Possible Values:** `ON`, `OFF`
-**Default:** `ON`
-**Example:**
-```bash
-cmake -B ./build -DAREG_SYSTEM_GTEST=OFF
-```
-
-**Behavior:**
-- `ON` - Try system package first, fetch from Google repository if not found
-- `OFF` - Always fetch from Google repository
-
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
-
----
-
-### 11. AREG_SYSTEM_SQLITE
-
-**Description:** Use system-installed SQLite3 package.
+**Description:** Uses the SQLite3 installed in the system.
 **Possible Values:** `ON`, `OFF`
 **Default:** `ON`
 **Example:**
@@ -352,210 +250,97 @@ cmake -B ./build -DAREG_SYSTEM_SQLITE=OFF
 ```
 
 **Behavior:**
-- `ON` - Try system package first, fall back to `thirdparty/` source
-- `OFF` - Always use `thirdparty/` source
+- `ON` - The installed SQLite3 when found for the target architecture, else the sources in `thirdparty/sqlite3`
+- `OFF` - Always the sources in `thirdparty/sqlite3`
 
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
-
----
-
-### 12. AREG_BUILD_DIR
-
-**Description:** Main directory for all build artifacts, third-party dependencies, and generated code.
-**Default:** `<areg-sdk>/product`
-**Example:**
-```bash
-cmake -B ./build -DAREG_BUILD_DIR=/tmp/areg-build
-```
-
-**Note:** This directory and its contents can be safely deleted without affecting source code.
-
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
+<div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
 
 ---
 
-### 13. AREG_OUTPUT_DIR
+### AREG_SYSTEM_GTEST
 
-**Description:** Base directory for all build outputs, including binaries and libraries.
-**Default:** `{AREG_BUILD_DIR}/build/<compiler>/<os>-<bits>-<cpu>-<build-type>-<linkage>`
-**Example:**
-```bash
-cmake -B ./build -DAREG_OUTPUT_DIR=/custom/output
-```
-
-**Default structure example:**
-```
-product/build/gnu-g++/linux-64-x86_64-release-shared/
-```
-
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
-
----
-
-### 14. AREG_BIN_DIR
-
-**Description:** Output directory for runtime binaries and shared libraries.
-**Default:** `{AREG_OUTPUT_DIR}/bin`
-**Example:**
-```bash
-cmake -B ./build -DAREG_BIN_DIR=/custom/bin
-```
-
-**Corresponds to:** `CMAKE_RUNTIME_OUTPUT_DIRECTORY` and `CMAKE_LIBRARY_OUTPUT_DIRECTORY`
-
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
-
----
-
-### 15. AREG_LIB_DIR
-
-**Description:** Output directory for static libraries.
-**Default:** `{AREG_OUTPUT_DIR}/lib`
-**Example:**
-```bash
-cmake -B ./build -DAREG_LIB_DIR=/custom/lib
-```
-
-**Corresponds to:** `CMAKE_ARCHIVE_OUTPUT_DIRECTORY`
-
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
-
----
-
-### 16. AREG_DEPS_DIR
-
-**Description:** Directory for fetched third-party packages.
-**Default:** `{CMAKE_BINARY_DIR}/packages`
-**Example:**
-```bash
-cmake -B ./build -DAREG_DEPS_DIR=/custom/packages
-```
-
-**Contains:** Google Test, SQLite3 (when fetched from source)
-
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
-
----
-
-### 17. AREG_OUTPUT_LAYOUT
-
-**Description:** Enable Areg-specific output directory structure.
+**Description:** Uses the GoogleTest installed in the system for the unit tests.
 **Possible Values:** `ON`, `OFF`
 **Default:** `ON`
 **Example:**
 ```bash
-cmake -B ./build -DAREG_OUTPUT_LAYOUT=OFF
+cmake -B ./build -DAREG_SYSTEM_GTEST=OFF
 ```
 
 **Behavior:**
-- `ON` - Use Areg-specific output paths (organized by compiler/platform)
-- `OFF` - Use CMake default output directories
+- `ON` - The installed GoogleTest when found, else fetched from its repository
+- `OFF` - Always fetched from its repository
 
-**Use case:** Set to `OFF` when integrating Areg into third-party builds with existing output structure.
-
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
+<div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
 
 ---
 
-### 18. AREG_LOGGER_LIB_TYPE
+### AREG_NO_EXCEPTIONS
 
-**Description:** Specify log observer API library type.
-**Possible Values:**
-- `shared` - Dynamic library
-- `static` - Static library
-
-**Default:** the value of `AREG_LIB_TYPE`
+**Description:** Compiles without C++ exceptions and RTTI (`-fno-exceptions -fno-rtti`). The sources use neither, so the option only removes the code and the tables the compiler emits for them. Required by projects that forbid both, such as MISRA C++ and AUTOSAR C++14.
+**Possible Values:** `ON`, `OFF`
+**Default:** `OFF`
 **Example:**
 ```bash
-cmake -B ./build -DAREG_LOGGER_LIB_TYPE=static
+cmake -B ./build -DAREG_NO_EXCEPTIONS=ON
 ```
 
 > [!NOTE]
-> A shared `areglogger` built with a static `areg` embeds its own copy of the framework. An application that also uses `areg` then holds two independent copies. Set different types only for a process that uses `areglogger` alone.
+> Ignored by MSVC: its standard library requires an exception handling model.
 
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
-
----
-
-### 19. AREG_TARGET
-
-**Description:** Specify compiler architecture target for cross-compilation.
-**Possible Values:** `i386-linux-gnu`, `x86_64-linux-gnu`, `arm-linux-gnueabihf`, `arm-linux-gnueabi`, `aarch64-linux-gnu`, and other compiler-specific targets
-**Default:** System-defined
-**Example:**
-```bash
-cmake -B ./build -DAREG_TARGET=arm-linux-gnueabihf -DAREG_ARCH=arm
-```
-
-> [!NOTE]
-> This value is identical to `CMAKE_CXX_COMPILER_TARGET` and affects package and library location paths.
-
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
+<div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
 
 ---
 
-### 20. AREG_ARCH
+### AREG_ARCH
 
-**Description:** Target processor architecture and bitness for compiled applications.
+**Description:** Target processor and bitness of the compiled binaries.
 **Possible Values:**
 - `x86` - 32-bit x86
 - `x64` (or `x86_64`, `amd64`) - 64-bit x86
 - `arm` (or `arm32`) - 32-bit ARM
 - `aarch64` (or `arm64`) - 64-bit ARM
 
-**Default:** System-defined
+**Default:** The system processor
 **Example:**
 ```bash
 cmake -B ./build -DAREG_ARCH=x86
 ```
 
-> [!NOTE]
-> The value may be ignored depending on compiler selection and when `user.cmake` is included. For instance, setting `AREG_ARCH=arm` with `AREG_COMPILER_FAMILY=gnu` when `user.cmake` is included after `project()` may build for the host processor using default compiler settings.
+Without `CMAKE_CXX_COMPILER`, `AREG_COMPILER_FAMILY` or a toolchain file, `AREG_ARCH` selects the default compiler family of the host: `gnu` on Linux, `llvm` on macOS. With `gnu`, `arm` builds with `arm-linux-gnueabihf-g++` and `aarch64` with `aarch64-linux-gnu-g++`.
+
+x86 and x64 Release builds with GNU or Clang use the portable SSE4.2 baseline (`-msse4.2`) when the build host supports it, for the hardware CRC32C. To tune the binaries for the build machine instead, pass `-DCMAKE_CXX_FLAGS=-march=native`; such binaries may not run on another CPU.
 
 > [!TIP]
-> To verify binary architecture, navigate to build directory and run:
+> To cross-compile, prefer a toolchain file from [conf/toolchains](../../conf/toolchains/); it sets the processor, the compilers and the search paths together.
+
+> [!TIP]
+> To verify the architecture of a binary:
 > ```bash
-> file ./mtrouter.elf
+> file ./build/bin/mtrouter.elf
 > ```
 > Example output for 32-bit:
 > ```
-> ./mtrouter.elf: ELF 32-bit LSB pie executable, Intel 80386, version 1 (GNU/Linux), ...
+> ./build/bin/mtrouter.elf: ELF 32-bit LSB pie executable, Intel 80386, version 1 (GNU/Linux), ...
 > ```
->
-> Or check ELF header:
-> ```bash
-> od -t x1 -t c ./mtrouter | head -n 2
-> ```
->
-> The 5th byte indicates bitness: `01` = 32-bit, `02` = 64-bit
-> ```
-> 0000000  7f  45  4c  46  01  01  01  00  00  00  00  00  00  00  00  00
->         177   E   L   F 001 001 001  \0  \0  \0  \0  \0  \0  \0  \0  \0
-> ```
->
-> For more information, see [ELF Header documentation](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format#File_header).
 
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
+<div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
 
 ---
 
-### 21. AREG_ARCH_NATIVE
+### AREG_OUTPUT_DIR
 
-**Description:** Optimize Release builds for the CPU of the build machine by passing `-march=native -mtune=native` to GNU and Clang compilers. Has no effect on MSVC, Debug builds, or cross-compiled builds.
-**Possible Values:** `ON`, `OFF`
-**Default:** `OFF`
+**Description:** Root directory of the binaries: executables and shared libraries go to `<dir>/bin`, static libraries to `<dir>/lib`. The CMake cache, the object files and the generated code stay in the build directory.
+**Default:** The build directory, so `cmake -B build` puts the binaries in `build/bin`
 **Example:**
 ```bash
-cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DAREG_ARCH_NATIVE=ON
+cmake -B ./build -DAREG_OUTPUT_DIR=/home/user/my_project/areg
 ```
 
-> [!IMPORTANT]
-> Binaries built with `AREG_ARCH_NATIVE=ON` are tuned to the exact CPU model of the build machine. They are not portable (they may crash with an illegal-instruction error on a different CPU) and not reproducible (two machines can produce different code from the same sources). Enable it only when the binaries run on the same machine that builds them, for example for local development or benchmarking.
-
 > [!NOTE]
-> When this option is `OFF` (default), x86/x64 Release builds use a portable SSE4.2 baseline (`-msse4.2`) instead, if the build host supports it. This keeps hardware-accelerated CRC32C checksum calculation -- the same instruction-set assumption the MSVC build makes -- while producing binaries that run on any x86-64 CPU from approximately 2009 onward.
+> A relative path is relative to the build directory. `CMAKE_RUNTIME_OUTPUT_DIRECTORY` and `CMAKE_ARCHIVE_OUTPUT_DIRECTORY` win when they are set. Do not point two builds at the same directory: libraries of the same name replace each other.
 
-<div align="right"><kbd><a href="#complete-options-reference">↑ Back to options ↑</a></kbd></div>
+<div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
 
 ---
 
@@ -563,14 +348,8 @@ cmake -B ./build -DCMAKE_BUILD_TYPE=Release -DAREG_ARCH_NATIVE=ON
 
 ### Print Configuration Status
 
-Use `printAregConfigStatus()` to display current configuration:
+Every configure of Areg SDK ends with a status report:
 
-```cmake
-include(<areg-sdk>/conf/cmake/setup.cmake)
-printAregConfigStatus()
-```
-
-**Example output:**
 ```
 -- =======================================================================================
 -- ----------------------> Areg project CMake Status Report Begin <-----------------------
@@ -582,10 +361,10 @@ printAregConfigStatus()
 -- Areg: >>> Compiler Version ...: C++ standard 'c++17', compiler family 'llvm'
 -- Areg: >>> Areg SDK Root ......: '/home/user/areg-sdk'
 -- Areg: >>> CMake Build Dir ....: '/home/user/areg-sdk/build'
--- Areg: >>> Binary Output Dir ..: '/home/user/areg-sdk/product/build/llvm-clang++/linux-64-x86_64-debug-shared/bin'
+-- Areg: >>> Binary Output Dir ..: '/home/user/areg-sdk/build/bin'
 -- Areg: >>> Build Modules ......: areg = 'shared', aregextend = 'static', areglogger = 'shared'
 -- Areg: >>> Java Version .......: '17.0.16', minimum version required = 17
--- Areg: >>> Packages Use .......: SQLite3 package = 'ON', GTest package = 'OFF'
+-- Areg: >>> Packages Use .......: SQLite3 package use = 'ON', GTest package use = 'OFF'
 -- Areg: >>> Feature Options ....: Logs = 'ON', No exceptions = 'OFF'
 -- Areg: >>> Other Options ......: Examples = 'ON', Unit Tests = 'ON', Benchmarks = 'OFF'
 -- Areg: >>> Installation .......: Enabled = 'ON', location = '/usr/local'
@@ -599,22 +378,21 @@ printAregConfigStatus()
 When integrating Areg SDK into other projects:
 
 **AREG_SDK_ROOT:**
-- Set to Areg SDK root directory before including `user.cmake` or `setup.cmake`
-- In Areg SDK project, defaults to `CMAKE_CURRENT_LIST_DIR`
+- Set to the Areg SDK root directory before including `areg.cmake`
+- In the Areg SDK project, it is the directory of the top-level `CMakeLists.txt`
 
 **AREG_FRAMEWORK:**
-- When using an installed Areg package, set to its include directory
-- Required for header file locations
+- The directory of the framework headers, set by `setup.cmake` or by the installed package
 
 **Example:**
 ```cmake
 set(AREG_SDK_ROOT "/path/to/areg-sdk")
-include(${AREG_SDK_ROOT}/conf/cmake/setup.cmake)
+include(${AREG_SDK_ROOT}/areg.cmake)
 ```
 
 ### Complete Configuration Example
 
-Build and install with all options explicitly set:
+Build and install with every common option set explicitly:
 
 ```bash
 cmake -B ./build \
@@ -623,11 +401,9 @@ cmake -B ./build \
   -DAREG_TESTS=OFF \
   -DAREG_EXAMPLES=OFF \
   -DAREG_LIB_TYPE=shared \
-  -DAREG_LOGGER_LIB_TYPE=shared \
   -DAREG_LOGGING=ON \
-  -DAREG_SYSTEM_PACKAGES=ON \
   -DAREG_INSTALL=ON \
-  -DAREG_INSTALL_DIR=/usr/local
+  -DCMAKE_INSTALL_PREFIX=/usr/local
 
 cmake --build ./build -j20
 
@@ -642,69 +418,57 @@ sudo cmake --install ./build
 
 ### Using Areg SDK in Your Project
 
-**Option 1: System Installation**
+**Option 1: Installed package**
 
-After installing Areg SDK system-wide:
+After installing Areg SDK:
 
 ```cmake
 find_package(areg CONFIG REQUIRED)
+include(${AREG_CMAKE})
 
 add_executable(myapp main.cpp)
 target_link_libraries(myapp PRIVATE areg::areg)
 ```
 
-**Option 2: Source Integration**
-
-Include Areg SDK sources directly:
-
-```cmake
-set(AREG_SDK_ROOT "/path/to/areg-sdk")
-include(${AREG_SDK_ROOT}/conf/cmake/setup.cmake)
-
-add_executable(myapp main.cpp)
-target_link_libraries(myapp PRIVATE areg::areg)
-```
-
-**Option 3: FetchContent**
-
-Fetch Areg SDK automatically:
+**Option 2: FetchContent**
 
 ```cmake
 include(FetchContent)
 FetchContent_Declare(
     areg
     GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
-    GIT_TAG        v1.5.0
+    GIT_TAG        master
 )
 FetchContent_MakeAvailable(areg)
+include(${areg_SOURCE_DIR}/areg.cmake)
 
 add_executable(myapp main.cpp)
 target_link_libraries(myapp PRIVATE areg::areg)
 ```
 
+A fetched Areg SDK builds neither its examples nor its tests, and its binaries land in the `bin` directory of your build beside your own.
+
+**Option 3: A local copy of the sources**
+
+```cmake
+set(AREG_SDK_ROOT "/path/to/areg-sdk")
+include(${AREG_SDK_ROOT}/areg.cmake)
+```
+
+See [CMake Integration](./02b-cmake-integrate.md) for complete projects.
+
 ### Additional Notes
 
-**Root Directory:**
-- To integrate Areg SDK in other projects, set `AREG_SDK_ROOT` before including `user.cmake` or `setup.cmake`
-- In Areg SDK project, `AREG_SDK_ROOT` defaults to `CMAKE_CURRENT_LIST_DIR` (i.e., `<areg-sdk root>`)
-
-**Integrating as Package:**
-- When using an installed Areg package, set `AREG_SDK_ROOT` to the package's `share` directory
-- Set `AREG_FRAMEWORK` to `include` directory for headers
-
 **Compiler Configuration:**
-- `AREG_COMPILER_FAMILY` automatically selects default compilers (e.g., `llvm` → `clang++` and `clang`)
+- `AREG_COMPILER_FAMILY` selects both compilers by family (e.g., `llvm` → `clang++` and `clang`)
 
 **Target Processor:**
-- `AREG_ARCH` enables cross-compilation
+- A toolchain file or `AREG_ARCH` selects the target processor
 - See [Cross-Compiling Guide](./01b-cmake-build.md#cross-compilation) for details
 
-**Custom Output Directories:**
-- `AREG_BUILD_DIR` sets location for all build artifacts
-- Aids in project organization and build cleanup
-
-**Disable Areg Outputs:**
-- Set `AREG_OUTPUT_LAYOUT=OFF` to use CMake defaults or custom output locations
+**Output Directories:**
+- Set `AREG_OUTPUT_DIR` to put `bin/` and `lib/` elsewhere, for example into the directory your project collects its binaries in
+- Several builds side by side: see [Several Builds Side by Side](../DEVELOP.md#several-builds-side-by-side)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -718,7 +482,7 @@ target_link_libraries(myapp PRIVATE areg::areg)
 - [Installing as a Package](./01a-areg-package.md) - Install once, use with `find_package`
 
 **Configuration Files:**
-- [user.cmake](../../conf/cmake/user.cmake) - Default configuration values
+- [user.cmake](../../conf/cmake/user.cmake) - The options and their defaults
 - [setup.cmake](../../conf/cmake/setup.cmake) - Setup utilities and functions
 
 **Examples:**

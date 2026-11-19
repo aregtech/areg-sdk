@@ -15,6 +15,11 @@ if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
     return()
 endif()
 
+# A build never writes into the Areg SDK root.
+if ("${CMAKE_BINARY_DIR}" STREQUAL "${AREG_SDK_ROOT}")
+    message(FATAL_ERROR "Areg: >>> Build in a separate directory, for example 'cmake -B build'. Delete 'CMakeCache.txt' and 'CMakeFiles' from '${AREG_SDK_ROOT}'.")
+endif()
+
 # The location of cmake configuration files.
 if (NOT DEFINED AREG_CMAKE_CONFIG_DIR OR "${AREG_CMAKE_CONFIG_DIR}" STREQUAL "")
     if (EXISTS "${AREG_SDK_ROOT}/conf/cmake/")
@@ -60,22 +65,8 @@ if (NOT DEFINED AREG_SDK_TOOLS OR "${AREG_SDK_TOOLS}" STREQUAL "")
     set(AREG_SDK_TOOLS			"${AREG_SDK_ROOT}/tools")
 endif()
 
-if (NOT DEFINED AREG_OUTPUT_LAYOUT OR AREG_OUTPUT_LAYOUT)
-    option(AREG_OUTPUT_LAYOUT "Enable changing output directories" TRUE)
-    # Set the areg-sdk build root folder to output files.
-    if (NOT DEFINED AREG_BUILD_DIR OR "${AREG_BUILD_DIR}" STREQUAL "")
-        set(AREG_BUILD_DIR "${AREG_SDK_ROOT}/product")
-    endif()
-
-    if (NOT DEFINED AREG_DEPS_DIR OR "${AREG_DEPS_DIR}" STREQUAL "")
-        set(AREG_DEPS_DIR "${CMAKE_BINARY_DIR}/packages")
-    endif()
-else()
-    option(AREG_OUTPUT_LAYOUT "Enable changing output directories" FALSE)
-    if (NOT DEFINED AREG_BUILD_DIR OR "${AREG_BUILD_DIR}" STREQUAL "")
-        set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
-    endif()
-endif()
+# The root of the generated files: the build directory.
+set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
 
 # setup functions
 include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
@@ -130,15 +121,6 @@ macro_check_fix_areg_cxx_standard()
 if ("${AREG_GENERATE}" STREQUAL "")
     set(AREG_GENERATE "generate")
 endif()
-
-if (NOT "${AREG_DEPS_DIR}" STREQUAL "")
-    set(FETCHCONTENT_BASE_DIR   "${AREG_DEPS_DIR}" CACHE PATH "Location of Areg thirdparty packages")
-else()
-    set(AREG_DEPS_DIR "${FETCHCONTENT_BASE_DIR}")
-endif()
-
-# Records in the cache the directory the packages are really in.
-set(AREG_DEPS_DIR "${AREG_DEPS_DIR}" CACHE PATH "Directory holding the packages areg fetched" FORCE)
 
 # ---------------------------------------------------------------------------
 # AI Friendly files if the user applies agentic coding.

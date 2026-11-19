@@ -5,9 +5,9 @@
 set(AREG_SQLITE_INCLUDES)
 set(AREG_SQLITE_LIBRARY)
 set(USE_SQLITE_PACKAGE 0)
-option(AREG_SQLITE_FOUND  "SQLite3 package found flag"   FALSE)
+set(AREG_SQLITE_FOUND FALSE)
 
-if (AREG_SQLITE_PACKAGE)
+if (AREG_SYSTEM_SQLITE)
     # search installed SQLite3 package in the system.
     macro_find_sqlite_package(AREG_SQLITE_INCLUDES AREG_SQLITE_LIBRARY AREG_SQLITE_FOUND)
 endif()
@@ -29,7 +29,6 @@ else(AREG_SQLITE_FOUND)
 
     message(STATUS "AREG: >>> Could not find SQLite library. Builds 'aregsqlite3' library from sources.")
     # The SQLite3 package did not find, compile from available sources.
-    set(AREG_SQLITE_PACKAGE OFF CACHE INTERNAL "Use SQLite3 installed package")
     set(sqlite_BASE "${AREG_THIRDPARTY}/sqlite3")
     list(APPEND sqlite_SRC
         ${sqlite_BASE}/amalgamation/sqlite3.c

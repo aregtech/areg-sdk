@@ -23,12 +23,6 @@ else()
     message(STATUS "Areg: >>> Specified AREG_CMAKE_CONFIG_DIR = \'${AREG_CMAKE_CONFIG_DIR}\'")
 endif()
 
-# Disable or enable areg-sdk specific outputs
-if (NOT DEFINED AREG_OUTPUT_LAYOUT OR "${AREG_OUTPUT_LAYOUT}" STREQUAL "")
-    option(AREG_OUTPUT_LAYOUT "Disable Areg SDK specific outputs, use defaults" OFF)
-    message(STATUS "Areg: >>> Disable Areg SDK specific outputs, use defaults")
-endif()
-
 # Include setup.cmake to initialize variables
 message(STATUS "Areg: >>> Including \'${AREG_CMAKE_CONFIG_DIR}/setup.cmake\'")
 include("${AREG_CMAKE_CONFIG_DIR}/setup.cmake")

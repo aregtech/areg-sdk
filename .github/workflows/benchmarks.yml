@@ -36,8 +36,7 @@ jobs:
                 -DAREG_BENCHMARKS=ON \
                 -DAREG_TESTS=OFF \
                 -DAREG_EXAMPLES=OFF \
-                -DAREG_INSTALL=OFF \
-                -DAREG_BIN_DIR=${{github.workspace}}/build/bin
+                -DAREG_INSTALL=OFF
           cmake --build ./build --target areg-benchmarks -j $(nproc)
 
       - name: Run the benchmarks

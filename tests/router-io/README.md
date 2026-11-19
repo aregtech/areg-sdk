@@ -13,7 +13,7 @@ They do not start a router or create sockets.
 Build both targets:
 
 ```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DAREG_TESTS=ON -DAREG_EXAMPLES=OFF -DAREG_OUTPUT_LAYOUT=OFF
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DAREG_TESTS=ON -DAREG_EXAMPLES=OFF
 cmake --build build --target areg-unit-tests areg-router-io-test -j 4
 ```
 

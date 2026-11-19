@@ -67,14 +67,6 @@ ServerInfo & ServerInfo::operator = ( const ServerInfo & src )
     return (*this);
 }
 
-ServerInfo & ServerInfo::operator = ( ServerInfo && src ) noexcept
-{
-    mServerAddress  = std::move(src.mServerAddress);
-    mServerState    = std::move(src.mServerState);
-    
-    return (*this);
-}
-
 ServerInfo & ServerInfo::operator = (const ServiceAddress & addService)
 {
     mServerAddress = addService;

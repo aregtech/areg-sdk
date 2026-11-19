@@ -19,13 +19,13 @@ clone, `cd` and configure commands. Otherwise start without an existing `areg-sd
 ```sh
 git clone https://github.com/aregtech/areg-sdk.git
 cd areg-sdk
-cmake -B build -DCMAKE_BUILD_TYPE=Release -DAREG_OUTPUT_LAYOUT=OFF -DAREG_EXAMPLES=ON
+cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release --target 03_onethread 03_twothreads 03_pubservice 03_pubclient mtrouter -j4
 ```
 
 This evaluates `master`, not a pinned release. Only the requested targets and their
-dependencies are built. `AREG_OUTPUT_LAYOUT=OFF` puts executables in `build/bin`,
-including for Visual Studio generators; `--config Release` selects that configuration.
+dependencies are built. Executables go to `build/bin`, including for Visual Studio
+generators; `--config Release` selects that configuration.
 Java is a build dependency, not an application runtime dependency.
 
 ## 1. One thread, then two

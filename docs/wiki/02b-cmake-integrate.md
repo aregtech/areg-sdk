@@ -185,12 +185,7 @@ target_link_libraries(myapp PRIVATE areg::areg)
 cmake_minimum_required(VERSION 3.20)
 project(myapp)
 
-# Disable examples and tests for faster builds
-option(AREG_EXAMPLES "Build examples" OFF)
-option(AREG_TESTS "Build tests" OFF)
-option(AREG_OUTPUT_LAYOUT "Use Areg output dirs" OFF)
-
-# Fetch Areg SDK
+# Fetch Areg SDK; a fetched SDK builds neither its examples nor its tests
 include(FetchContent)
 FetchContent_Declare(
     areg-sdk
@@ -327,19 +322,15 @@ Understanding what gets included:
 Configure Areg SDK build behavior:
 
 ```cmake
-# Disable examples and tests (faster builds)
+# Examples and tests: OFF when areg is fetched, ON when it is the top-level project
 option(AREG_EXAMPLES "Build examples" OFF)
 option(AREG_TESTS "Build unit tests" OFF)
-
-# Disable Areg-specific output directories
-option(AREG_OUTPUT_LAYOUT "Use Areg output structure" OFF)
 
 # Disable logging (smaller binaries)
 option(AREG_LOGGING "Enable logging" OFF)
 
-# Build static libraries instead of shared
-option(AREG_LIB_TYPE "areg library type" "static")
-option(AREG_LOGGER_LIB_TYPE "areglogger library type" "static")
+# Build static libraries instead of shared, areg and areglogger alike
+set(AREG_LIB_TYPE "static")
 ```
 
 **Complete example:**
@@ -483,11 +474,6 @@ find_package(areg CONFIG)
 if(NOT areg_FOUND)
     # Package not found, fetch from source
     message(STATUS "Areg SDK not found, fetching from GitHub...")
-    
-    # Configure build
-    option(AREG_EXAMPLES "Build examples" OFF)
-    option(AREG_TESTS "Build tests" OFF)
-    set(AREG_BUILD_DIR "${CMAKE_SOURCE_DIR}/product")
     
     # Fetch sources
     include(FetchContent)

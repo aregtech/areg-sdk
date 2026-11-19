@@ -78,19 +78,9 @@ project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
 
 find_package(areg CONFIG)
 
-# build/bin whichever way areg was found; an installed package names product/ otherwise.
-set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
-option(AREG_OUTPUT_LAYOUT "Areg build structure" OFF)
-
 if (NOT areg_FOUND)
-    set(AREG_DEPS_DIR  "${CMAKE_BINARY_DIR}/packages")
-    set(AREG_LIB_TYPE  shared)
-    option(AREG_TESTS         "Build areg-sdk tests"    OFF)
-    option(AREG_EXAMPLES      "Build areg-sdk examples" OFF)
-    option(AREG_SYSTEM_GTEST  "Build GTest"             OFF)
-
     include(FetchContent)
-    set(FETCHCONTENT_BASE_DIR "${AREG_DEPS_DIR}")
+    set(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/packages")
     FetchContent_Declare(areg
         GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
         GIT_TAG "master")           # 2.0.0 and newer; do not pin 1.5.0 or earlier
@@ -106,8 +96,8 @@ include(${AREG_CMAKE})
 add_subdirectory(src)
 ```
 
-Turning the SDK's own examples and tests off matters: it keeps the configure step
-offline and fast.
+Fetched into a project, areg builds neither its examples nor its tests, and its binaries
+land in `build/bin` beside yours.
 
 `master` is the ref to fetch: 2.0.0 is not tagged yet and it is the only revision
 whose API matches these pages. **Never pin 1.5.0 or earlier.** The 2.0.0 rename
@@ -191,7 +181,7 @@ start "" build\bin\mtrouter.exe
 
 ## 6. Before you move on
 
-- [ ] `find_package` / FetchContent block is present and examples and tests are off.
+- [ ] `find_package` / FetchContent block is present.
 - [ ] Every `.siml` has an `addServiceInterface` line.
 - [ ] Every executable is declared with `macro_declare_executable` and names its
       generated target.

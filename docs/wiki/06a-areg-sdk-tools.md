@@ -107,7 +107,7 @@ The **service code generator** transforms service interface definitions (`.siml`
 
 - **Build Requirement**: Java 17 or newer
 - **Build Process**: Automatically compiled when building Areg SDK
-- **Location**: Output directory depends on build configuration (typically `product/build/<config>/bin`)
+- **Location**: The `bin` directory of the build, `build/bin` for `cmake -B ./build`
 
 > [!NOTE]
 > Developers do not need to invoke `codegen.jar` manually. The CMake build system handles code generation automatically.

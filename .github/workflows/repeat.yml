@@ -81,7 +81,7 @@ jobs:
       matrix:
         include:
           - { os: windows-latest, cmake: '-DAREG_COMPILER_FAMILY=msvc' }
-          - { os: macos-latest,   cmake: '-DAREG_COMPILER=clang' }
+          - { os: macos-latest,   cmake: '-DCMAKE_CXX_COMPILER=clang++' }
           - { os: ubuntu-latest,  cmake: '-DAREG_COMPILER_FAMILY=gnu' }
 
     steps:
@@ -115,7 +115,7 @@ jobs:
           echo "commit under test: $(git -C src rev-parse HEAD)"
           cmake -S src -B build ${{matrix.cmake}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_LIB_TYPE=shared \
                 -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
-                -DAREG_INSTALL:BOOL=OFF -DAREG_OUTPUT_LAYOUT:BOOL=OFF
+                -DAREG_INSTALL:BOOL=OFF
 
       - name: Build the tests and the log benchmark
         id: build

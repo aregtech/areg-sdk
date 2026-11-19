@@ -88,21 +88,6 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
                     , static_cast<uint32_t>(source)
                     , static_cast<uint32_t>(msgReceived.target()));
 
-    if ( areg::is_interface_call(msgReceived.call_type()) )
-    {
-        LOG_DBG("Message [ %u ] is executable, going to forward to target [ %u ], received from source [ %u ]"
-                   , static_cast<uint32_t>(msgId)
-                   , msgReceived.target()
-                   , source);
-
-        if ( msgReceived.target() != static_cast<uint32_t>(areg::TARGET_UNKNOWN) )
-        {
-            send_message( msgReceived );
-        }
-
-        return;
-    }
-
     switch( msgId )
     {
     case areg::FuncIdRange::SystemServiceRequestRegister:

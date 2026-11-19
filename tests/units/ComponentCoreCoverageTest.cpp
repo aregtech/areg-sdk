@@ -155,10 +155,17 @@ namespace
             static_cast<EventConsumer &>(*this).start_event_processing(event);
         }
 
+        //!< Returns the registration state of the stub.
+        ServiceConnectionState status() const noexcept
+        {
+            return mConnectionStatus;
+        }
+
         uint32_t    mRequests   { 0u };
         uint32_t    mAttributes { 0u };
         uint32_t    mStubEvents { 0u };
         uint32_t    mGenerics   { 0u };
+        uint32_t    mConnects   { 0u };
         mutable uint32_t    mUndelivered    { 0u };
         mutable uint32_t    mUndeliveredMsg { 0u };
 
@@ -220,6 +227,12 @@ namespace
         {
             ++ mGenerics;
             StubBase::process_generic_event(event);
+        }
+
+        void process_connect_event(const ProxyAddress & proxy, ServiceConnectionState status) override
+        {
+            ++ mConnects;
+            StubBase::process_connect_event(proxy, status);
         }
 
         ServiceResponseEvent create_response(const ProxyAddress & target, uint32_t message, CallType kind, ResultType result, const SharedBuffer &) const override
@@ -890,6 +903,11 @@ namespace
         ProxyAddress sender{ target };
         sender.set_channel(Channel(88u, 0u, COOKIE_LOCAL));
 
+        ServiceRequestEvent early(sender, target, ATTRIBUTES[0], RequestType::CallFunction, CallType::Attribute, EventType::EventLocalRequest);
+        stub.deliver(early);
+        CORE_CHECK(stub.mUndelivered == 0u);
+        CORE_CHECK(stub.mStubEvents == 0u);
+
         LocalRequestEvent request(sender, target, REQUESTS[0], 0u);
         stub.deliver(request);
         CORE_CHECK(stub.mUndelivered == 1u);
@@ -914,6 +932,27 @@ namespace
         stub.deliver(response);
         CORE_CHECK(stub.mGenerics == 1u);
         CORE_CHECK(stub.mRequests == 1u);
+
+        LocalNotifyRequestEvent notifyCall(sender, target, REQUESTS[0], RequestType::StartNotify, CallType::Request);
+        stub.deliver(notifyCall);
+        CORE_CHECK(stub.mStubEvents == 2u);
+        CORE_CHECK(stub.mAttributes == 1u);
+
+        ServiceRequestEvent connectOther(sender, target, REQUESTS[0], RequestType::ClientConnection, CallType::Undefined, EventType::EventLocalProviderConnect);
+        stub.deliver(connectOther);
+        CORE_CHECK(stub.mStubEvents == 3u);
+        CORE_CHECK(stub.mConnects == 0u);
+
+        ServiceRequestEvent registered( ProxyAddress::invalid_proxy_address(), target
+                                      , static_cast<uint32_t>(FuncIdRange::ResponseServiceProviderConnection)
+                                      , RequestType::ServiceConnection, CallType::Undefined, EventType::EventLocalProviderConnect);
+        CORE_CHECK(registered.header() != nullptr);
+        registered.header()->result = static_cast<uint32_t>(ServiceConnectionState::Pending);
+        stub.deliver(registered);
+        CORE_CHECK(stub.status() == ServiceConnectionState::Pending);
+        CORE_CHECK(stub.address() == target);
+        CORE_CHECK(stub.mConnects == 0u);
+        CORE_CHECK(stub.mStubEvents == 3u);
 
         stub.shutdown_service_interface(holder);
     }

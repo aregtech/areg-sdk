@@ -106,6 +106,7 @@ namespace
         using ProxyBase::notify_listeners;
         using ProxyBase::notify_request_failed;
         using ProxyBase::process_available_event;
+        using ProxyBase::process_proxy_event;
         using ProxyBase::register_for_event;
         using ProxyBase::remove_listener;
         using ProxyBase::send_request_event;
@@ -114,6 +115,7 @@ namespace
         using ProxyBase::service_connection_updated;
         using ProxyBase::stop_notifications;
         using ProxyBase::unregister_for_event;
+        using ProxyBase::ServiceAvailableEvent;
 
         static ProxyBase* create(const String& role, DispatcherThread* owner)
         {
@@ -1095,4 +1097,82 @@ TEST(ProxyBaseContractTest, repeated_subscription_sends_the_current_state_only_w
             proxy->free_proxy(listener);
             proxy.reset();
         }));
+}
+
+/**
+ * \brief   A repeated subscription of a response sends the response only when its data is valid;
+ *          a request has no subscription to set or clear.
+ **/
+TEST(ProxyBaseContractTest, repeated_response_subscription_sends_the_response_only_with_valid_data)
+{
+    EventTestDispatcher owner(String("ProxyContractRepeatResponseThread"));
+    ASSERT_TRUE(owner.start_ready());
+    EventTestRun run(owner);
+    ContractListener listener;
+    std::shared_ptr<ProxyBase> proxy;
+    ASSERT_TRUE(owner.invoke([&listener, &proxy, &owner]()
+        {
+            proxy = ProxyBase::acquire_proxy(String("ProxyContractProvider"), INTERFACE, listener, ContractProxy::create, owner);
+            ContractProxy & contract{ *static_cast<ContractProxy*>(proxy.get()) };
+            const StubAddress server(INTERFACE, String("ProxyContractProvider"), owner.name());
+            const Channel channel(static_cast<uint32_t>(owner.address()), server.source(), COOKIE_LOCAL);
+            contract.service_connection_updated(server, channel, ServiceConnectionState::Connected);
+            contract.set_notification(CallType::Response, 0u, &listener, false);
+        }));
+    ASSERT_NE(nullptr, proxy);
+    ASSERT_TRUE(owner.barrier());
+    const size_t initial{ listener.mNotifications.size() };
+
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]() { proxy->set_notification(CallType::Response, 0u, &listener, true); }));
+    ASSERT_TRUE(owner.barrier());
+    EXPECT_EQ(initial, listener.mNotifications.size());
+
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]()
+        {
+            static_cast<ContractProxy*>(proxy.get())->set_state(CallType::Response, 0u, DataState::DataIsOK);
+            proxy->set_notification(CallType::Response, 0u, &listener, true);
+        }));
+    ASSERT_TRUE(owner.barrier());
+    ASSERT_EQ(initial + 1u, listener.mNotifications.size());
+    EXPECT_EQ(RESPONSES[0], std::get<0>(listener.mNotifications.back()));
+    EXPECT_EQ(ResultType::RequestOK, std::get<1>(listener.mNotifications.back()));
+    EXPECT_EQ(SEQUENCE_NUMBER_NOTIFY, std::get<2>(listener.mNotifications.back()));
+    EXPECT_EQ(1u, static_cast<ContractProxy*>(proxy.get())->mSubscriptions.size());
+
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]()
+        {
+            proxy->set_notification(CallType::Request, 0u, &listener, true);
+            EXPECT_FALSE(proxy->has_notification_listener(CallType::Request, 0u));
+            EXPECT_FALSE(proxy->has_any_listener(CallType::Request, 0u));
+            proxy->clear_notification(CallType::Request, 0u, &listener);
+            EXPECT_TRUE(proxy->has_notification_listener(CallType::Response, 0u));
+            proxy->clear_notification(CallType::Response, 0u, &listener);
+            EXPECT_FALSE(proxy->has_notification_listener(CallType::Response, 0u));
+            proxy->free_proxy(listener);
+            proxy.reset();
+        }));
+}
+
+/**
+ * \brief   The base proxy accepts a proxy event of its own address without a notification, and
+ *          the service available event names its client in every copy.
+ **/
+TEST(ProxyBaseContractTest, proxy_event_changes_nothing_and_available_event_keeps_its_client)
+{
+    on_proxy_thread([](DispatcherThread& owner)
+    {
+        ContractListener listener;
+        ProxyLease proxy(listener, owner);
+        ASSERT_NE(nullptr, proxy.pointer());
+
+        LocalResponseEvent event(proxy->proxy_address(), ResultType::RequestOK, RESPONSES[0], CallType::Response, SEQUENCE_NUMBER_NOTIFY);
+        proxy->process_proxy_event(event);
+        EXPECT_TRUE(listener.mNotifications.empty());
+        EXPECT_TRUE(listener.mConnections.empty());
+
+        const ContractProxy::ServiceAvailableEvent available(listener);
+        const ContractProxy::ServiceAvailableEvent copied(available);
+        EXPECT_EQ(static_cast<NotificationConsumer*>(&listener), &available.consumer());
+        EXPECT_EQ(static_cast<NotificationConsumer*>(&listener), &copied.consumer());
+    });
 }

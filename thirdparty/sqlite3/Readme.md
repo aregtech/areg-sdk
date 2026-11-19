@@ -13,9 +13,9 @@ By default, the AREG SDK will attempt to compile with the SQLite3 package found 
 
 The `sqlite3/amalgamation` directory contains the SQLite source code, which is downloaded from the [SQLite Download Page](https://sqlite.org/download.html). These sources are not owned by Aregtech. For more details on SQLite and its licenses, refer to the [official SQLite website](https://sqlite.org/).
 
-If no SQLite3 package is found during the build process, the SDK automatically builds the static `sqlite3` library. However, you can force the use of the SQLite source by setting the `AREG_SQLITE_PACKAGE=OFF` compiler option.
+If no SQLite3 package is found during the build process, the SDK automatically builds the static `sqlite3` library. However, you can force the use of the SQLite source with `-DAREG_SYSTEM_SQLITE=OFF`.
 
-- By default, `AREG_SQLITE_PACKAGE` is set to `ON`, meaning CMake will try to locate the SQLite3 package in your system. 
+- By default, `AREG_SYSTEM_SQLITE` is `ON`, meaning CMake will try to locate the SQLite3 package in your system. 
 - If the package is not found, the SDK will build and link against the static `sqlite3` library from the provided sources.
 
 ---
@@ -97,7 +97,7 @@ Optionally, set the `VCPKG_ROOT` environment variable to point to the `vcpkg` di
 
 To build the AREG SDK with the installed SQLite3 package, use the following CMake options (example for Windows):
 ```bash
-cmake -B ./build -DAREG_SQLITE_PACKAGE=ON -DCMAKE_TOOLCHAIN_FILE="$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
+cmake -B ./build -DAREG_SYSTEM_SQLITE=ON -DCMAKE_TOOLCHAIN_FILE="$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
 ```
 
 If the SQLite3 package is found, CMake will display an output similar to:

@@ -71,7 +71,7 @@ jobs:
   # '*-nolog' builds and installs with AREG_LOGGING=OFF; '*-nolog-test' also runs the tests.
   # 'noexc: ON' ('*-noexcept-*') compiles the framework without exceptions and RTTI.
   # 'btype' replaces BUILD_TYPE: MinSizeRel and RelWithDebInfo.
-  # 'select: compiler' configures with AREG_COMPILER instead of AREG_COMPILER_FAMILY.
+  # 'select: compiler' configures with CMAKE_CXX_COMPILER instead of AREG_COMPILER_FAMILY.
   build-tests:
     name: ${{matrix.config.name}}
     needs: plan
@@ -223,7 +223,7 @@ jobs:
         working-directory: ${{github.workspace}}
         timeout-minutes: 15
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH="${{env.INSTALL_DEST}}"
 
       - name: Configure CMake by selecting compiler family, watched (cygwin)
         if: matrix.config.select != 'compiler' && matrix.config.family == 'cygwin'
@@ -236,7 +236,7 @@ jobs:
           New-Item -ItemType Directory -Force product | Out-Null
           Remove-Item -Force -ErrorAction SilentlyContinue product/configure.done
           Start-Process -NoNewWindow -FilePath C:\cygwin\bin\bash.exe -ArgumentList 'tools/intern/hang-watchdog.sh product/configure.done 300 cmake java cygpath'
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH="${{env.INSTALL_DEST}}"
           $rc = $LASTEXITCODE
           New-Item -ItemType File -Force product/configure.done | Out-Null
           exit $rc
@@ -246,7 +246,7 @@ jobs:
         working-directory: ${{github.workspace}}
         timeout-minutes: 15
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_DIR:PATH="${{env.INSTALL_DEST}}"
+          cmake -B ${{env.CACHE_DEST}} -DCMAKE_CXX_COMPILER=${{matrix.config.cxx}} -DCMAKE_BUILD_TYPE=${{matrix.config.btype || env.BUILD_TYPE}} -DAREG_LIB_TYPE=${{matrix.config.lib}} -DAREG_LOGGING:BOOL=${{matrix.config.logs}} -DAREG_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_TESTS:BOOL=${{matrix.config.test}} -DAREG_NO_EXCEPTIONS:BOOL=${{matrix.config.noexc || 'OFF'}} -DAREG_INSTALL:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH="${{env.INSTALL_DEST}}"
 
       - name: Check that a clang-cl leg is compiled by clang-cl
         if: matrix.config.cxx == 'clang-cl'
@@ -281,15 +281,8 @@ jobs:
       - name: Locate the build output directory
         working-directory: ${{github.workspace}}
         shell: bash
-        # The folder name is built from the compiler and the platform, so it is taken
-        # from the build that just finished rather than spelled out per runner.
-        run: |
-          BIN_DIR="$(find ./product/build -type d -name bin -print -quit 2>/dev/null || true)"
-          if [ -n "${BIN_DIR}" ]; then
-            echo "BUILD_DEST=$(dirname "${BIN_DIR}")" >> "${GITHUB_ENV}"
-          else
-            echo "BUILD_DEST=${{env.CACHE_DEST}}" >> "${GITHUB_ENV}"
-          fi
+        # The binaries are in the 'bin' and 'lib' folders of the build directory.
+        run: echo "BUILD_DEST=${{env.CACHE_DEST}}" >> "${GITHUB_ENV}"
 
       - name: Verify the framework carries no exception tables and no RTTI
         if: matrix.config.noexc == 'ON'
@@ -432,8 +425,8 @@ jobs:
               *) echo "ignored ${BUILD_DEST}/bin: not inside the workspace" ;;
             esac
           fi
-          if [ -z "${BIN_DIR}" ] && [ -d ./product/build ]; then
-            BIN_DIR="$(find ./product/build -type d -name bin -print -quit 2>/dev/null || true)"
+          if [ -z "${BIN_DIR}" ] && [ -d "${{env.CACHE_DEST}}/bin" ]; then
+            BIN_DIR="${{env.CACHE_DEST}}/bin"
           fi
           if [ -n "${BIN_DIR}" ]; then
             cp -R "${BIN_DIR}/" "${DEST}/bin/" || echo "could not copy ${BIN_DIR}"

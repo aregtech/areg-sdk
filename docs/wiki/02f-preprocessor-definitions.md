@@ -308,7 +308,7 @@ target_link_libraries(myapp PRIVATE areg::areg)
 
 **CMake example:**
 ```bash
-cmake -B ./build -DAREG_LOGGER_LIB_TYPE=shared
+cmake -B ./build -DAREG_LIB_TYPE=shared
 ```
 
 **Visual Studio:** Default configuration for areglogger library.
@@ -331,7 +331,7 @@ cmake -B ./build -DAREG_LOGGER_LIB_TYPE=shared
 
 **CMake example:**
 ```bash
-cmake -B ./build -DAREG_LOGGER_LIB_TYPE=static
+cmake -B ./build -DAREG_LIB_TYPE=static
 ```
 
 **Visual Studio:** Manually set in areglogger project properties.

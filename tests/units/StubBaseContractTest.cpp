@@ -82,10 +82,12 @@ namespace
         static constexpr uint32_t LIST_INLINE_COUNT{ StubListenerList::INLINE_COUNT };
 
         using StubBase::attribute_ids;
+        using StubBase::broadcast_ids;
         using StubBase::cancel_current_request;
         using StubBase::clear_all_listeners;
         using StubBase::impl_version;
         using StubBase::number_of_attributes;
+        using StubBase::number_of_broadcasts;
         using StubBase::number_of_requests;
         using StubBase::number_of_responses;
         using StubBase::prepare_request;
@@ -700,6 +702,72 @@ TEST_F(StubBaseContractTest, broadcast_reaches_every_subscriber_without_a_reques
     EXPECT_EQ(2u, stub.respond(BROADCAST).size());
     EXPECT_TRUE(stub.exist(BROADCAST, first));
     EXPECT_TRUE(stub.exist(BROADCAST, second));
+}
+
+/**
+ * \brief   The stub lists the broadcasts of its interface; an interface without broadcasts lists none.
+ **/
+TEST_F(StubBaseContractTest, broadcast_metadata_follows_the_interface)
+{
+    EXPECT_EQ(0u, mStub.number_of_broadcasts());
+    Component other(String("StubContractBroadcastMeta"), mThread);
+    ContractStub stub(other, BROADCAST_INTERFACE);
+    ASSERT_EQ(1u, stub.number_of_broadcasts());
+    ASSERT_NE(nullptr, stub.broadcast_ids());
+    EXPECT_EQ(BROADCAST, stub.broadcast_ids()[0]);
+}
+
+/**
+ * \brief   A message the interface does not have has no listeners: it never exists, is not added,
+ *          and removing it leaves the other listeners.
+ **/
+TEST_F(StubBaseContractTest, unknown_message_has_no_listener_slot)
+{
+    constexpr uint32_t UNKNOWN{ areg::crc32_calculate("unknown_message") };
+    ASSERT_TRUE(mStub.add_notification_listener(RESPONSES[0], mFirst));
+    EXPECT_FALSE(mStub.add_notification_listener(UNKNOWN, mFirst));
+    EXPECT_FALSE(mStub.exist(UNKNOWN, mFirst));
+    mStub.remove_notification_listener(UNKNOWN, mFirst);
+    EXPECT_TRUE(mStub.exist(RESPONSES[0], mFirst));
+}
+
+/**
+ * \brief   Unsubscribing a consumer while a request is processed moves the request entry;
+ *          unblocking still releases that request.
+ **/
+TEST_F(StubBaseContractTest, unblock_finds_the_request_moved_by_an_unsubscribe)
+{
+    ASSERT_TRUE(mStub.add_notification_listener(RESPONSES[0], mSecond));
+    ASSERT_TRUE(mStub.begin_request(mFirst, 41));
+    mStub.remove_notification_listener(RESPONSES[0], mSecond);
+    EXPECT_FALSE(mStub.exist(RESPONSES[0], mSecond));
+
+    const SessionID session = mStub.unblock_current_request();
+    ASSERT_NE(std::numeric_limits<SessionID>::max(), session);
+    EXPECT_FALSE(mStub.is_busy(RESPONSES[0]));
+    ASSERT_TRUE(mStub.prepare_response(session));
+    const ContractStub::StubListenerList targets{ mStub.respond() };
+    ASSERT_EQ(1u, targets.size());
+    EXPECT_TRUE(targets[0].proxy_matches(mFirst));
+    EXPECT_EQ(41u, targets[0].mSequenceNr);
+}
+
+/**
+ * \brief   The error of a request whose caller is gone frees the request and answers nobody;
+ *          an error without listeners changes nothing.
+ **/
+TEST_F(StubBaseContractTest, request_error_of_a_cleared_caller_frees_the_request)
+{
+    ASSERT_TRUE(mStub.begin_request(mFirst, 41));
+    mStub.clear_all_listeners(mFirst);
+    EXPECT_TRUE(mStub.is_busy(RESPONSES[0]));
+    mStub.fail_request(ResultType::RequestError);
+    EXPECT_FALSE(mStub.is_busy(RESPONSES[0]));
+
+    ContractStub::StubListenerList none;
+    mStub.send_error_notification(none, LocalResponseEvent(mSecond, ResultType::RequestError, REQUESTS[0], CallType::Request, SEQUENCE_NUMBER_NOTIFY, 0));
+    EXPECT_TRUE(mStub.mResponseAttempts.empty());
+    EXPECT_TRUE(mStub.begin_request(mSecond, 42));
 }
 
 TEST_F(StubBaseContractTest, one_prepared_session_per_response_and_requests_wait_for_it)

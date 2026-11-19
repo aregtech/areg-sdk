@@ -577,7 +577,11 @@ void ServiceManager::_wait_manager_thread()
         LOG_ERR("The service manager did not stop within [ %u ] ms, the process exits with the code [ %d ]"
                     , areg::LIFECYCLE_TIMEOUT_DEFAULT, areg::LIFECYCLE_FAILURE_EXIT_CODE);
         areg::stop_logging(true);
+#ifdef _MINGW
+        ::_exit(areg::LIFECYCLE_FAILURE_EXIT_CODE);
+#else   // _MINGW
         std::_Exit(areg::LIFECYCLE_FAILURE_EXIT_CODE);
+#endif  // _MINGW
     }
 
     shutdown(areg::DO_NOT_WAIT);

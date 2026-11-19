@@ -17,7 +17,7 @@ This guide provides solutions for common issues encountered when integrating the
 
 ### Problem Description
 
-During the build process, values of Areg-specific variables such as `AREG_COMPILER_FAMILY`, `AREG_COMPILER`, and `AREG_ARCH` might be ignored.
+During the build process, values of Areg-specific variables such as `AREG_COMPILER_FAMILY` and `AREG_ARCH` might be ignored.
 
 **Root Cause**: This typically happens when the Areg SDK is integrated *after* the first call to `project()`, causing these variables to be overwritten by CMake's standard variables (`CMAKE_CXX_COMPILER`, `CMAKE_C_COMPILER`, `CMAKE_BUILD_TYPE`, etc.).
 
@@ -31,7 +31,8 @@ Ensure the Areg SDK is integrated into your project *before* the first call to `
 cmake_minimum_required(VERSION 3.20)
 
 # Set Areg-specific variables BEFORE project()
-set(AREG_COMPILER "arm-linux-gnueabihf-g++")
+set(AREG_COMPILER_FAMILY "gnu")
+set(AREG_ARCH "arm")
 
 # Fetch Areg SDK
 include(FetchContent)
@@ -68,12 +69,12 @@ cmake -B ./product/cache/gnu-arm32 \
 cmake --build ./product/cache/gnu-arm32 -j
 ```
 
-**Alternative: Using Areg-Specific Variables (Before `project()`)**
+**Alternative: Using a Toolchain File of Areg SDK**
 
 ```bash
 cmake -B ./product/cache/gnu-arm32 \
-  -DAREG_COMPILER=arm-linux-gnueabihf-g++ \
-  -DAREG_BUILD_TYPE=Release
+  -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake \
+  -DCMAKE_BUILD_TYPE=Release
 ```
 
 > [!IMPORTANT]
@@ -218,7 +219,7 @@ If rebuilding third-party dependencies like `sqlite3` is not feasible, use prebu
 3. **Configure project to use prebuilt packages**:
    ```bash
    cmake -B ./build \
-     -DAREG_SYSTEM_PACKAGES:BOOL=TRUE \
+     -DAREG_SYSTEM_SQLITE:BOOL=ON \
      -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake \
      -DVCPKG_TARGET_TRIPLET=arm-linux \
      -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++
@@ -230,7 +231,7 @@ If rebuilding third-party dependencies like `sqlite3` is not feasible, use prebu
 
 ```bash
 conan install . --build=missing --settings arch=armv7 --settings os=Linux
-cmake -B build -DAREG_SYSTEM_PACKAGES:BOOL=TRUE
+cmake -B build -DAREG_SYSTEM_SQLITE:BOOL=ON
 cmake --build build -j
 ```
 
@@ -305,16 +306,8 @@ CMake's library search mechanisms (`find_package()`, `find_library()`) can locat
 
 ### Solution 1: Set the Correct Compiler Target
 
-Ensure that the `CMAKE_CXX_COMPILER_TARGET` or `AREG_TARGET` variables are configured to match the desired processor architecture:
+Ensure that the `CMAKE_CXX_COMPILER_TARGET` and `CMAKE_C_COMPILER_TARGET` variables match the desired processor architecture:
 
-**Using AREG_TARGET:**
-```bash
-cmake -B build \
-  -DAREG_TARGET=i386-linux-gnu \
-  <source-dir>
-```
-
-**Using CMAKE Variables:**
 ```bash
 cmake -B build \
   -DCMAKE_CXX_COMPILER_TARGET=i386-linux-gnu \

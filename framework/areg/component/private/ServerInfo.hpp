@@ -75,13 +75,6 @@ public:
     ServerInfo & operator = ( const ServerInfo & src );
 
     /**
-     * \brief   Moves server info data from given source.
-     *
-     * \param   src     The source to move.
-     **/
-    ServerInfo & operator = ( ServerInfo && src ) noexcept;
-
-    /**
      * \brief   Sets stub address and state to Pending if valid, otherwise Undefined.
      *
      * \param   addService      The service address to convert.

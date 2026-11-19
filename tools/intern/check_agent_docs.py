@@ -18,6 +18,7 @@
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -56,6 +57,25 @@ HAS_EXAMPLES = os.path.isdir(os.path.join(ROOT, 'examples'))
 skipped = 0
 
 _listing = {}
+
+_tracked = None
+
+
+def tracked_paths():
+    """The files git tracks and every folder that holds one, relative to ROOT; None without git."""
+    global _tracked
+    if _tracked is None:
+        try:
+            out = subprocess.run(['git', '-C', ROOT, 'ls-files', '-z'], capture_output=True, check=True).stdout
+        except (OSError, subprocess.CalledProcessError):
+            _tracked = set()
+            return None
+        _tracked = set()
+        for name in out.decode('utf-8', 'replace').split('\0'):
+            while name:
+                _tracked.add(name)
+                name = name.rpartition('/')[0]
+    return _tracked or None
 
 
 def resolves(path):
@@ -99,7 +119,15 @@ def is_ours(ref, here):
     if '/' not in ref:
         return ref.endswith('.md')
     head = ref.split('/')[0]
-    return head == '..' or head == '.' or resolves(os.path.join(here, head))
+    if head == '..' or head == '.':
+        return True
+    path = os.path.join(here, head)
+    rel = os.path.relpath(os.path.abspath(path), os.path.abspath(ROOT)).replace(os.sep, '/')
+    tracked = tracked_paths()
+    if (tracked is not None) and not rel.startswith('../'):
+        # A folder on disk that git does not track, such as a build output, is not ours.
+        return rel in tracked
+    return resolves(path)
 
 
 # Facts that are deliberately repeated so a page can end a task on its own. The

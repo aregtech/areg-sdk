@@ -133,8 +133,8 @@ set(AREG_TARGET_COMPILER_OPTIONS)
 # Set the SQLite library reference
 set(AREG_SQLITE_LIB_REF)
 set(AREG_SQLITE_LIB     sqlite3)
-option(AREG_SQLITE_FOUND "SQLite3 package found flag" FALSE)
-option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
+set(AREG_SQLITE_FOUND FALSE)
+set(AREG_GTEST_FOUND  FALSE)
 
 # Adding common definition
 add_definitions(-DUNICODE -D_UNICODE)
@@ -213,70 +213,41 @@ endif()
 # Setup product paths
 # -------------------------------------------------------
 
-if (AREG_OUTPUT_LAYOUT)
-
-    # The output directory
-    if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
-        # Relative path of the output folder for the builds
-        set(_product_path "build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_ARCH}-${CMAKE_BUILD_TYPE}-${AREG_LIB_TYPE}")
-        string(TOLOWER "${_product_path}" _product_path)
-        # The absolute path of 'AREG_OUTPUT_DIR' for builds if it is not set.
-        set(AREG_OUTPUT_DIR "${AREG_BUILD_DIR}/${_product_path}")
-        unset(_product_path)
-    endif()
-
-else()
-
-    # The build root directory
-    if (NOT DEFINED AREG_BUILD_DIR OR "${AREG_BUILD_DIR}" STREQUAL "")
-        set(AREG_BUILD_DIR "${CMAKE_BINARY_DIR}")
-    endif()
-
-    # The output directory
-    if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
-        set(AREG_OUTPUT_DIR "${AREG_BUILD_DIR}")
-    endif()
-
-endif()
-
 # The directory to output generated files
 if ("${AREG_GENERATE_DIR}" STREQUAL "")
     set(AREG_GENERATE_DIR "${AREG_BUILD_DIR}/${AREG_GENERATE}")
 endif()
 
-# The directory to output static libraries
-if (NOT DEFINED AREG_LIB_DIR OR "${AREG_LIB_DIR}" STREQUAL "")
-    # set absolute path to AREG_LIB_DIR if it is not manually set
-    set(AREG_LIB_DIR "${AREG_OUTPUT_DIR}/lib")
+# Binaries go to '<AREG_OUTPUT_DIR>/bin' and '<AREG_OUTPUT_DIR>/lib', the build directory when not set.
+# The standard CMake output directories win when the caller sets them.
+if ("${AREG_OUTPUT_DIR}" STREQUAL "")
+    set(_areg_output "${CMAKE_BINARY_DIR}")
+else()
+    get_filename_component(_areg_output "${AREG_OUTPUT_DIR}" ABSOLUTE BASE_DIR "${CMAKE_BINARY_DIR}")
 endif()
-
-# The directory to output shared libraries and executables
-if (NOT DEFINED AREG_BIN_DIR OR "${AREG_BIN_DIR}" STREQUAL "")
-    # set absolute path to AREG_BIN_DIR if it is not manually set
-    set(AREG_BIN_DIR "${AREG_OUTPUT_DIR}/bin")
+if ("${CMAKE_RUNTIME_OUTPUT_DIRECTORY}" STREQUAL "")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_areg_output}/bin")
 endif()
-
-# The absolute path for compiled object files.
-set(AREG_OUTPUT_OBJ "${AREG_OUTPUT_DIR}/obj")
-
-# Setting output directories
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${AREG_BIN_DIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${AREG_BIN_DIR})
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${AREG_LIB_DIR})
+if ("${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" STREQUAL "")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+endif()
+if ("${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}" STREQUAL "")
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${_areg_output}/lib")
+endif()
+unset(_areg_output)
+set(AREG_BIN_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+set(AREG_LIB_DIR "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 
 # Make sure that the output directories are set for each configuration.
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     string( TOUPPER ${OUTPUTCONFIG} AREG_OUTPUTCONFIG )
-    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${AREG_OUTPUTCONFIG} ${AREG_BIN_DIR} )
-    set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${AREG_OUTPUTCONFIG} ${AREG_BIN_DIR} )
-    set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${AREG_OUTPUTCONFIG} ${AREG_LIB_DIR} )
+    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${AREG_OUTPUTCONFIG} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} )
+    set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${AREG_OUTPUTCONFIG} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} )
+    set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${AREG_OUTPUTCONFIG} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY} )
 endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
 # Adding compile options
 add_compile_options(${AREG_COMPILER_OPTIONS})
-
-# Adding areg/product directory for clean-up
-set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR})
 
 # Add include search paths
 include_directories(BEFORE "${AREG_FRAMEWORK}" "${AREG_BUILD_DIR}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
@@ -326,10 +297,7 @@ if (Java_FOUND)
     unset(_java_fast)
 endif()
 
-# Check and setup variables for installation
+# GoogleTest is never installed with areg
 if (AREG_INSTALL)
     option(INSTALL_GTEST "Disable Googletest installation" OFF)
-    if (NOT "${AREG_INSTALL_DIR}" STREQUAL "")
-        set(CMAKE_INSTALL_PREFIX "${AREG_INSTALL_DIR}")
-    endif()
 endif()

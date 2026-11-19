@@ -46,11 +46,6 @@ public:
      **/
     explicit ClientInfo( const ProxyAddress & client );
 
-    /**
-     * \brief   Initializes the object with the given proxy address.
-     **/
-    explicit ClientInfo( ProxyAddress && client ) noexcept;
-
     ClientInfo(const ClientInfo& src) = default;
 
     ClientInfo(ClientInfo&& src) noexcept;

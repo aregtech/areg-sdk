@@ -62,10 +62,8 @@ cmake --build ./build
 Three terminals are required. Start them in this order.
 
 > [!NOTE]
-> All binaries are placed in the build output `bin/` directory, e.g.
-> `product/build/gnu-g++/linux-64-x86_64-release-shared/bin/` (the exact path
-> depends on compiler, platform, and library type). `cd` into that directory
-> first, or run each binary with its full path.
+> All binaries are placed in the `bin/` directory of the build, `build/bin/`.
+> `cd` into that directory first, or run each binary with its full path.
 
 **Terminal 1 -- Start `mtrouter`:**
 ```bash

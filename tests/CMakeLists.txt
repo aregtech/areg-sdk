@@ -6,7 +6,7 @@
 # local variables
 set(AREG_GTEST_INCLUDES)
 set(AREG_GTEST_LIBRARY)
-option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
+set(AREG_GTEST_FOUND FALSE)
 
 if (AREG_TESTS)
 
@@ -185,6 +185,4 @@ if (AREG_TESTS)
         include(${AREG_TESTS_DIR}/conn-scenario/CMakeLists.txt)
     endif()
 
-else(AREG_TESTS)
-    option(AREG_SYSTEM_GTEST  "Use GTest package" FALSE)
 endif(AREG_TESTS)

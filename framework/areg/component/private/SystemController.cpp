@@ -995,7 +995,11 @@ void SystemController::_finish_exit()
 
     LOG_ERR("The process exits with the code [ %d ]", areg::LIFECYCLE_FAILURE_EXIT_CODE);
     areg::stop_logging(true);
+#ifdef _MINGW
+    ::_exit(areg::LIFECYCLE_FAILURE_EXIT_CODE);
+#else   // _MINGW
     std::_Exit(areg::LIFECYCLE_FAILURE_EXIT_CODE);
+#endif  // _MINGW
 }
 
 void SystemController::_arm_deadline()
