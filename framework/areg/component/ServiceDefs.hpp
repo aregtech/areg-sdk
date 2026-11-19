@@ -27,8 +27,11 @@
 #include "areg/base/String.hpp"
 #include "areg/base/FixedArray.hpp"
 #include "areg/base/Version.hpp"
+#include "areg/base/MathDefs.hpp"
+#include "areg/component/EventDefs.hpp"
 
 #include <limits>
+#include <new>
 
 
 /************************************************************************
@@ -79,6 +82,7 @@ enum class ResultType   : uint16_t
     , RequestError       =  8321 /*0x2081*/  //!< indicates request execution failure.   Bits: 0010 0000 1000 0001
     , RequestBusy        =  8323 /*0x2083*/  //!< request cannot execute, it is busy.    Bits: 0010 0000 1000 0011
     , RequestCanceled    =  8325 /*0x2085*/  //!< request is canceled and not executed.  Bits: 0010 0000 1000 0101
+    , RequestUnsupported =  8259 /*0x2043*/  //!< the provider has no such request.      Bits: 0010 0000 0100 0011
 
     /* data update result */
     , DataOK             = 16512 /*0x4080*/  //!< indicates data validation.             Bits: 0100 0000 1000 0000
@@ -133,33 +137,6 @@ enum class RequestType : uint16_t
  **/
 [[nodiscard]]
 inline constexpr const char* as_string( areg::RequestType value ) noexcept;
-
-/**
- * \brief   Message Data types
- *          Used to identify type of event data, which
- *          used either in service request or in service response
- *          event objects
- **/
-enum class MessageDataType  : uint16_t
-{
-      UndefinedData = 0x0000u   //!< data type is undefined
-    , RequestData   = 0x1000u   //!< data type of request event
-    , ResponseData  = 0x2000u   //!< data type response event
-    , AttributeData = 0x4000u   //!< data type of attribute event
-    , ServiceData   = 0x8000u   //!< data type service call
-
-};
-/**
- * \brief   Returns string representation of MessageDataType.
- **/
-[[nodiscard]]
-inline constexpr const char* as_string( areg::MessageDataType value ) noexcept;
-
-/**
- * \brief   Returns message data type from message ID.
- **/
-[[nodiscard]]
-inline constexpr areg::MessageDataType message_data_type( uint32_t msgId ) noexcept;
 
 /**
  * \brief   Service Connections. Used in service calls
@@ -247,23 +224,6 @@ inline constexpr const char* as_string( areg::DisconnectReason reason ) noexcept
 inline constexpr areg::ServiceConnectionState service_connection( areg::DisconnectReason reason ) noexcept;
 
 /**
- * \brief   The service request types.
- **/
-enum class RegistrationAction   : uint8_t
-{
-      RegisterConsumer   = 0x10 //!< Service Consumer requests to register.     Bit set: 0001 0000
-    , UnregisterConsumer = 0x11 //!< Service Consumer requests to unregister.   Bit set: 0001 0001
-    , RegisterProvider   = 0x20 //!< Service Provider requests to register.     Bit set: 0010 0000
-    , UnregisterProvider = 0x21 //!< Service Provider requests to unregister.   Bit set: 0010 0001
-};
-
-/**
- * \brief   Returns string representation of RegistrationAction.
- **/
-[[nodiscard]]
-inline constexpr const char* as_string( areg::RegistrationAction value ) noexcept;
-
-/**
  * \brief   Service Type. Either local or Remote.
  **/
 enum class ServiceType  : uint16_t
@@ -280,18 +240,6 @@ enum class ServiceType  : uint16_t
  **/
 [[nodiscard]]
 inline constexpr const char* as_string( areg::ServiceType value ) noexcept;
-
-enum class MessageCallType  : uint8_t
-{
-      CallUndefined   = 0
-    , CallService
-    , CallRegistration
-    , CallSystem
-    , CallRequest
-    , CallResponse
-    , CallBroadcast
-    , CallData
-};
 
 /**
  * \brief   The source of the communication message
@@ -328,112 +276,28 @@ enum class InstanceBitness  : uint16_t
 [[nodiscard]]
 inline constexpr const char* as_string(areg::InstanceBitness bitness) noexcept;
 
-/**
- * \brief   Specifies the service call type
- **/
-enum class ServiceCallType : uint16_t
-{
-      NoFunction            = static_cast<uint16_t>(MessageDataType::UndefinedData) //!< No function call
-    , RequestFunction       = static_cast<uint16_t>(MessageDataType::RequestData  ) //!< Call of service request function
-    , ResponseFunction      = static_cast<uint16_t>(MessageDataType::ResponseData ) //!< Call of service response function
-    , AttributeUpdate       = static_cast<uint16_t>(MessageDataType::AttributeData) //!< Call of service attribute update function
-    , ServiceRegisteration  = static_cast<uint16_t>(MessageDataType::ServiceData  ) //!< Call of service registration
-};
+//!< The highest message ID of the system. A system message has no interface call type.
+constexpr uint32_t  SYSTEM_ID_LAST      { 0x0000FFFFu };
 
-constexpr uint32_t  EXECUTABLE_MESSAGE{ static_cast<uint32_t>(areg::ServiceCallType::RequestFunction)  |
-                                        static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction) |
-                                        static_cast<uint32_t>(areg::ServiceCallType::AttributeUpdate) };
-/**
- * \brief   Predefined range of function message IDs
- **/
-constexpr uint32_t  FUNC_RANGE          { static_cast<uint32_t>(4095) };  /*0x0FFF*/
+//!< The index of no entry: the ID is not an entry of the kind.
+constexpr uint32_t  INVALID_MESSAGE_INDEX   { 0x0000FFFFu };
+
+//!< The response index of a request without response.
+constexpr uint32_t  RESPONSE_INDEX_NONE     { areg::INVALID_MESSAGE_INDEX };
+
+//!< The number of kinds of service interface entries: request, response, broadcast and attribute.
+constexpr uint32_t  MESSAGE_KIND_COUNT      { 4u };
 
 /**
- * \brief   The first ID of valid service interface function call
- **/
-constexpr uint32_t  SERVICE_FUNCTION    { static_cast<uint32_t>(ServiceCallType::RequestFunction) };    /*0x1000*/
-
-/**
- * \brief   The first ID in request call.
- **/
-constexpr uint32_t  REQUEST_ID_FIRST    { static_cast<uint32_t>(ServiceCallType::RequestFunction) };
-/**
- * \brief   The last ID in request call.
- **/
-constexpr uint32_t  REQUEST_ID_LAST     { REQUEST_ID_FIRST + FUNC_RANGE };
-
-/**
- * \brief   The first ID in response call.
- **/
-constexpr uint32_t  RESPONSE_ID_FIRST   { static_cast<uint32_t>(ServiceCallType::ResponseFunction) };
-/**
- * \brief   The last ID in response call.
- **/
-constexpr uint32_t  RESPONSE_ID_LAST    { RESPONSE_ID_FIRST + FUNC_RANGE };
-
-/**
- * \brief   The first ID in attribute call.
- **/
-constexpr uint32_t  ATTRIBUTE_ID_FIRST  { static_cast<uint32_t>(ServiceCallType::AttributeUpdate) };
-/**
- * \brief   The last ID in attribute call.
- **/
-constexpr uint32_t  ATTRIBUTE_ID_LAST   { ATTRIBUTE_ID_FIRST + FUNC_RANGE };
-
-/**
- * \brief   The last ID in service call.
- **/
-constexpr uint32_t  SERVICE_ID_FIRST    { static_cast<uint32_t>(areg::ServiceCallType::ServiceRegisteration) };
-/**
- * \brief   The last ID in service call.
- **/
-constexpr uint32_t  SERVICE_ID_LAST     { SERVICE_ID_FIRST + FUNC_RANGE };
-
-/**
- * \brief   Constant no response. Used to indicate that the request has no response.
- **/
-constexpr uint32_t  RESPONSE_ID_NONE    { static_cast<uint32_t>(ServiceCallType::NoFunction) };
-
-/**
- * \brief   Predefined range of function calls
+ * \brief   The message IDs of the system. A system message is told apart from an interface entry
+ *          by its call type, not by its value.
  **/
 enum class FuncIdRange  : uint32_t
 {
-    // Reserved system calls.
-
     //!< Empty function ID.
-      EmptyFunctionId       = RESPONSE_ID_NONE
-    //!< A call to remove pointer in a component thread context.
-    , ComponentCleanup      = 0x00000100
-
-    // The developer defined calls.
-    
-    //!< The first ID or request call range. Requests should start from this ID.
-    , RequestFirstId        = REQUEST_ID_FIRST
-    //!< The last ID of request calls.
-    , RequestLastId         = REQUEST_ID_LAST
-
-    //!< The first ID of response call range. Responses should start from this ID
-    , ResponseFirstId       = RESPONSE_ID_FIRST
-    //!< The last ID of request calls.
-    , ResponseLastId        = RESPONSE_ID_LAST
-    
-    //!< The first ID of Attribute update call range. Attribute updates should start from this ID
-    , AttributeFirstId      = ATTRIBUTE_ID_FIRST
-    , AttributeLastId       = ATTRIBUTE_ID_LAST
-
-    // Reserved system calls.
-
-    //!< The service registration call. Service calls should start from this ID.
-    , RequestRegisterService= SERVICE_ID_FIRST
-    //!< Sent by client to Stub to get supported version information
-    , RequestServiceProviderVersion
-    //!< Sent by Stub to clients as a reply to get service version and notifies interface implemented version
-    , ResponseServiceProviderVersion
-    //!< Sent by client or stub to request service manager connection.
-    , RequestServiceProviderConnection
+      EmptyFunctionId       = 0u
     //!< Sent by service manager to targets (client or stub) to notify connection status update.
-    , ResponseServiceProviderConnection
+    , ResponseServiceProviderConnection = 0x00008004
     //!< Called by service manager when connecting Remove Service like message router or log collector (handshake procedure)
     , SystemServiceConnect
     //!< Called by service manager when disconnecting Remove Service like message router or log collector (graceful shutdown procedure)
@@ -472,89 +336,15 @@ enum class FuncIdRange  : uint32_t
     , ServiceLogConfigurationRestored
     //!< Sent by Routing Service to both processes when a public role name is registered twice.
     , SystemServiceNotifyDuplicate
-    //!< The last ID of service calls.
-    , ServiceLastId         = SERVICE_ID_LAST  //!< Servicing call last ID
-
 };
+
+static_assert(static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate) <= areg::SYSTEM_ID_LAST, "A system message ID must stay in the reserved range.");
 
 /**
  * \brief   Returns string representation of FuncIdRange.
  **/
 [[nodiscard]]
 inline constexpr const char* as_string( areg::FuncIdRange value ) noexcept;
-
-/**
- * \brief   Converts request message ID to array index. Returns the array index; INVALID_INDEX if empty.
- **/
-[[nodiscard]]
-inline constexpr uint32_t req_index(uint32_t msgId) noexcept;
-
-/**
- * \brief   Converts response message ID to array index. Returns the array index; INVALID_INDEX if empty.
- **/
-[[nodiscard]]
-inline constexpr uint32_t resp_index(uint32_t msgId) noexcept;
-
-/**
- * \brief   Converts attribute message ID to array index. Returns the array index; INVALID_INDEX if empty.
- **/
-[[nodiscard]]
-inline constexpr uint32_t attr_index(uint32_t msgId) noexcept;
-
-/**
- * \brief   Returns true if message ID is an attribute call.
- **/
-[[nodiscard]]
-inline constexpr bool is_attribute_id(uint32_t msgId) noexcept;
-
-/**
- * \brief   Returns true if message ID is a response call.
- **/
-[[nodiscard]]
-inline constexpr bool is_response_id(uint32_t msgId) noexcept;
-
-/**
- * \brief   Returns true if message ID is a request call.
- **/
-[[nodiscard]]
-inline constexpr bool is_request_id(uint32_t msgId) noexcept;
-
-/**
- * \brief   Returns true if the message ID is a real service response ID, i.e. it lies inside
- *          the response ID range [RESPONSE_ID_FIRST .. RESPONSE_ID_LAST].
- **/
-[[nodiscard]]
-inline constexpr bool is_valid_response_id(uint32_t msgId) noexcept;
-
-/**
- * \brief   Returns true if message ID is a service registration call.
- **/
-[[nodiscard]]
-inline constexpr bool is_registry_id( uint32_t msgId ) noexcept;
-
-/**
- * \brief   Returns true if message ID is a version notification.
- **/
-[[nodiscard]]
-inline constexpr bool is_version_id(uint32_t msgId) noexcept;
-
-/**
- * \brief   Returns true if message ID is a service connect notification.
- **/
-[[nodiscard]]
-inline constexpr bool is_connect_id(uint32_t msgId) noexcept;
-
-/**
- * \brief   Returns true if message ID is a request, response, or attribute notification.
- **/
-[[nodiscard]]
-inline constexpr bool is_executable_id( uint32_t msgId ) noexcept;
-
-/**
- * \brief   Returns true if message ID is an empty function.
- **/
-[[nodiscard]]
-inline constexpr bool is_empty_id(uint32_t msgId) noexcept;
 
 class ParameterArray;
 
@@ -647,6 +437,63 @@ private:
     AREG_NOCOPY_NOMOVE(StateArray);
 };
 
+/**
+ * \brief   Returns the position of an entry kind in InterfaceData::idTables: request 0, response 1,
+ *          broadcast 2, attribute 3, and MESSAGE_KIND_COUNT for any other call type.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t kind_index(areg::CallType kind) noexcept
+{
+    const uint32_t pos{ static_cast<uint32_t>(kind) - static_cast<uint32_t>(areg::CallType::Request) };
+    return (pos < areg::MESSAGE_KIND_COUNT ? pos : areg::MESSAGE_KIND_COUNT);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// MessageTable structure declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   The entries of one kind of a service interface: their message IDs by index, and the
+ *          perfect-hash table that finds the index of a message ID.
+ *          The slot of an ID is (ID * mtFactor) >> mtShift. A slot holds an index; a slot no ID
+ *          maps to holds 0, which the comparison of the IDs then refuses.
+ **/
+struct MessageTable
+{
+    const uint32_t *    mtIds   { nullptr };    //!< The message ID of every entry, by index. nullptr if there is none.
+    const uint16_t *    mtSlots { nullptr };    //!< The index of every slot of the hash table. nullptr if there is no entry.
+    uint32_t            mtCount { 0u };         //!< The number of entries.
+    uint32_t            mtFactor{ 0u };         //!< The odd multiplier of the hash.
+    uint32_t            mtShift { 0u };         //!< The shift of the hash: 32 minus the bits of the table size.
+
+    /**
+     * \brief   Returns the index of the entry with the message ID, or areg::INVALID_MESSAGE_INDEX.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t find(uint32_t msgId) const noexcept
+    {
+        if (mtCount == 0u)
+            return areg::INVALID_MESSAGE_INDEX;
+
+        const uint32_t index{ mtSlots[static_cast<uint32_t>(msgId * mtFactor) >> mtShift] };
+        return (mtIds[index] == msgId ? index : areg::INVALID_MESSAGE_INDEX);
+    }
+
+    /**
+     * \brief   Returns true if every entry is found at its own index.
+     **/
+    [[nodiscard]]
+    inline constexpr bool finds_every_entry() const noexcept
+    {
+        for (uint32_t i = 0u; i < mtCount; ++i)
+        {
+            if (find(mtIds[i]) != i)
+                return false;
+        }
+
+        return true;
+    }
+};
+
 //////////////////////////////////////////////////////////////////////////
 // InterfaceData structure declaration
 //////////////////////////////////////////////////////////////////////////
@@ -657,33 +504,229 @@ private:
  **/
 struct AREG_API InterfaceData
 {
-    const char *    idServiceName{ nullptr };               //!< The name of service interface.
-    Version         idVersion{ 0, 0, 0 };                   //!< Service interface implementation version
-    ServiceType     idServiceType{ ServiceType::Invalid };  //!< The service type. Should be either local or public / remote.
-    uint32_t        idRequestCount{ 0u };                   //!< Number of requests in service interface
-    uint32_t        idResponseCount{ 0u };                  //!< Number of responses in service interface, including broadcasts
-    uint32_t        idAttributeCount{ 0u };                 //!< Number of attributes in service interface
-    const uint32_t* idRequestList{ nullptr };               //!< The list of requests. It is nullptr if the list is empty.
-    const uint32_t* idResponseList{ nullptr };              //!< The list of responses. It is nullptr if the list is empty.
-    const uint32_t* idAttributeList{ nullptr };             //!< The list of attributes. It is nullptr if the list is empty.
+    const char *        idServiceName{ nullptr };               //!< The name of service interface.
+    Version             idVersion{ 0, 0, 0 };                   //!< Service interface implementation version
+    ServiceType         idServiceType{ ServiceType::Invalid };  //!< The service type. Should be either local or public / remote.
 
     /**
-     * \brief   Request to Response map. All requests are accessed by index 
-     *          and every request indexed is calculated by calculating 
-     *          ('request ID' - areg::FuncIdRange::RequestFirstId)
-     *          Every request should have appropriate response value. If request does not
-     *          have response, it should have value areg::RESPONSE_ID_NONE
-     *          The size of this map should be equal to idRequestCount.
+     * \brief   The entries of every kind, at the position areg::kind_index() of the kind.
      **/
-    const uint32_t* idRequestToResponseMap{ nullptr };
+    MessageTable        idTables[areg::MESSAGE_KIND_COUNT]{ };
 
     /**
-     * \brief   Map of parameter count in every response. Every response index
-     *          is calculated by formula ('response ID' - areg::FuncIdRange::ResponseFirstId)
-     *          The size of this map should be equal to idResponseCount.
+     * \brief   The response index of every request, by request index.
+     *          A request without response has areg::RESPONSE_INDEX_NONE. nullptr if there is no request.
      **/
-    const uint32_t* idResponseParamCountMap{ nullptr };
+    const uint16_t *    idRequestToResponse{ nullptr };
+
+    /**
+     * \brief   The number of parameters of every response, by response index, followed by
+     *          the number of parameters of every broadcast, by broadcast index.
+     **/
+    const uint32_t *    idParamCountMap{ nullptr };
+
+    /**
+     * \brief   Returns the requests of the interface.
+     **/
+    [[nodiscard]]
+    inline constexpr const MessageTable & requests() const noexcept
+    {
+        return idTables[0u];
+    }
+
+    /**
+     * \brief   Returns the responses of the interface.
+     **/
+    [[nodiscard]]
+    inline constexpr const MessageTable & responses() const noexcept
+    {
+        return idTables[1u];
+    }
+
+    /**
+     * \brief   Returns the broadcasts of the interface.
+     **/
+    [[nodiscard]]
+    inline constexpr const MessageTable & broadcasts() const noexcept
+    {
+        return idTables[2u];
+    }
+
+    /**
+     * \brief   Returns the attributes of the interface.
+     **/
+    [[nodiscard]]
+    inline constexpr const MessageTable & attributes() const noexcept
+    {
+        return idTables[3u];
+    }
+
+    /**
+     * \brief   Returns the number of entries of the kind; 0 for a call type that is no entry kind.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t count(areg::CallType kind) const noexcept
+    {
+        const uint32_t pos{ areg::kind_index(kind) };
+        return (pos < areg::MESSAGE_KIND_COUNT ? idTables[pos].mtCount : 0u);
+    }
+
+    /**
+     * \brief   Returns the index of the entry of the kind with the message ID, or areg::INVALID_MESSAGE_INDEX.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t find(areg::CallType kind, uint32_t msgId) const noexcept
+    {
+        const uint32_t pos{ areg::kind_index(kind) };
+        return (pos < areg::MESSAGE_KIND_COUNT ? idTables[pos].find(msgId) : areg::INVALID_MESSAGE_INDEX);
+    }
+
+    /**
+     * \brief   Returns the message ID of the entry of the kind at the index. The entry must exist.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t message_id(areg::CallType kind, uint32_t index) const noexcept
+    {
+        return idTables[areg::kind_index(kind)].mtIds[index];
+    }
+
+    /**
+     * \brief   Returns the response index of the request at the index, or areg::RESPONSE_INDEX_NONE.
+     **/
+    [[nodiscard]]
+    inline constexpr uint32_t response_index(uint32_t reqIndex) const noexcept
+    {
+        return (reqIndex < idTables[0u].mtCount ? static_cast<uint32_t>(idRequestToResponse[reqIndex]) : areg::RESPONSE_INDEX_NONE);
+    }
 };
+
+//////////////////////////////////////////////////////////////////////////
+// ListenerSlots class template declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A fixed number of listener lists, one per slot, allocated once at construction.
+ *          Every list starts empty and reserves nothing. The slot of an interface entry is
+ *          areg::listener_slot().
+ **/
+template <typename LIST>
+class ListenerSlots
+{
+public:
+    /**
+     * \brief   Allocates 'count' empty lists. On a failed allocation the object holds none and is invalid.
+     **/
+    explicit ListenerSlots(uint32_t count) noexcept
+        : mLists(count != 0u ? static_cast<LIST *>(::operator new(sizeof(LIST) * count, std::nothrow)) : nullptr)
+        , mCount(count)
+    {
+        if (mLists == nullptr)
+            return;
+
+        for (uint32_t i = 0u; i < mCount; ++i)
+        {
+            new (mLists + i) LIST(0u);
+        }
+    }
+
+    ~ListenerSlots()
+    {
+        if (mLists == nullptr)
+            return;
+
+        for (uint32_t i = 0u; i < mCount; ++i)
+        {
+            mLists[i].~LIST();
+        }
+
+        ::operator delete(mLists);
+    }
+
+    /**
+     * \brief   Returns true if every list is allocated.
+     **/
+    [[nodiscard]]
+    inline bool is_valid() const noexcept
+    {
+        return (mCount == 0u) || (mLists != nullptr);
+    }
+
+    /**
+     * \brief   Returns the number of slots, 0 if the allocation failed.
+     **/
+    [[nodiscard]]
+    inline uint32_t size() const noexcept
+    {
+        return (mLists != nullptr ? mCount : 0u);
+    }
+
+    /**
+     * \brief   Returns the list of the slot, nullptr for a slot out of range.
+     **/
+    [[nodiscard]]
+    inline LIST * at(uint32_t slot) noexcept
+    {
+        return ((mLists != nullptr) && (slot < mCount) ? mLists + slot : nullptr);
+    }
+
+    /**
+     * \brief   Returns the list of the slot, nullptr for a slot out of range.
+     **/
+    [[nodiscard]]
+    inline const LIST * at(uint32_t slot) const noexcept
+    {
+        return ((mLists != nullptr) && (slot < mCount) ? mLists + slot : nullptr);
+    }
+
+    /**
+     * \brief   Removes every entry of every list. Keeps the slots.
+     **/
+    inline void clear() noexcept
+    {
+        for (uint32_t i = 0u; i < size(); ++i)
+        {
+            mLists[i].clear();
+        }
+    }
+
+private:
+    LIST *      mLists; //!< The lists, one per slot.
+    uint32_t    mCount; //!< The number of slots.
+
+    ListenerSlots(const ListenerSlots &) = delete;
+    ListenerSlots & operator = (const ListenerSlots &) = delete;
+};
+
+/**
+ * \brief   Returns the number of listener slots of the interface: one per response, broadcast and attribute.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t listener_slot_count(const InterfaceData & ifData) noexcept
+{
+    return ifData.responses().mtCount + ifData.broadcasts().mtCount + ifData.attributes().mtCount;
+}
+
+/**
+ * \brief   Returns the listener slot of the response, broadcast or attribute at the index of its kind:
+ *          the responses come first, then the broadcasts, then the attributes. Returns
+ *          areg::INVALID_MESSAGE_INDEX for a request, any other kind or an index out of range.
+ **/
+[[nodiscard]]
+inline constexpr uint32_t listener_slot(const InterfaceData & ifData, areg::CallType kind, uint32_t index) noexcept
+{
+    const uint32_t responses { ifData.responses().mtCount };
+    const uint32_t broadcasts{ ifData.broadcasts().mtCount };
+    switch (kind)
+    {
+    case areg::CallType::Response:
+        return (index < responses ? index : areg::INVALID_MESSAGE_INDEX);
+    case areg::CallType::Broadcast:
+        return (index < broadcasts ? responses + index : areg::INVALID_MESSAGE_INDEX);
+    case areg::CallType::Attribute:
+        return (index < ifData.attributes().mtCount ? responses + broadcasts + index : areg::INVALID_MESSAGE_INDEX);
+    default:
+        return areg::INVALID_MESSAGE_INDEX;
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Empty service interface
@@ -716,14 +759,13 @@ constexpr char InvalidServiceName[] { "" };
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Manages parameter state information for all responses; tracks state for each
- *          response parameter indexed by response ID.
+ *          response parameter indexed by the index of the response in the response list.
  *
  * \example Parameter Array
  *
  *          For example, if there is a response function prototype
  *          response_areg(const bool &param1, const int32_t &param2)
- *          the param1 state can be accessed by the index pair:
- *          param1State = states[areg::resp_index(UPD_ID_response_areg)][0];
+ *          at index 2 of the response list, the param1 state is states[2][0].
  **/
 class AREG_API ParameterArray
 {
@@ -772,7 +814,7 @@ public:
     /**
      * \brief   Returns the state of a parameter at the given response and parameter indices.
      *
-     * \param   row     The response index (areg::resp_index(response_id)).
+     * \param   row     The index of the response in the response list.
      * \param   col     The parameter index (zero-based).
      **/
     [[nodiscard]]
@@ -781,7 +823,7 @@ public:
     /**
      * \brief   Sets the state of a parameter at the given response and parameter indices.
      *
-     * \param   row         The response index (areg::resp_index(response_id)).
+     * \param   row         The index of the response in the response list.
      * \param   col         The parameter index (zero-based).
      **/
     inline void set_value_at(uint32_t row, uint32_t col, areg::DataState newValue) noexcept;
@@ -809,7 +851,7 @@ public:
     /**
      * \brief   Sets all parameter states for the response at the given index.
      *
-     * \param   whichParam      The response index (areg::resp_index(response_id)).
+     * \param   whichParam      The index of the response in the response list.
      * \param   newState        The state to set for all parameters.
      **/
     inline void set_param_state(uint32_t whichParam, areg::DataState newState) noexcept;
@@ -817,7 +859,7 @@ public:
     /**
      * \brief   Resets parameter states for the response at the given index.
      *
-     * \param   whichParam      The response index (areg::resp_index(response_id)).
+     * \param   whichParam      The index of the response in the response list.
      **/
     inline void reset(uint32_t whichParam) noexcept;
 
@@ -912,58 +954,65 @@ public:
     inline void reset() noexcept;
 
     /**
-     * \brief   Sets the data state for a given message (attribute or response) ID.
-     *          Automatically determines whether the ID is an attribute or response and converts
-     *          it to an index.
+     * \brief   Sets the data state of an attribute, a response or a broadcast of the interface.
      *
-     * \param   msgId       A function ID in the areg::FuncIdRange (attribute or response ID).
-     *                      Invalid IDs are ignored. areg::ATTRIBUTE_SI_VERSION is handled specially.
-     * \param   newState    The state to set. For response IDs, the state is set for all
-     *                      response parameters.
+     * \param   kind        Attribute, Response or Broadcast. Any other kind is ignored.
+     * \param   index       The index of the entry in its kind. An index out of range is ignored.
+     * \param   newState    The state to set. For a response or broadcast, the state of all its parameters.
      **/
-    inline void set_data_state(uint32_t msgId, areg::DataState newState) noexcept;
+    inline void set_data_state(areg::CallType kind, uint32_t index, areg::DataState newState) noexcept;
 
     /**
-     * \brief   Returns the data state of the given message (attribute or response) ID.
-     * \param   msgId       The message ID to query.
+     * \brief   Sets the state of the attribute at the index. An index out of range is ignored.
      **/
-    [[nodiscard]]
-    inline areg::DataState data_state(uint32_t msgId) const noexcept;
+    inline void set_attribute_state(uint32_t index, areg::DataState newState) noexcept;
 
     /**
-     * \brief   Returns the response message ID corresponding to the given request message ID.
-     *
-     * \param   reqId       The request message ID to map.
-     * \return  The corresponding response ID, or areg::INVALID_MESSAGE_ID if the request
-     *          ID is invalid or not mapped.
+     * \brief   Sets the state of all parameters of the response or broadcast at the index of its kind.
+     *          Any other kind and an index out of range are ignored.
      **/
-    [[nodiscard]]
-    inline uint32_t response_id(uint32_t reqId) const noexcept;
+    inline void set_param_state(areg::CallType kind, uint32_t index, areg::DataState newState) noexcept;
 
     /**
-     * \brief   Returns the data state of the given attribute ID.
-     *
-     * \param   msgId       The attribute message ID to query.
-     * \return  The data state of the specified attribute.
+     * \brief   Returns the data state of an attribute, a response or a broadcast.
+     *          Returns DataUnexpectedError for any other kind or an index out of range.
      **/
     [[nodiscard]]
-    inline areg::DataState attribute_state(uint32_t msgId) const noexcept;
+    inline areg::DataState data_state(areg::CallType kind, uint32_t index) const noexcept;
 
     /**
-     * \brief   Returns the parameter state of the given response ID.
-     *
-     * \param   msgId       The response message ID to query.
-     * \return  The parameter state of the specified response.
+     * \brief   Returns the response index of the request at the index, or areg::RESPONSE_INDEX_NONE
+     *          if the request has no response or the index is out of range.
      **/
     [[nodiscard]]
-    inline areg::DataState param_state(uint32_t msgId) const noexcept;
+    inline uint32_t response_index(uint32_t reqIndex) const noexcept;
+
+    /**
+     * \brief   Returns the data state of the attribute at the index, or DataUnexpectedError if the index is out of range.
+     **/
+    [[nodiscard]]
+    inline areg::DataState attribute_state(uint32_t index) const noexcept;
+
+    /**
+     * \brief   Returns the parameter state of the response or broadcast at the index of its kind,
+     *          or DataUnexpectedError for any other kind or an index out of range.
+     **/
+    [[nodiscard]]
+    inline areg::DataState param_state(areg::CallType kind, uint32_t index) const noexcept;
+
+    /**
+     * \brief   Returns the row of the parameter table of the response or broadcast at the index of
+     *          its kind: the responses come first, then the broadcasts. Returns a row out of range
+     *          for any other kind or an index out of range.
+     **/
+    [[nodiscard]]
+    inline uint32_t param_row(areg::CallType kind, uint32_t index) const noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    areg::DataState             mImplVersion;   //!< Implementation version
     const areg::InterfaceData&  mIfData;        //!< Service Interface data
     areg::AttrState             mAttrState;     //!< Table of attribute states
     areg::ParamState            mParamState;    //!< Table of response parameter state
@@ -1021,10 +1070,8 @@ using MapInstances = OrderedMap<ITEM_ID, areg::ConnectedInstance>;
 AREG_IMPLEMENT_STREAMABLE(areg::ResultType)
 AREG_IMPLEMENT_STREAMABLE(areg::DataState)
 AREG_IMPLEMENT_STREAMABLE(areg::RequestType)
-AREG_IMPLEMENT_STREAMABLE(areg::MessageDataType)
 AREG_IMPLEMENT_STREAMABLE(areg::ServiceConnectionState)
 AREG_IMPLEMENT_STREAMABLE(areg::DisconnectReason)
-AREG_IMPLEMENT_STREAMABLE(areg::RegistrationAction)
 AREG_IMPLEMENT_STREAMABLE(areg::ServiceType)
 AREG_IMPLEMENT_STREAMABLE(areg::InstanceBitness)
 AREG_IMPLEMENT_STREAMABLE(areg::MessageSource)
@@ -1117,87 +1164,6 @@ inline constexpr areg::ServiceConnectionState areg::service_connection( areg::Di
     default:
         return areg::ServiceConnectionState::Connected;
     }
-}
-
-inline constexpr uint32_t areg::req_index(uint32_t msgId) noexcept
-{
-    return (msgId != static_cast<uint32_t>(FuncIdRange::EmptyFunctionId))
-                        ? msgId - static_cast<uint32_t>(FuncIdRange::RequestFirstId)
-                        : static_cast<uint32_t>(areg::INVALID_INDEX);
-}
-
-inline constexpr uint32_t areg::resp_index(uint32_t msgId) noexcept
-{
-    return (msgId != static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId))
-                        ? msgId - static_cast<uint32_t>(areg::FuncIdRange::ResponseFirstId)
-                        : static_cast<uint32_t>(areg::INVALID_INDEX);
-}
-
-inline constexpr uint32_t areg::attr_index(uint32_t msgId) noexcept
-{
-    return (msgId != static_cast<uint32_t>(FuncIdRange::EmptyFunctionId))
-                        ? msgId - static_cast<uint32_t>(FuncIdRange::AttributeFirstId)
-                        : static_cast<uint32_t>(areg::INVALID_INDEX);
-}
-
-inline constexpr bool areg::is_request_id(uint32_t msgId) noexcept
-{
-    return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::RequestFunction)) != 0);
-}
-
-inline constexpr bool areg::is_response_id(uint32_t msgId) noexcept
-{
-    return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction)) != 0);
-}
-
-inline constexpr bool areg::is_valid_response_id(uint32_t msgId) noexcept
-{
-    return ((msgId >= areg::RESPONSE_ID_FIRST) && (msgId <= areg::RESPONSE_ID_LAST));
-}
-
-inline constexpr bool areg::is_attribute_id(uint32_t msgId) noexcept
-{
-    return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::AttributeUpdate)) != 0);
-}
-
-inline constexpr bool areg::is_registry_id( uint32_t msgId ) noexcept
-{
-    return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::ServiceRegisteration)) != 0);
-}
-
-inline constexpr bool areg::is_empty_id(uint32_t msgId) noexcept
-{
-    return (msgId == static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId));
-}
-
-inline constexpr bool areg::is_version_id( uint32_t msgId ) noexcept
-{
-    return (msgId == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderVersion));
-}
-
-inline constexpr bool areg::is_connect_id( uint32_t msgId ) noexcept
-{
-    return (msgId == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection));
-}
-
-inline constexpr bool areg::is_executable_id(uint32_t msgId) noexcept
-{
-    return ( (msgId  & areg::EXECUTABLE_MESSAGE) != 0) || (msgId == static_cast<uint32_t>(areg::ServiceCallType::NoFunction) );
-}
-
-
-inline constexpr areg::MessageDataType areg::message_data_type( uint32_t msgId ) noexcept
-{
-    if ( areg::is_request_id(msgId) )
-        return areg::MessageDataType::RequestData;
-    else if (areg::is_response_id(msgId))
-        return areg::MessageDataType::ResponseData;
-    else if (areg::is_attribute_id(msgId))
-        return areg::MessageDataType::AttributeData;
-    else if (areg::is_registry_id(msgId))
-        return areg::MessageDataType::ServiceData;
-    else
-        return areg::MessageDataType::UndefinedData;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1326,9 +1292,8 @@ inline void areg::ParameterArray::reset(uint32_t whichParam) noexcept
 //////////////////////////////////////////////////////////////////////////
 
 inline areg::ProxyData::ProxyData(const areg::InterfaceData& ifData)
-    : mImplVersion(areg::DataState::DataIsUnavailable)
-    , mIfData     (ifData)
-    , mAttrState  (static_cast<uint32_t>(ifData.idAttributeCount))
+    : mIfData     (ifData)
+    , mAttrState  (ifData.attributes().mtCount)
     , mParamState (ifData)
 {
     reset();
@@ -1336,59 +1301,72 @@ inline areg::ProxyData::ProxyData(const areg::InterfaceData& ifData)
 
 inline void areg::ProxyData::reset() noexcept
 {
-    mImplVersion = areg::DataState::DataIsUnavailable;
     mAttrState.reset();
     mParamState.reset();
 }
 
-inline void areg::ProxyData::set_data_state(uint32_t msgId, areg::DataState newState) noexcept
+inline void areg::ProxyData::set_data_state(areg::CallType kind, uint32_t index, areg::DataState newState) noexcept
 {
-    if (areg::is_attribute_id(msgId))
+    if (kind == areg::CallType::Attribute)
     {
-        if (areg::is_version_id(msgId))
-        {
-            mImplVersion = newState;
-        }
-        else
-        {
-            mAttrState[areg::attr_index(msgId)] = newState;
-        }
+        set_attribute_state(index, newState);
     }
-    else if (areg::is_response_id(msgId))
+    else
     {
-        mParamState.set_param_state(areg::resp_index(msgId), newState);
+        set_param_state(kind, index, newState);
     }
-    // else ignore
 }
 
-inline areg::DataState areg::ProxyData::data_state(uint32_t msgId) const noexcept
+inline void areg::ProxyData::set_attribute_state(uint32_t index, areg::DataState newState) noexcept
 {
-    areg::DataState result = areg::DataState::DataUnexpectedError;
-    if (areg::is_attribute_id(msgId))
-        result = attribute_state(msgId);
-    else if (areg::is_response_id(msgId))
-        result = param_state(msgId);
-    // else, ignore
-
-    return result;
+    if (index < mAttrState.size())
+    {
+        mAttrState[index] = newState;
+    }
 }
 
-inline uint32_t areg::ProxyData::response_id(uint32_t reqId) const noexcept
+inline uint32_t areg::ProxyData::param_row(areg::CallType kind, uint32_t index) const noexcept
 {
-    uint32_t index = areg::req_index(reqId);
-    return  ((static_cast<int32_t>(index) >= 0) && (index < mIfData.idRequestCount)
-                    ? static_cast<uint32_t>(mIfData.idRequestToResponseMap[index])
-                    : areg::INVALID_MESSAGE_ID);
+    const uint32_t responses{ mIfData.responses().mtCount };
+    if (kind == areg::CallType::Response)
+        return (index < responses ? index : areg::INVALID_MESSAGE_INDEX);
+    else if (kind == areg::CallType::Broadcast)
+        return (index < mIfData.broadcasts().mtCount ? responses + index : areg::INVALID_MESSAGE_INDEX);
+    else
+        return areg::INVALID_MESSAGE_INDEX;
 }
 
-inline areg::DataState areg::ProxyData::attribute_state( uint32_t msgId ) const noexcept
+inline void areg::ProxyData::set_param_state(areg::CallType kind, uint32_t index, areg::DataState newState) noexcept
 {
-    return areg::is_version_id(msgId) ? mImplVersion : mAttrState[areg::attr_index(msgId)];
+    const uint32_t row{ param_row(kind, index) };
+    if (mParamState.is_valid_index(row))
+    {
+        mParamState.set_param_state(row, newState);
+    }
 }
 
-inline areg::DataState areg::ProxyData::param_state( uint32_t msgId ) const noexcept
+inline areg::DataState areg::ProxyData::data_state(areg::CallType kind, uint32_t index) const noexcept
 {
-    const areg::StateArray& param = mParamState[areg::resp_index(msgId)];
+    return (kind == areg::CallType::Attribute ? attribute_state(index) : param_state(kind, index));
+}
+
+inline uint32_t areg::ProxyData::response_index(uint32_t reqIndex) const noexcept
+{
+    return mIfData.response_index(reqIndex);
+}
+
+inline areg::DataState areg::ProxyData::attribute_state( uint32_t index ) const noexcept
+{
+    return (index < mAttrState.size() ? mAttrState[index] : areg::DataState::DataUnexpectedError);
+}
+
+inline areg::DataState areg::ProxyData::param_state( areg::CallType kind, uint32_t index ) const noexcept
+{
+    const uint32_t row{ param_row(kind, index) };
+    if (!mParamState.is_valid_index(row))
+        return areg::DataState::DataUnexpectedError;
+
+    const areg::StateArray& param = mParamState[row];
     return (param.has_params() ? param[0u] : areg::DataState::DataIsUnavailable);
 }
 
@@ -1425,6 +1403,8 @@ inline constexpr const char* areg::as_string(areg::ResultType value) noexcept
         return "areg::ResultType::RequestBusy";
     case    areg::ResultType::RequestCanceled:
         return "areg::ResultType::RequestCanceled";
+    case    areg::ResultType::RequestUnsupported:
+        return "areg::ResultType::RequestUnsupported";
 
     case    areg::ResultType::DataOK:
         return "areg::ResultType::DataOK";
@@ -1494,26 +1474,6 @@ inline constexpr const char* areg::as_string( areg::RequestType value ) noexcept
     }
 }
 
-inline constexpr const char* areg::as_string( areg::MessageDataType value ) noexcept
-{
-    switch (value)
-    {
-    case areg::MessageDataType::UndefinedData:
-        return "areg::MessageDataType::UndefinedData";
-    case areg::MessageDataType::RequestData:
-        return "areg::MessageDataType::RequestData";
-    case areg::MessageDataType::ResponseData:
-        return "areg::MessageDataType::ResponseData";
-    case areg::MessageDataType::AttributeData:
-        return "areg::MessageDataType::AttributeData";
-    case areg::MessageDataType::ServiceData:
-        return "areg::MessageDataType::ServiceData";
-
-    default:
-        return "ERR: Undefined areg::MessageDataType value!";
-    }
-}
-
 inline constexpr const char* areg::as_string( areg::ServiceConnectionState value ) noexcept
 {
     switch (value)
@@ -1576,23 +1536,6 @@ inline constexpr const char* areg::as_string( areg::DisconnectReason reason ) no
     }
 }
 
-inline constexpr const char* areg::as_string( areg::RegistrationAction value ) noexcept
-{
-    switch ( value )
-    {
-    case areg::RegistrationAction::RegisterConsumer:
-        return "areg::RegistrationAction::RegisterConsumer";
-    case areg::RegistrationAction::UnregisterConsumer:
-        return "areg::RegistrationAction::UnregisterConsumer";
-    case areg::RegistrationAction::RegisterProvider:
-        return "areg::RegistrationAction::RegisterProvider";
-    case areg::RegistrationAction::UnregisterProvider:
-        return "areg::RegistrationAction::UnregisterProvider";
-    default:
-        return "ERR: Unexpected areg::RegistrationAction value!!!";
-    }
-}
-
 inline constexpr const char* areg::as_string( areg::ServiceType value ) noexcept
 {
     switch ( value )
@@ -1608,7 +1551,7 @@ inline constexpr const char* areg::as_string( areg::ServiceType value ) noexcept
     case areg::ServiceType::Invalid:
         return "areg::ServiceType::Invalid";
     default:
-        return "ERR: Unexpected areg::RegistrationAction value!!!";
+        return "ERR: Unexpected areg::ServiceType value!!!";
     }
 }
 
@@ -1655,16 +1598,6 @@ inline constexpr const char* areg::as_string( areg::FuncIdRange value ) noexcept
     {
     case areg::FuncIdRange::EmptyFunctionId:
         return "areg::FuncIdRange::EmptyFunctionId";
-    case areg::FuncIdRange::ComponentCleanup:
-        return "areg::FuncIdRange::ComponentCleanup";
-    case areg::FuncIdRange::RequestRegisterService:
-        return "areg::FuncIdRange::RequestRegisterService";
-    case areg::FuncIdRange::RequestServiceProviderVersion:
-        return "areg::FuncIdRange::RequestServiceProviderVersion";
-    case areg::FuncIdRange::ResponseServiceProviderVersion:
-        return "areg::FuncIdRange::ResponseServiceProviderVersion";
-    case areg::FuncIdRange::RequestServiceProviderConnection:
-        return "areg::FuncIdRange::RequestServiceProviderConnection";
     case areg::FuncIdRange::ResponseServiceProviderConnection:
         return "areg::FuncIdRange::ResponseServiceProviderConnection";
     case areg::FuncIdRange::SystemServiceConnect:
@@ -1705,34 +1638,9 @@ inline constexpr const char* areg::as_string( areg::FuncIdRange value ) noexcept
         return "areg::FuncIdRange::ServiceLogConfigurationRestored";
     case areg::FuncIdRange::SystemServiceNotifyDuplicate:
         return "areg::FuncIdRange::SystemServiceNotifyDuplicate";
-    case areg::FuncIdRange::RequestFirstId:
-        return "areg::FuncIdRange::RequestFirstId";
-    case areg::FuncIdRange::ResponseFirstId:
-        return "areg::FuncIdRange::ResponseFirstId";
-    case areg::FuncIdRange::AttributeFirstId:
-        return "areg::FuncIdRange::AttributeFirstId";
-    case areg::FuncIdRange::RequestLastId:
-        return "areg::FuncIdRange::RequestLastId";
-    case areg::FuncIdRange::ResponseLastId:
-        return "areg::FuncIdRange::ResponseLastId";
-    case areg::FuncIdRange::AttributeLastId:
-        return "areg::FuncIdRange::AttributeLastId";
-    case areg::FuncIdRange::ServiceLastId:
-        return "areg::FuncIdRange::ServiceLastId";
 
     default:
-        {
-            if ( (static_cast<uint32_t>(value) > static_cast<uint32_t>(areg::FuncIdRange::RequestFirstId)) && (static_cast<uint32_t>(value) < static_cast<uint32_t>(areg::FuncIdRange::RequestLastId)) )
-                return "Request ID range";
-            else if ( (static_cast<uint32_t>(value) > static_cast<uint32_t>(areg::FuncIdRange::ResponseFirstId)) && (static_cast<uint32_t>(value) < static_cast<uint32_t>(areg::FuncIdRange::ResponseLastId)) )
-                return "Response ID range";
-            else if ( (static_cast<uint32_t>(value) > static_cast<uint32_t>(areg::FuncIdRange::AttributeFirstId)) && (static_cast<uint32_t>(value) < static_cast<uint32_t>(areg::FuncIdRange::AttributeLastId)) )
-                return "Attribute ID range";
-            else if ( (static_cast<uint32_t>(value) > static_cast<uint32_t>(areg::FuncIdRange::RequestRegisterService)) && (static_cast<uint32_t>(value) < static_cast<uint32_t>(areg::FuncIdRange::ServiceLastId)) )
-                return "Service registration ID";
-            else
-                return "ERR: Unexpected ID";
-        }
+        return "ERR: Unexpected ID";
     }
 }
 

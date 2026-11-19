@@ -25,6 +25,7 @@
 #include <limits>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 /**
  * \brief   Test ArrayList constructors.
@@ -876,4 +877,35 @@ TEST(ArrayListTest, test_add_if_unique_updates_existing_by_copy)
     EXPECT_FALSE(list.add_if_unique(second, true));
     EXPECT_EQ(list.first_entry().payload, 20);
     EXPECT_EQ(list.size(), 1u);
+}
+
+/**
+ * \brief   Appending an array or a vector by reference copies the elements and keeps the source.
+ **/
+TEST(ArrayListTest, test_append_by_reference_keeps_the_source)
+{
+    using Array = areg::ArrayList<int>;
+
+    constexpr int _arr[]{ 1, 2, 3 };
+    constexpr uint32_t _len{ std::size(_arr) };
+    const Array source(_arr, _len);
+    const std::vector<int> vec{ 4, 5 };
+
+    Array target;
+    target.append(source).append(vec);
+    ASSERT_EQ(target.size(), _len + 2u);
+    EXPECT_EQ(source.size(), _len);
+    EXPECT_EQ(vec.size(), 2u);
+    for (uint32_t i = 0; i < _len; ++i)
+    {
+        EXPECT_EQ(target[i], _arr[i]);
+    }
+
+    EXPECT_EQ(target[_len], 4);
+    EXPECT_EQ(target[_len + 1u], 5);
+
+    const Array emptyArray;
+    const std::vector<int> emptyVector;
+    target.append(emptyArray).append(emptyVector);
+    EXPECT_EQ(target.size(), _len + 2u);
 }

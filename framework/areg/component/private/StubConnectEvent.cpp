@@ -21,26 +21,12 @@ namespace areg {
 
 AREG_IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
 
-StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
-    : ServiceRequestEvent   ( ProxyAddress::invalid_proxy_address()
-                            , stubTarget
-                            , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
-                            , areg::RequestType::ServiceConnection
-                            , areg::EventType::EventLocalProviderConnect)
-{
-    areg::EventHeader* hdr{ header() };
-    if (hdr != nullptr)
-    {
-        hdr->result = static_cast<uint32_t>(connectStatus);
-        hdr->eventId = StubConnectEvent::CLASS_ID;
-    }
-}
-
 StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
     : ServiceRequestEvent   ( proxyClient
                             , stubTarget
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
                             , areg::RequestType::ClientConnection
+                            , areg::CallType::Undefined
                             , areg::EventType::EventLocalProviderConnect)
 {
     areg::EventHeader* hdr{ header() };

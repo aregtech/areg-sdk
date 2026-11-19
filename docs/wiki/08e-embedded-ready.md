@@ -92,7 +92,7 @@ logging subsystem.
 
 ```bash
 cmake -B ./build -DCMAKE_BUILD_TYPE=Release \
-      -DAREG_LIB_TYPE=static -DAREG_LOGGER_LIB_TYPE=static \
+      -DAREG_LIB_TYPE=static \
       -DAREG_LOGGING=OFF
 ```
 
@@ -150,7 +150,7 @@ That is the smallest configuration, and it is reached with documented switches o
 ```bash
 cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=./conf/toolchains/gnu-linux-arm32.cmake \
       -DCMAKE_BUILD_TYPE=MinSizeRel \
-      -DAREG_LIB_TYPE=static -DAREG_LOGGER_LIB_TYPE=static \
+      -DAREG_LIB_TYPE=static \
       -DAREG_LOGGING=OFF -DAREG_NO_EXCEPTIONS=ON
 ```
 

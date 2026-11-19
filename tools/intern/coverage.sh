@@ -263,7 +263,6 @@ step_build() {
   [ -n "$GENERATOR" ] && gen=(-G "$GENERATOR")
   cmake -S "$SRC" -B "$BUILD" ${gen[@]+"${gen[@]}"} -DAREG_COMPILER_FAMILY="$FAMILY" -DCMAKE_BUILD_TYPE=Debug -DAREG_LIB_TYPE=shared \
         -DAREG_LOGGING:BOOL=ON -DAREG_EXAMPLES:BOOL=ON -DAREG_TESTS:BOOL=ON \
-        -DAREG_OUTPUT_LAYOUT:BOOL=OFF \
         -DCMAKE_C_FLAGS="$flags" -DCMAKE_CXX_FLAGS="$flags" \
         -DCMAKE_EXE_LINKER_FLAGS="$COV_LDFLAGS" -DCMAKE_SHARED_LINKER_FLAGS="$COV_LDFLAGS" \
     || die "configure failed"

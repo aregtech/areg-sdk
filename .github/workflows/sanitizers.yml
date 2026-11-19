@@ -198,7 +198,7 @@ jobs:
             echo "mode     : ${{matrix.mode}} ${{matrix.config}}"
             echo "options  : ASAN_OPTIONS/TSAN_OPTIONS are printed by the driver above"
           } > "${OUT}/provenance.txt"
-          BIN_DIR="./build-${{matrix.mode}}/product/bin"
+          BIN_DIR="./build-${{matrix.mode}}/bin"
           for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test areg-stub-teardown-test areg-router-io-test; do
             [[ -f "${BIN_DIR}/${t}.elf" ]] || continue
             cp "${BIN_DIR}/${t}.elf" "${OUT}/bin/"
@@ -290,7 +290,6 @@ jobs:
                 -DAREG_LIB_TYPE=static \
                 -DAREG_TESTS=ON \
                 -DAREG_EXAMPLES=OFF \
-                -DAREG_OUTPUT_DIR=${{github.workspace}}/build-plain/product \
                 -DCMAKE_C_FLAGS="-g -fno-omit-frame-pointer" \
                 -DCMAKE_CXX_FLAGS="-g -fno-omit-frame-pointer"
           cmake --build ./build-plain -j"$(nproc)"
@@ -324,7 +323,7 @@ jobs:
             echo "glibc    : $(ldd --version | head -n 1)"
             echo "mode     : no sanitizer, ${{matrix.config}}"
           } > "${OUT}/provenance.txt"
-          BIN_DIR="./build-plain/product/bin"
+          BIN_DIR="./build-plain/bin"
           for t in areg-release-unload-test areg-timer-churn-test areg-internal-events-test areg-stub-teardown-test; do
             [[ -f "${BIN_DIR}/${t}.elf" ]] || continue
             cp "${BIN_DIR}/${t}.elf" "${OUT}/bin/"
@@ -440,7 +439,7 @@ jobs:
         run: |
           mkdir -p ./ubsan
           sudo sysctl -w kernel.yama.ptrace_scope=0 > /dev/null || true
-          BIN_DIR="$(find ./product/build -type d -name bin 2>/dev/null | head -n 1)"
+          BIN_DIR="${{env.EXAMPLES_CACHE}}/bin"
           python3 tools/intern/run-all-examples.py --bin-dir "${BIN_DIR}" --tier all --keep-logs \
                   --out-dir ./ubsan/example-results
 
@@ -566,7 +565,7 @@ jobs:
           stack() {
             tools/intern/sanitize.sh ${{matrix.mode}} --compiler llvm --config RelWithDebInfo --examples \
                 --leaks off --keep --run /usr/bin/lldb -- --batch -o run -k 'thread backtrace all' -k quit \
-                -- "./build-${{matrix.mode}}/product/bin/$1" "${@:2}" > "${stacks}/$1.txt" 2>&1 || true
+                -- "./build-${{matrix.mode}}/bin/$1" "${@:2}" > "${stacks}/$1.txt" 2>&1 || true
           }
           if [ "${{matrix.mode}}" = tsan ]; then
             stack areg-fault-inject-test.mac --gtest_list_tests
@@ -626,8 +625,7 @@ jobs:
         shell: pwsh
         run: |
           cmake -S . -B product/asan -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl `
-                -DAREG_COMPILER_FAMILY=msvc -DAREG_LIB_TYPE=static -DAREG_TESTS=ON -DAREG_EXAMPLES=ON -DAREG_OUTPUT_LAYOUT=OFF `
-                "-DAREG_OUTPUT_DIR=$("$env:GITHUB_WORKSPACE/product/asan/product" -replace '\\', '/')" `
+                -DAREG_COMPILER_FAMILY=msvc -DAREG_LIB_TYPE=static -DAREG_TESTS=ON -DAREG_EXAMPLES=ON `
                 "-DCMAKE_C_FLAGS=/fsanitize=address /Zi" "-DCMAKE_CXX_FLAGS=/EHsc /GR /fsanitize=address /Zi"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cmake --build product/asan -j 4
@@ -637,7 +635,7 @@ jobs:
         shell: pwsh
         # A service started by the service control manager finds the ASan runtime only beside it.
         run: |
-          Copy-Item -ErrorAction Stop "$env:VCToolsInstallDir\bin\Hostx64\x64\clang_rt.asan_dynamic-x86_64.dll" product/asan/product/bin/
+          Copy-Item -ErrorAction Stop "$env:VCToolsInstallDir\bin\Hostx64\x64\clang_rt.asan_dynamic-x86_64.dll" product/asan/bin/
           ctest --test-dir product/asan --timeout 600 --output-on-failure
           exit $LASTEXITCODE
 
@@ -646,7 +644,7 @@ jobs:
         shell: pwsh
         timeout-minutes: 45
         run: |
-          python tools/intern/run-all-examples.py --bin-dir product/asan/product/bin --tier all --keep-logs --out-dir product/asan/example-results
+          python tools/intern/run-all-examples.py --bin-dir product/asan/bin --tier all --keep-logs --out-dir product/asan/example-results
           exit $LASTEXITCODE
 
       - name: Upload what the sanitizer left behind

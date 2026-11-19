@@ -29,7 +29,7 @@ Log collector is available when building Areg SDK sources. The `logcollector` bi
 
 **Linux:** built with GNU g++ compiler
 ```bash
-./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/logcollector.elf
+./build/bin/logcollector.elf
 ```
 
 **Windows:**
@@ -207,7 +207,7 @@ After building Areg SDK, Log Collector is available in build output.
 
 **Linux:**
 ```bash
-./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/logcollector
+./build/bin/logcollector
 ```
 
 **Windows:**
@@ -278,10 +278,10 @@ sudo cmake --install ./build
 
 ```bash
 # Copy executable
-sudo cp ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/logcollector /usr/local/bin/
+sudo cp ./build/bin/logcollector /usr/local/bin/
 
 # Copy library (if shared build)
-sudo cp ./product/build/gnu-g++/linux-64-x86_64-release-shared/lib/libareg.so /usr/lib/
+sudo cp ./build/bin/libareg.so /usr/lib/
 sudo ldconfig
 
 # Copy configuration
@@ -980,7 +980,7 @@ logger::*::port::tcpip    = 8282
     ```
     *If missing:*
         ```bash
-        sudo cp ./product/build/.../lib/libareg.so /usr/lib/
+        sudo cp ./build/bin/libareg.so /usr/lib/
         sudo ldconfig
         ```
 5. *Verify service file:*

@@ -48,12 +48,7 @@ cd areg-sdk
 cmake -B ./build && cmake --build ./build -j20
 ```
 
-**Binaries location:**
-```
-./product/build/<compiler>/<platform>-<arch>-<config>-shared/bin/
-```
-
-**Example:** `./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/`
+**Binaries location:** `./build/bin/` (executables and shared libraries), `./build/lib/` (static libraries)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -240,7 +235,7 @@ CMAKE_CXX_COMPILER:FILEPATH=/usr/bin/clang++
 **Check built binaries:**
 
 ```bash
-ls ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/
+ls ./build/bin/
 ```
 
 **Expected output:**
@@ -279,7 +274,7 @@ cmake --build ./build -j20
 **4. Verify binary architecture:**
 
 ```bash
-file ./product/build/llvm-clang/linux-32-x86-release-shared/bin/mtrouter
+file ./build/bin/mtrouter
 ```
 
 **Expected output:**
@@ -290,7 +285,7 @@ mtrouter: ELF 32-bit LSB pie executable, Intel 80386, version 1 (GNU/Linux), ...
 **Alternative verification:**
 
 ```bash
-od -t x1 -t c ./product/build/llvm-clang/linux-32-x86-release-shared/bin/mtrouter | head -n 2
+od -t x1 -t c ./build/bin/mtrouter | head -n 2
 ```
 
 **Expected output:**
@@ -333,7 +328,7 @@ cmake --build ./build -j20
 **4. Verify:**
 
 ```bash
-file ./product/build/gnu-g++/linux-32-arm-release-shared/bin/mtrouter
+file ./build/bin/mtrouter
 ```
 
 **Expected output:**
@@ -364,7 +359,7 @@ cmake --build ./build -j20
 **4. Verify:**
 
 ```bash
-file ./product/build/gnu-g++/linux-64-aarch64-release-shared/bin/mtrouter
+file ./build/bin/mtrouter
 ```
 
 **Expected output:**
@@ -395,7 +390,7 @@ cd /mnt/c/projects/areg-sdk
 **Run the minimal RPC example:**
 
 ```bash
-./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/01_minimalrpc
+./build/bin/01_minimalrpc
 ```
 
 **Expected output:**
@@ -407,7 +402,7 @@ Exiting application ...
 **Run the local service example:**
 
 ```bash
-./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/10_locservice
+./build/bin/10_locservice
 ```
 
 **Expected output:**

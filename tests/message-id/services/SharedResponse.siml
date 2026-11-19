@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="SharedResponse" Version="1.0.0" Category="Public">
+        <Description>Two requests answered by one response, a marker request and a marker attribute.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute ID="11" Name="Counter" DataType="uint32" Notify="OnChange"/>
+    </AttributeList>
+    <MethodList>
+        <Method ID="12" Name="first" MethodType="Request" Response="done">
+            <ParamList>
+                <Parameter ID="13" Name="tag" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="14" Name="second" MethodType="Request" Response="done">
+            <ParamList>
+                <Parameter ID="15" Name="tag" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="16" Name="sync" MethodType="Request" Response="synced">
+            <ParamList>
+                <Parameter ID="17" Name="tag" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="18" Name="done" MethodType="Response">
+            <ParamList>
+                <Parameter ID="19" Name="tag" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="20" Name="synced" MethodType="Response">
+            <ParamList>
+                <Parameter ID="21" Name="tag" DataType="uint32"/>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

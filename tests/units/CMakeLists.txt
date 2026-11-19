@@ -74,6 +74,7 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     FileOsCoverageTest.cpp
     FixedArrayTest.cpp
     EventDefsTest.cpp
+    MessageHeaderTest.cpp
     HashMapTest.cpp
     IdentifierTest.cpp
     IpcClientCoverageTest.cpp

@@ -157,31 +157,6 @@ protected:
     virtual ~ProxyEventConsumer() = default;
 
 //////////////////////////////////////////////////////////////////////////
-// Inline  methods
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Processes Broadcast Event sent by Stub.
-     *
-     * \param   eventElem       The response event to process.
-     **/
-    inline void process_broadcast_event(ServiceResponseEvent& eventElem);
-
-    /**
-     * \brief   Processes Attribute update event sent by Stub.
-     *
-     * \param   eventElem       The attribute update event to process.
-     **/
-    inline void process_attribute_event( ServiceResponseEvent & eventElem );
-
-    /**
-     * \brief   Processes Request failed Event sent by Stub.
-     *
-     * \param   eventElem       The response event to process.
-     **/
-    inline void process_request_failed_event(ServiceResponseEvent& eventElem);
-
-//////////////////////////////////////////////////////////////////////////
 // Overrides. Should be implemented
 //////////////////////////////////////////////////////////////////////////
 protected:
@@ -343,21 +318,6 @@ inline uint32_t ProxyEvent::target_proxy() const
 {
     ASSERT(is_valid());
     return consumer().number;
-}
-
-inline void ProxyEventConsumer::process_broadcast_event(ServiceResponseEvent& eventElem)
-{
-    process_response_event(eventElem);
-}
-
-inline void ProxyEventConsumer::process_request_failed_event(ServiceResponseEvent& eventElem)
-{
-    process_response_event(eventElem);
-}
-
-inline void ProxyEventConsumer::process_attribute_event(ServiceResponseEvent& eventElem)
-{
-    process_response_event(eventElem);
 }
 
 } // namespace areg

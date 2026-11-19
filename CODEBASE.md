@@ -146,16 +146,8 @@ suffix: `.elf` on Linux, `.mac` on macOS, `.exe` on Windows. The framework libra
 and `mtrouter` are placed there too, so a multi process project needs nothing
 installed.
 
-**This repository's own build** uses a different layout, which an application never
-sees:
-
-```
-product/build/<compiler>/<os>-<bits>-<arch>-<config>-<libtype>/bin/
-```
-
-The `AREG_OUTPUT_LAYOUT` option selects between them. A project created from a recipe
-or by `tools/agent/setup_project.py` turns it off, which is what puts binaries in
-`build/bin/`.
+**This repository's own build** uses the same layout: executables and shared libraries
+in `build/bin/`, static libraries in `build/lib/`.
 
 Common CMake options:
 
@@ -163,8 +155,8 @@ Common CMake options:
 |---|---|---|
 | `AREG_LIB_TYPE` | `shared` | `shared` or `static` |
 | `AREG_LOGGING` | `ON` | compile logging in |
-| `AREG_EXAMPLES` | `ON` | build the examples; a project turns this off |
-| `AREG_TESTS` | `ON` | build unit tests (fetches Google Test); a project turns this off |
+| `AREG_EXAMPLES` | `ON` | build the examples; `OFF` when areg is fetched into a project |
+| `AREG_TESTS` | `ON` | build unit tests (fetches Google Test); `OFF` when areg is fetched into a project |
 
 Full list: `docs/wiki/02d-cmake-config.md`.
 

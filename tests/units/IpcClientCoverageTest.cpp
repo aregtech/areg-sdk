@@ -1540,23 +1540,25 @@ TEST_F(IpcSocketCoverageTest, router_client_ignores_notices_it_cannot_serve_and_
     ASSERT_TRUE(send_wire(router.peer, duplicate));
 
     areg::EventHeader ignored{ areg::message_duplicate_notify() };
-    ignored.messageId = static_cast<uint32_t>(areg::FuncIdRange::ServiceLastId);
+    ignored.messageId = areg::SYSTEM_ID_LAST;
     ASSERT_TRUE(send_wire(router.peer, router_message(ignored, COOKIE)));
 
     areg::EventHeader unknown{ areg::message_duplicate_notify() };
     unknown.messageId = static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate) + 1u;
-    ASSERT_FALSE(areg::is_executable_id(unknown.messageId));
+    ASSERT_FALSE(areg::is_interface_call(unknown.callType));
     ASSERT_TRUE(send_wire(router.peer, router_message(unknown, COOKIE)));
 
     areg::EventHeader foreign{ areg::message_duplicate_notify() };
     foreign.messageId = static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId);
-    ASSERT_TRUE(areg::is_executable_id(foreign.messageId));
+    foreign.callType = static_cast<uint8_t>(areg::CallType::Interface);
+    ASSERT_TRUE(areg::is_interface_call(foreign.callType));
     ASSERT_TRUE(send_wire(router.peer, router_message(foreign, COOKIE)));
 
     areg::EventHeader request{};
     request.source = static_cast<uint32_t>(COOKIE + 5u);
-    request.messageId = static_cast<uint32_t>(areg::FuncIdRange::RequestFirstId);
+    request.messageId = areg::crc32_calculate("request_unknown_stub");
     request.eventType = static_cast<uint16_t>(areg::EventType::EventRemoteRequest);
+    request.callType = static_cast<uint8_t>(areg::CallType::Request);
     request.provider.number = 0x613AFFFFu;
     request.consumer.number = 0x613AFFFEu;
     ASSERT_TRUE(send_wire(router.peer, router_message(request, COOKIE)));
@@ -1621,9 +1623,9 @@ namespace
         areg::StubAddress stub(0x613B2001u, areg::Version(1u, 0u, 0u), areg::ServiceType::Public, 0x613B3002u, 0x613B4002u, 0x613B1002u);
         stub.set_cookie(stubCookie);
         proxy.set_cookie(stubCookie);
-        areg::RemoteNotifyRequestEvent notify(proxy, stub, attributeId, areg::RequestType::StartNotify);
+        areg::RemoteNotifyRequestEvent notify(proxy, stub, attributeId, areg::RequestType::StartNotify, areg::CallType::Attribute);
         notify.set_target_dispatcher(dispatcher);
-        areg::RemoteResponseEvent response(proxy, areg::ResultType::RequestOK, responseId);
+        areg::RemoteResponseEvent response(proxy, areg::ResultType::RequestOK, responseId, areg::CallType::Response);
         response.set_target_dispatcher(dispatcher);
         return notify.deliver_event() && response.deliver_event();
     }
@@ -1640,7 +1642,7 @@ TEST_F(IpcSocketCoverageTest, remote_request_before_the_connection_is_confirmed_
 {
     constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 91u };
     constexpr ITEM_ID STUB_COOKIE{ areg::COOKIE_REMOTE_SERVICE + 92u };
-    constexpr uint32_t REQUEST{ areg::REQUEST_ID_FIRST + 5u };
+    constexpr uint32_t REQUEST{ areg::crc32_calculate("request_before_confirmation") };
     FakeRouter router;
     ASSERT_TRUE(router.listener.open());
     areg::Application::setup(false, true, false, true, false);
@@ -1655,7 +1657,7 @@ TEST_F(IpcSocketCoverageTest, remote_request_before_the_connection_is_confirmed_
     ASSERT_TRUE(receive_wire(router.peer, handshake));
 
     ASSERT_TRUE(post_remote_request(STUB_COOKIE, REQUEST));
-    ASSERT_TRUE(post_remote_notify_and_response(STUB_COOKIE, areg::ATTRIBUTE_ID_FIRST + 2u, areg::RESPONSE_ID_FIRST + 2u));
+    ASSERT_TRUE(post_remote_notify_and_response(STUB_COOKIE, areg::crc32_calculate("attribute_BeforeConfirmation"), areg::crc32_calculate("response_before_confirmation")));
     ASSERT_TRUE(send_wire(router.peer, areg::create_connect_notify(areg::COOKIE_ROUTER, COOKIE)));
     ASSERT_TRUE(wait_router_connected());
     ASSERT_TRUE(post_remote_request(STUB_COOKIE, REQUEST + 1u));
@@ -1678,7 +1680,7 @@ TEST_F(IpcSocketCoverageTest, outgoing_messages_keep_the_cookie_while_the_router
     AREG_EXPECT_IN_CHILD(
         constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 93u };
         constexpr ITEM_ID STUB_COOKIE{ areg::COOKIE_REMOTE_SERVICE + 94u };
-        constexpr uint32_t LAST_REQUEST{ areg::REQUEST_ID_FIRST + 9u };
+        constexpr uint32_t LAST_REQUEST{ areg::crc32_calculate("request_last") };
         constexpr int ROUNDS{ 200 };
         FakeRouter router;
         AREG_CHILD_CHECK(router.listener.open());
@@ -1698,7 +1700,7 @@ TEST_F(IpcSocketCoverageTest, outgoing_messages_keep_the_cookie_while_the_router
         for (int round{ 0 }; round < ROUNDS; ++round)
         {
             AREG_CHILD_CHECK(send_wire(router.peer, areg::create_connect_notify(areg::COOKIE_ROUTER, COOKIE)));
-            AREG_CHILD_CHECK(post_remote_notify_and_response(STUB_COOKIE, areg::ATTRIBUTE_ID_FIRST + 3u, areg::RESPONSE_ID_FIRST + 3u));
+            AREG_CHILD_CHECK(post_remote_notify_and_response(STUB_COOKIE, areg::crc32_calculate("attribute_WhileConfirming"), areg::crc32_calculate("response_while_confirming")));
         }
 
         AREG_CHILD_CHECK(post_remote_request(STUB_COOKIE, LAST_REQUEST));
@@ -1707,7 +1709,7 @@ TEST_F(IpcSocketCoverageTest, outgoing_messages_keep_the_cookie_while_the_router
         do
         {
             AREG_CHILD_CHECK(receive_wire(router.peer, outgoing));
-            if (areg::is_executable_id(static_cast<uint32_t>(outgoing.message_id())))
+            if (areg::is_interface_call(outgoing.call_type()))
             {
                 AREG_CHILD_CHECK(outgoing.source() == COOKIE);
                 ++count;

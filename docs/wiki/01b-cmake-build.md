@@ -63,9 +63,7 @@ cmake -B ./build
 cmake --build ./build -j20
 ```
 
-**Binaries location:** `./product/build/<compiler>/<platform>-<arch>-release-shared/bin/`
-
-**Example:** `./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/`
+**Binaries location:** `./build/bin/` (executables and shared libraries), `./build/lib/` (static libraries)
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -345,7 +343,7 @@ cmake --build ./build -j20
 **4. Verify binary architecture:**
 
 ```bash
-file ./product/build/llvm-clang/linux-32-x86-release-shared/bin/mtrouter
+file ./build/bin/mtrouter
 ```
 
 **Expected output:**
@@ -356,7 +354,7 @@ mtrouter: ELF 32-bit LSB pie executable, Intel 80386, version 1 (GNU/Linux), ...
 **Alternative verification:**
 
 ```bash
-od -t x1 -t c ./product/build/llvm-clang/linux-32-x86-release-shared/bin/mtrouter | head -n 2
+od -t x1 -t c ./build/bin/mtrouter | head -n 2
 ```
 
 **Expected output:**
@@ -394,7 +392,7 @@ cmake --build ./build -j20
 **4. Verify:**
 
 ```bash
-file ./product/build/gnu-g++/linux-32-arm-release-shared/bin/mtrouter
+file ./build/bin/mtrouter
 ```
 
 **Expected output:**
@@ -426,7 +424,7 @@ cmake --build ./build -j20
 **4. Verify:**
 
 ```bash
-file ./product/build/gnu-g++/linux-64-aarch64-release-shared/bin/mtrouter
+file ./build/bin/mtrouter
 ```
 
 **Expected output:**

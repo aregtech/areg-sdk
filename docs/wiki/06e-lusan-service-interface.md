@@ -160,7 +160,8 @@ The category determines the accessibility scope of the service:
 Defines compatibility rules between Service Providers and Service Consumers:
 - Use semantic versioning (e.g., `1.0.0`, `1.2.3`)
 - Increment version when making interface changes
-- Consumers can verify compatibility at runtime
+- A consumer connects only to a provider of the same major version whose minor version is not lower than its own
+- Every process of a system is still built from one definition of the interface ([Service Message Identity](./06h-message-identity.md), section 5)
 
 **Description**
 
@@ -404,7 +405,7 @@ The code generator produces:
 **Interface Stability**
 - Keep interfaces stable once deployed
 - Use semantic versioning for interface changes
-- Maintain backward compatibility when possible
+- Regenerate and rebuild every process that uses an interface after changing it
 - Document breaking changes clearly
 
 ### Communication Patterns
@@ -436,13 +437,12 @@ The code generator produces:
 **Semantic Versioning**
 - Use three-part version numbers: `major.minor.patch`
 - Increment major version for breaking changes
-- Increment minor version for backward-compatible additions
+- Increment minor version for additions
 - Increment patch version for bug fixes
 
-**Compatibility Testing**
-- Test compatibility between different interface versions
-- Verify runtime version checks work correctly
-- Document version compatibility matrix
+**One Definition per System**
+- Build every provider and consumer of a system from the same version of the interface
+- A process built from another definition is not supported: see [Service Message Identity](./06h-message-identity.md), section 5
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

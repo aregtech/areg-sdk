@@ -529,7 +529,7 @@ struct RawService
  *  sequenceNr       80     8  per-proxy sequence number
  *  result           88     4  ResultType / ServiceConnectionState / eRequestType
  *  eventType        92     2  EventType flags
- *  callType         94     1  EventCallType (0..5)
+ *  callType         94     1  CallType: the kind of messageId
  *  priority         95     1  EventPriority
  *  reserved         96     4  name check of a registration message, otherwise 0
  *  classId         100     4  class ID assigned by the final event class
@@ -556,7 +556,7 @@ struct EventHeader
     SequenceNumber      sequenceNr  { 0 };  //!< [80..87]   per-proxy sequence number
     uint32_t            result      { 0 };  //!< [88..91]   ResultType / ServiceConnectionState
     uint16_t            eventType   { 0 };  //!< [92..93]   EventType flags
-    uint8_t             callType    { 0 };  //!< [94]       Event actions, depends on EventType (0..5)
+    uint8_t             callType    { 0 };  //!< [94]       CallType: the kind of messageId
     uint8_t             priority    { 0 };  //!< [95]       EventPriority
     uint32_t            reserved    { 0 };  //!< [96..99]   name check of a registration message, otherwise 0
     uint32_t            eventId     { 0 };  //!< [100..103] class ID of the final event class

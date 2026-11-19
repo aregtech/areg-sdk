@@ -20,6 +20,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/UtilityDefs.hpp"
+#include "areg/base/CommonDefs.hpp"
 
 #include <time.h>
 

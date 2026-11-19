@@ -19,6 +19,7 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/FatalError.hpp"
+#include "areg/base/Process.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 
 #include <csignal>
@@ -26,9 +27,11 @@
 #include <cstdlib>
 #include <string>
 
-#if !defined(_WIN32)
+#if defined(_WIN32)
+    #include <Windows.h>
+#else   // defined(_WIN32)
     #include <sys/resource.h>
-#endif  // !defined(_WIN32)
+#endif  // defined(_WIN32)
 
 namespace
 {
@@ -38,7 +41,7 @@ namespace
     void set_variable( const char * name, const char * value )
     {
 #if defined(_WIN32)
-        static_cast<void>(::_putenv_s( name, value != nullptr ? value : "" ));
+        static_cast<void>(::SetEnvironmentVariableA( name, value ));
 #else   // defined(_WIN32)
         if ( value != nullptr )
             static_cast<void>(::setenv( name, value, 1 ));
@@ -47,23 +50,12 @@ namespace
 #endif  // defined(_WIN32)
     }
 
-    //!< Returns true and copies the value if the environment variable is set.
+    //!< Returns true and copies the value if the environment variable is set and not empty.
     bool get_variable( const char * name, std::string & value )
     {
-#if defined(_WIN32)
-        char * buffer{ nullptr };
-        std::size_t length{ 0 };
-        const bool found{ (::_dupenv_s( &buffer, &length, name ) == 0) && (buffer != nullptr) };
-        if ( found )
-            value = buffer;
-        std::free( buffer );
-        return found;
-#else   // defined(_WIN32)
-        const char * found{ std::getenv( name ) };
-        if ( found != nullptr )
-            value = found;
-        return (found != nullptr);
-#endif  // defined(_WIN32)
+        const areg::String found{ areg::Process::instance( ).safe_env_variable( name ) };
+        value = found.as_string( );
+        return (found.is_empty( ) == false);
     }
 
     //!< Clears AREG_LOCK_FAILURE_FATAL while it exists and restores it after, as CI sets it.

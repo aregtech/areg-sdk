@@ -92,11 +92,11 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
     {
     case areg::FuncIdRange::SystemServiceRequestRegister:
         {
-            const areg::RegistrationAction reqType{ static_cast<areg::RegistrationAction>(msgReceived.call_type()) };
+            const areg::CallType reqType{ static_cast<areg::CallType>(msgReceived.call_type()) };
             LOG_DBG("Routing service received registration request message [ %s ]", areg::as_string(reqType));
             switch ( reqType )
             {
-            case areg::RegistrationAction::RegisterProvider:
+            case areg::CallType::RegisterProvider:
                 {
                     areg::StubAddress stubService(*msgReceived.header());
                     stubService.set_cookie(static_cast<ITEM_ID>(source));
@@ -106,7 +106,7 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
                 }
                 break;
 
-            case areg::RegistrationAction::RegisterConsumer:
+            case areg::CallType::RegisterConsumer:
                 {
                     areg::ProxyAddress proxyService(*msgReceived.header());
                     proxyService.set_cookie(static_cast<ITEM_ID>(source));
@@ -116,7 +116,7 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
                 }
                 break;
 
-            case areg::RegistrationAction::UnregisterProvider:
+            case areg::CallType::UnregisterProvider:
                 {
                     areg::StubAddress stubService(*msgReceived.header());
                     const areg::DisconnectReason reason{ static_cast<areg::DisconnectReason>(msgReceived.result()) };
@@ -126,7 +126,7 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
                 }
                 break;
 
-            case areg::RegistrationAction::UnregisterConsumer:
+            case areg::CallType::UnregisterConsumer:
                 {
                     areg::ProxyAddress proxyService(*msgReceived.header());
                     const areg::DisconnectReason reason{ static_cast<areg::DisconnectReason>(msgReceived.result()) };
@@ -147,14 +147,8 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
         disconnect_source(static_cast<ITEM_ID>(source));
         break;
 
-    case areg::FuncIdRange::ServiceLastId:                      // fall through
     case areg::FuncIdRange::SystemServiceQueryInstances:        // fall through
     case areg::FuncIdRange::SystemServiceConnect:               // fall through
-    case areg::FuncIdRange::RequestServiceProviderConnection:   // fall through
-    case areg::FuncIdRange::ResponseServiceProviderVersion:     // fall through
-    case areg::FuncIdRange::RequestServiceProviderVersion:      // fall through
-    case areg::FuncIdRange::RequestRegisterService:             // fall through
-    case areg::FuncIdRange::ComponentCleanup:                   // fall through
     case areg::FuncIdRange::SystemServiceNotifyRegister:        // fall through
     case areg::FuncIdRange::SystemServiceNotifyConnection:      // fall through
     case areg::FuncIdRange::SystemServiceNotifyInstances:       // fall through
@@ -171,35 +165,25 @@ void RouterServerService::on_message_received(const areg::MessageEnvelope &msgRe
     case areg::FuncIdRange::ServiceLogConfigurationRestored:    // fall through
         break;
 
-    case areg::FuncIdRange::ResponseServiceProviderConnection:  // fall through
-    case areg::FuncIdRange::AttributeLastId:                    // fall through
-    case areg::FuncIdRange::AttributeFirstId:                   // fall through
-    case areg::FuncIdRange::ResponseLastId:                     // fall through
-    case areg::FuncIdRange::ResponseFirstId:                    // fall through
-    case areg::FuncIdRange::RequestLastId:                      // fall through
-    case areg::FuncIdRange::RequestFirstId:                     // fall through
+    case areg::FuncIdRange::ResponseServiceProviderConnection:
+        LOG_DBG("Message [ %u ] is executable, going to forward to target [ %u ], received from source [ %u ]"
+                   , static_cast<uint32_t>(msgId)
+                   , msgReceived.target()
+                   , source);
+
+        if ( msgReceived.target() != static_cast<uint32_t>(areg::TARGET_UNKNOWN) )
+        {
+            send_message( msgReceived );
+        }
+        break;
+
     case areg::FuncIdRange::EmptyFunctionId:                    // fall through
     case areg::FuncIdRange::SystemServiceNotifyDuplicate:       // fall through
     default:
-        if ( areg::is_executable_id(static_cast<uint32_t>(msgId)) || areg::is_connect_id( static_cast<uint32_t>(msgId)) )
-        {
-            LOG_DBG("Message [ %u ] is executable, going to forward to target [ %u ], received from source [ %u ]"
-                       , static_cast<uint32_t>(msgId)
-                       , msgReceived.target()
-                       , source);
-
-            if ( msgReceived.target() != static_cast<uint32_t>(areg::TARGET_UNKNOWN) )
-            {
-                send_message( msgReceived );
-            }
-        }
-        else
-        {
-            LOG_ERR("Message [ %u ] is not executable, ignoring to forward to target [ %u ] from source [ %u ]"
-                            , static_cast<uint32_t>(msgId)
-                            , static_cast<uint32_t>(msgReceived.target())
-                            , static_cast<uint32_t>(source));
-        }
+        LOG_ERR("Message [ %u ] is not executable, ignoring to forward to target [ %u ] from source [ %u ]"
+                        , static_cast<uint32_t>(msgId)
+                        , static_cast<uint32_t>(msgReceived.target())
+                        , static_cast<uint32_t>(source));
         break;
     }
 }

@@ -1491,22 +1491,9 @@ def is_runnable_bin_dir(path):
     return False
 
 
-def _layout_bin_dirs(root):
-    """Yields the 'bin' of every build directory laid out by AREG_OUTPUT_LAYOUT."""
-    build = os.path.join(root, 'product', 'build')
-    if not os.path.isdir(build):
-        return
-    for compiler in sorted(os.listdir(build)):
-        target = os.path.join(build, compiler)
-        if not os.path.isdir(target):
-            continue
-        for config in sorted(os.listdir(target)):
-            yield os.path.join(target, config, 'bin')
-
-
 def _cmake_bin_dirs(root):
-    """Yields the 'bin' of every CMake build tree, the layout of AREG_OUTPUT_LAYOUT=OFF."""
-    for parent in (root, os.path.join(root, 'product')):
+    """Yields the 'bin' of every CMake build tree in the root, 'product' and 'product/build'."""
+    for parent in (root, os.path.join(root, 'product'), os.path.join(root, 'product', 'build')):
         if not os.path.isdir(parent):
             continue
         for name in sorted(os.listdir(parent)):
@@ -1519,7 +1506,7 @@ def find_bin_dirs(root):
     """Returns every runnable binary directory, the most recently built one first."""
     found = []
     seen = set()
-    for candidate in list(_layout_bin_dirs(root)) + list(_cmake_bin_dirs(root)):
+    for candidate in _cmake_bin_dirs(root):
         key = os.path.normcase(os.path.abspath(candidate))
         if key in seen:
             continue

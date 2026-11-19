@@ -891,13 +891,6 @@ TEST( FaultInjectSweepTest, argument_conversion_that_cannot_allocate_returns_nul
 namespace
 {
 #if defined(AREG_FAULT_SWEEP_TESTS)
-    //!< Publishes the address of an object so the compiler cannot elide its allocation.
-    template<typename OBJECT>
-    inline void _keep_allocation( const OBJECT & obj )
-    {
-        asm volatile( "" : : "r"( &obj ) : "memory" );
-    }
-
     //!< Fails every nothrow allocation while a fixed array is resized and copied.
     void _fixed_array_survives_failed_allocation( )
     {
@@ -909,10 +902,10 @@ namespace
 
         AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
         const bool resized{ values.resize( 8u ) };
-        _keep_allocation( values );
+        areg_fault::keep_allocation( values );
         AREG_CHILD_CHECK( resized == false );
         const bool copied{ values.copy( other ) };
-        _keep_allocation( values );
+        areg_fault::keep_allocation( values );
         AREG_CHILD_CHECK( copied == false );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 2u );
         AREG_CHILD_CHECK( values.size( ) == 3u && values[ 0 ] == 1 && values[ 1 ] == 2 && values[ 2 ] == 3 );
@@ -924,9 +917,9 @@ namespace
         const areg::FixedArray<int32_t> failedCopy( other );
         const areg::FixedArray<int32_t> failedList( longer, 5u );
         const areg::FixedArray<int32_t> failedCount( 4u );
-        _keep_allocation( failedCopy );
-        _keep_allocation( failedList );
-        _keep_allocation( failedCount );
+        areg_fault::keep_allocation( failedCopy );
+        areg_fault::keep_allocation( failedList );
+        areg_fault::keep_allocation( failedCount );
         AREG_CHILD_CHECK( failedCopy.size( ) == 0u && failedList.size( ) == 0u && failedCount.size( ) == 0u );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 5u );
 
@@ -1650,7 +1643,7 @@ namespace
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 1u ) );
             const CountedHandle handle( 42 );
-            _keep_allocation( handle );
+            areg_fault::keep_allocation( handle );
             AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
             AREG_CHILD_CHECK( handle.has_value( ) == false );
             AREG_CHILD_CHECK( handle.value( ) == -1 );
@@ -1666,7 +1659,7 @@ namespace
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 1u ) );
             const areg::Socket::SocketHandle handle( static_cast<SOCKETHANDLE>( fd ) );
-            _keep_allocation( handle );
+            areg_fault::keep_allocation( handle );
             AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
             AREG_CHILD_CHECK( handle.has_value( ) == false );
             errno = 0;
@@ -1697,7 +1690,7 @@ namespace
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 1u ) );
             ProbeBuffer * const refused{ allocate( 64u ) };
-            _keep_allocation( refused );
+            areg_fault::keep_allocation( refused );
             AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
             AREG_CHILD_CHECK( refused == nullptr );
         }
@@ -1798,3 +1791,259 @@ TEST( FaultInjectSweepTest, layouts_whose_object_cannot_be_allocated_are_not_cre
 }
 
 #endif  // defined(AREG_FAULT_SWEEP_TESTS) && AREG_LOGGING
+
+#if defined(AREG_FAULT_SWEEP_TESTS)
+
+#include "units/TestMessageTable.hpp"
+#include "areg/component/DispatcherThread.hpp"
+#include "areg/component/NotificationEvent.hpp"
+#include "areg/component/ProxyBase.hpp"
+#include "areg/component/ProxyListener.hpp"
+#include "areg/component/RequestEvents.hpp"
+#include "areg/component/ResponseEvents.hpp"
+
+#include <chrono>
+#include <functional>
+#include <future>
+#include <memory>
+
+namespace
+{
+    constexpr char const    _proxyRole[]        { "FaultSnapshotProvider" };
+    //!< More clients than a snapshot holds without a heap allocation.
+    constexpr uint32_t      SNAPSHOT_CLIENTS    { 9u };
+    constexpr SequenceNumber  WAITING_SEQUENCE{ 5u };
+
+    constexpr uint32_t      _proxyRequests[]    { areg::crc32_calculate( "fault_request" ) };
+    constexpr uint32_t      _proxyResponses[]   { areg::crc32_calculate( "fault_response" ) };
+    constexpr uint16_t      _proxyResponseMap[] { 0u };
+    constexpr uint32_t      _proxyParamCounts[] { 0u };
+
+    const areg_test::TestMessageTable   _proxyRequestTable  { _proxyRequests, 1u };
+    const areg_test::TestMessageTable   _proxyResponseTable { _proxyResponses, 1u };
+
+    const areg::InterfaceData _proxyInterface
+    {
+        areg_test::make_interface( "FaultSnapshotService", areg::Version( 1, 0, 0 ), areg::ServiceType::Local
+                                 , _proxyRequestTable.table( ), _proxyResponseTable.table( ), areg::MessageTable{ }, areg::MessageTable{ }
+                                 , _proxyResponseMap, _proxyParamCounts )
+    };
+
+    //!< A client that counts its connection callbacks and notifications.
+    class SnapshotClient final : public areg::ProxyListener
+    {
+    public:
+        SnapshotClient( ) = default;
+
+        bool service_connected( areg::ServiceConnectionState status, areg::ProxyBase & ) override
+        {
+            mConnected += areg::is_service_connected( status ) ? 1u : 0u;
+            mDisconnected += areg::is_service_connected( status ) ? 0u : 1u;
+            return true;
+        }
+
+        void process_notification_event( areg::NotificationEvent & ) override
+        {
+        }
+
+        void process_notification( areg::CallType, uint32_t, areg::ResultType, SequenceNumber ) override
+        {
+            ++ mNotified;
+        }
+
+        uint32_t    mConnected      { 0u };
+        uint32_t    mDisconnected   { 0u };
+        uint32_t    mNotified       { 0u };
+    };
+
+    //!< A proxy of the test interface whose protected calls the test makes.
+    class SnapshotProxy final : public areg::ProxyBase
+    {
+    public:
+        SnapshotProxy( const areg::String & role, areg::DispatcherThread * owner )
+            : areg::ProxyBase( role, _proxyInterface, owner )
+        {
+        }
+
+        using areg::ProxyBase::add_listener;
+        using areg::ProxyBase::notify_listeners;
+        using areg::ProxyBase::process_available_event;
+        using areg::ProxyBase::service_connection_updated;
+
+        static areg::ProxyBase * create( const areg::String & role, areg::DispatcherThread * owner )
+        {
+            return new SnapshotProxy( role, owner );
+        }
+
+    protected:
+        void process_response_event( areg::ServiceResponseEvent & ) override
+        {
+        }
+
+        void process_custom_event( areg::Event & ) override
+        {
+        }
+
+        ServiceAvailableEvent create_service_available( areg::NotificationConsumer & consumer ) override
+        {
+            return ServiceAvailableEvent( consumer );
+        }
+
+        areg::NotificationEvent create_client_notification( const areg::NotificationEventData & data ) const override
+        {
+            return areg::NotificationEvent( data );
+        }
+
+        areg::ServiceRequestEvent create_request( const areg::SharedBuffer & data, uint32_t request ) override
+        {
+            return areg::LocalRequestEvent( data, proxy_address( ), stub_address( ), request );
+        }
+
+        areg::ServiceRequestEvent create_request( uint32_t request, uint32_t reserve ) override
+        {
+            return areg::LocalRequestEvent( proxy_address( ), stub_address( ), request, reserve );
+        }
+
+        areg::ServiceRequestEvent create_notification_request( uint32_t, areg::RequestType, areg::CallType ) override
+        {
+            return areg::ServiceRequestEvent( areg::MessageEnvelope{ } );
+        }
+
+        areg::ServiceResponseEvent create_request_failed( const areg::ProxyAddress & target, uint32_t message, areg::CallType kind
+                                                        , areg::ResultType reason, const SequenceNumber & sequence ) const override
+        {
+            return areg::LocalResponseEvent( target, reason, message, kind, sequence );
+        }
+    };
+
+    //!< A dispatcher thread that runs one action and reports when it is done.
+    class SnapshotThread final : public areg::DispatcherThread
+    {
+    public:
+        explicit SnapshotThread( std::function<void( areg::DispatcherThread & )> action )
+            : areg::DispatcherThread( areg::String( "FaultSnapshotThread" ), areg::DEFAULT_STACK_SIZE, areg::QUEUE_MIN_RING_CAPACITY, areg::Bool::True, 0 )
+            , mAction( std::move( action ) )
+        {
+        }
+
+        std::future<void> completion( )
+        {
+            return mDone.get_future( );
+        }
+
+    protected:
+        bool post_event( areg::Event & event ) override
+        {
+            return areg::EventDispatcher::post_event( event );
+        }
+
+        void on_run( ) override
+        {
+            mAction( *this );
+            mDone.set_value( );
+        }
+
+    private:
+        std::function<void( areg::DispatcherThread & )> mAction;
+        std::promise<void> mDone;
+    };
+
+    //!< Counts the clients whose counter selected by the member is not zero.
+    uint32_t _count_clients( const SnapshotClient ( &clients )[SNAPSHOT_CLIENTS], uint32_t SnapshotClient::* counter )
+    {
+        uint32_t result{ 0u };
+        for ( const SnapshotClient & client : clients )
+        {
+            result += ( client.*counter != 0u ) ? 1u : 0u;
+        }
+
+        return result;
+    }
+
+    //!< Fails the snapshot allocation of each notification loop of a proxy with many clients.
+    void _proxy_snapshots_without_memory( areg::DispatcherThread & owner )
+    {
+        SnapshotClient clients[SNAPSHOT_CLIENTS];
+        std::shared_ptr<areg::ProxyBase> shared{ areg::ProxyBase::acquire_proxy( areg::String( _proxyRole ), _proxyInterface, clients[0], &SnapshotProxy::create, owner ) };
+        AREG_CHILD_CHECK( shared != nullptr );
+        SnapshotProxy & proxy{ static_cast<SnapshotProxy &>( *shared ) };
+        for ( uint32_t i = 1u; i < SNAPSHOT_CLIENTS; ++ i )
+        {
+            AREG_CHILD_CHECK( areg::ProxyBase::acquire_proxy( areg::String( _proxyRole ), _proxyInterface, clients[i], &SnapshotProxy::create, owner ) == shared );
+        }
+
+        const areg::StubAddress server( _proxyInterface, areg::String( _proxyRole ), owner.name( ) );
+        const areg::Channel channel( static_cast<uint32_t>( owner.address( ) ), server.source( ), areg::COOKIE_LOCAL );
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 1u ) );
+            proxy.service_connection_updated( server, channel, areg::ServiceConnectionState::Connected );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
+        }
+
+        AREG_CHILD_CHECK( proxy.is_connected( ) );
+        const uint32_t connected{ _count_clients( clients, &SnapshotClient::mConnected ) };
+        AREG_CHILD_CHECK( ( connected != 0u ) && ( connected < SNAPSHOT_CLIENTS ) );
+        for ( SnapshotClient & client : clients )
+        {
+            proxy.process_available_event( client );
+            AREG_CHILD_CHECK( client.mConnected == 1u );
+        }
+
+        for ( SnapshotClient & client : clients )
+        {
+            AREG_CHILD_CHECK( proxy.add_listener( areg::CallType::Response, 0u, areg::SEQUENCE_NUMBER_NOTIFY, &client, true ) );
+        }
+
+        AREG_CHILD_CHECK( proxy.add_listener( areg::CallType::Response, 0u, WAITING_SEQUENCE, &clients[0], false, _proxyRequests[0] ) );
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 1u ) );
+            proxy.notify_listeners( areg::CallType::Response, 0u, areg::ResultType::RequestOK, WAITING_SEQUENCE );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
+        }
+
+        AREG_CHILD_CHECK( _count_clients( clients, &SnapshotClient::mNotified ) == 0u );
+        proxy.notify_listeners( areg::CallType::Response, 0u, areg::ResultType::RequestOK, WAITING_SEQUENCE );
+        for ( const SnapshotClient & client : clients )
+        {
+            AREG_CHILD_CHECK( client.mNotified == 1u );
+        }
+
+        {
+            areg_fault::FaultScope faults;
+            AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 1u ) );
+            proxy.stop_proxy( );
+            AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
+        }
+
+        const uint32_t disconnected{ _count_clients( clients, &SnapshotClient::mDisconnected ) };
+        AREG_CHILD_CHECK( ( disconnected != 0u ) && ( disconnected < SNAPSHOT_CLIENTS ) );
+        AREG_CHILD_CHECK( proxy.is_connected( ) == false );
+        for ( SnapshotClient & client : clients )
+        {
+            shared->free_proxy( client );
+        }
+    }
+
+    //!< Runs the snapshot scenario on a dispatcher thread of its own.
+    void _proxy_snapshots_on_thread( )
+    {
+        SnapshotThread thread( &_proxy_snapshots_without_memory );
+        std::future<void> done{ thread.completion( ) };
+        AREG_CHILD_CHECK( thread.start( areg::WAIT_INFINITE ) );
+        AREG_CHILD_CHECK( done.wait_for( std::chrono::seconds( 30 ) ) == std::future_status::ready );
+        AREG_CHILD_CHECK( thread.shutdown( areg::WAIT_INFINITE ) == areg::Thread::ThreadCompletion::Completed );
+    }
+}
+
+/**
+ * \brief   A proxy without memory for the snapshot of its clients notifies the first ones of a
+ *          connection change, and drops a notification and its waiting caller.
+ **/
+TEST( FaultInjectSweepTest, proxy_without_memory_for_a_snapshot_notifies_the_first_clients_or_drops_the_notification )
+{
+    AREG_EXPECT_IN_CHILD( _proxy_snapshots_on_thread( ) );
+}
+
+#endif  // defined(AREG_FAULT_SWEEP_TESTS)

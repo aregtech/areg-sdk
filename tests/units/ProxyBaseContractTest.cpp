@@ -5,6 +5,7 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "units/EventTestSupport.hpp"
+#include "units/TestMessageTable.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/NotificationEvent.hpp"
@@ -39,15 +40,21 @@ namespace
 {
     using namespace areg;
 
-    constexpr uint32_t REQUESTS[]{ REQUEST_ID_FIRST, REQUEST_ID_FIRST + 1 };
-    constexpr uint32_t RESPONSES[]{ RESPONSE_ID_FIRST };
-    constexpr uint32_t ATTRIBUTES[]{ ATTRIBUTE_ID_FIRST };
-    constexpr uint32_t RESPONSE_MAP[]{ RESPONSE_ID_FIRST, RESPONSE_ID_NONE };
+    constexpr uint32_t REQUESTS[]{ areg::crc32_calculate("request_first"), areg::crc32_calculate("request_second") };
+    constexpr uint32_t RESPONSES[]{ areg::crc32_calculate("response_first") };
+    constexpr uint32_t ATTRIBUTES[]{ areg::crc32_calculate("attribute_Value") };
+    constexpr uint16_t RESPONSE_MAP[]{ 0u, static_cast<uint16_t>(RESPONSE_INDEX_NONE) };
     constexpr uint32_t PARAM_COUNTS[]{ 1 };
+
+    const areg_test::TestMessageTable CONTRACT_REQUESTS{ REQUESTS, 2u };
+    const areg_test::TestMessageTable CONTRACT_RESPONSES{ RESPONSES, 1u };
+    const areg_test::TestMessageTable CONTRACT_ATTRIBUTES{ ATTRIBUTES, 1u };
+
     const InterfaceData INTERFACE
     {
-          "ProxyContractService", Version(1, 0, 0), ServiceType::Local
-        , 2, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSE_MAP, PARAM_COUNTS
+        areg_test::make_interface( "ProxyContractService", Version(1, 0, 0), ServiceType::Local
+                                 , CONTRACT_REQUESTS.table(), CONTRACT_RESPONSES.table(), MessageTable{ }, CONTRACT_ATTRIBUTES.table()
+                                 , RESPONSE_MAP, PARAM_COUNTS )
     };
 
     class ContractListener final : public ProxyListener
@@ -69,12 +76,13 @@ namespace
         void process_notification_event(NotificationEvent& event) override
         {
             const NotificationEventData& data = std::as_const(event).data();
-            process_notification(data.notify_id(), data.notify_type(), data.sequence());
+            process_notification(data.notify_kind(), data.notify_index(), data.notify_type(), data.sequence());
         }
 
-        void process_notification(uint32_t message, ResultType result, SequenceNumber sequence) override
+        //!< Records the message ID of the notified entry.
+        void process_notification(CallType kind, uint32_t index, ResultType result, SequenceNumber sequence) override
         {
-            mNotifications.emplace_back(message, result, sequence);
+            mNotifications.emplace_back(INTERFACE.message_id(kind, index), result, sequence);
             if (mDuringNotification)
                 mDuringNotification();
         }
@@ -96,7 +104,9 @@ namespace
         using ProxyBase::add_listener;
         using ProxyBase::is_listener_registered;
         using ProxyBase::notify_listeners;
+        using ProxyBase::notify_request_failed;
         using ProxyBase::process_available_event;
+        using ProxyBase::process_proxy_event;
         using ProxyBase::register_for_event;
         using ProxyBase::remove_listener;
         using ProxyBase::send_request_event;
@@ -105,6 +115,7 @@ namespace
         using ProxyBase::service_connection_updated;
         using ProxyBase::stop_notifications;
         using ProxyBase::unregister_for_event;
+        using ProxyBase::ServiceAvailableEvent;
 
         static ProxyBase* create(const String& role, DispatcherThread* owner)
         {
@@ -113,7 +124,12 @@ namespace
 
         DataState attribute_state() const
         {
-            return proxy_data().attribute_state(ATTRIBUTES[0]);
+            return proxy_data().attribute_state(0u);
+        }
+
+        DataState response_state() const
+        {
+            return proxy_data().param_state(CallType::Response, 0u);
         }
 
         mutable std::vector<std::tuple<uint32_t, ResultType, SequenceNumber>> mFailures;
@@ -129,7 +145,8 @@ namespace
     protected:
         void process_response_event(ServiceResponseEvent& response) override
         {
-            notify_listeners(response.response_id(), static_cast<ResultType>(response.envelope().result()), response.sequence_number());
+            notify_listeners(response.call_kind(), INTERFACE.find(response.call_kind(), response.response_id())
+                            , static_cast<ResultType>(response.envelope().result()), response.sequence_number());
         }
 
         void process_custom_event(Event&) override
@@ -159,17 +176,17 @@ namespace
             return LocalRequestEvent(proxy_address(), stub_address(), request, reserve);
         }
 
-        ServiceRequestEvent create_notification_request(uint32_t message, RequestType type) override
+        ServiceRequestEvent create_notification_request(uint32_t message, RequestType type, CallType /* kind */) override
         {
             mSubscriptions.emplace_back(message, type, mWatched != nullptr ? mWatched->mConnections.size() : 0u);
             return ServiceRequestEvent(MessageEnvelope{});
         }
 
-        ServiceResponseEvent create_request_failed(const ProxyAddress& target, uint32_t message
+        ServiceResponseEvent create_request_failed(const ProxyAddress& target, uint32_t message, CallType kind
                                                   , ResultType reason, const SequenceNumber& sequence) const override
         {
             mFailures.emplace_back(message, reason, sequence);
-            return LocalResponseEvent(target, reason, message, sequence);
+            return LocalResponseEvent(target, reason, message, kind, sequence);
         }
     };
 
@@ -304,6 +321,46 @@ TEST(ProxyBaseContractTest, null_factory_reports_failure_without_registering_a_p
     });
 }
 
+/**
+ * \brief   The response and the attribute of index 0 have listener lists of their own, and the
+ *          service connection listeners are apart from both.
+ **/
+TEST(ProxyBaseContractTest, equal_indexes_of_two_kinds_keep_their_own_listeners)
+{
+    on_proxy_thread([](DispatcherThread& owner)
+    {
+        ContractListener connected;
+        ContractListener responder;
+        ContractListener watcher;
+        ProxyLease proxy(connected, owner);
+        ASSERT_NE(nullptr, proxy.pointer());
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &responder, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Attribute, 0u, SEQUENCE_NUMBER_NOTIFY, &watcher, true));
+        EXPECT_FALSE(proxy->add_listener(CallType::Broadcast, 0u, SEQUENCE_NUMBER_NOTIFY, &watcher, true));
+        EXPECT_FALSE(proxy->add_listener(CallType::Request, 0u, SEQUENCE_NUMBER_NOTIFY, &watcher, true));
+        EXPECT_FALSE(proxy->add_listener(CallType::Response, 1u, SEQUENCE_NUMBER_NOTIFY, &watcher, true));
+
+        proxy->notify_listeners(CallType::Attribute, 0u, ResultType::DataOK, SEQUENCE_NUMBER_NOTIFY);
+        EXPECT_TRUE(responder.mNotifications.empty());
+        ASSERT_EQ(1u, watcher.mNotifications.size());
+        EXPECT_EQ(ATTRIBUTES[0], std::get<0>(watcher.mNotifications[0]));
+
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
+        ASSERT_EQ(1u, responder.mNotifications.size());
+        EXPECT_EQ(RESPONSES[0], std::get<0>(responder.mNotifications[0]));
+        EXPECT_EQ(1u, watcher.mNotifications.size());
+        EXPECT_TRUE(connected.mNotifications.empty());
+
+        proxy->clear_all_notifications(watcher);
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Attribute, 0u));
+        EXPECT_TRUE(proxy->has_notification_listener(CallType::Response, 0u));
+        EXPECT_TRUE(proxy->is_listener_registered(connected));
+        proxy->clear_all_notifications(responder);
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Response, 0u));
+        EXPECT_TRUE(proxy->is_listener_registered(connected));
+    });
+}
+
 TEST(ProxyBaseContractTest, notification_and_pending_listeners_have_distinct_lifetimes)
 {
     on_proxy_thread([](DispatcherThread& owner)
@@ -313,26 +370,26 @@ TEST(ProxyBaseContractTest, notification_and_pending_listeners_have_distinct_lif
         ContractListener second;
         ProxyLease proxy(persistent, owner);
         ASSERT_NE(nullptr, proxy.pointer());
-        EXPECT_FALSE(proxy->has_any_listener(RESPONSES[0]));
-        EXPECT_FALSE(proxy->has_notification_listener(RESPONSES[0]));
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &persistent, true));
-        EXPECT_FALSE(proxy->add_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &persistent, true));
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], 11, &first, true));
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], 12, &second, true));
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, 12);
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Response, 0u));
+        EXPECT_FALSE(proxy->has_notification_listener(CallType::Response, 0u));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &persistent, true));
+        EXPECT_FALSE(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &persistent, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, 11, &first, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, 12, &second, true));
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, 12);
         EXPECT_TRUE(first.mNotifications.empty());
         ASSERT_EQ(1u, second.mNotifications.size());
         EXPECT_EQ(12u, std::get<2>(second.mNotifications[0]));
         EXPECT_EQ(1u, persistent.mNotifications.size());
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, 12);
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, 12);
         EXPECT_EQ(1u, second.mNotifications.size());
         EXPECT_EQ(2u, persistent.mNotifications.size());
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, 11);
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, 11);
         EXPECT_EQ(1u, first.mNotifications.size());
-        EXPECT_TRUE(proxy->has_notification_listener(RESPONSES[0]));
-        proxy->remove_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &persistent);
-        EXPECT_FALSE(proxy->has_any_listener(RESPONSES[0]));
-        EXPECT_FALSE(proxy->has_notification_listener(RESPONSES[0]));
+        EXPECT_TRUE(proxy->has_notification_listener(CallType::Response, 0u));
+        proxy->remove_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &persistent);
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Response, 0u));
+        EXPECT_FALSE(proxy->has_notification_listener(CallType::Response, 0u));
     });
 }
 
@@ -343,13 +400,13 @@ TEST(ProxyBaseContractTest, pending_only_listener_is_not_a_subscription)
         ContractListener listener;
         ProxyLease proxy(listener, owner);
         ASSERT_NE(nullptr, proxy.pointer());
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], 19, &listener, true));
-        EXPECT_TRUE(proxy->has_any_listener(RESPONSES[0]));
-        EXPECT_FALSE(proxy->has_notification_listener(RESPONSES[0]));
-        proxy->remove_listener(RESPONSES[0], 20, &listener);
-        EXPECT_TRUE(proxy->has_any_listener(RESPONSES[0]));
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, 19);
-        EXPECT_FALSE(proxy->has_any_listener(RESPONSES[0]));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, 19, &listener, true));
+        EXPECT_TRUE(proxy->has_any_listener(CallType::Response, 0u));
+        EXPECT_FALSE(proxy->has_notification_listener(CallType::Response, 0u));
+        proxy->remove_listener(CallType::Response, 0u, 20, &listener);
+        EXPECT_TRUE(proxy->has_any_listener(CallType::Response, 0u));
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, 19);
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Response, 0u));
         EXPECT_EQ(1u, listener.mNotifications.size());
     });
 }
@@ -362,19 +419,19 @@ TEST(ProxyBaseContractTest, clearing_notifications_preserves_connection_and_othe
         ContractListener second;
         ProxyLease proxy(first, owner);
         ASSERT_NE(nullptr, proxy.pointer());
-        ASSERT_TRUE(proxy->add_listener(ATTRIBUTES[0], SEQUENCE_NUMBER_NOTIFY, &first, true));
-        ASSERT_TRUE(proxy->add_listener(ATTRIBUTES[0], SEQUENCE_NUMBER_NOTIFY, &second, true));
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], 11, &first, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Attribute, 0u, SEQUENCE_NUMBER_NOTIFY, &first, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Attribute, 0u, SEQUENCE_NUMBER_NOTIFY, &second, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, 11, &first, true));
         proxy->clear_all_notifications(first);
         EXPECT_TRUE(proxy->is_listener_registered(first));
-        EXPECT_FALSE(proxy->has_any_listener(RESPONSES[0]));
-        EXPECT_TRUE(proxy->has_notification_listener(ATTRIBUTES[0]));
-        proxy->notify_listeners(ATTRIBUTES[0], ResultType::DataOK, SEQUENCE_NUMBER_NOTIFY);
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Response, 0u));
+        EXPECT_TRUE(proxy->has_notification_listener(CallType::Attribute, 0u));
+        proxy->notify_listeners(CallType::Attribute, 0u, ResultType::DataOK, SEQUENCE_NUMBER_NOTIFY);
         EXPECT_TRUE(first.mNotifications.empty());
         EXPECT_EQ(1u, second.mNotifications.size());
         proxy->clear_all_notifications(second);
         proxy->clear_all_notifications(second);
-        EXPECT_FALSE(proxy->has_any_listener(ATTRIBUTES[0]));
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Attribute, 0u));
         EXPECT_EQ(DataState::DataIsUnavailable, proxy->attribute_state());
     });
 }
@@ -387,13 +444,13 @@ TEST(ProxyBaseContractTest, removing_a_later_consumer_during_notification_retrac
         ContractListener second;
         ProxyLease proxy(first, owner);
         ASSERT_NE(nullptr, proxy.pointer());
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &first, true));
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &second, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &first, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &second, true));
         first.mDuringNotification = [&] { proxy->clear_all_notifications(second); };
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
         EXPECT_EQ(1u, first.mNotifications.size());
         EXPECT_TRUE(second.mNotifications.empty());
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
         EXPECT_EQ(2u, first.mNotifications.size());
         EXPECT_TRUE(second.mNotifications.empty());
     });
@@ -410,9 +467,9 @@ TEST(ProxyBaseContractTest, heap_sized_notification_snapshot_delivers_every_subs
         for (uint32_t i = 0; i < 17; ++i)
         {
             clients.emplace_back(new ContractListener);
-            ASSERT_TRUE(proxy->add_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, clients.back().get(), true));
+            ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, clients.back().get(), true));
         }
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
         for (const auto& client : clients)
         {
             ASSERT_EQ(1u, client->mNotifications.size());
@@ -420,7 +477,7 @@ TEST(ProxyBaseContractTest, heap_sized_notification_snapshot_delivers_every_subs
             EXPECT_EQ(ResultType::RequestOK, std::get<1>(client->mNotifications[0]));
             proxy->clear_all_notifications(*client);
         }
-        EXPECT_FALSE(proxy->has_any_listener(RESPONSES[0]));
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Response, 0u));
     });
 }
 
@@ -432,8 +489,8 @@ TEST(ProxyBaseContractTest, invalid_request_does_not_allocate_a_sequence_or_list
         ProxyLease proxy(listener, owner);
         ASSERT_NE(nullptr, proxy.pointer());
         ServiceRequestEvent invalid(MessageEnvelope{});
-        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(invalid, &listener));
-        EXPECT_FALSE(proxy->has_any_listener(RESPONSES[0]));
+        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(invalid, &listener, 0u));
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Response, 0u));
         EXPECT_TRUE(proxy->mFailures.empty());
     });
 }
@@ -447,8 +504,8 @@ TEST(ProxyBaseContractTest, disconnected_requests_have_distinct_sequences_and_on
         ASSERT_NE(nullptr, proxy.pointer());
         LocalRequestEvent first(proxy->proxy_address(), StubAddress{}, REQUESTS[0]);
         LocalRequestEvent second(proxy->proxy_address(), StubAddress{}, REQUESTS[0]);
-        const SequenceNumber firstSequence = proxy->send_request_event(first, &listener);
-        const SequenceNumber secondSequence = proxy->send_request_event(second, &listener);
+        const SequenceNumber firstSequence = proxy->send_request_event(first, &listener, 0u);
+        const SequenceNumber secondSequence = proxy->send_request_event(second, &listener, 0u);
         EXPECT_NE(firstSequence, secondSequence);
         EXPECT_EQ(firstSequence + 1, secondSequence);
         EXPECT_EQ(firstSequence, first.sequence_number());
@@ -457,10 +514,10 @@ TEST(ProxyBaseContractTest, disconnected_requests_have_distinct_sequences_and_on
         EXPECT_EQ(std::make_tuple(REQUESTS[0], ResultType::ServiceUnavailable, firstSequence), proxy->mFailures[0]);
         EXPECT_EQ(std::make_tuple(REQUESTS[0], ResultType::ServiceUnavailable, secondSequence), proxy->mFailures[1]);
         LocalRequestEvent oneWay(proxy->proxy_address(), StubAddress{}, REQUESTS[1]);
-        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(oneWay, nullptr));
+        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(oneWay, nullptr, RESPONSE_INDEX_NONE));
         EXPECT_EQ(2u, proxy->mFailures.size());
         proxy->clear_all_notifications(listener);
-        EXPECT_FALSE(proxy->has_any_listener(RESPONSES[0]));
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Response, 0u));
     });
 }
 
@@ -471,7 +528,7 @@ TEST(ProxyBaseContractTest, failure_factory_preserves_target_reason_and_sequence
         ContractListener listener;
         ProxyLease proxy(listener, owner);
         ASSERT_NE(nullptr, proxy.pointer());
-        auto failure = ProxyBase::request_failure_event(proxy->proxy_address(), REQUESTS[0], ResultType::MessageUndelivered, 55);
+        auto failure = ProxyBase::request_failure_event(proxy->proxy_address(), REQUESTS[0], CallType::Request, ResultType::MessageUndelivered, 55);
         ASSERT_TRUE(failure.is_valid());
         EXPECT_EQ(REQUESTS[0], failure.response_id());
         EXPECT_EQ(55u, failure.sequence_number());
@@ -480,7 +537,7 @@ TEST(ProxyBaseContractTest, failure_factory_preserves_target_reason_and_sequence
         EXPECT_FALSE(owner.is_ready());
         EXPECT_FALSE(failure.deliver_event());
         ProxyAddress unknown(INTERFACE, String("ProxyContractUnknown"), owner.name());
-        EXPECT_FALSE(ProxyBase::request_failure_event(unknown, REQUESTS[0], ResultType::ServiceUnavailable, 55).is_valid());
+        EXPECT_FALSE(ProxyBase::request_failure_event(unknown, REQUESTS[0], CallType::Request, ResultType::ServiceUnavailable, 55).is_valid());
     });
 }
 
@@ -492,13 +549,13 @@ TEST(ProxyBaseContractTest, stop_and_detach_are_idempotent_and_release_both_regi
         ProxyLease proxy(listener, owner);
         ASSERT_NE(nullptr, proxy.pointer());
         const ProxyAddress address = proxy->proxy_address();
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], 31, &listener, true));
-        proxy->set_state(ATTRIBUTES[0], DataState::DataIsOK);
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, 31, &listener, true));
+        proxy->set_state(CallType::Attribute, 0u, DataState::DataIsOK);
         proxy->stop_proxy();
         proxy->stop_proxy();
         EXPECT_FALSE(proxy->is_connected());
         EXPECT_EQ(ServiceConnectionState::Disconnected, proxy->connection_status());
-        EXPECT_FALSE(proxy->has_any_listener(RESPONSES[0]));
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Response, 0u));
         EXPECT_FALSE(proxy->is_listener_registered(listener));
         EXPECT_EQ(DataState::DataIsUnavailable, proxy->attribute_state());
         proxy->detach_from_registry();
@@ -534,7 +591,7 @@ TEST(ProxyBaseContractTest, connection_changes_ignore_incompatible_and_repeated_
         EXPECT_EQ(ServiceConnectionState::Connected, listener.mConnections[0]);
         proxy->service_connection_updated(server, channel, ServiceConnectionState::Connected);
         EXPECT_EQ(1u, listener.mConnections.size());
-        proxy->set_state(ATTRIBUTES[0], DataState::DataIsOK);
+        proxy->set_state(CallType::Attribute, 0u, DataState::DataIsOK);
         proxy->service_connection_updated(server, channel, ServiceConnectionState::Disconnected);
         EXPECT_FALSE(proxy->is_connected());
         EXPECT_FALSE(proxy->stub_address().is_valid());
@@ -622,15 +679,15 @@ TEST(ProxyBaseContractTest, adding_a_consumer_during_notification_affects_only_t
         ContractListener later;
         ProxyLease proxy(first, owner);
         ASSERT_NE(nullptr, proxy.pointer());
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &first, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &first, true));
         first.mDuringNotification = [&]
         {
-            static_cast<void>(proxy->add_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &later, true));
+            static_cast<void>(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &later, true));
         };
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
         EXPECT_EQ(1u, first.mNotifications.size());
         EXPECT_TRUE(later.mNotifications.empty());
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
         EXPECT_EQ(2u, first.mNotifications.size());
         EXPECT_EQ(1u, later.mNotifications.size());
         proxy->clear_all_notifications(later);
@@ -650,13 +707,13 @@ TEST(ProxyBaseContractTest, reconnect_resubscribes_every_listener_still_in_the_l
         const Channel channel(static_cast<uint32_t>(owner.address()), server.source(), COOKIE_LOCAL);
         proxy->service_connection_updated(server, channel, ServiceConnectionState::Connected);
         ASSERT_TRUE(proxy->is_connected());
-        proxy->set_notification(ATTRIBUTES[0], &listener, true);
-        proxy->set_notification(RESPONSES[0], &listener, true);
+        proxy->set_notification(CallType::Attribute, 0u, &listener, true);
+        proxy->set_notification(CallType::Response, 0u, &listener, true);
         ASSERT_EQ(2u, proxy->mSubscriptions.size());
 
         proxy->service_connection_updated(server, channel, ServiceConnectionState::Disconnected);
         ASSERT_FALSE(proxy->is_connected());
-        proxy->remove_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &listener);
+        proxy->remove_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &listener);
         proxy->mSubscriptions.clear();
 
         proxy->service_connection_updated(server, channel, ServiceConnectionState::Connected);
@@ -677,10 +734,10 @@ TEST(ProxyBaseContractTest, disconnected_subscriptions_do_not_install_listeners)
         ContractListener listener;
         ProxyLease proxy(listener, owner);
         ASSERT_NE(nullptr, proxy.pointer());
-        proxy->set_notification(ATTRIBUTES[0], &listener, true);
-        proxy->set_notification(RESPONSES[0], &listener, true);
-        EXPECT_FALSE(proxy->has_any_listener(ATTRIBUTES[0]));
-        EXPECT_FALSE(proxy->has_any_listener(RESPONSES[0]));
+        proxy->set_notification(CallType::Attribute, 0u, &listener, true);
+        proxy->set_notification(CallType::Response, 0u, &listener, true);
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Attribute, 0u));
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Response, 0u));
         EXPECT_TRUE(listener.mNotifications.empty());
         EXPECT_TRUE(proxy->is_listener_registered(listener));
     });
@@ -706,13 +763,13 @@ TEST(ProxyBaseContractTest, connected_request_to_missing_provider_reports_undeli
         const Channel channel(static_cast<uint32_t>(owner.address()), missing.source(), COOKIE_LOCAL);
         proxy->service_connection_updated(missing, channel, ServiceConnectionState::Connected);
         LocalRequestEvent request(proxy->proxy_address(), missing, REQUESTS[0]);
-        const SequenceNumber sequence = proxy->send_request_event(request, &listener);
+        const SequenceNumber sequence = proxy->send_request_event(request, &listener, 0u);
         EXPECT_NE(SEQUENCE_NUMBER_ANY, sequence);
         ASSERT_EQ(1u, proxy->mFailures.size());
         EXPECT_EQ(std::make_tuple(REQUESTS[0], ResultType::MessageUndelivered, sequence), proxy->mFailures[0]);
-        EXPECT_TRUE(proxy->has_any_listener(RESPONSES[0]));
+        EXPECT_TRUE(proxy->has_any_listener(CallType::Response, 0u));
         proxy->clear_all_notifications(listener);
-        EXPECT_FALSE(proxy->has_any_listener(RESPONSES[0]));
+        EXPECT_FALSE(proxy->has_any_listener(CallType::Response, 0u));
     });
 }
 
@@ -724,15 +781,15 @@ TEST(ProxyBaseContractTest, subscribed_caller_is_notified_once_with_its_sequence
         ContractListener other;
         ProxyLease proxy(caller, owner);
         ASSERT_NE(nullptr, proxy.pointer());
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &caller, true));
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &other, true));
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], 41, &caller, true));
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, 41);
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &caller, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &other, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, 41, &caller, true));
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, 41);
         ASSERT_EQ(1u, caller.mNotifications.size());
         EXPECT_EQ(std::make_tuple(RESPONSES[0], ResultType::RequestOK, SequenceNumber{ 41 }), caller.mNotifications[0]);
         EXPECT_EQ(1u, other.mNotifications.size());
-        EXPECT_TRUE(proxy->has_notification_listener(RESPONSES[0]));
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
+        EXPECT_TRUE(proxy->has_notification_listener(CallType::Response, 0u));
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
         EXPECT_EQ(2u, caller.mNotifications.size());
         EXPECT_EQ(2u, other.mNotifications.size());
     });
@@ -743,29 +800,51 @@ TEST(ProxyBaseContractTest, request_failures_reach_only_the_waiting_caller)
     on_proxy_thread([](DispatcherThread& owner)
     {
         const ResultType failures[]{ ResultType::RequestError, ResultType::RequestBusy, ResultType::RequestCanceled
-                                   , ResultType::MessageUndelivered, ResultType::ServiceUnavailable };
+                                   , ResultType::RequestUnsupported, ResultType::MessageUndelivered, ResultType::ServiceUnavailable };
         ContractListener subscriber;
         ContractListener caller;
         ProxyLease proxy(subscriber, owner);
         ASSERT_NE(nullptr, proxy.pointer());
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &subscriber, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &subscriber, true));
         SequenceNumber sequence = 50;
         for (const ResultType failure : failures)
         {
             ++sequence;
-            ASSERT_TRUE(proxy->add_listener(RESPONSES[0], sequence, &caller, true));
-            proxy->notify_listeners(RESPONSES[0], failure, sequence);
+            ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, sequence, &caller, true));
+            proxy->notify_listeners(CallType::Response, 0u, failure, sequence);
             ASSERT_FALSE(caller.mNotifications.empty());
             EXPECT_EQ(std::make_tuple(RESPONSES[0], failure, sequence), caller.mNotifications.back());
         }
 
-        EXPECT_EQ(5u, caller.mNotifications.size());
+        EXPECT_EQ(6u, caller.mNotifications.size());
         EXPECT_TRUE(subscriber.mNotifications.empty());
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestError, 99);
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, 51);
-        EXPECT_EQ(5u, caller.mNotifications.size());
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestError, 99);
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, 51);
+        EXPECT_EQ(6u, caller.mNotifications.size());
         EXPECT_EQ(1u, subscriber.mNotifications.size());
-        EXPECT_TRUE(proxy->has_notification_listener(RESPONSES[0]));
+        EXPECT_TRUE(proxy->has_notification_listener(CallType::Response, 0u));
+    });
+}
+
+TEST(ProxyBaseContractTest, failed_request_reaches_its_caller_as_the_request_and_invalidates_the_response)
+{
+    on_proxy_thread([](DispatcherThread& owner)
+    {
+        ContractListener subscriber;
+        ContractListener caller;
+        ProxyLease proxy(subscriber, owner);
+        ASSERT_NE(nullptr, proxy.pointer());
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &subscriber, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, 71, &caller, true));
+        proxy->set_state(CallType::Response, 0u, DataState::DataIsOK);
+        proxy->notify_request_failed(0u, 0u, ResultType::RequestError, 71);
+        ASSERT_EQ(1u, caller.mNotifications.size());
+        EXPECT_EQ(std::make_tuple(REQUESTS[0], ResultType::RequestError, SequenceNumber{ 71 }), caller.mNotifications[0]);
+        EXPECT_TRUE(subscriber.mNotifications.empty());
+        EXPECT_EQ(DataState::DataIsInvalid, proxy->response_state());
+        proxy->notify_request_failed(0u, 0u, ResultType::RequestError, 71);
+        EXPECT_EQ(1u, caller.mNotifications.size());
+        EXPECT_TRUE(proxy->has_notification_listener(CallType::Response, 0u));
     });
 }
 
@@ -777,12 +856,12 @@ TEST(ProxyBaseContractTest, subscription_event_leaves_the_waiting_caller_pending
         ContractListener caller;
         ProxyLease proxy(subscriber, owner);
         ASSERT_NE(nullptr, proxy.pointer());
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], SEQUENCE_NUMBER_NOTIFY, &subscriber, true));
-        ASSERT_TRUE(proxy->add_listener(RESPONSES[0], 61, &caller, true));
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, SEQUENCE_NUMBER_NOTIFY, &subscriber, true));
+        ASSERT_TRUE(proxy->add_listener(CallType::Response, 0u, 61, &caller, true));
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, SEQUENCE_NUMBER_NOTIFY);
         EXPECT_EQ(1u, subscriber.mNotifications.size());
         EXPECT_TRUE(caller.mNotifications.empty());
-        proxy->notify_listeners(RESPONSES[0], ResultType::RequestOK, 61);
+        proxy->notify_listeners(CallType::Response, 0u, ResultType::RequestOK, 61);
         EXPECT_EQ(2u, subscriber.mNotifications.size());
         ASSERT_EQ(1u, caller.mNotifications.size());
         EXPECT_EQ(61u, std::get<2>(caller.mNotifications[0]));
@@ -803,10 +882,11 @@ TEST(ProxyBaseContractTest, notification_data_copy_keeps_the_proxy_and_move_clea
         const ProxyBase& proxy{ *lease.pointer() };
         const auto same = [&proxy](const NotificationEventData& data, ResultType type, uint32_t id, SequenceNumber seq)
             {
-                return (data.service_proxy() == &proxy) && (data.notify_type() == type) && (data.notify_id() == id) && (data.sequence() == seq);
+                return (data.service_proxy() == &proxy) && (data.notify_type() == type) && (data.notify_kind() == CallType::Response)
+                    && (data.notify_index() == id) && (data.sequence() == seq);
             };
 
-        NotificationEventData source(proxy, ResultType::RequestOK, 11u, 21u);
+        NotificationEventData source(proxy, ResultType::RequestOK, CallType::Response, 11u, 21u);
         NotificationEventData copy(source);
         EXPECT_TRUE(same(copy, ResultType::RequestOK, 11u, 21u));
         EXPECT_TRUE(same(source, ResultType::RequestOK, 11u, 21u));
@@ -815,14 +895,14 @@ TEST(ProxyBaseContractTest, notification_data_copy_keeps_the_proxy_and_move_clea
         EXPECT_TRUE(same(moved, ResultType::RequestOK, 11u, 21u));
         EXPECT_EQ(nullptr, copy.service_proxy());
 
-        NotificationEventData target(proxy, ResultType::RequestError, 12u, 22u);
+        NotificationEventData target(proxy, ResultType::RequestError, CallType::Response, 12u, 22u);
         target = source;
         EXPECT_TRUE(same(target, ResultType::RequestOK, 11u, 21u));
         const NotificationEventData& alias{ target };
         target = alias;
         EXPECT_TRUE(same(target, ResultType::RequestOK, 11u, 21u));
 
-        NotificationEventData other(proxy, ResultType::RequestBusy, 13u, 23u);
+        NotificationEventData other(proxy, ResultType::RequestBusy, CallType::Response, 13u, 23u);
         target = std::move(other);
         EXPECT_TRUE(same(target, ResultType::RequestBusy, 13u, 23u));
         EXPECT_EQ(nullptr, other.service_proxy());
@@ -853,9 +933,9 @@ TEST(ProxyBaseContractTest, notification_sent_to_a_listener_reaches_it_on_the_pr
     std::atomic<const Thread*> seenOn{ nullptr };
     listener.mDuringNotification = [&seenOn]() { seenOn.store(Thread::current_thread()); };
 
-    NotificationEventData data(*proxy, ResultType::RequestOK, RESPONSES[0], 1u);
+    NotificationEventData data(*proxy, ResultType::RequestOK, CallType::Response, 0u, 1u);
     data.set_notify_type(ResultType::RequestError);
-    data.set_notify_id(ATTRIBUTES[0]);
+    data.set_notify_entry(CallType::Attribute, 0u);
     data.set_sequence(77u);
     data.set_service_proxy(*proxy);
 
@@ -863,7 +943,8 @@ TEST(ProxyBaseContractTest, notification_sent_to_a_listener_reaches_it_on_the_pr
     const NotificationEvent copy(original);
     EXPECT_EQ(proxy.get(), copy.data().service_proxy());
     EXPECT_EQ(ResultType::RequestError, copy.data().notify_type());
-    EXPECT_EQ(ATTRIBUTES[0], copy.data().notify_id());
+    EXPECT_EQ(CallType::Attribute, copy.data().notify_kind());
+    EXPECT_EQ(0u, copy.data().notify_index());
     EXPECT_EQ(77u, copy.data().sequence());
     EXPECT_EQ(&owner, copy.target_dispatcher());
 
@@ -895,14 +976,14 @@ TEST(ProxyBaseContractTest, request_built_from_arguments_carries_them_and_fails_
         ASSERT_NE(nullptr, proxy.pointer());
         SharedBuffer args;
         args << uint32_t{ 0x1234u };
-        const SequenceNumber sequence = proxy->send_request_event(REQUESTS[0], args, &listener);
+        const SequenceNumber sequence = proxy->send_request_event(REQUESTS[0], args, &listener, 0u);
         EXPECT_NE(SEQUENCE_NUMBER_ANY, sequence);
         ASSERT_EQ(1u, proxy->mRequests.size());
         EXPECT_EQ(std::make_pair(REQUESTS[0], args.size_used()), proxy->mRequests[0]);
         ASSERT_EQ(1u, proxy->mFailures.size());
         EXPECT_EQ(std::make_tuple(REQUESTS[0], ResultType::ServiceUnavailable, sequence), proxy->mFailures[0]);
 
-        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(REQUESTS[1], SharedBuffer{}, nullptr));
+        EXPECT_EQ(SEQUENCE_NUMBER_ANY, proxy->send_request_event(REQUESTS[1], SharedBuffer{}, nullptr, RESPONSE_INDEX_NONE));
         ASSERT_EQ(2u, proxy->mRequests.size());
         EXPECT_EQ(std::make_pair(REQUESTS[1], 0u), proxy->mRequests[1]);
         EXPECT_EQ(1u, proxy->mFailures.size());
@@ -917,8 +998,9 @@ TEST(ProxyBaseContractTest, stopping_a_list_of_notifications_sends_one_stop_per_
         ContractListener listener;
         ProxyLease proxy(listener, owner);
         ASSERT_NE(nullptr, proxy.pointer());
-        const uint32_t ids[]{ ATTRIBUTES[0], RESPONSES[0] };
-        proxy->stop_notifications(ids, 2);
+        const uint32_t ids[]{ 0u };
+        proxy->stop_notifications(CallType::Attribute, ids, 1);
+        proxy->stop_notifications(CallType::Response, ids, 1);
         EXPECT_TRUE(proxy->mSubscriptions.empty());
 
         const StubAddress server(INTERFACE, String("ProxyContractProvider"), owner.name());
@@ -926,9 +1008,10 @@ TEST(ProxyBaseContractTest, stopping_a_list_of_notifications_sends_one_stop_per_
         proxy->service_connection_updated(server, channel, ServiceConnectionState::Connected);
         ASSERT_TRUE(proxy->is_connected());
         proxy->mSubscriptions.clear();
-        proxy->stop_notifications(ids, 0);
+        proxy->stop_notifications(CallType::Attribute, ids, 0);
         EXPECT_TRUE(proxy->mSubscriptions.empty());
-        proxy->stop_notifications(ids, 2);
+        proxy->stop_notifications(CallType::Attribute, ids, 1);
+        proxy->stop_notifications(CallType::Response, ids, 1);
         ASSERT_EQ(2u, proxy->mSubscriptions.size());
         EXPECT_EQ(ATTRIBUTES[0], std::get<0>(proxy->mSubscriptions[0]));
         EXPECT_EQ(RequestType::StopNotify, std::get<1>(proxy->mSubscriptions[0]));
@@ -989,7 +1072,7 @@ TEST(ProxyBaseContractTest, repeated_subscription_sends_the_current_state_only_w
             const StubAddress server(INTERFACE, String("ProxyContractProvider"), owner.name());
             const Channel channel(static_cast<uint32_t>(owner.address()), server.source(), COOKIE_LOCAL);
             contract.service_connection_updated(server, channel, ServiceConnectionState::Connected);
-            contract.set_notification(ATTRIBUTES[0], &listener, false);
+            contract.set_notification(CallType::Attribute, 0u, &listener, false);
         }));
     ASSERT_NE(nullptr, proxy);
     ASSERT_TRUE(owner.barrier());
@@ -997,11 +1080,11 @@ TEST(ProxyBaseContractTest, repeated_subscription_sends_the_current_state_only_w
     EXPECT_EQ(ATTRIBUTES[0], std::get<0>(listener.mNotifications[0]));
     EXPECT_EQ(ResultType::DataInvalid, std::get<1>(listener.mNotifications[0]));
 
-    ASSERT_TRUE(owner.invoke([&listener, &proxy]() { proxy->set_notification(ATTRIBUTES[0], &listener, false); }));
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]() { proxy->set_notification(CallType::Attribute, 0u, &listener, false); }));
     ASSERT_TRUE(owner.barrier());
     EXPECT_EQ(1u, listener.mNotifications.size());
 
-    ASSERT_TRUE(owner.invoke([&listener, &proxy]() { proxy->set_notification(ATTRIBUTES[0], &listener, true); }));
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]() { proxy->set_notification(CallType::Attribute, 0u, &listener, true); }));
     ASSERT_TRUE(owner.barrier());
     ASSERT_EQ(2u, listener.mNotifications.size());
     EXPECT_EQ(ATTRIBUTES[0], std::get<0>(listener.mNotifications[1]));
@@ -1014,4 +1097,82 @@ TEST(ProxyBaseContractTest, repeated_subscription_sends_the_current_state_only_w
             proxy->free_proxy(listener);
             proxy.reset();
         }));
+}
+
+/**
+ * \brief   A repeated subscription of a response sends the response only when its data is valid;
+ *          a request has no subscription to set or clear.
+ **/
+TEST(ProxyBaseContractTest, repeated_response_subscription_sends_the_response_only_with_valid_data)
+{
+    EventTestDispatcher owner(String("ProxyContractRepeatResponseThread"));
+    ASSERT_TRUE(owner.start_ready());
+    EventTestRun run(owner);
+    ContractListener listener;
+    std::shared_ptr<ProxyBase> proxy;
+    ASSERT_TRUE(owner.invoke([&listener, &proxy, &owner]()
+        {
+            proxy = ProxyBase::acquire_proxy(String("ProxyContractProvider"), INTERFACE, listener, ContractProxy::create, owner);
+            ContractProxy & contract{ *static_cast<ContractProxy*>(proxy.get()) };
+            const StubAddress server(INTERFACE, String("ProxyContractProvider"), owner.name());
+            const Channel channel(static_cast<uint32_t>(owner.address()), server.source(), COOKIE_LOCAL);
+            contract.service_connection_updated(server, channel, ServiceConnectionState::Connected);
+            contract.set_notification(CallType::Response, 0u, &listener, false);
+        }));
+    ASSERT_NE(nullptr, proxy);
+    ASSERT_TRUE(owner.barrier());
+    const size_t initial{ listener.mNotifications.size() };
+
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]() { proxy->set_notification(CallType::Response, 0u, &listener, true); }));
+    ASSERT_TRUE(owner.barrier());
+    EXPECT_EQ(initial, listener.mNotifications.size());
+
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]()
+        {
+            static_cast<ContractProxy*>(proxy.get())->set_state(CallType::Response, 0u, DataState::DataIsOK);
+            proxy->set_notification(CallType::Response, 0u, &listener, true);
+        }));
+    ASSERT_TRUE(owner.barrier());
+    ASSERT_EQ(initial + 1u, listener.mNotifications.size());
+    EXPECT_EQ(RESPONSES[0], std::get<0>(listener.mNotifications.back()));
+    EXPECT_EQ(ResultType::RequestOK, std::get<1>(listener.mNotifications.back()));
+    EXPECT_EQ(SEQUENCE_NUMBER_NOTIFY, std::get<2>(listener.mNotifications.back()));
+    EXPECT_EQ(1u, static_cast<ContractProxy*>(proxy.get())->mSubscriptions.size());
+
+    ASSERT_TRUE(owner.invoke([&listener, &proxy]()
+        {
+            proxy->set_notification(CallType::Request, 0u, &listener, true);
+            EXPECT_FALSE(proxy->has_notification_listener(CallType::Request, 0u));
+            EXPECT_FALSE(proxy->has_any_listener(CallType::Request, 0u));
+            proxy->clear_notification(CallType::Request, 0u, &listener);
+            EXPECT_TRUE(proxy->has_notification_listener(CallType::Response, 0u));
+            proxy->clear_notification(CallType::Response, 0u, &listener);
+            EXPECT_FALSE(proxy->has_notification_listener(CallType::Response, 0u));
+            proxy->free_proxy(listener);
+            proxy.reset();
+        }));
+}
+
+/**
+ * \brief   The base proxy accepts a proxy event of its own address without a notification, and
+ *          the service available event names its client in every copy.
+ **/
+TEST(ProxyBaseContractTest, proxy_event_changes_nothing_and_available_event_keeps_its_client)
+{
+    on_proxy_thread([](DispatcherThread& owner)
+    {
+        ContractListener listener;
+        ProxyLease proxy(listener, owner);
+        ASSERT_NE(nullptr, proxy.pointer());
+
+        LocalResponseEvent event(proxy->proxy_address(), ResultType::RequestOK, RESPONSES[0], CallType::Response, SEQUENCE_NUMBER_NOTIFY);
+        proxy->process_proxy_event(event);
+        EXPECT_TRUE(listener.mNotifications.empty());
+        EXPECT_TRUE(listener.mConnections.empty());
+
+        const ContractProxy::ServiceAvailableEvent available(listener);
+        const ContractProxy::ServiceAvailableEvent copied(available);
+        EXPECT_EQ(static_cast<NotificationConsumer*>(&listener), &available.consumer());
+        EXPECT_EQ(static_cast<NotificationConsumer*>(&listener), &copied.consumer());
+    });
 }

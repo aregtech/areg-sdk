@@ -12,19 +12,21 @@
  * \author      Artak Avetyan
  * \brief       Areg Platform, unit tests of the stream extractors of strings and containers.
  *              Covers: well-formed round trips, data that ends early, element counts larger
- *              than the data that follows them.
+ *              than the data that follows them, and the flag that reports a read past the end.
  ************************************************************************/
 
 /************************************************************************
  * Include files.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
+#include "areg/base/FileBuffer.hpp"
 #include "areg/base/FixedArray.hpp"
 #include "areg/base/IOStream.hpp"
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/RingStack.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/SortedLinkedList.hpp"
+#include "areg/base/String.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 
 #include <cstring>
@@ -369,4 +371,206 @@ TEST(StreamExtractTest, wide_strings_at_every_byte_offset)
         EXPECT_TRUE(empty.empty()) << "offset " << offset;
         EXPECT_EQ(last, MARKER) << "offset " << offset;
     }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// 5. Reads that ask for more data than the stream holds
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * \brief   Reads that get every byte leave the flag clear; the first read past the end sets it,
+ *          and it stays set until the cursor is set again.
+ **/
+TEST(StreamExtractTest, read_short_is_sticky_until_the_cursor_is_set)
+{
+    areg::SharedBuffer buf;
+    buf << 7u << 9u;
+    buf.move_to_begin();
+
+    uint32_t first{ 0u };
+    uint32_t second{ 0u };
+    buf >> first >> second;
+    EXPECT_FALSE(buf.is_read_short());
+
+    uint32_t third{ 0u };
+    buf >> third;
+    EXPECT_TRUE(buf.is_read_short());
+    EXPECT_TRUE(buf.is_read_short());
+
+    buf.move_to_begin();
+    EXPECT_FALSE(buf.is_read_short());
+    buf >> first >> second >> third;
+    EXPECT_TRUE(buf.is_read_short());
+
+    buf.reset();
+    EXPECT_FALSE(buf.is_read_short());
+    buf >> first >> second >> third;
+    buf.move_to_end();
+    EXPECT_FALSE(buf.is_read_short());
+}
+
+/**
+ * \brief   A value with only a part of its bytes left, an empty buffer and a buffer with no block
+ *          are short reads; a read of zero bytes is not.
+ **/
+TEST(StreamExtractTest, read_short_on_partial_value_and_on_no_data)
+{
+    constexpr uint8_t half[]{ 0x01, 0x02 };
+    areg::SharedBuffer partial(half, 2u);
+    partial.move_to_begin();
+    uint32_t value{ 0u };
+    partial >> value;
+    EXPECT_TRUE(partial.is_read_short());
+
+    areg::SharedBuffer invalid;
+    uint8_t byte{ 0u };
+    EXPECT_EQ(invalid.read(&byte, 0u), 0u);
+    EXPECT_FALSE(invalid.is_read_short());
+    invalid >> value;
+    EXPECT_TRUE(invalid.is_read_short());
+
+    areg::MessageEnvelope msg;
+    msg.init_envelope(areg::EventHeader{ }, 16u);
+    msg.move_to_begin();
+    msg >> value;
+    EXPECT_TRUE(msg.is_read_short());
+}
+
+/**
+ * \brief   A string whose count is larger than the data is a short read, through a buffer and
+ *          through a message envelope; a complete string is not.
+ **/
+TEST(StreamExtractTest, read_short_on_string_count_beyond_data)
+{
+    constexpr uint8_t data[]{ 5u, 0u, 0u, 0u, 'a', 'b', 'c' };
+
+    areg::SharedBuffer buf(data, static_cast<uint32_t>(std::size(data)));
+    buf.move_to_begin();
+    std::string text;
+    buf >> text;
+    EXPECT_TRUE(buf.is_read_short());
+
+    areg::MessageEnvelope msg;
+    msg.init_envelope(areg::EventHeader{ }, 16u);
+    msg.write(data, static_cast<uint32_t>(std::size(data)));
+    msg.move_to_begin();
+    areg::String name;
+    msg >> name;
+    EXPECT_TRUE(msg.is_read_short());
+
+    areg::SharedBuffer whole;
+    whole << std::string("abc");
+    whole.move_to_begin();
+    whole >> text;
+    EXPECT_EQ(text, "abc");
+    EXPECT_FALSE(whole.is_read_short());
+}
+
+/**
+ * \brief   A count of one-byte elements larger than the data is a short read even though every
+ *          element read gets its byte.
+ **/
+TEST(StreamExtractTest, read_short_on_byte_container_count_beyond_data)
+{
+    areg::SharedBuffer buf;
+    buf << 100u << static_cast<uint8_t>(1u) << static_cast<uint8_t>(2u) << static_cast<uint8_t>(3u);
+    buf.move_to_begin();
+    std::vector<uint8_t> bytes;
+    buf >> bytes;
+    EXPECT_LE(bytes.size(), 3u);
+    EXPECT_TRUE(buf.is_read_short());
+
+    areg::SharedBuffer exact;
+    exact << std::vector<uint8_t>{ 1u, 2u, 3u };
+    exact.move_to_begin();
+    exact >> bytes;
+    EXPECT_EQ(bytes.size(), 3u);
+    EXPECT_FALSE(exact.is_read_short());
+}
+
+/**
+ * \brief   A buffer whose length is larger than the data is refused and is a short read;
+ *          a view handed out by the read starts clear and reports its own short reads.
+ **/
+TEST(StreamExtractTest, read_short_on_buffer_length_beyond_data)
+{
+    areg::SharedBuffer src;
+    src << 100u << 1u;
+    src.move_to_begin();
+    areg::SharedBuffer dst;
+    EXPECT_EQ(src.read(dst), 0u);
+    EXPECT_TRUE(src.is_read_short());
+
+    areg::BufferBase base;
+    base << 100u << 1u;
+    base.move_to_begin();
+    EXPECT_EQ(base.read(dst), 0u);
+    EXPECT_TRUE(base.is_read_short());
+
+    areg::SharedBuffer outer;
+    outer << 4u << 3u << 5u;
+    outer.move_to_begin();
+    uint32_t extra{ 0u };
+    outer >> extra;
+    outer >> extra;
+    outer >> extra;
+    EXPECT_FALSE(outer.is_read_short());
+
+    areg::SharedBuffer whole;
+    whole << 4u << 3u;
+    whole.move_to_begin();
+    areg::SharedBuffer view;
+    ASSERT_EQ(whole.read(view), 4u);
+    EXPECT_FALSE(view.is_read_short());
+    uint32_t inside{ 0u };
+    view >> inside;
+    EXPECT_EQ(inside, 3u);
+    EXPECT_FALSE(view.is_read_short());
+    view >> inside;
+    EXPECT_TRUE(view.is_read_short());
+    EXPECT_FALSE(whole.is_read_short());
+}
+
+/**
+ * \brief   A copy and an assignment start with a clear flag; the source keeps its own.
+ **/
+TEST(StreamExtractTest, read_short_is_not_copied)
+{
+    areg::SharedBuffer buf;
+    buf << 7u;
+    buf.move_to_begin();
+    uint64_t wide{ 0u };
+    buf >> wide;
+    ASSERT_TRUE(buf.is_read_short());
+
+    const areg::SharedBuffer copy(buf);
+    EXPECT_FALSE(copy.is_read_short());
+
+    areg::SharedBuffer assigned;
+    assigned = buf;
+    EXPECT_FALSE(assigned.is_read_short());
+    EXPECT_TRUE(buf.is_read_short());
+}
+
+/**
+ * \brief   A file buffer reports a read past its end, and setting its cursor clears it.
+ **/
+TEST(StreamExtractTest, read_short_on_file_buffer)
+{
+    areg::FileBuffer file(static_cast<uint32_t>(areg::FileBase::OpenMode::Write) | static_cast<uint32_t>(areg::FileBase::OpenMode::Binary));
+    ASSERT_TRUE(file.open());
+    file << 7u;
+    file.move_to_begin();
+    EXPECT_FALSE(file.is_read_short());
+
+    uint32_t value{ 0u };
+    file >> value;
+    EXPECT_EQ(value, 7u);
+    EXPECT_FALSE(file.is_read_short());
+    file >> value;
+    EXPECT_TRUE(file.is_read_short());
+
+    file.move_to_begin();
+    EXPECT_FALSE(file.is_read_short());
+    file.close();
 }

@@ -807,7 +807,7 @@ void ServiceCommunicationBase::process_received_message(areg::MessageEnvelope & 
     const uint32_t target{ msgReceived.target() };
     const areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>( msgReceived.message_id() ) };
 
-    if ( (source >= static_cast<uint32_t>(areg::COOKIE_REMOTE_SERVICE)) && areg::is_executable_id(static_cast<uint32_t>(msgId)) )
+    if ( (source >= static_cast<uint32_t>(areg::COOKIE_REMOTE_SERVICE)) && areg::is_interface_call(msgReceived.call_type()) )
     {
         if ( target != static_cast<uint32_t>(areg::TARGET_UNKNOWN) )
         {

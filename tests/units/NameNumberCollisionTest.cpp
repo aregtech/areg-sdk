@@ -10,6 +10,7 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "units/EventTestSupport.hpp"
+#include "units/TestMessageTable.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/SharedBuffer.hpp"
@@ -623,14 +624,21 @@ TEST(NameNumberThreadTest, stopping_one_of_two_threads_of_one_name_keeps_the_oth
 
 namespace
 {
-    constexpr uint32_t REQUESTS[]   { REQUEST_ID_FIRST };
-    constexpr uint32_t RESPONSES[]  { RESPONSE_ID_FIRST };
-    constexpr uint32_t ATTRIBUTES[] { ATTRIBUTE_ID_FIRST };
+    constexpr uint32_t REQUESTS[]   { areg::crc32_calculate("request_collision") };
+    constexpr uint32_t RESPONSES[]  { areg::crc32_calculate("response_collision") };
+    constexpr uint32_t ATTRIBUTES[] { areg::crc32_calculate("attribute_Collision") };
     constexpr uint32_t PARAMS[]     { 0 };
+    constexpr uint16_t REQUEST_TO_RESPONSE[]{ 0u };
+
+    const areg_test::TestMessageTable NC_REQUESTS{ REQUESTS, 1u };
+    const areg_test::TestMessageTable NC_RESPONSES{ RESPONSES, 1u };
+    const areg_test::TestMessageTable NC_ATTRIBUTES{ ATTRIBUTES, 1u };
+
     const InterfaceData NC_INTERFACE
     {
-          SERVICE_NAME, Version(1, 0, 0), ServiceType::Local
-        , 1, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSES, PARAMS
+        areg_test::make_interface( SERVICE_NAME, Version(1, 0, 0), ServiceType::Local
+                                 , NC_REQUESTS.table(), NC_RESPONSES.table(), areg::MessageTable{ }, NC_ATTRIBUTES.table()
+                                 , REQUEST_TO_RESPONSE, PARAMS )
     };
 
     //!< The connection states seen by the consumers, by consumer role name.
@@ -721,14 +729,14 @@ namespace
             return LocalRequestEvent(proxy_address(), stub_address(), reqId, reserve);
         }
 
-        ServiceRequestEvent create_notification_request(uint32_t msgId, RequestType reqType) override
+        ServiceRequestEvent create_notification_request(uint32_t msgId, RequestType reqType, CallType kind) override
         {
-            return LocalNotifyRequestEvent(proxy_address(), stub_address(), msgId, reqType);
+            return LocalNotifyRequestEvent(proxy_address(), stub_address(), msgId, reqType, kind);
         }
 
-        ServiceResponseEvent create_request_failed(const ProxyAddress & addrProxy, uint32_t msgId, ResultType reason, const SequenceNumber & seqNr) const override
+        ServiceResponseEvent create_request_failed(const ProxyAddress & addrProxy, uint32_t msgId, CallType kind, ResultType reason, const SequenceNumber & seqNr) const override
         {
-            return LocalResponseEvent(addrProxy, reason, msgId, seqNr);
+            return LocalResponseEvent(addrProxy, reason, msgId, kind, seqNr);
         }
     };
 
@@ -788,7 +796,7 @@ namespace
         {
         }
 
-        void error_request(uint32_t /*msgId*/, bool /*msgCancel*/) override
+        void error_request(areg::CallType /*kind*/, uint32_t /*index*/, bool /*msgCancel*/) override
         {
         }
 
@@ -844,7 +852,7 @@ namespace
         {
         }
 
-        void process_notification(uint32_t /*msgId*/, ResultType /*result*/, SequenceNumber /*seqNr*/) override
+        void process_notification(areg::CallType /*kind*/, uint32_t /*index*/, ResultType /*result*/, SequenceNumber /*seqNr*/) override
         {
         }
 

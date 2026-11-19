@@ -97,6 +97,7 @@ bool FileBuffer::open()
         }
 
         mIsOpened   = is_valid();
+        mReadShort  = false;
     }
 
     return mIsOpened;
@@ -120,7 +121,8 @@ bool FileBuffer::open(const String& fileName, uint32_t mode)
 
 void FileBuffer::close()
 {
-    mIsOpened = false;
+    mIsOpened  = false;
+    mReadShort = false;
     if (is_force_delete())
     {
         remove();
@@ -138,7 +140,8 @@ uint32_t FileBuffer::read(uint8_t* buffer, uint32_t size) const noexcept
     {
         result = mSharedBuffer.read(buffer, size);
     }
-    
+
+    mReadShort = mReadShort || (result < size);
     return result;
 }
 
@@ -230,6 +233,7 @@ bool FileBuffer::ensure_size(uint32_t addSize)
 
 uint32_t FileBuffer::set_position( int32_t offset, Cursor::SeekOrigin startAt ) const noexcept
 {
+    mReadShort = false;
     return (is_opened() ? mSharedBuffer.set_position(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
 }
 

@@ -38,6 +38,7 @@
 #include "areg/ipc/RemoteServiceDefs.hpp"
 #include "aregextend/service/private/SendBacklog.hpp"
 #include "areg/base/ThreadConsumer.hpp"
+#include "areg/component/StubBase.hpp"
 
 #if AREG_LOGGING
     #include "areglogger/client/LogObserverApi.h"
@@ -612,7 +613,8 @@ namespace
             std::memset( data, 0xA5, bytes );
             std::memcpy( data, &seq, sizeof( seq ) );
             message.header( )->bufHeader.biUsed = bytes;
-            message.set_message_id( areg::REQUEST_ID_FIRST );
+            message.set_message_id( areg::crc32_calculate("request_forwarded") );
+            message.set_call_type( static_cast<uint8_t>( areg::CallType::Request ) );
             message.set_source( static_cast<uint32_t>( cookie ) );
             message.set_target( static_cast<uint32_t>( target ) );
             const int32_t size{ static_cast<int32_t>( areg::wire_size( *message.header( ) ) ) };
@@ -1057,6 +1059,60 @@ TEST( FaultInjectTest, console_read_retries_an_interrupted_read_and_ends_on_a_fa
 #endif  // defined(__linux__) && !sanitizer
 
 #if defined(AREG_FAULT_ALLOC_TESTS)
+
+namespace
+{
+    //!< Opens the listener types of a stub to the test.
+    struct StubListeners : public areg::StubBase
+    {
+        using areg::StubBase::Listener;
+        using areg::StubBase::ListenerSlotList;
+        using areg::StubBase::StubListenerList;
+    };
+}
+
+TEST( FaultInjectTest, stub_listener_list_holds_its_inline_listeners_without_memory_and_keeps_them_when_it_cannot_grow )
+{
+    AREG_EXPECT_IN_CHILD(
+        constexpr uint32_t inlineCount{ StubListeners::StubListenerList::INLINE_COUNT };
+        StubListeners::ListenerSlotList slot( 0u );
+        slot.add( StubListeners::Listener( 50u ) );
+        slot.add( StubListeners::Listener( 51u ) );
+        slot.add( StubListeners::Listener( 52u ) );
+
+        StubListeners::StubListenerList list;
+        areg_fault::FaultScope faults;
+        AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
+        for ( uint32_t i = 0u; i < inlineCount - 2u; ++ i )
+        {
+            AREG_CHILD_CHECK( list.add( StubListeners::Listener( i ) ) );
+        }
+
+        AREG_CHILD_CHECK( list.reserve( inlineCount ) );
+        AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 0u );
+
+        // Two of the three listeners of the slot fit in the inline storage.
+        const bool appended{ list.append( slot ) };
+        areg_fault::keep_allocation( list );
+        AREG_CHILD_CHECK( appended == false );
+        AREG_CHILD_CHECK( (areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u) && NOT_REPLACED );
+        AREG_CHILD_CHECK( (list.size( ) == inlineCount) && (list[inlineCount - 2u].mMessageId == 50u) && (list[inlineCount - 1u].mMessageId == 51u) );
+
+        const bool added{ list.add( StubListeners::Listener( 99u ) ) };
+        areg_fault::keep_allocation( list );
+        AREG_CHILD_CHECK( added == false );
+        const bool reserved{ list.reserve( inlineCount + 1u ) };
+        areg_fault::keep_allocation( list );
+        AREG_CHILD_CHECK( reserved == false );
+        AREG_CHILD_CHECK( (list.size( ) == inlineCount) && (list.first_entry( ).mMessageId == 0u) );
+        ::areg_fault_disarm_all( );
+
+        const bool grown{ list.add( StubListeners::Listener( 99u ) ) };
+        areg_fault::keep_allocation( list );
+        AREG_CHILD_CHECK( grown );
+        AREG_CHILD_CHECK( (list.size( ) == inlineCount + 1u) && (list[inlineCount].mMessageId == 99u) && (list[0u].mMessageId == 0u) );
+    );
+}
 
 namespace
 {

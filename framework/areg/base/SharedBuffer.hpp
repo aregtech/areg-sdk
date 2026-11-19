@@ -654,6 +654,7 @@ inline bool SharedBuffer::operator != (const SharedBuffer& other) const noexcept
 inline void SharedBuffer::invalidate() noexcept
 {
     mPosition  = 0u;
+    mReadShort = false;
     mViewStart = 0u;
     mViewEnd   = 0u;
     mByteBuffer.reset();
@@ -789,6 +790,7 @@ inline void SharedBuffer::share_as_view(SharedBuffer& dst, uint32_t viewStart, u
     dst.mViewStart  = viewStart;
     dst.mViewEnd    = viewEnd;
     dst.mPosition   = viewStart;
+    dst.mReadShort  = false;
 }
 
 inline const uint8_t* SharedBuffer::buffer_to_read() const noexcept
@@ -854,12 +856,18 @@ inline const T* SharedBuffer::read_array(uint32_t count) noexcept
 
     const areg::RawBuffer* const raw = mByteBuffer.get();
     if (raw == nullptr)
+    {
+        mReadShort = true;
         return nullptr;
+    }
 
     const uint32_t limit = (mViewEnd != 0u ? mViewEnd : raw->bufHeader.biUsed);
     const uint64_t end{ static_cast<uint64_t>(mPosition) + static_cast<uint64_t>(sizeof(T)) * count };
     if (end > limit)
+    {
+        mReadShort = true;
         return nullptr;
+    }
 
     const T* result = reinterpret_cast<const T*>(buffer_to_read());
     mPosition = static_cast<uint32_t>(end);

@@ -105,7 +105,7 @@ set(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)
 
 ### Problem Description
 
-The build process fails during cross-compilation when it links the `sqlite3` library installed on the host.
+The build process fails during cross-compilation, configured with `-DAREG_SYSTEM_SQLITE=ON`, when it links the `sqlite3` library installed on the host. The default (`OFF`) builds the bundled sources and does not hit this issue.
 
 **Common error message:**
 ```
@@ -125,8 +125,8 @@ The linker cannot use an x86_64 library when building for ARM targets.
 
 ### Solution 1: Use the Bundled SQLite3 Sources
 
-Areg SDK carries the SQLite3 sources in the `thirdparty` subdirectory. Build them for the target instead of
-linking the host library:
+Areg SDK carries the SQLite3 sources in the `thirdparty` subdirectory and builds them by default. Build them for
+the target instead of linking the host library:
 
 ```bash
 cmake -B build \

@@ -239,6 +239,21 @@ namespace areg_fault
     }
 
     /**
+     * \brief   Publishes the address of an object so the compiler cannot elide its allocations.
+     *          Call it right after the call under test and before its check.
+     **/
+    template<typename OBJECT>
+    inline void keep_allocation( const OBJECT & obj )
+    {
+#if defined(__GNUC__)
+        asm volatile( "" : : "r"( &obj ) : "memory" );
+#else   // defined(__GNUC__)
+        static const void * volatile sink{ nullptr };
+        sink = &obj;
+#endif  // defined(__GNUC__)
+    }
+
+    /**
      * \brief   Disarms every point when the scope ends.
      **/
     class FaultScope

@@ -374,7 +374,7 @@ TEST( FaultInjectTest, router_client_reconnects_when_the_system_refuses_to_send_
     AREG_EXPECT_IN_CHILD(
         constexpr ITEM_ID COOKIE{ areg::COOKIE_REMOTE_SERVICE + 101u };
         constexpr ITEM_ID STUB{ areg::COOKIE_REMOTE_SERVICE + 102u };
-        constexpr uint32_t REQUEST{ areg::REQUEST_ID_FIRST + 3u };
+        constexpr uint32_t REQUEST{ areg::crc32_calculate("request_refused_send") };
         TestRouter router;
         AREG_CHILD_CHECK( router.open( ) );
         AREG_CHILD_CHECK( start_application( router, COOKIE ) );
@@ -1445,7 +1445,7 @@ TEST( FaultInjectTest, router_notices_with_invalid_addresses_are_ignored_and_a_v
         AREG_CHILD_CHECK( areg::Application::router_state( ) == areg::RouterState::Connected );
         areg::MessageEnvelope request;
         AREG_CHILD_CHECK( router.receive( request ) );
-        AREG_CHILD_CHECK( request.message_id( ) == static_cast<uint32_t>( HelloService::MessageIDs::MsgId_request_hello_service ) );
+        AREG_CHILD_CHECK( request.message_id( ) == HelloService::message_id( HelloService::RequestIDs::MsgId_request_hello_service ) );
         AREG_CHILD_CHECK( request.target( ) == PROVIDER );
         AREG_CHILD_CHECK( FiHelloClient::sFailures.load( ) == 0u );
 
@@ -1497,7 +1497,7 @@ namespace
         AREG_CHILD_CHECK( router.send( areg::service_registered_event( remote_provider( PROVIDER ), areg::COOKIE_ROUTER, cookie ) ) );
         areg::MessageEnvelope request;
         AREG_CHILD_CHECK( router.receive( request ) );
-        AREG_CHILD_CHECK( request.message_id( ) == static_cast<uint32_t>( HelloService::MessageIDs::MsgId_request_hello_service ) );
+        AREG_CHILD_CHECK( request.message_id( ) == HelloService::message_id( HelloService::RequestIDs::MsgId_request_hello_service ) );
 
         AREG_CHILD_CHECK( router.send( connection_notice( cookie, state ) ) );
         AREG_CHILD_CHECK( router.closed_by_client( ) );
@@ -1671,7 +1671,7 @@ namespace
         areg::MessageEnvelope message;
         while ( router.receive( message ) )
         {
-            if ( areg::is_register_message( message ) && ( static_cast<areg::RegistrationAction>( message.call_type( ) ) == areg::RegistrationAction::RegisterProvider ) )
+            if ( areg::is_register_message( message ) && ( static_cast<areg::CallType>( message.call_type( ) ) == areg::CallType::RegisterProvider ) )
             {
                 provider = areg::StubAddress( *message.header( ) );
                 return true;
@@ -1754,7 +1754,7 @@ namespace
         while ( router.receive_raw( header, body ) )
         {
             if ( ( header.messageId == static_cast<uint32_t>( areg::FuncIdRange::SystemServiceRequestRegister ) )
-              && ( static_cast<areg::RegistrationAction>( header.callType ) == areg::RegistrationAction::RegisterConsumer ) )
+              && ( static_cast<areg::CallType>( header.callType ) == areg::CallType::RegisterConsumer ) )
             {
                 return header.source == static_cast<uint32_t>( cookie );
             }
@@ -1771,7 +1771,7 @@ namespace
             areg::MessageEnvelope message;
             if ( router.receive( message ) == false )
                 return false;
-            if ( ( message.message_id( ) == static_cast<uint32_t>( HelloService::MessageIDs::MsgId_request_hello_service ) ) && ( message.target( ) == provider ) )
+            if ( ( message.message_id( ) == HelloService::message_id( HelloService::RequestIDs::MsgId_request_hello_service ) ) && ( message.target( ) == provider ) )
                 return true;
         }
 
@@ -1896,7 +1896,12 @@ namespace
         const timeval timeout{ IO_WAIT_S, 0 };
         AREG_CHILD_CHECK( ::setsockopt( router.handle, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof( timeout ) ) == 0 );
         AREG_CHILD_CHECK( request_connection( router ) );
+        const areg::MessageEnvelope first{ areg::create_connect_notify( areg::COOKIE_ROUTER, areg::COOKIE_REMOTE_SERVICE + 999u ) };
+        AREG_CHILD_CHECK( first.is_valid( ) );
+        // The connection of the setup is accepted and closed, so none of it is left in the backlog.
+        AREG_CHILD_CHECK( accept_requesting_again( router, first ) && wait_connected( ) );
         areg::Application::disconnect_router( );
+        AREG_CHILD_CHECK( router.closed_by_client( ) );
         AREG_CHILD_CHECK( wait_router_state( areg::RouterState::Disconnected ) );
 
         areg_fault::FaultScope faults;

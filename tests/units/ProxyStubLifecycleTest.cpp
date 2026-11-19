@@ -4,6 +4,7 @@
  * Areg SDK is dual-licensed under Apache 2.0 and commercial licenses.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
+#include "units/TestMessageTable.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/component/Component.hpp"
@@ -39,17 +40,24 @@ namespace
     constexpr char PROVIDER_ROLE[]{ "ContractProviderRole" };
     constexpr char CONSUMER_THREAD[]{ "ContractConsumerThread" };
     constexpr char PROVIDER_THREAD[]{ "ContractProviderThread" };
-    constexpr uint32_t REQUEST = REQUEST_ID_FIRST;
-    constexpr uint32_t RESPONSE = RESPONSE_ID_FIRST;
-    constexpr uint32_t ATTRIBUTE = ATTRIBUTE_ID_FIRST;
+    constexpr uint32_t REQUEST = areg::crc32_calculate("request_value");
+    constexpr uint32_t RESPONSE = areg::crc32_calculate("response_value");
+    constexpr uint32_t ATTRIBUTE = areg::crc32_calculate("attribute_Value");
     constexpr uint32_t REQUESTS[]{ REQUEST };
     constexpr uint32_t RESPONSES[]{ RESPONSE };
     constexpr uint32_t ATTRIBUTES[]{ ATTRIBUTE };
     constexpr uint32_t PARAM_COUNTS[]{ 1 };
+    constexpr uint16_t REQUEST_TO_RESPONSE[]{ 0u };
+
+    const areg_test::TestMessageTable LIFECYCLE_REQUESTS{ REQUESTS, 1u };
+    const areg_test::TestMessageTable LIFECYCLE_RESPONSES{ RESPONSES, 1u };
+    const areg_test::TestMessageTable LIFECYCLE_ATTRIBUTES{ ATTRIBUTES, 1u };
+
     const InterfaceData INTERFACE
     {
-          "LifecycleContractService", Version(1, 0, 0), ServiceType::Local
-        , 1, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSES, PARAM_COUNTS
+        areg_test::make_interface( "LifecycleContractService", Version(1, 0, 0), ServiceType::Local
+                                 , LIFECYCLE_REQUESTS.table(), LIFECYCLE_RESPONSES.table(), MessageTable{ }, LIFECYCLE_ATTRIBUTES.table()
+                                 , REQUEST_TO_RESPONSE, PARAM_COUNTS )
     };
 
     enum class ObservationKind
@@ -152,8 +160,8 @@ class ProxyStubLifecycleNotify final : public areg::LocalNotifyRequestEvent
     AREG_DECLARE_RUNTIME_EVENT(ProxyStubLifecycleNotify)
 public:
     ProxyStubLifecycleNotify(const areg::ProxyAddress& source, const areg::StubAddress& target
-                             , uint32_t message, areg::RequestType type)
-        : LocalNotifyRequestEvent(source, target, message, type)
+                             , uint32_t message, areg::RequestType type, areg::CallType kind)
+        : LocalNotifyRequestEvent(source, target, message, type, kind)
     {
         header()->eventId = CLASS_ID;
     }
@@ -164,14 +172,14 @@ class ProxyStubLifecycleResponse final : public areg::LocalResponseEvent
 {
     AREG_DECLARE_RUNTIME_EVENT(ProxyStubLifecycleResponse)
 public:
-    ProxyStubLifecycleResponse(const areg::ProxyAddress& target, uint32_t message, areg::ResultType result, uint32_t reserve = 0)
-        : LocalResponseEvent(target, result, message, areg::SEQUENCE_NUMBER_NOTIFY, reserve)
+    ProxyStubLifecycleResponse(const areg::ProxyAddress& target, uint32_t message, areg::CallType kind, areg::ResultType result, uint32_t reserve = 0)
+        : LocalResponseEvent(target, result, message, kind, areg::SEQUENCE_NUMBER_NOTIFY, reserve)
     {
         header()->eventId = CLASS_ID;
     }
 
-    ProxyStubLifecycleResponse(const areg::SharedBuffer& data, const areg::ProxyAddress& target, uint32_t message, areg::ResultType result)
-        : LocalResponseEvent(data, target, result, message)
+    ProxyStubLifecycleResponse(const areg::SharedBuffer& data, const areg::ProxyAddress& target, uint32_t message, areg::CallType kind, areg::ResultType result)
+        : LocalResponseEvent(data, target, result, message, kind)
     {
         header()->eventId = CLASS_ID;
     }
@@ -199,7 +207,7 @@ namespace
         {
             auto event = create_request_event(REQUEST, sizeof(value));
             event.write_stream() << value;
-            return send_request_event(event, &listener);
+            return send_request_event(event, &listener, 0u);
         }
 
         uint32_t response_value() const { return mResponseValue; }
@@ -209,19 +217,23 @@ namespace
         void process_response_event(ServiceResponseEvent& event) override
         {
             const ResultType result = static_cast<ResultType>(event.envelope().result());
-            uint32_t message = event.response_id();
-            if (message == REQUEST)
-                message = RESPONSE;
+            if (event.call_kind() == CallType::Request)
+            {
+                notify_request_failed(0u, 0u, result, event.sequence_number());
+                return;
+            }
+
+            const CallType kind = event.call_kind();
             if ((result == ResultType::DataOK) || (result == ResultType::RequestOK))
             {
-                if (message == ATTRIBUTE)
+                if (kind == CallType::Attribute)
                     event.read_stream() >> mAttributeValue;
                 else
                     event.read_stream() >> mResponseValue;
             }
-            set_state(message, ((result == ResultType::DataOK) || (result == ResultType::RequestOK))
+            set_state(kind, 0u, ((result == ResultType::DataOK) || (result == ResultType::RequestOK))
                               ? DataState::DataIsOK : DataState::DataIsInvalid);
-            notify_listeners(message, result, event.sequence_number());
+            notify_listeners(kind, 0u, result, event.sequence_number());
         }
 
         void process_custom_event(Event&) override
@@ -260,15 +272,15 @@ namespace
             return ProxyStubLifecycleRequest(proxy_address(), stub_address(), request, reserve);
         }
 
-        ServiceRequestEvent create_notification_request(uint32_t message, RequestType type) override
+        ServiceRequestEvent create_notification_request(uint32_t message, RequestType type, CallType kind) override
         {
-            return ProxyStubLifecycleNotify(proxy_address(), stub_address(), message, type);
+            return ProxyStubLifecycleNotify(proxy_address(), stub_address(), message, type, kind);
         }
 
-        ServiceResponseEvent create_request_failed(const ProxyAddress& target, uint32_t message, ResultType reason
+        ServiceResponseEvent create_request_failed(const ProxyAddress& target, uint32_t message, CallType kind, ResultType reason
                                                   , const SequenceNumber& sequence) const override
         {
-            ProxyStubLifecycleResponse result(target, message, reason);
+            ProxyStubLifecycleResponse result(target, message, kind, reason);
             result.set_sequence_number(sequence);
             return result;
         }
@@ -329,7 +341,7 @@ namespace
         void complete(uint32_t value, ResultType result = ResultType::RequestOK)
         {
             StubListenerList listeners;
-            auto event = prepare_response_event(RESPONSE, result, sizeof(value), listeners);
+            auto event = prepare_response_event(CallType::Response, 0u, result, sizeof(value), listeners);
             if (event.is_valid())
             {
                 if (result == ResultType::RequestOK)
@@ -349,10 +361,12 @@ namespace
             mSessions.clear();
         }
 
-        void publish(uint32_t value, uint32_t message = ATTRIBUTE)
+        void publish(uint32_t value, CallType kind = CallType::Attribute)
         {
             mValue = value;
-            send_notification(message);
+            SharedBuffer data;
+            data << mValue;
+            send_update_event(kind, 0u, data, kind == CallType::Attribute ? ResultType::DataOK : ResultType::RequestOK);
         }
 
         void startup_service_interface(Component& holder) override
@@ -369,30 +383,30 @@ namespace
             StubBase::shutdown_service_interface(holder);
         }
 
-        void send_notification(uint32_t message) override
+        void send_notification(uint32_t attrIndex) override
         {
             SharedBuffer data;
             data << mValue;
-            send_update_event(message, data, message == ATTRIBUTE ? ResultType::DataOK : ResultType::RequestOK);
+            send_update_event(CallType::Attribute, attrIndex, data, ResultType::DataOK);
         }
 
-        void error_request(uint32_t message, bool canceled) override
+        void error_request(CallType kind, uint32_t /*index*/, bool canceled) override
         {
-            if ((message == REQUEST) || (message == RESPONSE))
+            if ((kind == CallType::Request) || (kind == CallType::Response))
                 complete(0, canceled ? ResultType::RequestCanceled : ResultType::RequestError);
         }
 
     protected:
-        ServiceResponseEvent create_response(const ProxyAddress& target, uint32_t message, ResultType result
+        ServiceResponseEvent create_response(const ProxyAddress& target, uint32_t message, CallType kind, ResultType result
                                             , const SharedBuffer& data) const override
         {
-            return ProxyStubLifecycleResponse(data, target, message, result);
+            return ProxyStubLifecycleResponse(data, target, message, kind, result);
         }
 
-        ServiceResponseEvent create_response_event(const ProxyAddress& target, uint32_t message
+        ServiceResponseEvent create_response_event(const ProxyAddress& target, uint32_t message, CallType kind
                                                   , ResultType result, uint32_t reserve) const override
         {
-            return ProxyStubLifecycleResponse(target, message, result, reserve);
+            return ProxyStubLifecycleResponse(target, message, kind, result, reserve);
         }
 
         void process_request_event(ServiceRequestEvent& event) override
@@ -401,7 +415,7 @@ namespace
             event.read_stream() >> value;
             mObservations.record(ObservationKind::Request, value, ResultType::RequestOK, event.sequence_number());
             Listener listener(event.request_id(), event.sequence_number(), event.event_source());
-            if (!can_execute_request(listener, RESPONSE, event.sequence_number()))
+            if (!can_execute_request(listener, 0u, event.sequence_number()))
                 return;
             if (value >= 100)
                 mSessions.emplace_back(unblock_current_request(), value);
@@ -411,15 +425,16 @@ namespace
 
         void process_attribute_event(ServiceRequestEvent& event) override
         {
-            const uint32_t message = event.request_id();
+            const CallType kind = event.call_kind();
+            const uint32_t index = INTERFACE.find(kind, event.request_id());
             const ProxyAddress source = event.event_source();
             if (event.request_type() == RequestType::StartNotify)
             {
-                if (add_notification_listener(message, source) && (message == ATTRIBUTE))
-                    send_notification(message);
+                if (add_notification_listener(kind, index, source) && (kind == CallType::Attribute))
+                    send_notification(index);
             }
             else if (event.request_type() == RequestType::StopNotify)
-                remove_notification_listener(message, source);
+                remove_notification_listener(kind, index, source);
             else if (event.request_type() == RequestType::RemoveAllNotify)
                 clear_all_listeners(source);
         }
@@ -457,12 +472,12 @@ namespace
         void process_notification_event(NotificationEvent& event) override
         {
             const NotificationEventData& data = std::as_const(event).data();
-            process_notification(data.notify_id(), data.notify_type(), data.sequence());
+            process_notification(data.notify_kind(), data.notify_index(), data.notify_type(), data.sequence());
         }
 
-        void process_notification(uint32_t message, ResultType result, SequenceNumber sequence) override
+        void process_notification(CallType kind, uint32_t /*index*/, ResultType result, SequenceNumber sequence) override
         {
-            if (message == ATTRIBUTE)
+            if (kind == CallType::Attribute)
                 mObservations.record(ObservationKind::Attribute, proxy().attribute_value(), result, sequence);
             else if (result == ResultType::RequestOK)
                 mObservations.record(ObservationKind::Response, proxy().response_value(), result, sequence);
@@ -606,7 +621,7 @@ TEST(ProxyStubLifecycleTest, late_provider_requests_subscriptions_restart_and_qu
     ASSERT_TRUE(observations.wait_for(ObservationKind::Failure, 3));
     EXPECT_EQ(ResultType::RequestError, observations.rows(ObservationKind::Failure)[2].result);
 
-    ASSERT_TRUE(invoke_component(CONSUMER_ROLE, [&] { consumer->proxy().set_notification(ATTRIBUTE, consumer); }));
+    ASSERT_TRUE(invoke_component(CONSUMER_ROLE, [&] { consumer->proxy().set_notification(CallType::Attribute, 0u, consumer); }));
     ASSERT_TRUE(observations.wait_for(ObservationKind::Attribute, 2));
     auto attributes = observations.rows(ObservationKind::Attribute);
     ASSERT_EQ(2u, attributes.size());
@@ -617,11 +632,11 @@ TEST(ProxyStubLifecycleTest, late_provider_requests_subscriptions_restart_and_qu
     ASSERT_TRUE(invoke_component(PROVIDER_ROLE, [&] { provider->publish(8); }));
     ASSERT_TRUE(observations.wait_for(ObservationKind::Attribute, 3));
     EXPECT_EQ(8u, observations.rows(ObservationKind::Attribute)[2].value);
-    ASSERT_TRUE(invoke_component(CONSUMER_ROLE, [&] { consumer->proxy().clear_notification(ATTRIBUTE, consumer); }));
+    ASSERT_TRUE(invoke_component(CONSUMER_ROLE, [&] { consumer->proxy().clear_notification(CallType::Attribute, 0u, consumer); }));
     ASSERT_TRUE(invoke_component(PROVIDER_ROLE, [&] { provider->publish(9); }));
     ASSERT_TRUE(invoke_component(CONSUMER_ROLE, [] {}));
     EXPECT_EQ(3u, observations.rows(ObservationKind::Attribute).size());
-    ASSERT_TRUE(invoke_component(CONSUMER_ROLE, [&] { consumer->proxy().set_notification(ATTRIBUTE, consumer); }));
+    ASSERT_TRUE(invoke_component(CONSUMER_ROLE, [&] { consumer->proxy().set_notification(CallType::Attribute, 0u, consumer); }));
     ASSERT_TRUE(observations.wait_for(ObservationKind::Attribute, 5));
     attributes = observations.rows(ObservationKind::Attribute);
     EXPECT_EQ(ResultType::DataInvalid, attributes[3].result);
@@ -629,12 +644,12 @@ TEST(ProxyStubLifecycleTest, late_provider_requests_subscriptions_restart_and_qu
     EXPECT_EQ(ResultType::DataOK, attributes[4].result);
     EXPECT_EQ(9u, attributes[4].value);
 
-    ASSERT_TRUE(invoke_component(CONSUMER_ROLE, [&] { consumer->proxy().set_notification(RESPONSE, consumer); }));
+    ASSERT_TRUE(invoke_component(CONSUMER_ROLE, [&] { consumer->proxy().set_notification(CallType::Response, 0u, consumer); }));
     ASSERT_TRUE(invoke_component(PROVIDER_ROLE, [] {}));
     ASSERT_TRUE(invoke_component(PROVIDER_ROLE, [&]
     {
         for (uint32_t value = 0; value < 128; ++value)
-            provider->publish(1'000 + value, RESPONSE);
+            provider->publish(1'000 + value, CallType::Response);
     }));
     ASSERT_TRUE(observations.wait_for(ObservationKind::Response, 132));
     const auto broadcast = observations.rows(ObservationKind::Response);
@@ -644,7 +659,7 @@ TEST(ProxyStubLifecycleTest, late_provider_requests_subscriptions_restart_and_qu
         EXPECT_EQ(1'000 + index, broadcast[4 + index].value);
         EXPECT_EQ(SEQUENCE_NUMBER_NOTIFY, broadcast[4 + index].sequence);
     }
-    ASSERT_TRUE(invoke_component(CONSUMER_ROLE, [&] { consumer->proxy().clear_notification(RESPONSE, consumer); }));
+    ASSERT_TRUE(invoke_component(CONSUMER_ROLE, [&] { consumer->proxy().clear_notification(CallType::Response, 0u, consumer); }));
     ASSERT_TRUE(invoke_component(PROVIDER_ROLE, [] {}));
     ASSERT_TRUE(invoke_component(CONSUMER_ROLE, [&] { consumer->proxy().request(2, *consumer); }));
     ASSERT_TRUE(observations.wait_for(ObservationKind::Request, 8));

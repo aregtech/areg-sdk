@@ -17,6 +17,7 @@
   * Include files.
   ************************************************************************/
 #include "units/GUnitTest.hpp"
+#include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
 #include "areg/logging/LoggingDefs.hpp"
 
@@ -90,23 +91,11 @@ namespace
 
     //!< Registers the logging starter when the environment asks for it.
     const bool _loggingStarter{ [] {
-        constexpr char variable[]{ "AREG_TEST_LOG_CONFIG" };
-#if defined(_WIN32)
-        char * config{ nullptr };
-        std::size_t length{ 0 };
-        if ( (::_dupenv_s( &config, &length, variable ) == 0) && (config != nullptr) && (*config != '\0') )
+        const areg::String config{ areg::Process::instance( ).safe_env_variable( "AREG_TEST_LOG_CONFIG" ) };
+        if ( config.is_empty( ) == false )
         {
-            testing::UnitTest::GetInstance( )->listeners( ).Append( new TestLoggingStarter( config ) );
+            testing::UnitTest::GetInstance( )->listeners( ).Append( new TestLoggingStarter( config.as_string( ) ) );
         }
-
-        std::free( config );
-#else   // defined(_WIN32)
-        const char * config{ std::getenv( variable ) };
-        if ( (config != nullptr) && (*config != '\0') )
-        {
-            testing::UnitTest::GetInstance( )->listeners( ).Append( new TestLoggingStarter( config ) );
-        }
-#endif  // defined(_WIN32)
 
         return true;
     }() };

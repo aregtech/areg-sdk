@@ -827,6 +827,12 @@ public:
      **/
     uint32_t read(SharedBuffer& buffer ) const override;
 
+    /**
+     * \brief   Returns true if a read since the cursor was last set asked for more data than the file held.
+     **/
+    [[nodiscard]]
+    bool is_read_short() const noexcept override;
+
 /************************************************************************/
 // OutStream interface overrides
 /************************************************************************/
@@ -871,6 +877,11 @@ protected:
 
 protected:
     /**
+     * \brief   Marks that a read asked for more data than the file held.
+     **/
+    void mark_read_short() const noexcept override;
+
+    /**
      * \brief   Returns nullptr: a file gives no direct access to its data.
      **/
     [[nodiscard]]
@@ -896,6 +907,11 @@ protected:
      * \brief   File open mode
      **/
     uint32_t        mFileMode;
+
+    /**
+     * \brief   True if a read since the cursor was last set asked for more data than the file held.
+     **/
+    mutable bool    mReadShort;
 
 private:
     /**

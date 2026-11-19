@@ -85,12 +85,12 @@ For C++ on devices, desktops and servers in private networks. Not for web servic
 ## Quick start[![](./docs/img/pin.svg)](#quick-start)
 
 Build [`03_helloservice`](./examples/03_helloservice/): one provider and one consumer, compiled into three deployments.
-You need Git, a C++17 compiler, CMake 3.20+ and Java 17+ ([details](#getting-started)).
-
+You need Git, a C++17 compiler, CMake 3.20+ and Java 17+ ([details](#getting-started)).  
+To build all, run this in a terminal:
 ```bash
 git clone https://github.com/aregtech/areg-sdk.git && cd areg-sdk
-cmake -B build -DAREG_OUTPUT_LAYOUT=OFF
-cmake --build build --config Release -j --target 03_onethread 03_twothreads 03_pubservice 03_pubclient mtrouter
+cmake -B build
+cmake --build build --config Release -j16
 ```
 
 **1. One process.** Run the one-thread and the two-thread deployment:
@@ -273,8 +273,8 @@ without loss (Linux in WSL2). [Details](./docs/wiki/04f-logging-performance.md)
 How fast is your PC? Build the two benchmarks without logging, then start the router and leave its console visible:
 
 ```bash
-cmake -B build -DAREG_OUTPUT_LAYOUT=OFF -DAREG_LOGGING=OFF
-cmake --build build --config Release -j --target mtrouter 30_pubprovider 30_pubconsumer 23_pubservice 23_pubclient
+cmake -B build -DAREG_LOGGING=OFF
+cmake --build build --config Release -j16 --target mtrouter 30_pubprovider 30_pubconsumer 23_pubservice 23_pubclient
 cd build/bin && ./mtrouter.elf --console                    # terminal 1
 ```
 

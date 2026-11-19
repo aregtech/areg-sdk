@@ -192,11 +192,6 @@ void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::
         break;
 
     case areg::FuncIdRange::EmptyFunctionId:                  // fall through
-    case areg::FuncIdRange::ComponentCleanup:                 // fall through
-    case areg::FuncIdRange::RequestRegisterService:           // fall through
-    case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
-    case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
-    case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
     case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
     case areg::FuncIdRange::SystemServiceConnect:             // fall through
     case areg::FuncIdRange::SystemServiceDisconnect:          // fall through
@@ -213,13 +208,6 @@ void LogCollectorServerService::dispatch_and_forward_logger_message(const areg::
     case areg::FuncIdRange::ServiceLogSourceStateUpdated:     // fall through
     case areg::FuncIdRange::ServiceLogRestoreConfiguration:   // fall through
     case areg::FuncIdRange::ServiceLogConfigurationRestored:  // fall through
-    case areg::FuncIdRange::RequestFirstId:                   // fall through
-    case areg::FuncIdRange::ResponseFirstId:                  // fall through
-    case areg::FuncIdRange::AttributeFirstId:                 // fall through
-    case areg::FuncIdRange::RequestLastId:                    // fall through
-    case areg::FuncIdRange::ResponseLastId:                   // fall through
-    case areg::FuncIdRange::AttributeLastId:                  // fall through
-    case areg::FuncIdRange::ServiceLastId:                    // fall through
     case areg::FuncIdRange::SystemServiceNotifyDuplicate:
     default:
         break;
@@ -294,24 +282,11 @@ void LogCollectorServerService::on_message_received(const areg::MessageEnvelope 
         break;
 
     case areg::FuncIdRange::SystemServiceNotifyInstances:
-
-    case areg::FuncIdRange::RequestRegisterService:           // fall through
-    case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
-    case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
-    case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
     case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
     case areg::FuncIdRange::SystemServiceNotifyConnection:    // fall through
     case areg::FuncIdRange::SystemServiceRequestRegister:     // fall through
     case areg::FuncIdRange::SystemServiceNotifyRegister:      // fall through
     case areg::FuncIdRange::EmptyFunctionId:                  // fall through
-    case areg::FuncIdRange::ComponentCleanup:                 // fall through
-    case areg::FuncIdRange::RequestFirstId:                   // fall through
-    case areg::FuncIdRange::ResponseFirstId:                  // fall through
-    case areg::FuncIdRange::AttributeFirstId:                 // fall through
-    case areg::FuncIdRange::RequestLastId:                    // fall through
-    case areg::FuncIdRange::ResponseLastId:                   // fall through
-    case areg::FuncIdRange::AttributeLastId:                  // fall through
-    case areg::FuncIdRange::ServiceLastId:                    // fall through
     case areg::FuncIdRange::SystemServiceNotifyDuplicate:
     default:
         break;
@@ -339,7 +314,7 @@ void LogCollectorServerService::process_received_message(areg::MessageEnvelope &
 {
     const uint32_t msgId{ msgReceived.message_id() };
     const bool isService{ msgReceived.is_valid() && whichSource.is_valid()
-                        && (areg::is_executable_id(msgId) == false)
+                        && (areg::is_interface_call(msgReceived.call_type()) == false)
                         && (msgId != static_cast<uint32_t>(areg::FuncIdRange::SystemServiceConnect))
                         && (msgId != static_cast<uint32_t>(areg::FuncIdRange::SystemServiceDisconnect)) };
 

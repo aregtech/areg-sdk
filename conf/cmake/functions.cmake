@@ -421,7 +421,7 @@ endmacro(macro_create_option)
 # Purpose ....: Verifies that the build host can compile AND execute SSE4.2
 #               CRC32C intrinsics when compiled with '-msse4.2'. Used by the
 #               GNU and Clang Release configurations to select a portable
-#               hardware-accelerated ISA baseline when 'AREG_ARCH_NATIVE' is disabled.
+#               hardware-accelerated ISA baseline.
 #               The check runs once, the result is cached.
 # Parameters .: ${var_name} [out] -- Name of the cached result variable (TRUE/FALSE).
 # Usage ......: macro_check_sse42(<out-var>)
@@ -1323,12 +1323,7 @@ macro(macro_add_generated_document lib_name model_doc source_root codegen_root o
 
     # Create the library target empty. Callers name it right after this call and detect a
     # library by 'if (TARGET)'. Its sources are added by areg_generate_documents.
-    if (AREG_GENERATE_ONLY)
-        if (NOT TARGET ${lib_name})
-            message(STATUS "Areg: >>> AREG_GENERATE_ONLY=ON: Skipping library '${lib_name}'")
-            add_library(${lib_name} INTERFACE)
-        endif()
-    elseif (TARGET ${lib_name})
+    if (TARGET ${lib_name})
         # The sources join the existing target and the requested library type does not apply.
         if (NOT "${_lib_type}" STREQUAL "static")
             message(STATUS "Areg Setup: Target '${lib_name}' already exists; the requested '${_lib_type}' library type is ignored.")
@@ -1468,6 +1463,12 @@ function(areg_generate_documents)
             return()
         endif()
 
+        # A new generator or schema regenerates the code like a changed document does.
+        macro_cmake_path(_jar_path "${_jar}")
+        cmake_path(GET _jar_path PARENT_PATH _jar_dir)
+        file(GLOB _schema_files LIST_DIRECTORIES false "${_jar_dir}/schema/*")
+        set_property(DIRECTORY "${CMAKE_SOURCE_DIR}" APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${_jar_path}" ${_schema_files})
+
         math(EXPR _group_nr "${_group_nr} + 1")
     endforeach()
 
@@ -1571,13 +1572,11 @@ function(areg_generate_documents)
 
         set_property(DIRECTORY "${CMAKE_SOURCE_DIR}" APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${_inputs})
 
-        if (NOT AREG_GENERATE_ONLY)
-            target_sources(${_lib} PRIVATE "${_sources}")
+        target_sources(${_lib} PRIVATE "${_sources}")
 
-            # On the sources, so the rest of the target keeps its own warning level.
-            set_source_files_properties(${_sources} DIRECTORY "${_call_dir}"
-                                        PROPERTIES COMPILE_OPTIONS "${AREG_OPT_DISABLE_WARN_CODEGEN}")
-        endif()
+        # On the sources, so the rest of the target keeps its own warning level.
+        set_source_files_properties(${_sources} DIRECTORY "${_call_dir}"
+                                    PROPERTIES COMPILE_OPTIONS "${AREG_OPT_DISABLE_WARN_CODEGEN}")
     endforeach()
 
 endfunction(areg_generate_documents)
@@ -1803,19 +1802,12 @@ macro(macro_declare_static_library lib_name)
         message(FATAL_ERROR "Areg: >>> Source list to build static library \'${exe_name}\' is empty")
     endif()
 
-    if (AREG_GENERATE_ONLY)
-        message(STATUS "Areg Setup: AREG_GENERATE_ONLY is ON. Skipping static library compilation for ${lib_name}")
-        if (NOT TARGET ${lib_name})
-            add_library(${lib_name} INTERFACE)
-        endif()
-    else()
-        # Declare the static library using gathered sources and libraries
-        addStaticLibEx(${lib_name} "" "${_sources}" "${_libs}")
+    # Declare the static library using gathered sources and libraries
+    addStaticLibEx(${lib_name} "" "${_sources}" "${_libs}")
 
-        # If on Windows, set the RC files' language property
-        if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
-            set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
-        endif()
+    # If on Windows, set the RC files' language property
+    if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
+        set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
     endif()
 
     # Clean up temporary variables
@@ -1844,19 +1836,12 @@ macro(macro_declare_shared_library lib_name)
         message(FATAL_ERROR "Areg: >>> Source list to build shared library \'${exe_name}\' is empty")
     endif()
 
-    if (AREG_GENERATE_ONLY)
-        message(STATUS "Areg Setup: AREG_GENERATE_ONLY is ON. Skipping shared library compilation for ${lib_name}")
-        if (NOT TARGET ${lib_name})
-            add_library(${lib_name} INTERFACE)
-        endif()
-    else()
-        # Declare the shared library using gathered sources and libraries
-        addSharedLibEx(${lib_name} "" "${_sources}" "${_libs}")
+    # Declare the shared library using gathered sources and libraries
+    addSharedLibEx(${lib_name} "" "${_sources}" "${_libs}")
 
-        # If on Windows, set the RC files' language property
-        if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
-            set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
-        endif()
+    # If on Windows, set the RC files' language property
+    if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
+        set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
     endif()
 
     # Clean up temporary variables
@@ -1886,23 +1871,12 @@ macro(macro_declare_executable exe_name)
         message(FATAL_ERROR "Areg: >>> Source list to build executable \'${exe_name}\' is empty")
     endif()
 
-    # Determine if executable should be built or skipped due to generate-only mode
-    if (AREG_GENERATE_ONLY)
-        message(STATUS "Areg Setup: AREG_GENERATE_ONLY is ON. Skipping executable compilation for ${exe_name}")
-
-        if (NOT TARGET ${exe_name})
-            add_executable(${exe_name} "dummy.cpp")
-            set_source_files_properties("dummy.cpp" PROPERTIES GENERATED TRUE)
-            set_target_properties(${exe_name} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-        endif()
-    else()
-        # Declare the executable using gathered sources and libraries
-        addExecutableEx(${exe_name} "" "${_sources}" "${_libs}")
+    # Declare the executable using gathered sources and libraries
+    addExecutableEx(${exe_name} "" "${_sources}" "${_libs}")
     
-        # If on Windows, set the RC files' language property
-        if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
-            set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
-        endif()
+    # If on Windows, set the RC files' language property
+    if ((AREG_DEVELOP_ENV MATCHES "Win32") AND (NOT MINGW) AND _resources)
+        set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
     endif()
 
     # Clean up temporary variables

@@ -29,13 +29,9 @@ namespace areg {
  *
  *          EventHeader layout:
  *            - provider endpoint : StubAddress  (target stub)
- *            - consumer endpoint : ProxyAddress (connecting proxy; invalid for ServiceConnection)
+ *            - consumer endpoint : ProxyAddress (connecting or disconnecting proxy)
  *            - messageId         : FuncIdRange::ResponseServiceProviderConnection
  *            - result            : ServiceConnectionState
- *
- *          ServiceConnection vs ClientConnection is distinguished by consumer (proxy) validity:
- *            - consumer invalid: ServiceConnection (stub registered with service manager)
- *            - consumer valid  : ClientConnection  (proxy client connecting/disconnecting)
  **/
 class StubConnectEvent final  : public    ServiceRequestEvent
 {
@@ -48,14 +44,6 @@ class StubConnectEvent final  : public    ServiceRequestEvent
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Creates event to notify stub about its own registration status.
-     *
-     * \param   stubTarget          The target Stub address
-     * \param   connectStatus       The connection status of Stub
-     **/
-    StubConnectEvent( const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
-
     /**
      * \brief   Creates event to notify stub that a proxy client is connecting or disconnecting.
      *

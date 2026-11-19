@@ -19,6 +19,8 @@
  * Include files.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
+#include "units/TestMessageTable.hpp"
+#include "areg/base/ArrayList.hpp"
 #include "areg/base/MessageEnvelope.hpp"
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
@@ -78,6 +80,7 @@ TEST(ServiceDefsTest, result_type_names)
         , { areg::ResultType::RequestError,       "areg::ResultType::RequestError" }
         , { areg::ResultType::RequestBusy,        "areg::ResultType::RequestBusy" }
         , { areg::ResultType::RequestCanceled,    "areg::ResultType::RequestCanceled" }
+        , { areg::ResultType::RequestUnsupported, "areg::ResultType::RequestUnsupported" }
         , { areg::ResultType::DataOK,             "areg::ResultType::DataOK" }
         , { areg::ResultType::DataInvalid,        "areg::ResultType::DataInvalid" }
         , { areg::ResultType::ServiceOK,          "areg::ResultType::ServiceOK" }
@@ -123,21 +126,6 @@ TEST(ServiceDefsTest, request_type_names)
     EXPECT_TRUE(starts_with(areg::as_string(static_cast<areg::RequestType>(0x7777u)), "ERR:"));
 }
 
-TEST(ServiceDefsTest, message_data_type_names)
-{
-    static const NameRow<areg::MessageDataType> table[] =
-    {
-          { areg::MessageDataType::UndefinedData, "areg::MessageDataType::UndefinedData" }
-        , { areg::MessageDataType::RequestData,   "areg::MessageDataType::RequestData" }
-        , { areg::MessageDataType::ResponseData,  "areg::MessageDataType::ResponseData" }
-        , { areg::MessageDataType::AttributeData, "areg::MessageDataType::AttributeData" }
-        , { areg::MessageDataType::ServiceData,   "areg::MessageDataType::ServiceData" }
-    };
-
-    check_names(table);
-    EXPECT_TRUE(starts_with(areg::as_string(static_cast<areg::MessageDataType>(0x7777u)), "ERR:"));
-}
-
 TEST(ServiceDefsTest, service_connection_state_names)
 {
     static const NameRow<areg::ServiceConnectionState> table[] =
@@ -178,20 +166,6 @@ TEST(ServiceDefsTest, disconnect_reason_names)
 
     check_names(table);
     EXPECT_TRUE(starts_with(areg::as_string(static_cast<areg::DisconnectReason>(0x7777u)), "ERR:"));
-}
-
-TEST(ServiceDefsTest, registration_action_names)
-{
-    static const NameRow<areg::RegistrationAction> table[] =
-    {
-          { areg::RegistrationAction::RegisterConsumer,   "areg::RegistrationAction::RegisterConsumer" }
-        , { areg::RegistrationAction::UnregisterConsumer, "areg::RegistrationAction::UnregisterConsumer" }
-        , { areg::RegistrationAction::RegisterProvider,   "areg::RegistrationAction::RegisterProvider" }
-        , { areg::RegistrationAction::UnregisterProvider, "areg::RegistrationAction::UnregisterProvider" }
-    };
-
-    check_names(table);
-    EXPECT_TRUE(starts_with(areg::as_string(static_cast<areg::RegistrationAction>(0xFFu)), "ERR:"));
 }
 
 TEST(ServiceDefsTest, service_type_names)
@@ -243,17 +217,6 @@ TEST(ServiceDefsTest, function_id_names)
     static const NameRow<areg::FuncIdRange> table[] =
     {
           { areg::FuncIdRange::EmptyFunctionId,                 "areg::FuncIdRange::EmptyFunctionId" }
-        , { areg::FuncIdRange::ComponentCleanup,                "areg::FuncIdRange::ComponentCleanup" }
-        , { areg::FuncIdRange::RequestFirstId,                  "areg::FuncIdRange::RequestFirstId" }
-        , { areg::FuncIdRange::RequestLastId,                   "areg::FuncIdRange::RequestLastId" }
-        , { areg::FuncIdRange::ResponseFirstId,                 "areg::FuncIdRange::ResponseFirstId" }
-        , { areg::FuncIdRange::ResponseLastId,                  "areg::FuncIdRange::ResponseLastId" }
-        , { areg::FuncIdRange::AttributeFirstId,                "areg::FuncIdRange::AttributeFirstId" }
-        , { areg::FuncIdRange::AttributeLastId,                 "areg::FuncIdRange::AttributeLastId" }
-        , { areg::FuncIdRange::RequestRegisterService,          "areg::FuncIdRange::RequestRegisterService" }
-        , { areg::FuncIdRange::RequestServiceProviderVersion,   "areg::FuncIdRange::RequestServiceProviderVersion" }
-        , { areg::FuncIdRange::ResponseServiceProviderVersion,  "areg::FuncIdRange::ResponseServiceProviderVersion" }
-        , { areg::FuncIdRange::RequestServiceProviderConnection,"areg::FuncIdRange::RequestServiceProviderConnection" }
         , { areg::FuncIdRange::ResponseServiceProviderConnection,"areg::FuncIdRange::ResponseServiceProviderConnection" }
         , { areg::FuncIdRange::SystemServiceConnect,            "areg::FuncIdRange::SystemServiceConnect" }
         , { areg::FuncIdRange::SystemServiceDisconnect,         "areg::FuncIdRange::SystemServiceDisconnect" }
@@ -274,7 +237,6 @@ TEST(ServiceDefsTest, function_id_names)
         , { areg::FuncIdRange::ServiceLogRestoreConfiguration,  "areg::FuncIdRange::ServiceLogRestoreConfiguration" }
         , { areg::FuncIdRange::ServiceLogConfigurationRestored, "areg::FuncIdRange::ServiceLogConfigurationRestored" }
         , { areg::FuncIdRange::SystemServiceNotifyDuplicate,    "areg::FuncIdRange::SystemServiceNotifyDuplicate" }
-        , { areg::FuncIdRange::ServiceLastId,                   "areg::FuncIdRange::ServiceLastId" }
     };
 
     check_names(table);
@@ -283,143 +245,34 @@ TEST(ServiceDefsTest, function_id_names)
 TEST(ServiceDefsTest, function_id_names_of_unnamed_values)
 {
     using areg::FuncIdRange;
-    EXPECT_STREQ(areg::as_string(static_cast<FuncIdRange>(areg::REQUEST_ID_FIRST + 5u)), "Request ID range");
-    EXPECT_STREQ(areg::as_string(static_cast<FuncIdRange>(areg::RESPONSE_ID_FIRST + 5u)), "Response ID range");
-    EXPECT_STREQ(areg::as_string(static_cast<FuncIdRange>(areg::ATTRIBUTE_ID_FIRST + 5u)), "Attribute ID range");
-    EXPECT_STREQ(areg::as_string(static_cast<FuncIdRange>(areg::SERVICE_ID_FIRST + 0x800u)), "Service registration ID");
     EXPECT_TRUE(starts_with(areg::as_string(static_cast<FuncIdRange>(0x0123u)), "ERR:"));
-    EXPECT_TRUE(starts_with(areg::as_string(static_cast<FuncIdRange>(areg::SERVICE_ID_LAST + 1u)), "ERR:"));
+    EXPECT_TRUE(starts_with(areg::as_string(static_cast<FuncIdRange>(0x00010000u)), "ERR:"));
+    EXPECT_TRUE(starts_with(areg::as_string(static_cast<FuncIdRange>(areg::INVALID_MESSAGE_ID)), "ERR:"));
 }
 
 //////////////////////////////////////////////////////////////////////////
-// 2. Message ID helpers
+// 2. Message ID values
 //////////////////////////////////////////////////////////////////////////
 
-TEST(ServiceDefsTest, id_ranges_are_adjacent_and_sized)
+TEST(ServiceDefsTest, system_ids_are_in_the_system_range)
 {
-    EXPECT_EQ(areg::REQUEST_ID_LAST - areg::REQUEST_ID_FIRST, areg::FUNC_RANGE);
-    EXPECT_EQ(areg::RESPONSE_ID_LAST - areg::RESPONSE_ID_FIRST, areg::FUNC_RANGE);
-    EXPECT_EQ(areg::ATTRIBUTE_ID_LAST - areg::ATTRIBUTE_ID_FIRST, areg::FUNC_RANGE);
-    EXPECT_EQ(areg::SERVICE_ID_LAST - areg::SERVICE_ID_FIRST, areg::FUNC_RANGE);
-    EXPECT_EQ(areg::RESPONSE_ID_NONE, 0u);
+    EXPECT_EQ(static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId), 0u);
+    EXPECT_EQ(static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection), 0x8004u);
+    for (uint32_t id = static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection); id <= static_cast<uint32_t>(areg::FuncIdRange::SystemServiceNotifyDuplicate); ++id)
+    {
+        EXPECT_LE(id, areg::SYSTEM_ID_LAST);
+    }
 }
 
-TEST(ServiceDefsTest, index_of_first_and_last_ids)
+TEST(ServiceDefsTest, kind_index_orders_the_entry_kinds)
 {
-    EXPECT_EQ(areg::req_index(areg::REQUEST_ID_FIRST), 0u);
-    EXPECT_EQ(areg::req_index(areg::REQUEST_ID_LAST), areg::FUNC_RANGE);
-    EXPECT_EQ(areg::resp_index(areg::RESPONSE_ID_FIRST), 0u);
-    EXPECT_EQ(areg::resp_index(areg::RESPONSE_ID_LAST), areg::FUNC_RANGE);
-    EXPECT_EQ(areg::attr_index(areg::ATTRIBUTE_ID_FIRST), 0u);
-    EXPECT_EQ(areg::attr_index(areg::ATTRIBUTE_ID_LAST), areg::FUNC_RANGE);
-}
-
-TEST(ServiceDefsTest, index_of_empty_id_is_invalid)
-{
-    const uint32_t invalid{ static_cast<uint32_t>(areg::INVALID_INDEX) };
-    EXPECT_EQ(areg::req_index(areg::RESPONSE_ID_NONE), invalid);
-    EXPECT_EQ(areg::resp_index(areg::RESPONSE_ID_NONE), invalid);
-    EXPECT_EQ(areg::attr_index(areg::RESPONSE_ID_NONE), invalid);
-}
-
-TEST(ServiceDefsTest, request_id_range)
-{
-    EXPECT_FALSE(areg::is_request_id(areg::REQUEST_ID_FIRST - 1u));
-    EXPECT_TRUE(areg::is_request_id(areg::REQUEST_ID_FIRST));
-    EXPECT_TRUE(areg::is_request_id(areg::REQUEST_ID_FIRST + 1u));
-    EXPECT_TRUE(areg::is_request_id(areg::REQUEST_ID_LAST));
-    EXPECT_FALSE(areg::is_request_id(areg::REQUEST_ID_LAST + 1u));
-    EXPECT_FALSE(areg::is_request_id(areg::RESPONSE_ID_NONE));
-}
-
-TEST(ServiceDefsTest, response_id_range)
-{
-    EXPECT_FALSE(areg::is_response_id(areg::RESPONSE_ID_FIRST - 1u));
-    EXPECT_TRUE(areg::is_response_id(areg::RESPONSE_ID_FIRST));
-    EXPECT_TRUE(areg::is_response_id(areg::RESPONSE_ID_LAST));
-    EXPECT_FALSE(areg::is_response_id(areg::RESPONSE_ID_NONE));
-}
-
-TEST(ServiceDefsTest, valid_response_id_range)
-{
-    EXPECT_FALSE(areg::is_valid_response_id(areg::RESPONSE_ID_NONE));
-    EXPECT_FALSE(areg::is_valid_response_id(areg::RESPONSE_ID_FIRST - 1u));
-    EXPECT_TRUE(areg::is_valid_response_id(areg::RESPONSE_ID_FIRST));
-    EXPECT_TRUE(areg::is_valid_response_id(areg::RESPONSE_ID_FIRST + 7u));
-    EXPECT_TRUE(areg::is_valid_response_id(areg::RESPONSE_ID_LAST));
-    EXPECT_FALSE(areg::is_valid_response_id(areg::RESPONSE_ID_LAST + 1u));
-    EXPECT_FALSE(areg::is_valid_response_id(areg::REQUEST_ID_FIRST));
-    EXPECT_FALSE(areg::is_valid_response_id(areg::INVALID_MESSAGE_ID));
-}
-
-TEST(ServiceDefsTest, attribute_id_range)
-{
-    EXPECT_FALSE(areg::is_attribute_id(areg::ATTRIBUTE_ID_FIRST - 1u));
-    EXPECT_TRUE(areg::is_attribute_id(areg::ATTRIBUTE_ID_FIRST));
-    EXPECT_TRUE(areg::is_attribute_id(areg::ATTRIBUTE_ID_LAST));
-    EXPECT_FALSE(areg::is_attribute_id(areg::RESPONSE_ID_NONE));
-}
-
-TEST(ServiceDefsTest, registry_id_range)
-{
-    EXPECT_FALSE(areg::is_registry_id(areg::SERVICE_ID_FIRST - 1u));
-    EXPECT_TRUE(areg::is_registry_id(areg::SERVICE_ID_FIRST));
-    EXPECT_TRUE(areg::is_registry_id(areg::SERVICE_ID_LAST));
-    EXPECT_FALSE(areg::is_registry_id(areg::REQUEST_ID_FIRST));
-    EXPECT_FALSE(areg::is_registry_id(areg::RESPONSE_ID_NONE));
-}
-
-TEST(ServiceDefsTest, version_and_connect_ids)
-{
-    const uint32_t version{ static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderVersion) };
-    const uint32_t connect{ static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) };
-
-    EXPECT_TRUE(areg::is_version_id(version));
-    EXPECT_FALSE(areg::is_version_id(version - 1u));
-    EXPECT_FALSE(areg::is_version_id(version + 1u));
-    EXPECT_FALSE(areg::is_version_id(connect));
-
-    EXPECT_TRUE(areg::is_connect_id(connect));
-    EXPECT_FALSE(areg::is_connect_id(connect - 1u));
-    EXPECT_FALSE(areg::is_connect_id(connect + 1u));
-    EXPECT_FALSE(areg::is_connect_id(version));
-}
-
-TEST(ServiceDefsTest, executable_id_range)
-{
-    EXPECT_TRUE(areg::is_executable_id(areg::REQUEST_ID_FIRST));
-    EXPECT_TRUE(areg::is_executable_id(areg::REQUEST_ID_LAST));
-    EXPECT_TRUE(areg::is_executable_id(areg::RESPONSE_ID_FIRST));
-    EXPECT_TRUE(areg::is_executable_id(areg::RESPONSE_ID_LAST));
-    EXPECT_TRUE(areg::is_executable_id(areg::ATTRIBUTE_ID_FIRST));
-    EXPECT_TRUE(areg::is_executable_id(areg::ATTRIBUTE_ID_LAST));
-    EXPECT_TRUE(areg::is_executable_id(areg::RESPONSE_ID_NONE));
-    EXPECT_FALSE(areg::is_executable_id(areg::SERVICE_ID_FIRST));
-    EXPECT_FALSE(areg::is_executable_id(areg::SERVICE_ID_LAST));
-    EXPECT_FALSE(areg::is_executable_id(areg::REQUEST_ID_FIRST - 1u));
-}
-
-TEST(ServiceDefsTest, empty_id)
-{
-    EXPECT_TRUE(areg::is_empty_id(0u));
-    EXPECT_TRUE(areg::is_empty_id(static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId)));
-    EXPECT_FALSE(areg::is_empty_id(1u));
-    EXPECT_FALSE(areg::is_empty_id(areg::REQUEST_ID_FIRST));
-    EXPECT_FALSE(areg::is_empty_id(areg::INVALID_MESSAGE_ID));
-}
-
-TEST(ServiceDefsTest, message_data_type_of_ids)
-{
-    EXPECT_EQ(areg::message_data_type(areg::REQUEST_ID_FIRST), areg::MessageDataType::RequestData);
-    EXPECT_EQ(areg::message_data_type(areg::REQUEST_ID_LAST), areg::MessageDataType::RequestData);
-    EXPECT_EQ(areg::message_data_type(areg::RESPONSE_ID_FIRST), areg::MessageDataType::ResponseData);
-    EXPECT_EQ(areg::message_data_type(areg::RESPONSE_ID_LAST), areg::MessageDataType::ResponseData);
-    EXPECT_EQ(areg::message_data_type(areg::ATTRIBUTE_ID_FIRST), areg::MessageDataType::AttributeData);
-    EXPECT_EQ(areg::message_data_type(areg::ATTRIBUTE_ID_LAST), areg::MessageDataType::AttributeData);
-    EXPECT_EQ(areg::message_data_type(areg::SERVICE_ID_FIRST), areg::MessageDataType::ServiceData);
-    EXPECT_EQ(areg::message_data_type(areg::SERVICE_ID_LAST), areg::MessageDataType::ServiceData);
-    EXPECT_EQ(areg::message_data_type(areg::RESPONSE_ID_NONE), areg::MessageDataType::UndefinedData);
-    EXPECT_EQ(areg::message_data_type(areg::REQUEST_ID_FIRST - 1u), areg::MessageDataType::UndefinedData);
+    EXPECT_EQ(areg::kind_index(areg::CallType::Request), 0u);
+    EXPECT_EQ(areg::kind_index(areg::CallType::Response), 1u);
+    EXPECT_EQ(areg::kind_index(areg::CallType::Broadcast), 2u);
+    EXPECT_EQ(areg::kind_index(areg::CallType::Attribute), 3u);
+    EXPECT_EQ(areg::kind_index(areg::CallType::Interface), areg::MESSAGE_KIND_COUNT);
+    EXPECT_EQ(areg::kind_index(areg::CallType::Undefined), areg::MESSAGE_KIND_COUNT);
+    EXPECT_EQ(areg::kind_index(areg::CallType::RegisterConsumer), areg::MESSAGE_KIND_COUNT);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -568,37 +421,135 @@ TEST(ServiceDefsTest, state_array_on_external_buffer)
 namespace
 {
     //!< Request IDs of the test interface.
-    constexpr uint32_t REQ_A{ areg::REQUEST_ID_FIRST };
-    constexpr uint32_t REQ_B{ areg::REQUEST_ID_FIRST + 1u };
+    constexpr uint32_t REQ_A{ areg::crc32_calculate("request_alpha") };
+    constexpr uint32_t REQ_B{ areg::crc32_calculate("request_beta") };
     //!< Response IDs of the test interface.
-    constexpr uint32_t RESP_A{ areg::RESPONSE_ID_FIRST };
-    constexpr uint32_t RESP_B{ areg::RESPONSE_ID_FIRST + 1u };
-    constexpr uint32_t RESP_C{ areg::RESPONSE_ID_FIRST + 2u };
+    constexpr uint32_t RESP_A{ areg::crc32_calculate("response_alpha") };
+    constexpr uint32_t RESP_B{ areg::crc32_calculate("response_beta") };
+    //!< Broadcast ID of the test interface.
+    constexpr uint32_t BC_C{ areg::crc32_calculate("broadcast_gamma") };
     //!< Attribute IDs of the test interface.
-    constexpr uint32_t ATTR_A{ areg::ATTRIBUTE_ID_FIRST };
-    constexpr uint32_t ATTR_B{ areg::ATTRIBUTE_ID_FIRST + 1u };
+    constexpr uint32_t ATTR_A{ areg::crc32_calculate("attribute_Alpha") };
+    constexpr uint32_t ATTR_B{ areg::crc32_calculate("attribute_Beta") };
 
     const uint32_t gRequestList[]       { REQ_A, REQ_B };
-    const uint32_t gResponseList[]      { RESP_A, RESP_B, RESP_C };
+    const uint32_t gResponseList[]      { RESP_A, RESP_B };
+    const uint32_t gBroadcastList[]     { BC_C };
     const uint32_t gAttributeList[]     { ATTR_A, ATTR_B };
-    const uint32_t gRequestToResponse[] { RESP_A, areg::RESPONSE_ID_NONE };
+    const uint16_t gRequestToResponse[] { 0u, static_cast<uint16_t>(areg::RESPONSE_INDEX_NONE) };
+    //!< The responses, then the broadcast.
     const uint32_t gParamCount[]        { 2u, 0u, 1u };
+
+    const areg_test::TestMessageTable gRequests  { gRequestList, 2u };
+    const areg_test::TestMessageTable gResponses { gResponseList, 2u };
+    const areg_test::TestMessageTable gBroadcasts{ gBroadcastList, 1u };
+    const areg_test::TestMessageTable gAttributes{ gAttributeList, 2u };
 
     const areg::InterfaceData& test_interface()
     {
-        static const areg::InterfaceData ifData =
+        static const areg::InterfaceData ifData
         {
-              "ServiceDefsTestInterface"
-            , areg::Version(1, 0, 0)
-            , areg::ServiceType::Local
-            , 2u, 3u, 2u
-            , gRequestList, gResponseList, gAttributeList
-            , gRequestToResponse
-            , gParamCount
+            areg_test::make_interface( "ServiceDefsTestInterface", areg::Version(1, 0, 0), areg::ServiceType::Local
+                                     , gRequests.table(), gResponses.table(), gBroadcasts.table(), gAttributes.table()
+                                     , gRequestToResponse, gParamCount )
         };
 
         return ifData;
     }
+
+    //!< A table of three IDs in eight slots: the slot of an ID is its top three bits.
+    constexpr uint32_t gSlotIds[]   { 0x00000001u, 0x40000000u, 0xE0000000u };
+    constexpr uint16_t gSlots[]     { 0u, 0u, 1u, 0u, 0u, 0u, 0u, 2u };
+    constexpr areg::MessageTable gTable{ gSlotIds, gSlots, 3u, 1u, 29u };
+    static_assert(gTable.finds_every_entry(), "every ID of the table is found at its index");
+    static_assert(gTable.find(0x20000000u) == areg::INVALID_MESSAGE_INDEX, "an ID in an empty slot is refused");
+    static_assert(gTable.find(0x40000001u) == areg::INVALID_MESSAGE_INDEX, "an ID in the slot of another ID is refused");
+}
+
+TEST(ServiceDefsTest, message_table_finds_every_entry_and_refuses_foreign_ids)
+{
+    EXPECT_TRUE(gTable.finds_every_entry());
+    for (uint32_t i = 0u; i < 3u; ++i)
+    {
+        EXPECT_EQ(gTable.find(gSlotIds[i]), i);
+    }
+
+    const uint32_t foreign[]{ 0u, 0x00000002u, 0x20000000u, 0x7FFFFFFFu, 0x80000000u, 0xFFFFFFFFu };
+    for (uint32_t id : foreign)
+    {
+        EXPECT_EQ(gTable.find(id), areg::INVALID_MESSAGE_INDEX) << "id " << id;
+    }
+
+    // Every slot index is inside the table of 8 slots: the shift leaves 3 bits.
+    for (uint32_t id : { 0u, 0x12345678u, 0xFFFFFFFFu })
+    {
+        EXPECT_LT(static_cast<uint32_t>(id * gTable.mtFactor) >> gTable.mtShift, 8u);
+    }
+
+    const areg::MessageTable empty{ };
+    EXPECT_EQ(empty.find(0u), areg::INVALID_MESSAGE_INDEX);
+    EXPECT_TRUE(empty.finds_every_entry());
+}
+
+TEST(ServiceDefsTest, interface_finds_an_id_only_in_its_kind)
+{
+    const areg::InterfaceData& ifData{ test_interface() };
+    EXPECT_EQ(ifData.find(areg::CallType::Request, REQ_A), 0u);
+    EXPECT_EQ(ifData.find(areg::CallType::Request, REQ_B), 1u);
+    EXPECT_EQ(ifData.find(areg::CallType::Response, RESP_B), 1u);
+    EXPECT_EQ(ifData.find(areg::CallType::Broadcast, BC_C), 0u);
+    EXPECT_EQ(ifData.find(areg::CallType::Attribute, ATTR_B), 1u);
+
+    EXPECT_EQ(ifData.find(areg::CallType::Response, REQ_A), areg::INVALID_MESSAGE_INDEX);
+    EXPECT_EQ(ifData.find(areg::CallType::Request, RESP_A), areg::INVALID_MESSAGE_INDEX);
+    EXPECT_EQ(ifData.find(areg::CallType::Attribute, BC_C), areg::INVALID_MESSAGE_INDEX);
+    EXPECT_EQ(ifData.find(areg::CallType::Undefined, REQ_A), areg::INVALID_MESSAGE_INDEX);
+    EXPECT_EQ(ifData.find(areg::CallType::Interface, REQ_A), areg::INVALID_MESSAGE_INDEX);
+
+    EXPECT_EQ(ifData.count(areg::CallType::Request), 2u);
+    EXPECT_EQ(ifData.count(areg::CallType::Response), 2u);
+    EXPECT_EQ(ifData.count(areg::CallType::Broadcast), 1u);
+    EXPECT_EQ(ifData.count(areg::CallType::Attribute), 2u);
+    EXPECT_EQ(ifData.count(areg::CallType::Undefined), 0u);
+
+    EXPECT_EQ(ifData.message_id(areg::CallType::Response, 1u), RESP_B);
+    EXPECT_EQ(ifData.message_id(areg::CallType::Broadcast, 0u), BC_C);
+    EXPECT_EQ(ifData.response_index(0u), 0u);
+    EXPECT_EQ(ifData.response_index(1u), areg::RESPONSE_INDEX_NONE);
+    EXPECT_EQ(ifData.response_index(2u), areg::RESPONSE_INDEX_NONE);
+}
+
+TEST(ServiceDefsTest, listener_slots_put_responses_broadcasts_then_attributes)
+{
+    const areg::InterfaceData& ifData{ test_interface() };
+    EXPECT_EQ(areg::listener_slot_count(ifData), 5u);
+    EXPECT_EQ(areg::listener_slot(ifData, areg::CallType::Response, 0u), 0u);
+    EXPECT_EQ(areg::listener_slot(ifData, areg::CallType::Response, 1u), 1u);
+    EXPECT_EQ(areg::listener_slot(ifData, areg::CallType::Broadcast, 0u), 2u);
+    EXPECT_EQ(areg::listener_slot(ifData, areg::CallType::Attribute, 0u), 3u);
+    EXPECT_EQ(areg::listener_slot(ifData, areg::CallType::Attribute, 1u), 4u);
+
+    EXPECT_EQ(areg::listener_slot(ifData, areg::CallType::Request, 0u), areg::INVALID_MESSAGE_INDEX);
+    EXPECT_EQ(areg::listener_slot(ifData, areg::CallType::Response, 2u), areg::INVALID_MESSAGE_INDEX);
+    EXPECT_EQ(areg::listener_slot(ifData, areg::CallType::Broadcast, 1u), areg::INVALID_MESSAGE_INDEX);
+    EXPECT_EQ(areg::listener_slot(ifData, areg::CallType::Attribute, 2u), areg::INVALID_MESSAGE_INDEX);
+
+    areg::ListenerSlots<areg::ArrayList<uint32_t>> slots{ areg::listener_slot_count(ifData) };
+    ASSERT_TRUE(slots.is_valid());
+    EXPECT_EQ(slots.size(), 5u);
+    ASSERT_NE(slots.at(4u), nullptr);
+    EXPECT_EQ(slots.at(5u), nullptr);
+    EXPECT_EQ(slots.at(areg::INVALID_MESSAGE_INDEX), nullptr);
+    slots.at(2u)->add(7u);
+    EXPECT_EQ(slots.at(2u)->size(), 1u);
+    EXPECT_EQ(slots.at(1u)->size(), 0u);
+    slots.clear();
+    EXPECT_EQ(slots.at(2u)->size(), 0u);
+
+    const areg::ListenerSlots<areg::ArrayList<uint32_t>> none{ 0u };
+    EXPECT_TRUE(none.is_valid());
+    EXPECT_EQ(none.size(), 0u);
+    EXPECT_EQ(none.at(0u), nullptr);
 }
 
 TEST(ServiceDefsTest, parameter_array_from_interface_data)
@@ -707,85 +658,144 @@ TEST(ServiceDefsTest, empty_interface_describes_no_calls)
     EXPECT_STREQ(ifData.idServiceName, areg::EmptyServiceName);
     EXPECT_EQ(ifData.idVersion, areg::EmptyServiceVersion);
     EXPECT_EQ(ifData.idServiceType, areg::ServiceType::Public);
-    EXPECT_EQ(ifData.idRequestCount, 0u);
-    EXPECT_EQ(ifData.idResponseCount, 0u);
-    EXPECT_EQ(ifData.idAttributeCount, 0u);
-    EXPECT_EQ(ifData.idRequestList, nullptr);
-    EXPECT_EQ(ifData.idResponseList, nullptr);
-    EXPECT_EQ(ifData.idAttributeList, nullptr);
+    for (const areg::MessageTable& table : ifData.idTables)
+    {
+        EXPECT_EQ(table.mtCount, 0u);
+        EXPECT_EQ(table.mtIds, nullptr);
+        EXPECT_EQ(table.mtSlots, nullptr);
+    }
+
+    EXPECT_EQ(ifData.idRequestToResponse, nullptr);
+    EXPECT_EQ(ifData.idParamCountMap, nullptr);
+    EXPECT_EQ(areg::listener_slot_count(ifData), 0u);
     EXPECT_EQ(&areg::empty_interface(), &ifData);
+}
+
+TEST(ServiceDefsTest, empty_interface_finds_no_id)
+{
+    const uint32_t ids[] = { 0u, 1u, 0xFFFFu, 0x10000u, 0x7FFFFFFFu, 0x80000000u, 0xFFFFFFFFu };
+    const areg::CallType kinds[]{ areg::CallType::Request, areg::CallType::Response, areg::CallType::Broadcast, areg::CallType::Attribute };
+    for (uint32_t id : ids)
+    {
+        for (areg::CallType kind : kinds)
+        {
+            EXPECT_EQ(areg::empty_interface().find(kind, id), areg::INVALID_MESSAGE_INDEX);
+        }
+    }
 }
 
 TEST(ServiceDefsTest, proxy_data_starts_unavailable)
 {
     areg::ProxyData data(test_interface());
 
-    EXPECT_EQ(data.mImplVersion, areg::DataState::DataIsUnavailable);
-    EXPECT_EQ(data.attribute_state(ATTR_A), areg::DataState::DataIsUnavailable);
-    EXPECT_EQ(data.attribute_state(ATTR_B), areg::DataState::DataIsUnavailable);
-    EXPECT_EQ(data.param_state(RESP_A), areg::DataState::DataIsUnavailable);
-    EXPECT_EQ(data.param_state(RESP_C), areg::DataState::DataIsUnavailable);
+    EXPECT_EQ(data.attribute_state(0u), areg::DataState::DataIsUnavailable);
+    EXPECT_EQ(data.attribute_state(1u), areg::DataState::DataIsUnavailable);
+    EXPECT_EQ(data.param_state(areg::CallType::Response, 0u), areg::DataState::DataIsUnavailable);
+    EXPECT_EQ(data.param_state(areg::CallType::Broadcast, 0u), areg::DataState::DataIsUnavailable);
 }
 
 TEST(ServiceDefsTest, proxy_data_attribute_state)
 {
     areg::ProxyData data(test_interface());
 
-    data.set_data_state(ATTR_B, areg::DataState::DataIsOK);
-    EXPECT_EQ(data.data_state(ATTR_B), areg::DataState::DataIsOK);
-    EXPECT_EQ(data.attribute_state(ATTR_B), areg::DataState::DataIsOK);
-    EXPECT_EQ(data.data_state(ATTR_A), areg::DataState::DataIsUnavailable);
+    data.set_data_state(areg::CallType::Attribute, 1u, areg::DataState::DataIsOK);
+    EXPECT_EQ(data.data_state(areg::CallType::Attribute, 1u), areg::DataState::DataIsOK);
+    EXPECT_EQ(data.attribute_state(1u), areg::DataState::DataIsOK);
+    EXPECT_EQ(data.data_state(areg::CallType::Attribute, 0u), areg::DataState::DataIsUnavailable);
 }
 
 TEST(ServiceDefsTest, proxy_data_response_state)
 {
     areg::ProxyData data(test_interface());
 
-    data.set_data_state(RESP_A, areg::DataState::DataIsOK);
-    EXPECT_EQ(data.data_state(RESP_A), areg::DataState::DataIsOK);
+    data.set_data_state(areg::CallType::Response, 0u, areg::DataState::DataIsOK);
+    EXPECT_EQ(data.data_state(areg::CallType::Response, 0u), areg::DataState::DataIsOK);
     EXPECT_EQ(data.mParamState.at(0u, 0u), areg::DataState::DataIsOK);
     EXPECT_EQ(data.mParamState.at(0u, 1u), areg::DataState::DataIsOK);
-    EXPECT_EQ(data.data_state(RESP_C), areg::DataState::DataIsUnavailable);
+    EXPECT_EQ(data.data_state(areg::CallType::Broadcast, 0u), areg::DataState::DataIsUnavailable);
 
     // A response without parameters reports unavailable data.
-    data.set_data_state(RESP_B, areg::DataState::DataIsOK);
-    EXPECT_EQ(data.data_state(RESP_B), areg::DataState::DataIsUnavailable);
+    data.set_data_state(areg::CallType::Response, 1u, areg::DataState::DataIsOK);
+    EXPECT_EQ(data.data_state(areg::CallType::Response, 1u), areg::DataState::DataIsUnavailable);
 }
 
-TEST(ServiceDefsTest, proxy_data_ignores_ids_of_other_kinds)
+TEST(ServiceDefsTest, proxy_data_ignores_other_kinds)
 {
     areg::ProxyData data(test_interface());
 
-    data.set_data_state(REQ_A, areg::DataState::DataIsOK);
-    data.set_data_state(areg::RESPONSE_ID_NONE, areg::DataState::DataIsOK);
-    EXPECT_EQ(data.data_state(REQ_A), areg::DataState::DataUnexpectedError);
-    EXPECT_EQ(data.data_state(areg::RESPONSE_ID_NONE), areg::DataState::DataUnexpectedError);
-    EXPECT_EQ(data.attribute_state(ATTR_A), areg::DataState::DataIsUnavailable);
-    EXPECT_EQ(data.param_state(RESP_A), areg::DataState::DataIsUnavailable);
+    data.set_data_state(areg::CallType::Request, 0u, areg::DataState::DataIsOK);
+    data.set_data_state(areg::CallType::Undefined, 0u, areg::DataState::DataIsOK);
+    EXPECT_EQ(data.data_state(areg::CallType::Request, 0u), areg::DataState::DataUnexpectedError);
+    EXPECT_EQ(data.data_state(areg::CallType::Undefined, 0u), areg::DataState::DataUnexpectedError);
+    EXPECT_EQ(data.param_state(areg::CallType::Attribute, 0u), areg::DataState::DataUnexpectedError);
+    EXPECT_EQ(data.attribute_state(0u), areg::DataState::DataIsUnavailable);
+    EXPECT_EQ(data.param_state(areg::CallType::Response, 0u), areg::DataState::DataIsUnavailable);
 }
 
 TEST(ServiceDefsTest, proxy_data_reset)
 {
     areg::ProxyData data(test_interface());
-    data.set_data_state(ATTR_A, areg::DataState::DataIsOK);
-    data.set_data_state(RESP_C, areg::DataState::DataIsInvalid);
-    data.mImplVersion = areg::DataState::DataIsOK;
+    data.set_data_state(areg::CallType::Attribute, 0u, areg::DataState::DataIsOK);
+    data.set_data_state(areg::CallType::Broadcast, 0u, areg::DataState::DataIsInvalid);
 
     data.reset();
 
-    EXPECT_EQ(data.mImplVersion, areg::DataState::DataIsUnavailable);
-    EXPECT_EQ(data.attribute_state(ATTR_A), areg::DataState::DataIsUnavailable);
-    EXPECT_EQ(data.param_state(RESP_C), areg::DataState::DataIsUnavailable);
+    EXPECT_EQ(data.attribute_state(0u), areg::DataState::DataIsUnavailable);
+    EXPECT_EQ(data.param_state(areg::CallType::Broadcast, 0u), areg::DataState::DataIsUnavailable);
 }
 
 TEST(ServiceDefsTest, proxy_data_response_of_request)
 {
     areg::ProxyData data(test_interface());
 
-    EXPECT_EQ(data.response_id(REQ_A), RESP_A);
-    EXPECT_EQ(data.response_id(REQ_B), areg::RESPONSE_ID_NONE);
-    EXPECT_EQ(data.response_id(areg::REQUEST_ID_FIRST + 2u), areg::INVALID_MESSAGE_ID);
-    EXPECT_EQ(data.response_id(areg::RESPONSE_ID_NONE), areg::INVALID_MESSAGE_ID);
+    EXPECT_EQ(data.response_index(0u), 0u);
+    EXPECT_EQ(data.response_index(1u), areg::RESPONSE_INDEX_NONE);
+    EXPECT_EQ(data.response_index(2u), areg::RESPONSE_INDEX_NONE);
+    EXPECT_EQ(data.response_index(areg::INVALID_MESSAGE_INDEX), areg::RESPONSE_INDEX_NONE);
+}
+
+TEST(ServiceDefsTest, proxy_data_broadcast_state)
+{
+    areg::ProxyData data(test_interface());
+
+    data.set_data_state(areg::CallType::Broadcast, 0u, areg::DataState::DataIsOK);
+    EXPECT_EQ(data.data_state(areg::CallType::Broadcast, 0u), areg::DataState::DataIsOK);
+    EXPECT_EQ(data.param_state(areg::CallType::Broadcast, 0u), areg::DataState::DataIsOK);
+    EXPECT_EQ(data.param_row(areg::CallType::Broadcast, 0u), 2u);
+    EXPECT_EQ(data.mParamState.at(2u, 0u), areg::DataState::DataIsOK);
+    EXPECT_EQ(data.mParamState.at(0u, 0u), areg::DataState::DataIsUnavailable);
+}
+
+TEST(ServiceDefsTest, proxy_data_index_out_of_range_is_ignored)
+{
+    areg::ProxyData data(test_interface());
+
+    data.set_data_state(areg::CallType::Attribute, 2u, areg::DataState::DataIsOK);
+    data.set_data_state(areg::CallType::Response, 2u, areg::DataState::DataIsOK);
+    data.set_data_state(areg::CallType::Broadcast, 1u, areg::DataState::DataIsOK);
+    data.set_attribute_state(7u, areg::DataState::DataIsOK);
+    data.set_param_state(areg::CallType::Response, 0xFFFFFFFFu, areg::DataState::DataIsOK);
+
+    EXPECT_EQ(data.attribute_state(2u), areg::DataState::DataUnexpectedError);
+    EXPECT_EQ(data.param_state(areg::CallType::Response, 2u), areg::DataState::DataUnexpectedError);
+    EXPECT_EQ(data.param_state(areg::CallType::Broadcast, 1u), areg::DataState::DataUnexpectedError);
+    EXPECT_EQ(data.data_state(areg::CallType::Attribute, 7u), areg::DataState::DataUnexpectedError);
+    EXPECT_EQ(data.mAttrState[0u], areg::DataState::DataIsUnavailable);
+    EXPECT_EQ(data.mAttrState[1u], areg::DataState::DataIsUnavailable);
+    EXPECT_EQ(data.mParamState.at(0u, 0u), areg::DataState::DataIsUnavailable);
+    EXPECT_EQ(data.mParamState.at(2u, 0u), areg::DataState::DataIsUnavailable);
+}
+
+TEST(ServiceDefsTest, proxy_data_set_by_index)
+{
+    areg::ProxyData data(test_interface());
+
+    data.set_attribute_state(1u, areg::DataState::DataIsOK);
+    data.set_param_state(areg::CallType::Broadcast, 0u, areg::DataState::DataIsInvalid);
+    EXPECT_EQ(data.attribute_state(1u), areg::DataState::DataIsOK);
+    EXPECT_EQ(data.attribute_state(0u), areg::DataState::DataIsUnavailable);
+    EXPECT_EQ(data.param_state(areg::CallType::Broadcast, 0u), areg::DataState::DataIsInvalid);
+    EXPECT_EQ(data.param_state(areg::CallType::Response, 0u), areg::DataState::DataIsUnavailable);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -863,7 +873,7 @@ TEST(RemoteServiceDefsTest, register_service_message)
     EXPECT_EQ(msg.message_id(), id_of(areg::FuncIdRange::SystemServiceRequestRegister));
     EXPECT_EQ(msg.source(), static_cast<uint32_t>(REMOTE_COOKIE));
     EXPECT_EQ(msg.target(), static_cast<uint32_t>(areg::COOKIE_ROUTER));
-    EXPECT_EQ(msg.call_type(), static_cast<uint8_t>(areg::RegistrationAction::RegisterProvider));
+    EXPECT_EQ(msg.call_type(), static_cast<uint8_t>(areg::CallType::RegisterProvider));
     EXPECT_EQ(msg.result(), static_cast<uint32_t>(areg::DisconnectReason::UndefinedReason));
     EXPECT_TRUE(areg::is_register_message(msg));
 
@@ -887,7 +897,7 @@ TEST(RemoteServiceDefsTest, register_consumer_message)
 
     ASSERT_NE(msg.header(), nullptr);
     EXPECT_EQ(msg.message_id(), id_of(areg::FuncIdRange::SystemServiceRequestRegister));
-    EXPECT_EQ(msg.call_type(), static_cast<uint8_t>(areg::RegistrationAction::RegisterConsumer));
+    EXPECT_EQ(msg.call_type(), static_cast<uint8_t>(areg::CallType::RegisterConsumer));
     EXPECT_EQ(msg.source(), static_cast<uint32_t>(REMOTE_COOKIE));
     EXPECT_EQ(msg.target(), static_cast<uint32_t>(areg::COOKIE_ROUTER));
 
@@ -908,13 +918,13 @@ TEST(RemoteServiceDefsTest, unregister_messages_carry_the_reason)
 
     const areg::MessageEnvelope msgStub = areg::router_unregister_service(stub, areg::DisconnectReason::ServiceLost, REMOTE_COOKIE, areg::COOKIE_ROUTER);
     ASSERT_NE(msgStub.header(), nullptr);
-    EXPECT_EQ(msgStub.call_type(), static_cast<uint8_t>(areg::RegistrationAction::UnregisterProvider));
+    EXPECT_EQ(msgStub.call_type(), static_cast<uint8_t>(areg::CallType::UnregisterProvider));
     EXPECT_EQ(msgStub.result(), static_cast<uint32_t>(areg::DisconnectReason::ServiceLost));
     EXPECT_EQ(msgStub.message_id(), id_of(areg::FuncIdRange::SystemServiceRequestRegister));
 
     const areg::MessageEnvelope msgProxy = areg::router_unregister_consumer(proxy, areg::DisconnectReason::ConsumerDisconnected, REMOTE_COOKIE, areg::COOKIE_ROUTER);
     ASSERT_NE(msgProxy.header(), nullptr);
-    EXPECT_EQ(msgProxy.call_type(), static_cast<uint8_t>(areg::RegistrationAction::UnregisterConsumer));
+    EXPECT_EQ(msgProxy.call_type(), static_cast<uint8_t>(areg::CallType::UnregisterConsumer));
     EXPECT_EQ(msgProxy.result(), static_cast<uint32_t>(areg::DisconnectReason::ConsumerDisconnected));
 }
 
@@ -952,14 +962,14 @@ TEST(RemoteServiceDefsTest, registered_notifications)
     const areg::MessageEnvelope msgStub = areg::service_registered_event(stub, areg::COOKIE_ROUTER, REMOTE_COOKIE);
     ASSERT_NE(msgStub.header(), nullptr);
     EXPECT_EQ(msgStub.message_id(), id_of(areg::FuncIdRange::SystemServiceNotifyRegister));
-    EXPECT_EQ(msgStub.call_type(), static_cast<uint8_t>(areg::RegistrationAction::RegisterProvider));
+    EXPECT_EQ(msgStub.call_type(), static_cast<uint8_t>(areg::CallType::RegisterProvider));
     EXPECT_EQ(msgStub.source(), static_cast<uint32_t>(areg::COOKIE_ROUTER));
     EXPECT_EQ(msgStub.target(), static_cast<uint32_t>(REMOTE_COOKIE));
 
     const areg::MessageEnvelope msgProxy = areg::client_registered_event(proxy, areg::COOKIE_ROUTER, REMOTE_COOKIE);
     ASSERT_NE(msgProxy.header(), nullptr);
     EXPECT_EQ(msgProxy.message_id(), id_of(areg::FuncIdRange::SystemServiceNotifyRegister));
-    EXPECT_EQ(msgProxy.call_type(), static_cast<uint8_t>(areg::RegistrationAction::RegisterConsumer));
+    EXPECT_EQ(msgProxy.call_type(), static_cast<uint8_t>(areg::CallType::RegisterConsumer));
     EXPECT_EQ(msgProxy.target(), static_cast<uint32_t>(REMOTE_COOKIE));
 }
 
@@ -970,12 +980,12 @@ TEST(RemoteServiceDefsTest, unregistered_notifications_carry_the_reason)
 
     const areg::MessageEnvelope msgStub = areg::service_unregistered_event(stub, areg::DisconnectReason::ProviderLost, areg::COOKIE_ROUTER, REMOTE_COOKIE);
     ASSERT_NE(msgStub.header(), nullptr);
-    EXPECT_EQ(msgStub.call_type(), static_cast<uint8_t>(areg::RegistrationAction::UnregisterProvider));
+    EXPECT_EQ(msgStub.call_type(), static_cast<uint8_t>(areg::CallType::UnregisterProvider));
     EXPECT_EQ(msgStub.result(), static_cast<uint32_t>(areg::DisconnectReason::ProviderLost));
 
     const areg::MessageEnvelope msgProxy = areg::client_unregistered_event(proxy, areg::DisconnectReason::ConsumerLost, areg::COOKIE_ROUTER, REMOTE_COOKIE);
     ASSERT_NE(msgProxy.header(), nullptr);
-    EXPECT_EQ(msgProxy.call_type(), static_cast<uint8_t>(areg::RegistrationAction::UnregisterConsumer));
+    EXPECT_EQ(msgProxy.call_type(), static_cast<uint8_t>(areg::CallType::UnregisterConsumer));
     EXPECT_EQ(msgProxy.result(), static_cast<uint32_t>(areg::DisconnectReason::ConsumerLost));
 }
 

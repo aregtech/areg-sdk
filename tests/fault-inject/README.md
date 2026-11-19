@@ -290,8 +290,8 @@ made the call but the replacement did not see it. Check, in this order:
 7. **The compiler removed the allocation.** A `new (std::nothrow)` whose memory the test never
    reads may be omitted by an optimizing build, which then treats it as successful; the call is
    missing from `objdump -dC` of the test function. Which allocation goes depends on the inlining
-   around it (a different googletest build is enough). Pass the object to `_keep_allocation()`
-   (`fault_inject_alloc_sweep_test.cpp`) right after the call and before its check.
+   around it (a different googletest build is enough). Pass the object to
+   `areg_fault::keep_allocation()` (`FaultInject.hpp`) right after the call and before its check.
 
 ---
 

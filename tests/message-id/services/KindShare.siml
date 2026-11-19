@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="KindShare" Version="1.0.0" Category="Public">
+        <Description>Entries whose message IDs the old single ID space refused: a request and a broadcast with one ID, and IDs below 0x10000.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute ID="2" Name="NameId" DataType="uint32" Notify="OnChange">
+            <Description>Its message ID is 0x000012E9.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="3" Name="pingSDFzY" MethodType="Request" Response="pong">
+            <Description>Its message ID is 0xDF177184, the ID of the broadcast tickxGUOt.</Description>
+            <ParamList>
+                <Parameter ID="4" Name="value" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="5" Name="createLight" MethodType="Request" Response="lightCreated">
+            <Description>Its message ID is 0x0000BF29.</Description>
+            <ParamList>
+                <Parameter ID="6" Name="value" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="7" Name="pong" MethodType="Response">
+            <ParamList>
+                <Parameter ID="8" Name="value" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="9" Name="lightCreated" MethodType="Response">
+            <ParamList>
+                <Parameter ID="10" Name="value" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="11" Name="tickxGUOt" MethodType="Broadcast">
+            <Description>Its message ID is 0xDF177184, the ID of the request pingSDFzY.</Description>
+            <ParamList>
+                <Parameter ID="12" Name="value" DataType="uint32"/>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

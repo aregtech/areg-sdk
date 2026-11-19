@@ -306,26 +306,44 @@ public:
     [[nodiscard]]
     inline bool is_response_call() const noexcept;
 
+    /**
+     * \brief   Returns true if the event is a broadcast sent to a consumer.
+     **/
     [[nodiscard]]
     inline bool is_broadcast_call() const noexcept;
 
+    /**
+     * \brief   Returns true if the event is an attribute update sent to a consumer.
+     **/
     [[nodiscard]]
     inline bool is_attribute_call() const noexcept;
 
+    /**
+     * \brief   Returns true if the event reports the failure of a request to its consumer.
+     **/
     [[nodiscard]]
     inline bool is_request_failed_call() const noexcept;
 
-    [[nodiscard]]
-    inline bool is_notify_call() const noexcept;
-
+    /**
+     * \brief   Returns true if the event subscribes to a response or removes the subscription.
+     **/
     [[nodiscard]]
     inline bool is_notify_response() const noexcept;
 
+    /**
+     * \brief   Returns true if the event subscribes to a broadcast or removes the subscription.
+     **/
     [[nodiscard]]
     inline bool is_notify_broadcast() const noexcept;
 
+    /**
+     * \brief   Returns true if the event subscribes to an attribute or removes the subscription.
+     **/
     [[nodiscard]]
     inline bool is_notify_attribute() const noexcept;
+
+    [[nodiscard]]
+    inline bool is_notify_call() const noexcept;
 
     [[nodiscard]]
     inline bool is_connect_call() const noexcept;
@@ -416,6 +434,12 @@ public:
      **/
     [[nodiscard]]
     inline const InStream & read_stream( ) const noexcept;
+
+    /**
+     * \brief   Returns true if a read of the payload asked for more data than the payload held.
+     **/
+    [[nodiscard]]
+    inline bool is_payload_short( ) const noexcept;
 
     /**
      * \brief   Returns this event cast to OutStream for writing serialized payload.
@@ -596,6 +620,11 @@ inline const InStream& Event::read_stream() const noexcept
     return static_cast<const InStream&>(*this);
 }
 
+inline bool Event::is_payload_short() const noexcept
+{
+    return mReadShort;
+}
+
 inline OutStream& Event::write_stream() const noexcept
 {
     return static_cast<OutStream&>(const_cast<Event&>(*this));
@@ -687,43 +716,43 @@ inline bool Event::is_response_call() const noexcept
 inline bool Event::is_broadcast_call() const noexcept
 {
     const areg::RawEnvelope* env{ raw_envelope() };
-    return ((env != nullptr) && areg::is_broadcast_call(static_cast<areg::EventType>(env->envHeader.eventType)));
+    return ((env != nullptr) && areg::is_broadcast_call(static_cast<areg::EventType>(env->envHeader.eventType), static_cast<areg::CallType>(env->envHeader.callType)));
 }
 
 inline bool Event::is_attribute_call() const noexcept
 {
     const areg::RawEnvelope* env{ raw_envelope() };
-    return ((env != nullptr) && areg::is_attribute_call(static_cast<areg::EventType>(env->envHeader.eventType)));
+    return ((env != nullptr) && areg::is_attribute_call(static_cast<areg::EventType>(env->envHeader.eventType), static_cast<areg::CallType>(env->envHeader.callType)));
 }
 
 inline bool Event::is_request_failed_call() const noexcept
 {
     const areg::RawEnvelope* env{ raw_envelope() };
-    return ((env != nullptr) && areg::is_request_failure(static_cast<areg::EventType>(env->envHeader.eventType)));
+    return ((env != nullptr) && areg::is_request_failure(static_cast<areg::EventType>(env->envHeader.eventType), static_cast<areg::CallType>(env->envHeader.callType)));
+}
+
+inline bool Event::is_notify_response() const noexcept
+{
+    const areg::RawEnvelope* env{ raw_envelope() };
+    return ((env != nullptr) && areg::is_notify_response(static_cast<areg::EventType>(env->envHeader.eventType), static_cast<areg::CallType>(env->envHeader.callType)));
+}
+
+inline bool Event::is_notify_broadcast() const noexcept
+{
+    const areg::RawEnvelope* env{ raw_envelope() };
+    return ((env != nullptr) && areg::is_notify_broadcast(static_cast<areg::EventType>(env->envHeader.eventType), static_cast<areg::CallType>(env->envHeader.callType)));
+}
+
+inline bool Event::is_notify_attribute() const noexcept
+{
+    const areg::RawEnvelope* env{ raw_envelope() };
+    return ((env != nullptr) && areg::is_notify_attribute(static_cast<areg::EventType>(env->envHeader.eventType), static_cast<areg::CallType>(env->envHeader.callType)));
 }
 
 inline bool Event::is_notify_call() const noexcept
 {
     const areg::RawEnvelope* env{ raw_envelope() };
     return ((env != nullptr) && areg::is_notify(static_cast<areg::EventType>(env->envHeader.eventType)));
-}
-
-inline bool Event::is_notify_response() const noexcept
-{
-    const areg::RawEnvelope* env{ raw_envelope() };
-    return ((env != nullptr) && areg::is_notify_response(static_cast<areg::EventType>(env->envHeader.eventType)));
-}
-
-inline bool Event::is_notify_broadcast() const noexcept
-{
-    const areg::RawEnvelope* env{ raw_envelope() };
-    return ((env != nullptr) && areg::is_notify_broadcast(static_cast<areg::EventType>(env->envHeader.eventType)));
-}
-
-inline bool Event::is_notify_attribute() const noexcept
-{
-    const areg::RawEnvelope* env{ raw_envelope() };
-    return ((env != nullptr) && areg::is_notify_attribute(static_cast<areg::EventType>(env->envHeader.eventType)));
 }
 
 inline bool Event::is_connect_call() const noexcept

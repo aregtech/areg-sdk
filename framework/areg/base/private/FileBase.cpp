@@ -347,6 +347,7 @@ FileBase::FileBase()
 
     , mFileName     (String::empty_string())
     , mFileMode     (static_cast<uint32_t>(OpenMode::Invalid))
+    , mReadShort    (false)
     , mReadConvert  (static_cast<InStream &>(self()), static_cast<Cursor &>(self()) )
     , mWriteConvert (static_cast<OutStream &>(self()), static_cast<Cursor &>(self()) )
 {
@@ -607,6 +608,16 @@ uint32_t FileBase::resize_and_fill(uint32_t newSize, uint8_t fillValue )
 void FileBase::reset() const noexcept
 {
     set_position(0, Cursor::SeekOrigin::Begin);
+}
+
+bool FileBase::is_read_short() const noexcept
+{
+    return mReadShort;
+}
+
+void FileBase::mark_read_short() const noexcept
+{
+    mReadShort = true;
 }
 
 uint32_t FileBase::read(SharedBuffer& buffer) const

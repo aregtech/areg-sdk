@@ -45,6 +45,7 @@ class ComponentAddress;
  *            - consumer  endpoint : ProxyAddress (via ProxyAddress::to_event)
  *            - messageId          : request message ID
  *            - result             : RequestType (cast from/to areg::RequestType)
+ *            - callType           : the kind of the message ID (areg::CallType)
  *            - sequenceNr         : sequence number
  **/
 class AREG_API ServiceRequestEvent : public StubEvent
@@ -60,6 +61,7 @@ public:
      * \param   target          The target Stub Address, which should process event
      * \param   reqId           The request message ID to process.
      * \param   reqType         The request type.
+     * \param   callType        The kind of the message ID.
      * \param   eventType       The type of event.
      * \param   initSize        Payload bytes to reserve after the header for the serialized request
      *                          parameters. 0 keeps the default block size.
@@ -68,6 +70,7 @@ public:
                               , const StubAddress & target
                               , uint32_t reqId
                               , areg::RequestType reqType
+                              , areg::CallType callType
                               , areg::EventType eventType
                               , uint32_t initSize = 0u );
 
@@ -106,6 +109,12 @@ public:
     inline areg::RequestType request_type() const noexcept;
 
     /**
+     * \brief   Returns the kind of the message ID of the event.
+     **/
+    [[nodiscard]]
+    inline areg::CallType call_kind() const noexcept;
+
+    /**
      * \brief   Returns sequence number from EventHeader.
      **/
     [[nodiscard]]
@@ -133,6 +142,7 @@ inline ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddre
                                                , const StubAddress  & target
                                                , uint32_t reqId
                                                , areg::RequestType reqType
+                                               , areg::CallType callType
                                                , areg::EventType eventType
                                                , uint32_t initSize /*= 0u*/ )
     : StubEvent (target, eventType, initSize)
@@ -143,6 +153,7 @@ inline ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddre
         proxyAddress.to_event(*hdr);
         hdr->messageId = reqId;
         hdr->result    = static_cast<uint32_t>(reqType);
+        hdr->callType  = static_cast<uint8_t>(callType);
     }
 }
 
@@ -169,6 +180,11 @@ inline uint32_t ServiceRequestEvent::request_id() const noexcept
 inline areg::RequestType ServiceRequestEvent::request_type() const noexcept
 {
     return static_cast<areg::RequestType>(result());
+}
+
+inline areg::CallType ServiceRequestEvent::call_kind() const noexcept
+{
+    return static_cast<areg::CallType>(call_type());
 }
 
 inline const SequenceNumber & ServiceRequestEvent::sequence_number() const noexcept

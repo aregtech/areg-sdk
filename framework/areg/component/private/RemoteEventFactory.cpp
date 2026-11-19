@@ -50,6 +50,26 @@ namespace
     private:
         const RESOURCE_MAP & mResources;    //!< The locked resource map.
     };
+
+    //!< Returns true if the event type and the call type of a received service message fit.
+    constexpr bool _is_valid_call(areg::EventType eventType, areg::CallType callType, uint32_t result) noexcept
+    {
+        switch (eventType)
+        {
+        case areg::EventType::EventRemoteRequest:
+            return (callType == areg::CallType::Request);
+
+        case areg::EventType::EventRemoteNotifyRequest:
+            return (callType == areg::CallType::Attribute) || (callType == areg::CallType::Broadcast) || (callType == areg::CallType::Response)
+                || ((callType == areg::CallType::Interface) && (result == static_cast<uint32_t>(areg::RequestType::RemoveAllNotify)));
+
+        case areg::EventType::EventRemoteResponse:
+            return areg::is_interface_kind(callType);
+
+        default:
+            return true;    // connect and system types are checked by their own handlers
+        }
+    }
 }
 
 namespace areg {
@@ -126,6 +146,13 @@ bool RemoteEventFactory::route_incoming_message( MessageEnvelope & src, const Ch
     areg::EventHeader* hdr{ src.header() };
     ASSERT(hdr != nullptr);
     const areg::EventType eventType{ static_cast<areg::EventType>(hdr->eventType) };
+    if (!_is_valid_call(eventType, static_cast<areg::CallType>(hdr->callType), hdr->result))
+    {
+        DEBUG_LOG_SCOPE( areg_component_RemoteEventFactory, route_incoming_message);
+        DEBUG_LOG_WARN("Dropped message [ %u ] of event type [ %s ] with call type [ %u ]"
+                        , hdr->messageId, areg::as_string(eventType), static_cast<uint32_t>(hdr->callType));
+        return false;
+    }
 
     switch ( eventType )
     {
@@ -246,7 +273,7 @@ ServiceResponseEvent RemoteEventFactory::create_request_failed_event( const Mess
     {
     case areg::EventType::EventRemoteRequest:       // fall through
     case areg::EventType::EventRemoteNotifyRequest:
-        return ProxyBase::request_failure_event( ProxyAddress(*hdr), hdr->messageId, areg::ResultType::MessageUndelivered, hdr->sequenceNr );
+        return ProxyBase::request_failure_event( ProxyAddress(*hdr), hdr->messageId, static_cast<areg::CallType>(hdr->callType), areg::ResultType::MessageUndelivered, hdr->sequenceNr );
 
     case areg::EventType::EventRemoteResponse:      // fall through
     case areg::EventType::EventRemoteProviderConnect:// fall through

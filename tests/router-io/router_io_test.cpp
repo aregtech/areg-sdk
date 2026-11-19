@@ -69,7 +69,7 @@ namespace
     constexpr int32_t   START_MS        { 60'000 };
 
     //!< The message ID of the data messages the clients exchange: a request, forwarded as is.
-    constexpr uint32_t  DATA_MESSAGE    { static_cast<uint32_t>(areg::ServiceCallType::RequestFunction) | 1u };
+    constexpr uint32_t  DATA_MESSAGE    { areg::crc32_calculate("request_data") };
 
     //!< The port of the router of this run.
     uint16_t            _port           { 0u };
@@ -241,6 +241,7 @@ namespace
         hdr.target              = static_cast<uint32_t>(target);
         hdr.messageId           = DATA_MESSAGE;
         hdr.eventType           = static_cast<uint16_t>(areg::EventType::EventRemoteRequest);
+        hdr.callType            = static_cast<uint8_t>(areg::CallType::Request);
         std::vector<uint8_t> result(areg::wire_size(hdr), fill);
         std::memcpy(result.data(), areg::wire_data(hdr), areg::WIRE_HEADER_SIZE);
         return result;
@@ -528,7 +529,7 @@ namespace
                      && received.bufHeader.biUsed == 0u, "dispatcher barrier arrived with no extra notification");
     }
 
-    bool expect_registration(Client & client, areg::RegistrationAction action, const areg::StubAddress & provider,
+    bool expect_registration(Client & client, areg::CallType action, const areg::StubAddress & provider,
                              const areg::ProxyAddress & consumer,
                              areg::DisconnectReason reason = areg::DisconnectReason::UndefinedReason)
     {
@@ -542,8 +543,8 @@ namespace
                            && received.target == static_cast<uint32_t>(client.cookie)
                            && received.source == static_cast<uint32_t>(areg::COOKIE_ROUTER)
                            && received.bufHeader.biUsed == 0u, "notification action, reason, route and payload match") };
-        const bool isProvider{ action == areg::RegistrationAction::RegisterProvider
-                            || action == areg::RegistrationAction::UnregisterProvider };
+        const bool isProvider{ action == areg::CallType::RegisterProvider
+                            || action == areg::CallType::UnregisterProvider };
         if (isProvider)
         {
             const areg::StubAddress actual(received);
@@ -587,8 +588,8 @@ namespace
                 return false;
         }
 
-        if (!expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer)
-            || !expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer))
+        if (!expect_registration(server, areg::CallType::RegisterConsumer, provider, consumer)
+            || !expect_registration(client, areg::CallType::RegisterProvider, provider, consumer))
             return false;
 
         if (!register_provider(server, provider) || !registration_barrier(server)
@@ -598,7 +599,7 @@ namespace
         if (providerLeavesFirst)
         {
             if (!unregister_provider(server, provider)
-                || !expect_registration(client, areg::RegistrationAction::UnregisterProvider, provider, consumer,
+                || !expect_registration(client, areg::CallType::UnregisterProvider, provider, consumer,
                                         areg::DisconnectReason::ProviderDisconnected)
                 || !unregister_consumer(client, consumer) || !registration_barrier(client))
                 return false;
@@ -606,7 +607,7 @@ namespace
         else
         {
             if (!unregister_consumer(client, consumer)
-                || !expect_registration(server, areg::RegistrationAction::UnregisterConsumer, provider, consumer,
+                || !expect_registration(server, areg::CallType::UnregisterConsumer, provider, consumer,
                                         areg::DisconnectReason::ConsumerDisconnected)
                 || !unregister_provider(server, provider) || !registration_barrier(server))
                 return false;
@@ -615,8 +616,8 @@ namespace
         return unregister_provider(server, provider) && registration_barrier(server)
             && unregister_consumer(client, consumer) && registration_barrier(client)
             && register_consumer(client, consumer) && registration_barrier(client) && register_provider(server, provider)
-            && expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer)
-            && expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer)
+            && expect_registration(server, areg::CallType::RegisterConsumer, provider, consumer)
+            && expect_registration(client, areg::CallType::RegisterProvider, provider, consumer)
             && registration_barrier(server) && registration_barrier(client);
     }
 
@@ -635,18 +636,18 @@ namespace
         if (!register_consumer(first, consumer1) || !registration_barrier(first)
             || !register_consumer(other, consumer2) || !registration_barrier(other)
             || !register_provider(server, provider)
-            || !expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer1)
-            || !expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer2)
-            || !expect_registration(first, areg::RegistrationAction::RegisterProvider, provider, consumer1)
-            || (!sameSource && !expect_registration(second, areg::RegistrationAction::RegisterProvider, provider, consumer2))
+            || !expect_registration(server, areg::CallType::RegisterConsumer, provider, consumer1)
+            || !expect_registration(server, areg::CallType::RegisterConsumer, provider, consumer2)
+            || !expect_registration(first, areg::CallType::RegisterProvider, provider, consumer1)
+            || (!sameSource && !expect_registration(second, areg::CallType::RegisterProvider, provider, consumer2))
             || !registration_barrier(first) || !registration_barrier(other))
             return false;
 
         if (!unregister_consumer(first, consumer1)
-            || !expect_registration(server, areg::RegistrationAction::UnregisterConsumer, provider, consumer1,
+            || !expect_registration(server, areg::CallType::UnregisterConsumer, provider, consumer1,
                                     areg::DisconnectReason::ConsumerDisconnected)
             || !unregister_provider(server, provider)
-            || !expect_registration(other, areg::RegistrationAction::UnregisterProvider, provider, consumer2,
+            || !expect_registration(other, areg::CallType::UnregisterProvider, provider, consumer2,
                                     areg::DisconnectReason::ProviderDisconnected)
             || !registration_barrier(first) || !registration_barrier(other))
             return false;
@@ -684,8 +685,8 @@ namespace
         Client & server{ providerTruncated ? replacement : survivor };
         Client & client{ providerTruncated ? survivor : replacement };
         return (providerTruncated ? register_provider(server, provider) : register_consumer(client, consumer))
-            && expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer)
-            && expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer)
+            && expect_registration(server, areg::CallType::RegisterConsumer, provider, consumer)
+            && expect_registration(client, areg::CallType::RegisterProvider, provider, consumer)
             && registration_barrier(server) && registration_barrier(client);
     }
 
@@ -699,8 +700,8 @@ namespace
         const areg::StubAddress provider{ provider_address(server.cookie) };
         const areg::ProxyAddress consumer{ consumer_address(client.cookie) };
         if (!register_consumer(client, consumer) || !registration_barrier(client) || !register_provider(server, provider)
-            || !expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer)
-            || !expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer))
+            || !expect_registration(server, areg::CallType::RegisterConsumer, provider, consumer)
+            || !expect_registration(client, areg::CallType::RegisterProvider, provider, consumer))
             return false;
 
         if (providerLeaves)
@@ -709,8 +710,8 @@ namespace
             client.close();
 
         Client & survivor{ providerLeaves ? client : server };
-        if (!expect_registration(survivor, providerLeaves ? areg::RegistrationAction::UnregisterProvider
-                                                         : areg::RegistrationAction::UnregisterConsumer,
+        if (!expect_registration(survivor, providerLeaves ? areg::CallType::UnregisterProvider
+                                                         : areg::CallType::UnregisterConsumer,
                                  provider, consumer, providerLeaves ? areg::DisconnectReason::ProviderDisconnected
                                                                   : areg::DisconnectReason::ConsumerDisconnected))
             return false;
@@ -724,8 +725,8 @@ namespace
         Client & nextServer{ providerLeaves ? replacement : server };
         Client & nextClient{ providerLeaves ? client : replacement };
         return (providerLeaves ? register_provider(nextServer, nextProvider) : register_consumer(nextClient, nextConsumer))
-            && expect_registration(nextServer, areg::RegistrationAction::RegisterConsumer, nextProvider, nextConsumer)
-            && expect_registration(nextClient, areg::RegistrationAction::RegisterProvider, nextProvider, nextConsumer)
+            && expect_registration(nextServer, areg::CallType::RegisterConsumer, nextProvider, nextConsumer)
+            && expect_registration(nextClient, areg::CallType::RegisterProvider, nextProvider, nextConsumer)
             && registration_barrier(nextServer) && registration_barrier(nextClient);
     }
 
@@ -751,7 +752,7 @@ namespace
     constexpr uint32_t NAME_CHECK_OTHER{ 0x0E0F1011u };
 
     //!< Reads a registration notification and checks its action and the name check it carries.
-    bool expect_name_check(Client & client, areg::RegistrationAction action, uint32_t nameCheck)
+    bool expect_name_check(Client & client, areg::CallType action, uint32_t nameCheck)
     {
         areg::EventHeader received{ };
         return check(client.read_message(received, ANSWER_MS)
@@ -788,8 +789,8 @@ namespace
         }
 
         return register_consumer(client, consumer)
-            && expect_name_check(server, areg::RegistrationAction::RegisterConsumer, NAME_CHECK_FIRST)
-            && expect_name_check(client, areg::RegistrationAction::RegisterProvider, NAME_CHECK_FIRST)
+            && expect_name_check(server, areg::CallType::RegisterConsumer, NAME_CHECK_FIRST)
+            && expect_name_check(client, areg::CallType::RegisterProvider, NAME_CHECK_FIRST)
             && registration_barrier(server) && registration_barrier(client);
     }
 
@@ -809,7 +810,7 @@ namespace
         return register_provider(owner, provider) && registration_barrier(owner)
             && register_provider(rejected, other)
             && expect_duplicate(rejected, other, NAME_CHECK_FIRST) && expect_duplicate(owner, other, NAME_CHECK_OTHER)
-            && expect_registration(rejected, areg::RegistrationAction::UnregisterProvider, other, consumer,
+            && expect_registration(rejected, areg::CallType::UnregisterProvider, other, consumer,
                                    areg::DisconnectReason::ProviderRejected)
             && registration_barrier(rejected) && registration_barrier(owner);
     }
@@ -827,17 +828,17 @@ namespace
         const areg::ProxyAddress consumer{ consumer_address(client.cookie) };
         if (!register_provider(owner, provider) || !registration_barrier(owner)
             || !register_consumer(client, consumer)
-            || !expect_registration(owner, areg::RegistrationAction::RegisterConsumer, provider, consumer)
-            || !expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer)
+            || !expect_registration(owner, areg::CallType::RegisterConsumer, provider, consumer)
+            || !expect_registration(client, areg::CallType::RegisterProvider, provider, consumer)
             || !register_provider(rejected, duplicate)
             || !expect_duplicate(rejected, duplicate) || !expect_duplicate(owner, duplicate)
-            || !expect_registration(rejected, areg::RegistrationAction::UnregisterProvider, duplicate, consumer,
+            || !expect_registration(rejected, areg::CallType::UnregisterProvider, duplicate, consumer,
                                     areg::DisconnectReason::ProviderRejected)
             || !registration_barrier(rejected) || !registration_barrier(owner))
             return false;
 
         return unregister_consumer(client, consumer)
-            && expect_registration(owner, areg::RegistrationAction::UnregisterConsumer, provider, consumer,
+            && expect_registration(owner, areg::CallType::UnregisterConsumer, provider, consumer,
                                    areg::DisconnectReason::ConsumerDisconnected)
             && registration_barrier(rejected);
     }
@@ -861,15 +862,15 @@ namespace
         if (mode == "held-provider-takeover")
         {
             if (!register_consumer(client, consumer)
-                || !expect_registration(owner, areg::RegistrationAction::RegisterConsumer, provider, consumer)
-                || !expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer)
+                || !expect_registration(owner, areg::CallType::RegisterConsumer, provider, consumer)
+                || !expect_registration(client, areg::CallType::RegisterProvider, provider, consumer)
                 || !unregister_provider(owner, provider)
-                || !expect_registration(client, areg::RegistrationAction::UnregisterProvider, provider, consumer,
+                || !expect_registration(client, areg::CallType::UnregisterProvider, provider, consumer,
                                         areg::DisconnectReason::ProviderDisconnected))
                 return false;
 
-            return expect_registration(held, areg::RegistrationAction::RegisterConsumer, successor, consumer)
-                && expect_registration(client, areg::RegistrationAction::RegisterProvider, successor, consumer)
+            return expect_registration(held, areg::CallType::RegisterConsumer, successor, consumer)
+                && expect_registration(client, areg::CallType::RegisterProvider, successor, consumer)
                 && registration_barrier(owner) && registration_barrier(held) && registration_barrier(client);
         }
 
@@ -882,13 +883,13 @@ namespace
         {
             const areg::ProxyAddress witness{ consumer_address(held.cookie, 0x7777u) };
             if (!register_consumer(held, witness)
-                || !expect_registration(owner, areg::RegistrationAction::RegisterConsumer, provider, witness)
-                || !expect_registration(held, areg::RegistrationAction::RegisterProvider, provider, witness))
+                || !expect_registration(owner, areg::CallType::RegisterConsumer, provider, witness)
+                || !expect_registration(held, areg::CallType::RegisterProvider, provider, witness))
                 return false;
 
             areg::MessageEnvelope bye{ areg::create_disconnect_request(held.cookie, areg::COOKIE_ROUTER) };
             if (!send_envelope(held, std::move(bye)) || !check(sees_end(held.socket, ANSWER_MS), "held source disconnected")
-                || !expect_registration(owner, areg::RegistrationAction::UnregisterConsumer, provider, witness,
+                || !expect_registration(owner, areg::CallType::UnregisterConsumer, provider, witness,
                                         areg::DisconnectReason::ConsumerDisconnected)
                 || !registration_barrier(owner))
                 return false;
@@ -897,10 +898,10 @@ namespace
         }
 
         return register_consumer(client, consumer)
-            && expect_registration(owner, areg::RegistrationAction::RegisterConsumer, provider, consumer)
-            && expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer)
+            && expect_registration(owner, areg::CallType::RegisterConsumer, provider, consumer)
+            && expect_registration(client, areg::CallType::RegisterProvider, provider, consumer)
             && unregister_provider(owner, provider)
-            && expect_registration(client, areg::RegistrationAction::UnregisterProvider, provider, consumer,
+            && expect_registration(client, areg::CallType::UnregisterProvider, provider, consumer,
                                    areg::DisconnectReason::ProviderDisconnected)
             && registration_barrier(client) && registration_barrier(owner);
     }
@@ -918,8 +919,8 @@ namespace
         const areg::ProxyAddress pending{ consumer_address(waiting.cookie, 0x5555u, 0x6789u) };
         if (!register_consumer(client, consumer) || !registration_barrier(client)
             || !register_provider(server, provider)
-            || !expect_registration(server, areg::RegistrationAction::RegisterConsumer, provider, consumer)
-            || !expect_registration(client, areg::RegistrationAction::RegisterProvider, provider, consumer)
+            || !expect_registration(server, areg::CallType::RegisterConsumer, provider, consumer)
+            || !expect_registration(client, areg::CallType::RegisterProvider, provider, consumer)
             || !register_consumer(waiting, pending) || !registration_barrier(waiting))
             return false;
 
@@ -940,8 +941,8 @@ namespace
         const areg::ProxyAddress nextConsumer{ consumer_address(nextClient.cookie) };
         return register_consumer(nextClient, nextConsumer) && registration_barrier(nextClient)
             && register_provider(nextServer, nextProvider)
-            && expect_registration(nextServer, areg::RegistrationAction::RegisterConsumer, nextProvider, nextConsumer)
-            && expect_registration(nextClient, areg::RegistrationAction::RegisterProvider, nextProvider, nextConsumer)
+            && expect_registration(nextServer, areg::CallType::RegisterConsumer, nextProvider, nextConsumer)
+            && expect_registration(nextClient, areg::CallType::RegisterProvider, nextProvider, nextConsumer)
             && registration_barrier(nextServer) && registration_barrier(nextClient);
     }
 
@@ -970,8 +971,8 @@ namespace
         const areg::ProxyAddress remoteConsumer{ consumer_address(remote.cookie) };
         return register_consumer(remote, remoteConsumer) && registration_barrier(remote)
             && register_provider(local, provider)
-            && expect_registration(local, areg::RegistrationAction::RegisterConsumer, provider, remoteConsumer)
-            && expect_registration(remote, areg::RegistrationAction::RegisterProvider, provider, remoteConsumer)
+            && expect_registration(local, areg::CallType::RegisterConsumer, provider, remoteConsumer)
+            && expect_registration(remote, areg::CallType::RegisterProvider, provider, remoteConsumer)
             && registration_barrier(local) && registration_barrier(remote);
     }
 

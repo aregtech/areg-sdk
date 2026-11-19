@@ -59,6 +59,9 @@ The two places a developer might reach for Python have a Python-free equivalent:
 | `setup-project.sh` | -- | Creates a ready-to-build project; no interpreter | [5](#5-project-setup-scripts-quick-start) |
 | `setup-project.ps1` | -- | The same on Windows, in PowerShell 5.1 or 7 | [5](#5-project-setup-scripts-quick-start) |
 | `setup-project.bat` | -- | Runs `setup-project.ps1` | [5](#5-project-setup-scripts-quick-start) |
+| `build.sh` | CMake | Configures and builds one configuration in its own directory; Linux, macOS, Cygwin, MSYS2 | [6](#6-building-the-generated-project) |
+| `build.ps1` | CMake | The same on Windows: MSVC, clang-cl, MinGW | [6](#6-building-the-generated-project) |
+| `build.bat` | CMake | Runs `build.ps1` | [6](#6-building-the-generated-project) |
 
 `explain_rule.py` reads `schema/rules.xml`, so it lives beside it. It is the one
 Python script here a developer is likely to want: it turns a generator refusal into
@@ -138,7 +141,7 @@ python3 tools/agent/check_contract.py <project> --strict
 python3 tools/intern/check_mutations.py --static
 python3 tools/intern/check_corpus.py --verbose
 
-cmake -B build -DAREG_OUTPUT_LAYOUT=OFF && cmake --build build -j
+cmake -B build && cmake --build build -j
 python3 tools/intern/check_recipes.py --lib build/bin
 python3 tools/intern/check_observability.py --lib build/bin
 ```
@@ -394,6 +397,34 @@ cmake --build build
 
 This produces a **fully functional Areg RPC example**.
 
+`build.sh` (Linux, macOS, Cygwin, MSYS2) and `build.bat` / `build.ps1` (Windows) do the
+same in one command, for the Areg SDK or for any project that uses it. Each configuration
+gets its own directory, `<source>/product/build/<family>-<type>-<processor>[-static]`, so
+several builds live side by side:
+
+```bash
+sh tools/build.sh                                 # host compiler, release
+sh tools/build.sh -c llvm -t debug --test         # clang, debug, then ctest
+sh tools/build.sh -a aarch64 -s -- -DAREG_TESTS=OFF
+tools\build.bat -c llvm -t debug               # clang-cl with Visual Studio
+```
+
+| Option | Meaning |
+|---|---|
+| `-c`, `--compiler` | `gnu`, `llvm`, `cygwin`, `mingw` (`build.sh`); `msvc`, `llvm`, `mingw` (`build.ps1`). Default: the host compiler |
+| `-t`, `--type` | `release` (default), `debug`, `relwithdebinfo`, `minsizerel` |
+| `-a`, `--arch` | `x86`, `x64`, `arm`, `aarch64`; default the host processor |
+| `-s`, `--static` | areg as a static library |
+| `-S`, `--source` / `-B`, `--build-dir` | the project (default: the current directory, else this SDK) and the build directory |
+| `-G`, `--generator` | `build.ps1` only. Default Visual Studio; Ninja with MSVC needs a Developer PowerShell |
+| `-j`, `--jobs` | parallel jobs; default all cores |
+| `--target NAME` | build only this target; repeatable |
+| `--test`, `--install`, `--clean`, `--configure-only`, `-n`/`--dry-run` | run ctest, install, clean first, configure only, print the commands |
+| `-- <args>` | the rest goes to the CMake configure step, for example `-DAREG_EXAMPLES=OFF` |
+
+The exit code is 0 when done, 1 for a bad argument, 2 for a missing tool, 3 when the
+configure, the build, the tests or the install failed.
+
 ---
 
 ## 7. Examples and Advanced Usage
@@ -552,8 +583,8 @@ python3 tools/intern/run-all-examples.py --list      # what would run, without r
 
 Both wrappers pass every argument through to the driver.
 
-Without `--bin-dir` the driver searches `build/bin` and every other CMake build tree in
-the repository, plus `product/build/<compiler>/<config>/bin`, keeps only the directories
+Without `--bin-dir` the driver searches the `bin` of every CMake build tree in the
+repository root, `product/` and `product/build/`, keeps only the directories
 holding binaries the current platform can start, and takes the most recently built one.
 
 | Option | Default | Meaning |
@@ -575,7 +606,7 @@ Exit code 0 means every scenario passed.
 tools/intern/run-all-examples.sh --only 12_svcmulti --repeat 20
 
 # Everything, against an explicitly chosen build:
-tools/intern/run-all-examples.sh --bin-dir product/build/gnu-g++/linux-64-x86_64-release-shared/bin
+tools/intern/run-all-examples.sh --bin-dir build/bin
 ```
 
 > [!IMPORTANT]

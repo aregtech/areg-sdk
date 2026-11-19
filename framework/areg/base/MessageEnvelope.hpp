@@ -519,7 +519,7 @@ public:
 
     /**
      * \brief   Returns the raw call type value (uint8_t) from the EventHeader.
-     *          Cast to areg::EventCallType at the areg/component layer.
+     *          Cast to areg::CallType at the areg/component layer.
      **/
     [[nodiscard]]
     inline uint8_t call_type() const noexcept;
@@ -527,7 +527,7 @@ public:
     /**
      * \brief   Sets the raw call type value in the EventHeader.
      *
-     * \param   callType    Raw EventCallType value (uint8_t) to store.
+     * \param   callType    Raw areg::CallType value (uint8_t) to store.
      **/
     inline void set_call_type(uint8_t callType) noexcept;
 

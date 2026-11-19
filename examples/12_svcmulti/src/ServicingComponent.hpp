@@ -74,14 +74,14 @@ protected:
     /**
      * \brief   Sends update notification message to all clients.
      **/
-    void send_notification( uint32_t /*msgId*/ ) final
+    void send_notification( uint32_t /*attrIndex*/ ) final
     {
     }
 
     /**
      * \brief   Sends error message to clients.
      **/
-    void error_request( uint32_t /*msgId*/, bool /*msgCancel*/ ) final
+    void error_request( areg::CallType /*kind*/, uint32_t /*index*/, bool /*msgCancel*/ ) final
     {
     }
 

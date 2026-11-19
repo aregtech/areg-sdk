@@ -40,13 +40,6 @@ ClientInfo::ClientInfo( const ProxyAddress & client )
     set_connection_status( areg::ServiceConnectionState::Pending);
 }
 
-ClientInfo::ClientInfo( ProxyAddress && client ) noexcept
-    : mClientAddress( static_cast<ProxyAddress &&>(client) )
-    , mClientState  ( areg::ServiceConnectionState::Unknown )
-{
-    set_connection_status( areg::ServiceConnectionState::Pending );
-}
-
 ClientInfo::ClientInfo( ClientInfo && src ) noexcept
     : mClientAddress( std::move(src.mClientAddress) )
     , mClientState  ( src.mClientState )

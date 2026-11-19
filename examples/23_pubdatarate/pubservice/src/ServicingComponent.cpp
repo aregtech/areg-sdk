@@ -422,7 +422,7 @@ void ServicingComponent::_init_block_list()
 
 uint32_t ServicingComponent::_build_prebuilt_messages()
 {
-    constexpr uint32_t message_id{ static_cast<uint32_t>(LargeData::MessageIDs::MsgId_broadcast_image_block_acquired) };
+    constexpr uint32_t message_id{ LargeData::message_id(LargeData::BroadcastIDs::MsgId_broadcast_image_block_acquired) };
 
     const uint32_t channels { mOptions.mChannels };
     const uint64_t frame_ns { mOptions.nsPerImage() };
@@ -480,7 +480,7 @@ uint32_t ServicingComponent::_build_prebuilt_messages()
                     // wire routing cookies (source = this process, target = proxy). The payload is a
                     // raw copy of `data`, i.e. [uint32 length][serialized ImageBlock]; the patchable
                     // RawImageBlock starts right after the length prefix.
-                    areg::ServiceResponseEvent respEvent{ create_response(proxy, message_id, areg::ResultType::RequestOK, data) };
+                    areg::ServiceResponseEvent respEvent{ create_response(proxy, message_id, areg::CallType::Broadcast, areg::ResultType::RequestOK, data) };
                     [[maybe_unused]] const bool routed{ areg::RemoteEventFactory::route_outgoing_message(respEvent, channel) };
                     remote.message = respEvent.envelope();
                     remote.offset  = static_cast<uint32_t>(sizeof(uint32_t));

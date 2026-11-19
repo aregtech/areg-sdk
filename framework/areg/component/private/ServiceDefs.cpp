@@ -54,7 +54,7 @@ areg::ParameterArray::ParameterArray( const areg::InterfaceData& ifData )
     : mElemCount (0)
     , mParamList(nullptr)
 {
-    construct(ifData.idResponseParamCountMap, ifData.idResponseCount);
+    construct(ifData.idParamCountMap, ifData.responses().mtCount + ifData.broadcasts().mtCount);
 }
 
 areg::ParameterArray::ParameterArray( const uint32_t* paramCountMap, int32_t count )
@@ -159,17 +159,12 @@ AREG_API_IMPL const areg::InterfaceData & areg::empty_interface() noexcept
     /**
      * \brief   System Service Interface data
      **/
-    static constexpr areg::InterfaceData _InterfaceData = 
+    static constexpr areg::InterfaceData _InterfaceData =
     {
           areg::EmptyServiceName
         , areg::EmptyServiceVersion
         , areg::ServiceType::Public
-        , 0
-        , 0
-        , 0
-        , nullptr
-        , nullptr
-        , nullptr
+        , { }
         , nullptr
         , nullptr
     };

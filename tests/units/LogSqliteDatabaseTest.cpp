@@ -355,6 +355,7 @@ TEST(LogSqliteDatabaseTest, test_closedFileIsOnePlainFile)
     LogDb writer;
     ASSERT_TRUE(writer.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     sqlite3* writerDb{ _lastDb };
+    ASSERT_NE(writerDb, nullptr);
     ASSERT_TRUE(_write_rows(writer, 100u, 1000));
 
     EXPECT_EQ(_query_text(path, "PRAGMA journal_mode;"), "wal");
@@ -526,6 +527,7 @@ TEST(LogSqliteDatabaseTest, test_windowPlansUseTheTimeIndex)
     LogDb db;
     ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     sqlite3* conn{ _lastDb };
+    ASSERT_NE(conn, nullptr);
     _write_mixed(db);
 
     const LogDb::LogPosition middle{ 1700, 5000u };
@@ -562,6 +564,7 @@ TEST(LogSqliteDatabaseTest, test_windowEndsWithStatementReset)
     LogDb db;
     ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     sqlite3* conn{ _lastDb };
+    ASSERT_NE(conn, nullptr);
     ASSERT_TRUE(_write_rows(db, 1000u, 1000));
 
     areg::ext::SqliteStatement stmt(db.database());
@@ -652,6 +655,7 @@ TEST(LogSqliteDatabaseTest, test_windowReportsRowIds)
     LogDb db;
     ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     sqlite3* conn{ _lastDb };
+    ASSERT_NE(conn, nullptr);
     _write_mixed(db);
     const std::vector<uint32_t> expected{ _ids(_rows_in_time_order(path)) };
 
@@ -725,6 +729,7 @@ TEST(LogSqliteDatabaseTest, test_filteredWindowsEqualTheFilteredSet)
     LogDb db;
     ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     sqlite3* conn{ _lastDb };
+    ASSERT_NE(conn, nullptr);
     _write_mixed(db);
     const std::vector<Row> all{ _rows_in_time_order(path) };
 
@@ -809,6 +814,7 @@ TEST(LogSqliteDatabaseTest, test_windowAtRowNumberEqualsTheKeysetSlice)
     LogDb db;
     ASSERT_TRUE(db.connect(areg::String(path.c_str()), areg::DatabaseRole::Recorder));
     sqlite3* conn{ _lastDb };
+    ASSERT_NE(conn, nullptr);
     _write_mixed(db);
 
     const auto sweep = [&](ITEM_ID instId, bool filtered) -> std::vector<uint32_t>

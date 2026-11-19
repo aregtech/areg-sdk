@@ -167,12 +167,12 @@ private:
         {
         case Case::Error:
         case Case::SubscribedCaller:
-            error_request(static_cast<uint32_t>(HelloUnblock::MessageIDs::MsgId_request_hello_ublock), false);
+            error_request(areg::CallType::Request, static_cast<uint32_t>(HelloUnblock::RequestIDs::MsgId_request_hello_ublock), false);
             response_hello_unblock(mTag, 0);
             break;
 
         case Case::ErrorUnblocked:
-            error_request(static_cast<uint32_t>(HelloUnblock::MessageIDs::MsgId_request_hello_ublock), false);
+            error_request(areg::CallType::Request, static_cast<uint32_t>(HelloUnblock::RequestIDs::MsgId_request_hello_ublock), false);
             if (prepare_response(mSession))
             {
                 response_hello_unblock(mTag, 1);
@@ -191,7 +191,7 @@ private:
             break;
 
         case Case::ResponseError:
-            error_request(static_cast<uint32_t>(HelloUnblock::MessageIDs::MsgId_response_hello_unblock), false);
+            error_request(areg::CallType::Response, static_cast<uint32_t>(HelloUnblock::ResponseIDs::MsgId_response_hello_unblock), false);
             response_hello_unblock(mTag, 0);
             break;
 

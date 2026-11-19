@@ -141,6 +141,8 @@ Tools that accelerate development:
 **Core Tools:**
 - **[Areg SDK Tools Overview](./06a-areg-sdk-tools.md)** - Complete toolchain guide
 - **[Code Generator](./06b-code-generator.md)** - Generate service interfaces from `.siml` files
+- **[Service Message Identity](./06h-message-identity.md)** - How message IDs are made, collisions, one SDK and one definition per system
+- **[Request Failures and Data Validity](./06i-request-failures-and-data-validity.md)** - Every reason a request fails, attribute data states, provider error calls
 
 **Lusan - Visual Development Tool:**
 - **[Building Lusan](./06c-build-lusan.md)** - Build the GUI tool

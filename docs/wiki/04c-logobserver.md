@@ -28,14 +28,14 @@ The Areg SDK Log Observer is a console application for real-time log monitoring,
 
 ```bash
 # Terminal 1 - Start log collector service
-./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/logcollector --console
+./build/bin/logcollector --console
 ```
 
 **Step 2: Start Log Observer**
 
 ```bash
 # Terminal 2 - Start log observer
-./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/logobserver
+./build/bin/logobserver
 ```
 
 **Expected output:**
@@ -159,7 +159,7 @@ After building Areg SDK, Log Observer is available in the build output directory
 
 **Linux:**
 ```bash
-./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/logobserver
+./build/bin/logobserver
 ```
 
 **Windows:**

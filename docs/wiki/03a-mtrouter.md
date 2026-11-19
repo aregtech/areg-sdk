@@ -28,13 +28,13 @@ The Multitarget Router enables inter-process and networked communication between
 **Linux:**
 ```bash
 cd areg-sdk
-./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/mtrouter.elf --console
+./build/bin/mtrouter.elf --console
 ```
 
 **macOS:**
 ```bash
 cd areg-sdk
-./product/build/llvm-clang++/darwin-64-arm64-release-shared/bin/mtrouter.mac --console
+./build/bin/mtrouter.mac --console
 ```
 
 **Windows:**
@@ -145,12 +145,12 @@ After building Areg SDK, `mtrouter` is available in the build output directory.
 
 **Linux:**
 ```bash
-./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/mtrouter.elf
+./build/bin/mtrouter.elf
 ```
 
 **macOS:**
 ```bash
-./product/build/llvm-clang++/darwin-64-arm64-release-shared/bin/mtrouter.mac
+./build/bin/mtrouter.mac
 ```
 
 **Windows:**
@@ -159,7 +159,7 @@ After building Areg SDK, `mtrouter` is available in the build output directory.
 ```
 
 > [!NOTE]
-> Build output paths follow pattern: `product/build/<compiler>/<platform>-<arch>-<config>/bin/`
+> A CMake build puts the binaries in `build/bin/`; the Visual Studio solution puts them in `product\build\<compiler>\<platform>\bin\`.
 
 ---
 
@@ -242,7 +242,7 @@ cmake --install ./build --prefix /opt/areg
 
 **Linux/macOS:**
 ```bash
-./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/mtrouter.elf --console
+./build/bin/mtrouter.elf --console
 ```
 
 **Windows:**
@@ -363,10 +363,10 @@ ls -l /usr/local/share/areg/service/mtrouter.service
 
 ```bash
 # Copy executable
-sudo cp ./product/build/gnu-g++/linux-64-x86_64-release-shared/bin/mtrouter.elf /usr/local/bin/mtrouter
+sudo cp ./build/bin/mtrouter.elf /usr/local/bin/mtrouter
 
 # Copy library (if shared build)
-sudo cp ./product/build/gnu-g++/linux-64-x86_64-release-shared/lib/libareg.so /usr/lib/libareg.so
+sudo cp ./build/bin/libareg.so /usr/lib/libareg.so
 
 # Make executable
 sudo chmod +x /usr/local/bin/mtrouter
@@ -508,10 +508,10 @@ ls -l /usr/local/share/areg/service/tech.areg.mtrouter.plist
 
 ```bash
 # Copy executable
-sudo cp ./product/build/llvm-clang++/darwin-64-arm64-release-shared/bin/mtrouter.mac /usr/local/bin/
+sudo cp ./build/bin/mtrouter.mac /usr/local/bin/
 
 # Copy library (if shared build)
-sudo cp ./product/build/llvm-clang++/darwin-64-arm64-release-shared/lib/libareg.dylib /usr/local/lib/
+sudo cp ./build/bin/libareg.dylib /usr/local/lib/
 
 # Make executable
 sudo chmod +x /usr/local/bin/mtrouter.mac
@@ -1326,7 +1326,7 @@ ls -l /usr/local/bin/mtrouter
 ldd /usr/local/bin/mtrouter
 
 # Copy missing library
-sudo cp ./product/build/gnu-g++/linux-64-x86_64-release-shared/lib/libareg.so /usr/lib/
+sudo cp ./build/bin/libareg.so /usr/lib/
 sudo ldconfig
 ```
 

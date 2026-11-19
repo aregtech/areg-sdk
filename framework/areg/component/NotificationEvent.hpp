@@ -73,10 +73,11 @@ public:
      *
      * \param   proxy           The pointer of Proxy object which triggered notification message
      * \param   notifyType      The result flag of notification event. See details in areg::ResultType
-     * \param   notifyId        The call ID, usually response ID or attribute ID. If request fails, also request ID.
+     * \param   kind            The kind of the entry: Response, Broadcast or Attribute; Request if a request failed.
+     * \param   index           The index of the entry in its kind.
      * \param   seqNr           The call sequence number.
      **/
-    NotificationEventData( const ProxyBase & proxy, areg::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr );
+    NotificationEventData( const ProxyBase & proxy, areg::ResultType notifyType, areg::CallType kind, uint32_t index, const SequenceNumber & seqNr );
 
     /**
      * \brief   Copies data from given source.
@@ -138,16 +139,21 @@ public:
     inline void set_notify_type(areg::ResultType notifyType) noexcept;
 
     /**
-     * \brief   Returns notification message ID.
+     * \brief   Returns the kind of the notified entry.
      **/
     [[nodiscard]]
-    inline uint32_t notify_id() const noexcept;
+    inline areg::CallType notify_kind() const noexcept;
+
     /**
-     * \brief   Sets notification message ID.
-     *
-     * \param   notifyId    The notification message ID to set.
+     * \brief   Returns the index of the notified entry in its kind.
      **/
-    inline void set_notify_id( uint32_t notifyId ) noexcept;
+    [[nodiscard]]
+    inline uint32_t notify_index() const noexcept;
+
+    /**
+     * \brief   Sets the kind and the index of the notified entry.
+     **/
+    inline void set_notify_entry( areg::CallType kind, uint32_t index ) noexcept;
 
     /**
      * \brief   Returns the sequence number of a caller.
@@ -173,9 +179,13 @@ private:
      **/
     areg::ResultType    mNotifyType;
     /**
-     * \brief   Notification message ID
+     * \brief   The index of the notified entry in its kind.
      **/
-    uint32_t            mNotifyId;
+    uint16_t            mNotifyIndex;
+    /**
+     * \brief   The kind of the notified entry.
+     **/
+    areg::CallType      mNotifyKind;
     /**
      * \brief   Call sequence number.
      **/
@@ -299,11 +309,12 @@ public:
      * \brief   Processes a notification.
      *          Override to handle attribute updates, broadcasts, and response notifications.
      *
-     * \param   msgId       The notification message ID to process
+     * \param   kind        The kind of the notified entry: Response, Broadcast or Attribute; Request if a request failed.
+     * \param   index       The index of the entry in its kind.
      * \param   result      The result of the processed request
      * \param   seqNr       The sequence number of the call
      **/
-    virtual void process_notification(uint32_t msgId, areg::ResultType result, SequenceNumber seqNr) = 0;
+    virtual void process_notification(areg::CallType kind, uint32_t index, areg::ResultType result, SequenceNumber seqNr) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -356,14 +367,20 @@ inline void NotificationEventData::set_notify_type( areg::ResultType notifyType 
     mNotifyType = notifyType;
 }
 
-inline uint32_t NotificationEventData::notify_id() const noexcept
+inline areg::CallType NotificationEventData::notify_kind() const noexcept
 {
-    return mNotifyId;
+    return mNotifyKind;
 }
 
-inline void NotificationEventData::set_notify_id( uint32_t notifyId ) noexcept
+inline uint32_t NotificationEventData::notify_index() const noexcept
 {
-    mNotifyId = notifyId;
+    return static_cast<uint32_t>(mNotifyIndex);
+}
+
+inline void NotificationEventData::set_notify_entry( areg::CallType kind, uint32_t index ) noexcept
+{
+    mNotifyKind  = kind;
+    mNotifyIndex = static_cast<uint16_t>(index);
 }
 
 inline const SequenceNumber & NotificationEventData::sequence() const noexcept

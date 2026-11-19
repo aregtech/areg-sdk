@@ -5,6 +5,7 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "units/ChildProcess.hpp"
+#include "units/TestMessageTable.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/SyncPrimitives.hpp"
 #include "areg/component/Component.hpp"
@@ -41,14 +42,21 @@ namespace
 
     constexpr uint32_t WAIT_MS{ 30'000u };
 
-    constexpr uint32_t REQUESTS[]{ REQUEST_ID_FIRST };
-    constexpr uint32_t RESPONSES[]{ RESPONSE_ID_FIRST };
-    constexpr uint32_t ATTRIBUTES[]{ ATTRIBUTE_ID_FIRST };
+    constexpr uint32_t REQUESTS[]{ areg::crc32_calculate("request_core") };
+    constexpr uint32_t RESPONSES[]{ areg::crc32_calculate("response_core") };
+    constexpr uint32_t ATTRIBUTES[]{ areg::crc32_calculate("attribute_Core") };
     constexpr uint32_t PARAM_COUNTS[]{ 1 };
+    constexpr uint16_t REQUEST_TO_RESPONSE[]{ 0u };
+
+    const areg_test::TestMessageTable CORE_REQUESTS{ REQUESTS, 1u };
+    const areg_test::TestMessageTable CORE_RESPONSES{ RESPONSES, 1u };
+    const areg_test::TestMessageTable CORE_ATTRIBUTES{ ATTRIBUTES, 1u };
+
     const InterfaceData PUBLIC_INTERFACE
     {
-          "CoreCoverageService", Version(1, 0, 0), ServiceType::Public
-        , 1, 1, 1, REQUESTS, RESPONSES, ATTRIBUTES, RESPONSES, PARAM_COUNTS
+        areg_test::make_interface( "CoreCoverageService", Version(1, 0, 0), ServiceType::Public
+                                 , CORE_REQUESTS.table(), CORE_RESPONSES.table(), MessageTable{ }, CORE_ATTRIBUTES.table()
+                                 , REQUEST_TO_RESPONSE, PARAM_COUNTS )
     };
 
     //!< A consumer that ignores every notification.
@@ -64,7 +72,7 @@ namespace
         {
         }
 
-        void process_notification(uint32_t, ResultType, SequenceNumber) override
+        void process_notification(CallType, uint32_t, ResultType, SequenceNumber) override
         {
         }
     };
@@ -112,15 +120,15 @@ namespace
             return LocalRequestEvent(proxy_address(), stub_address(), request, reserve);
         }
 
-        ServiceRequestEvent create_notification_request(uint32_t, RequestType) override
+        ServiceRequestEvent create_notification_request(uint32_t, RequestType, CallType) override
         {
             return ServiceRequestEvent(MessageEnvelope{});
         }
 
-        ServiceResponseEvent create_request_failed(const ProxyAddress & target, uint32_t message
+        ServiceResponseEvent create_request_failed(const ProxyAddress & target, uint32_t message, CallType kind
                                                   , ResultType reason, const SequenceNumber & sequence) const override
         {
-            return LocalResponseEvent(target, reason, message, sequence);
+            return LocalResponseEvent(target, reason, message, kind, sequence);
         }
     };
 
@@ -137,7 +145,7 @@ namespace
         {
         }
 
-        void error_request(uint32_t, bool) override
+        void error_request(CallType, uint32_t, bool) override
         {
         }
 
@@ -147,10 +155,17 @@ namespace
             static_cast<EventConsumer &>(*this).start_event_processing(event);
         }
 
+        //!< Returns the registration state of the stub.
+        ServiceConnectionState status() const noexcept
+        {
+            return mConnectionStatus;
+        }
+
         uint32_t    mRequests   { 0u };
         uint32_t    mAttributes { 0u };
         uint32_t    mStubEvents { 0u };
         uint32_t    mGenerics   { 0u };
+        uint32_t    mConnects   { 0u };
         mutable uint32_t    mUndelivered    { 0u };
         mutable uint32_t    mUndeliveredMsg { 0u };
 
@@ -214,7 +229,13 @@ namespace
             StubBase::process_generic_event(event);
         }
 
-        ServiceResponseEvent create_response(const ProxyAddress & target, uint32_t message, ResultType result, const SharedBuffer &) const override
+        void process_connect_event(const ProxyAddress & proxy, ServiceConnectionState status) override
+        {
+            ++ mConnects;
+            StubBase::process_connect_event(proxy, status);
+        }
+
+        ServiceResponseEvent create_response(const ProxyAddress & target, uint32_t message, CallType kind, ResultType result, const SharedBuffer &) const override
         {
             if (result == ResultType::MessageUndelivered)
             {
@@ -222,7 +243,7 @@ namespace
                 mUndeliveredMsg = message;
             }
 
-            return LocalResponseEvent(target, result, message, 0u);
+            return LocalResponseEvent(target, result, message, kind, 0u);
         }
     };
 }
@@ -882,10 +903,15 @@ namespace
         ProxyAddress sender{ target };
         sender.set_channel(Channel(88u, 0u, COOKIE_LOCAL));
 
-        LocalRequestEvent request(sender, target, REQUEST_ID_FIRST, 0u);
+        ServiceRequestEvent early(sender, target, ATTRIBUTES[0], RequestType::CallFunction, CallType::Attribute, EventType::EventLocalRequest);
+        stub.deliver(early);
+        CORE_CHECK(stub.mUndelivered == 0u);
+        CORE_CHECK(stub.mStubEvents == 0u);
+
+        LocalRequestEvent request(sender, target, REQUESTS[0], 0u);
         stub.deliver(request);
         CORE_CHECK(stub.mUndelivered == 1u);
-        CORE_CHECK(stub.mUndeliveredMsg == REQUEST_ID_FIRST);
+        CORE_CHECK(stub.mUndeliveredMsg == REQUESTS[0]);
         CORE_CHECK(stub.mRequests == 0u);
 
         stub.startup_service_interface(holder);
@@ -893,19 +919,40 @@ namespace
         CORE_CHECK(stub.mRequests == 1u);
         CORE_CHECK(stub.mUndelivered == 1u);
 
-        LocalRequestEvent other(sender, target, ATTRIBUTE_ID_FIRST, 0u);
+        ServiceRequestEvent other(sender, target, ATTRIBUTES[0], RequestType::CallFunction, CallType::Attribute, EventType::EventLocalRequest);
         stub.deliver(other);
         CORE_CHECK(stub.mStubEvents == 1u);
         CORE_CHECK(stub.mRequests == 1u);
 
-        LocalNotifyRequestEvent notify(sender, target, ATTRIBUTE_ID_FIRST, RequestType::StartNotify);
+        LocalNotifyRequestEvent notify(sender, target, ATTRIBUTES[0], RequestType::StartNotify, CallType::Attribute);
         stub.deliver(notify);
         CORE_CHECK(stub.mAttributes == 1u);
 
-        LocalResponseEvent response(sender, ResultType::RequestOK, RESPONSE_ID_FIRST, 0u);
+        LocalResponseEvent response(sender, ResultType::RequestOK, RESPONSES[0], CallType::Response, 0u);
         stub.deliver(response);
         CORE_CHECK(stub.mGenerics == 1u);
         CORE_CHECK(stub.mRequests == 1u);
+
+        LocalNotifyRequestEvent notifyCall(sender, target, REQUESTS[0], RequestType::StartNotify, CallType::Request);
+        stub.deliver(notifyCall);
+        CORE_CHECK(stub.mStubEvents == 2u);
+        CORE_CHECK(stub.mAttributes == 1u);
+
+        ServiceRequestEvent connectOther(sender, target, REQUESTS[0], RequestType::ClientConnection, CallType::Undefined, EventType::EventLocalProviderConnect);
+        stub.deliver(connectOther);
+        CORE_CHECK(stub.mStubEvents == 3u);
+        CORE_CHECK(stub.mConnects == 0u);
+
+        ServiceRequestEvent registered( ProxyAddress::invalid_proxy_address(), target
+                                      , static_cast<uint32_t>(FuncIdRange::ResponseServiceProviderConnection)
+                                      , RequestType::ServiceConnection, CallType::Undefined, EventType::EventLocalProviderConnect);
+        CORE_CHECK(registered.header() != nullptr);
+        registered.header()->result = static_cast<uint32_t>(ServiceConnectionState::Pending);
+        stub.deliver(registered);
+        CORE_CHECK(stub.status() == ServiceConnectionState::Pending);
+        CORE_CHECK(stub.address() == target);
+        CORE_CHECK(stub.mConnects == 0u);
+        CORE_CHECK(stub.mStubEvents == 3u);
 
         stub.shutdown_service_interface(holder);
     }

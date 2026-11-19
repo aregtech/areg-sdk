@@ -72,39 +72,6 @@ void ProxyEventConsumer::start_event_processing( Event & eventElem )
     }
     break;
 
-    case areg::EventType::EventLocalBroadcast:
-    case areg::EventType::EventRemoteBroadcast:
-    {
-        if (envelope.consumer_number() == static_cast<uint32_t>(mProxyAddress))
-        {
-            ServiceResponseEvent respEvent{ eventElem.envelope() };
-            process_broadcast_event(respEvent);
-        }
-    }
-    break;
-
-    case areg::EventType::EventLocalAttribute:
-    case areg::EventType::EventRemoteAttribute:
-    {
-        if (envelope.consumer_number() == static_cast<uint32_t>(mProxyAddress))
-        {
-            ServiceResponseEvent respEvent{ eventElem.envelope() };
-            process_attribute_event(respEvent);
-        }
-    }
-    break;
-
-    case areg::EventType::EventLocalRequestFailed:
-    case areg::EventType::EventRemoteRequestFailed:
-    {
-        if (envelope.consumer_number() == static_cast<uint32_t>(mProxyAddress))
-        {
-            ServiceResponseEvent respEvent{ eventElem.envelope() };
-            process_request_failed_event(respEvent);
-        }
-    }
-    break;
-
     case areg::EventType::EventCustomExternal:
     case areg::EventType::EventCustomInternal:
     {

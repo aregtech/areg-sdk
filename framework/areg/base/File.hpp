@@ -679,6 +679,15 @@ private:
     static uint32_t _os_special_dir(char* buffer, uint32_t length, const File::SpecialFolder specialFolder) noexcept;
 
     /**
+     * \brief   OS-specific implementation to copy a file; returns true if the file is copied.
+     *
+     * \param   srcPath     Path of the source file.
+     * \param   newPath     Path of the destination file.
+     * \param   copyForce   If true, overwrites an existing destination; if false, fails if it exists.
+     **/
+    static bool _os_copy_file(const char* srcPath, const char* newPath, bool copyForce) noexcept;
+
+    /**
      * \brief   Returns the OS-specific invalid file handle value.
      **/
     [[nodiscard]]

@@ -205,9 +205,6 @@ configure_build() {
     local build_dir="$1" flags="$2"
     if [[ ${KEEP} -eq 0 || ! -d "${build_dir}" ]]; then
         info "Configuring ${build_dir} (compiler=${FAMILY}, lib=${LIBTYPE}, examples=${EXAMPLES})"
-        # AREG_OUTPUT_DIR keeps each sanitizer's binaries/libs in its own tree.
-        # Without it every build emits to the same product/<compiler>-<cfg> path
-        # and the asan / tsan executables clobber each other.
         cmake -B "${build_dir}" -S "${ROOT_DIR}" \
             -DAREG_COMPILER_FAMILY="${FAMILY}" \
             -DCMAKE_C_COMPILER="${CC_BIN}" \
@@ -216,7 +213,6 @@ configure_build() {
             -DAREG_LIB_TYPE="${LIBTYPE}" \
             -DAREG_TESTS=ON \
             -DAREG_EXAMPLES="${EXAMPLES}" \
-            -DAREG_OUTPUT_DIR="${build_dir}/product" \
             -DCMAKE_C_FLAGS="${flags}" \
             -DCMAKE_CXX_FLAGS="${flags}" \
             -DCMAKE_EXE_LINKER_FLAGS="${flags}" \
@@ -240,9 +236,9 @@ configure_build() {
 # --------------------------------------------------------------------------
 locate_binary() {
     local build_dir="$1"
-    # Each sanitizer build emits into <build_dir>/product/bin (see AREG_OUTPUT_DIR).
+    # Each sanitizer build emits into <build_dir>/bin.
     local found
-    found="$(find "${build_dir}/product" -type f -name "${TARGET}*" -perm -u+x 2>/dev/null \
+    found="$(find "${build_dir}/bin" -type f -name "${TARGET}*" -perm -u+x 2>/dev/null \
              | grep -vE '\.(so|a|o)(\.|$)' | head -1 || true)"
     [[ -n "${found}" ]] || found="$(find "${build_dir}" -type f -name "${TARGET}*" -perm -u+x 2>/dev/null | grep -vE '\.(so|a|o)(\.|$)' | head -1 || true)"
     printf '%s' "${found}"
@@ -267,7 +263,7 @@ do_run() {
             # scenario driver is what has to run under the sanitizer. Every process it
             # starts inherits ASAN_OPTIONS, and its report goes to the captured output of
             # that process, next to the output that shows what the application was doing.
-            local bin_dir="${build_dir}/product/bin"
+            local bin_dir="${build_dir}/bin"
             [[ -d "${bin_dir}" ]] || bin_dir="$(dirname "$(find "${build_dir}" -type d -name bin | head -1)")/bin"
             [[ -d "${bin_dir}" ]] || die "instrumented binaries not found; build with --examples --target all"
             local out_dir="${build_dir}/example-results"

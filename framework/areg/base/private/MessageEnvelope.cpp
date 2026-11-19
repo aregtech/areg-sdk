@@ -125,6 +125,7 @@ uint8_t* MessageEnvelope::init_envelope(const areg::EventHeader& evtHeader, uint
             env->envHeader.bufHeader.biUsed     = std::min(evtHeader.bufHeader.biUsed, biLength);
 
             mPosition  = 0u;
+            mReadShort = false;
             return env->envData;
         }
     }

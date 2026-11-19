@@ -36,6 +36,7 @@
 #include "areg/component/WorkerThreadConsumer.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/ThreadConsumer.hpp"
+#include "units/TestMessageTable.hpp"
 
 #include <atomic>
 #include <condition_variable>
@@ -105,23 +106,19 @@ namespace
     constexpr uint32_t      FULL_QUEUE          { 32 };
     constexpr uint32_t      FULL_QUEUE_WAIT     { 1 };
 
-    constexpr uint32_t      _requestList[]      { areg::REQUEST_ID_FIRST };
-    constexpr uint32_t      _noResponse[]       { areg::RESPONSE_ID_NONE };
-    constexpr uint32_t      RESPONSE_ID         { areg::RESPONSE_ID_FIRST };
+    constexpr uint32_t      REQUEST_ID          { areg::crc32_calculate("request_teardown") };
+    constexpr uint32_t      _requestList[]      { REQUEST_ID };
+    constexpr uint16_t      _noResponse[]       { static_cast<uint16_t>(areg::RESPONSE_INDEX_NONE) };
+    constexpr uint32_t      RESPONSE_ID         { areg::crc32_calculate("response_teardown") };
+
+    //!< The test interface: one request without a response.
+    const areg_test::TestMessageTable _requests{ _requestList, 1u };
 
     const areg::InterfaceData _interfaceData
     {
-          _serviceName
-        , _version
-        , areg::ServiceType::Local
-        , 1
-        , 0
-        , 0
-        , _requestList
-        , nullptr
-        , nullptr
-        , _noResponse
-        , nullptr
+        areg_test::make_interface( _serviceName, _version, areg::ServiceType::Local
+                                 , _requests.table(), areg::MessageTable{ }, areg::MessageTable{ }, areg::MessageTable{ }
+                                 , _noResponse, nullptr )
     };
 
     //!< A counter a thread waits on until it reaches a value.
@@ -252,7 +249,7 @@ protected:
     {
     }
 
-    void error_request(uint32_t /*msgId*/, bool /*msgCancel*/) override
+    void error_request(areg::CallType /*kind*/, uint32_t /*index*/, bool /*msgCancel*/) override
     {
     }
 
@@ -289,7 +286,7 @@ class TeardownLocalResponse final : public areg::LocalResponseEvent
     AREG_DECLARE_RUNTIME_EVENT(TeardownLocalResponse)
 public:
     explicit TeardownLocalResponse(const areg::ProxyAddress & target)
-        : areg::LocalResponseEvent(target, areg::ResultType::RequestOK, RESPONSE_ID)
+        : areg::LocalResponseEvent(target, areg::ResultType::RequestOK, RESPONSE_ID, areg::CallType::Response)
     {
         header()->eventId = TeardownLocalResponse::CLASS_ID;
     }
@@ -367,12 +364,12 @@ protected:
         return areg::ServiceRequestEvent(areg::MessageEnvelope{});
     }
 
-    areg::ServiceRequestEvent create_notification_request(uint32_t /*msgId*/, areg::RequestType /*reqType*/) override
+    areg::ServiceRequestEvent create_notification_request(uint32_t /*msgId*/, areg::RequestType /*reqType*/, areg::CallType /*kind*/) override
     {
         return areg::ServiceRequestEvent(areg::MessageEnvelope{});
     }
 
-    areg::ServiceResponseEvent create_request_failed(const areg::ProxyAddress & /*addrProxy*/, uint32_t /*msgId*/, areg::ResultType /*reason*/, const SequenceNumber & /*seqNr*/) const override
+    areg::ServiceResponseEvent create_request_failed(const areg::ProxyAddress & /*addrProxy*/, uint32_t /*msgId*/, areg::CallType /*kind*/, areg::ResultType /*reason*/, const SequenceNumber & /*seqNr*/) const override
     {
         return areg::ServiceResponseEvent(areg::MessageEnvelope{});
     }
@@ -417,7 +414,7 @@ public:
     {
     }
 
-    void process_notification(uint32_t /*msgId*/, areg::ResultType /*result*/, SequenceNumber /*seqNr*/) override
+    void process_notification(areg::CallType /*kind*/, uint32_t /*index*/, areg::ResultType /*result*/, SequenceNumber /*seqNr*/) override
     {
     }
 
@@ -733,7 +730,8 @@ static void route_requests()
                                  , static_cast<uint8_t>(areg::EventPriority::NormalPrio));
         areg::EventHeader * hdr{ wire.header() };
         hdr->provider.number = gTargetKey.load();
-        hdr->messageId       = areg::REQUEST_ID_FIRST;
+        hdr->messageId       = REQUEST_ID;
+        hdr->callType        = static_cast<uint8_t>(areg::CallType::Request);
 
         if (areg::RemoteEventFactory::route_incoming_message(wire, channel))
             _count_routed();
@@ -772,6 +770,7 @@ static void route_responses()
         areg::EventHeader * hdr{ wire.header() };
         hdr->consumer.number = gTargetKey.load();
         hdr->messageId       = RESPONSE_ID;
+        hdr->callType        = static_cast<uint8_t>(areg::CallType::Response);
         hdr->eventId         = TeardownRemoteResponse::CLASS_ID;
 
         if (areg::RemoteEventFactory::route_incoming_message(wire, channel))
@@ -790,6 +789,7 @@ static void route_burst()
         areg::EventHeader * hdr{ wire.header() };
         hdr->consumer.number = gTargetKey.load();
         hdr->messageId       = RESPONSE_ID;
+        hdr->callType        = static_cast<uint8_t>(areg::CallType::Response);
         hdr->eventId         = TeardownRemoteResponse::CLASS_ID;
 
         if (areg::RemoteEventFactory::route_incoming_message(wire, channel))
@@ -959,12 +959,14 @@ static uint32_t route_until_refused(areg::EventType eventType, uint32_t key)
         if (eventType == areg::EventType::EventRemoteRequest)
         {
             hdr->provider.number = key;
-            hdr->messageId       = areg::REQUEST_ID_FIRST;
+            hdr->messageId       = REQUEST_ID;
+            hdr->callType        = static_cast<uint8_t>(areg::CallType::Request);
         }
         else
         {
             hdr->consumer.number = key;
             hdr->messageId       = RESPONSE_ID;
+            hdr->callType        = static_cast<uint8_t>(areg::CallType::Response);
             hdr->eventId         = TeardownRemoteResponse::CLASS_ID;
         }
 

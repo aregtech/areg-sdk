@@ -29,7 +29,7 @@ namespace {
     }
 
     inline static void _create_register_request( areg::MessageEnvelope & out
-                                               , areg::RegistrationAction reqType
+                                               , areg::CallType reqType
                                                , areg::DisconnectReason reason
                                                , const areg::StubAddress & addr)
     {
@@ -43,7 +43,7 @@ namespace {
     }
 
     inline static void _create_register_request( areg::MessageEnvelope & out
-                                               , areg::RegistrationAction reqType
+                                               , areg::CallType reqType
                                                , areg::DisconnectReason reason
                                                , const areg::ProxyAddress & addr)
     {
@@ -57,7 +57,7 @@ namespace {
     }
 
     inline static void _create_register_notify( areg::MessageEnvelope & out
-                                              , areg::RegistrationAction reqType
+                                              , areg::CallType reqType
                                               , areg::DisconnectReason reason
                                               , const areg::StubAddress & addr)
     {
@@ -71,7 +71,7 @@ namespace {
     }
 
     inline static void _create_register_notify( areg::MessageEnvelope & out
-                                              , areg::RegistrationAction reqType
+                                              , areg::CallType reqType
                                               , areg::DisconnectReason reason
                                               , const areg::ProxyAddress & addr)
     {
@@ -91,7 +91,7 @@ AREG_API_IMPL areg::MessageEnvelope areg::router_register_service( const areg::S
     areg::MessageEnvelope msgResult;
     if ( stub.is_service_public() && _isValidSource(source) )
     {
-        _create_register_request(msgResult, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason, stub);
+        _create_register_request(msgResult, areg::CallType::RegisterProvider, areg::DisconnectReason::UndefinedReason, stub);
         msgResult.set_source(static_cast<uint32_t>(source));
         msgResult.set_target(static_cast<uint32_t>(target));
     }
@@ -104,7 +104,7 @@ AREG_API_IMPL areg::MessageEnvelope areg::router_register_consumer( const areg::
     areg::MessageEnvelope msgResult;
     if ( proxy.is_service_public() && _isValidSource(source) )
     {
-        _create_register_request(msgResult, areg::RegistrationAction::RegisterConsumer, areg::DisconnectReason::UndefinedReason, proxy);
+        _create_register_request(msgResult, areg::CallType::RegisterConsumer, areg::DisconnectReason::UndefinedReason, proxy);
         msgResult.set_source(static_cast<uint32_t>(source));
         msgResult.set_target(static_cast<uint32_t>(target));
     }
@@ -117,7 +117,7 @@ AREG_API_IMPL areg::MessageEnvelope areg::router_unregister_service( const areg:
     areg::MessageEnvelope msgResult;
     if ( stub.is_service_public() && _isValidSource(source) )
     {
-        _create_register_request(msgResult, areg::RegistrationAction::UnregisterProvider, reason, stub);
+        _create_register_request(msgResult, areg::CallType::UnregisterProvider, reason, stub);
         msgResult.set_source(static_cast<uint32_t>(source));
         msgResult.set_target(static_cast<uint32_t>(target));
     }
@@ -130,7 +130,7 @@ AREG_API_IMPL areg::MessageEnvelope areg::router_unregister_consumer( const areg
     areg::MessageEnvelope msgResult;
     if ( proxy.is_service_public() && _isValidSource(source) )
     {
-        _create_register_request(msgResult, areg::RegistrationAction::UnregisterConsumer, reason, proxy);
+        _create_register_request(msgResult, areg::CallType::UnregisterConsumer, reason, proxy);
         msgResult.set_source(static_cast<uint32_t>(source));
         msgResult.set_target(static_cast<uint32_t>(target));
     }
@@ -192,7 +192,7 @@ AREG_API_IMPL areg::MessageEnvelope areg::service_registered_event(const StubAdd
     areg::MessageEnvelope msgResult;
     if ( stub.is_service_public() && _isValidSource(target) )
     {
-        _create_register_notify(msgResult, areg::RegistrationAction::RegisterProvider, areg::DisconnectReason::UndefinedReason, stub);
+        _create_register_notify(msgResult, areg::CallType::RegisterProvider, areg::DisconnectReason::UndefinedReason, stub);
         msgResult.set_source(static_cast<uint32_t>(source));
         msgResult.set_target(static_cast<uint32_t>(target));
     }
@@ -205,7 +205,7 @@ AREG_API_IMPL areg::MessageEnvelope areg::client_registered_event(const ProxyAdd
     areg::MessageEnvelope msgResult;
     if ( proxy.is_service_public() && _isValidSource(target) )
     {
-        _create_register_notify(msgResult, areg::RegistrationAction::RegisterConsumer, areg::DisconnectReason::UndefinedReason, proxy);
+        _create_register_notify(msgResult, areg::CallType::RegisterConsumer, areg::DisconnectReason::UndefinedReason, proxy);
         msgResult.set_source(static_cast<uint32_t>(source));
         msgResult.set_target(static_cast<uint32_t>(target));
     }
@@ -218,7 +218,7 @@ AREG_API_IMPL areg::MessageEnvelope areg::service_unregistered_event(const StubA
     areg::MessageEnvelope msgResult;
     if ( stub.is_service_public() && _isValidSource(target) )
     {
-        _create_register_notify(msgResult, areg::RegistrationAction::UnregisterProvider, reason, stub);
+        _create_register_notify(msgResult, areg::CallType::UnregisterProvider, reason, stub);
         msgResult.set_source(static_cast<uint32_t>(source));
         msgResult.set_target(static_cast<uint32_t>(target));
     }
@@ -251,7 +251,7 @@ AREG_API_IMPL areg::MessageEnvelope areg::client_unregistered_event(const ProxyA
     areg::MessageEnvelope msgResult;
     if ( proxy.is_service_public() && _isValidSource(target) )
     {
-        _create_register_notify(msgResult, areg::RegistrationAction::UnregisterConsumer, reason, proxy);
+        _create_register_notify(msgResult, areg::CallType::UnregisterConsumer, reason, proxy);
         msgResult.set_source(static_cast<uint32_t>(source));
         msgResult.set_target(static_cast<uint32_t>(target));
     }

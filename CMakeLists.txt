@@ -71,9 +71,6 @@ if(AREG_TESTS)
         # 'gtest' libraries are built
         add_dependencies(areg-unit-tests areg-dummy)
     endif()
-else()
-    option(AREG_SYSTEM_GTEST   "Use GTest package"         FALSE)
-    option(AREG_GTEST_FOUND     "GTest package found flag"  FALSE)
 endif()
 
 # build optional Areg Framework benchmarks, if required

@@ -4,86 +4,32 @@
 # ###########################################################################
 
 # ---------------------------------------------------------------------------
-# This CMake file allows configuration of various Areg Framework build options.
-# You can pass these options via the command line, or the system will use default values.
+# The build options of the Areg Framework. Pass them with '-D<name>=<value>'.
 #
-# Available Options:
-#   1. AREG_LIB_TYPE        -- Specifies the library type for the Areg Framework ('shared' or 'static'). Defaults to 'shared'.
-#   2. AREG_COMPILER        -- Sets a specific compiler for both C++ and C projects.
-#   3. AREG_COMPILER_FAMILY -- A quick way to set the C++ and C compilers (CMAKE_CXX_COMPILER and CMAKE_C_COMPILER).
-#   4. AREG_EXAMPLES        -- Enables or disables building examples for the Areg Framework.
-#   5. AREG_LOGGING         -- Enables or disables logging during compilation. Defaults to 'enabled'.
-#   6. AREG_TESTS           -- Enables or disables building unit tests for the Areg Framework.
-#   7. AREG_INSTALL         -- Enables or disables installation of Areg SDK binaries, headers and dependencies like 'sqlite3'.
-#   8. AREG_INSTALL_DIR     -- Location where Areg SDK binaries, headers, and tools are installed. Defaults to the user's home directory
-#   9. AREG_SYSTEM_PACKAGES -- Enables or disables using installed packages. Controls other package options like SQLite and GTest.
-#  10. AREG_SYSTEM_GTEST    -- Determines if the system's GTest package should be used or compiled from source.
-#  11. AREG_SYSTEM_SQLITE   -- Determines if the system's SQLite3 package should be used or compiled from source.
-#  12. AREG_BUILD_DIR       -- Specifies the root directory for build files. Defaults to './product' within the Areg SDK root.
-#  13. AREG_OUTPUT_DIR      -- Directory where build outputs are placed.
-#  14. AREG_BIN_DIR         -- Directory for output binaries (executable and shared libraries).
-#  15. AREG_LIB_DIR         -- Directory for output static libraries.
-#  16. AREG_DEPS_DIR        -- Location for fetching third-party packages such as GTest.
-#  17. AREG_OUTPUT_LAYOUT   -- If disabled, output directories will match the CMake binary directory.
-#  18. AREG_LOGGER_LIB_TYPE -- Specifies the type of the Log Observer API library ('shared' or 'static'). Defaults to AREG_LIB_TYPE.
-#  19. AREG_ARCH            -- The processor architect. Ignore if need to use system default.
-#  20. AREG_TARGET          -- Specifies the compiler and library architecture target. Defaults to the system-defined compiler and architecture.
-#  21. AREG_ARCH_NATIVE     -- Optimizes GNU/Clang Release builds for the build machine CPU ('-march=native'). Defaults to 'disabled'.
-#  22. AREG_BENCHMARKS      -- Enables or disables building the performance benchmarks of the Areg Framework.
+#   AREG_LIB_TYPE        -- 'shared' (default) or 'static' library type of 'areg' and 'areglogger'.
+#   AREG_COMPILER_FAMILY -- Selects the C and C++ compilers by family: 'gnu', 'llvm', 'msvc', 'cygwin', 'mingw'. Without it, CMAKE_CXX_COMPILER or the system default compiler is used.
+#   AREG_LOGGING         -- ON (default): compile with logs.
+#   AREG_EXAMPLES        -- Build the examples. ON when areg is the top-level project, OFF inside another project.
+#   AREG_TESTS           -- Build the unit tests. ON when areg is the top-level project, OFF inside another project.
+#   AREG_BENCHMARKS      -- OFF (default): build the performance benchmarks.
+#   AREG_INSTALL         -- ON (default): create the install rules. The location is CMAKE_INSTALL_PREFIX.
+#   AREG_SYSTEM_SQLITE   -- OFF (default): build the bundled SQLite3. ON: use the installed SQLite3 when found.
+#   AREG_SYSTEM_GTEST    -- ON (default): use the installed GoogleTest, else fetch and build it.
+#   AREG_NO_EXCEPTIONS   -- OFF (default): compile without exceptions and RTTI (GNU/Clang only).
+#   AREG_OUTPUT_DIR      -- Root of the 'bin' and 'lib' output directories. Defaults to the build directory; a relative path is relative to the build directory.
+#   AREG_ARCH            -- Target processor: 'x86', 'x64', 'arm', 'aarch64'. Defaults to the system processor.
+#                           Without a compiler, it selects the host compiler family: 'gnu' on Linux, 'llvm' on macOS.
 #
-# Default Values:
-#   1. AREG_LIB_TYPE        = shared    (possible values: shared, static)
-#   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, clang-cl, cl)
-#   3. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, mingw, llvm, msvc)
-#   4. AREG_EXAMPLES        = ON        (possible values: ON, OFF)
-#   5. AREG_LOGGING         = ON        (possible values: ON, OFF)
-#   6. AREG_TESTS           = ON        (possible values: ON, OFF)
-#   7. AREG_INSTALL         = ON        (possible values: ON, OFF)
-#   8. AREG_INSTALL_DIR     = '${HOME}/areg-sdk' (or '${USERPROFILE}' on Windows, defaults to current directory if unset
-#   9. AREG_SYSTEM_PACKAGES = ON        (possible values: ON, OFF)
-#  10. AREG_SYSTEM_GTEST    = ON        (possible values: ON, OFF)
-#  11. AREG_SYSTEM_SQLITE   = ON        (possible values: ON, OFF)
-#  12. AREG_BUILD_DIR       = '<areg-sdk>/product'    (path for output and generated files)
-#  13. AREG_OUTPUT_DIR      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>'
-#  14. AREG_BIN_DIR         = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/bin'
-#  15. AREG_LIB_DIR         = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'
-#  16. AREG_DEPS_DIR        = '${CMAKE_BINARY_DIR}/packages'
-#  17. AREG_OUTPUT_LAYOUT   = ON        (possible values: ON, OFF)
-#  18. AREG_LOGGER_LIB_TYPE = AREG_LIB_TYPE (possible values: shared, static)
-#  19. AREG_ARCH            = System    (possible values: x86 (i386, i486), x64 (x86_64, x86-64, amd64, ia64), arm (arm32, armv7), aarch64 (arm64))
-#  20. AREG_TARGET          = <default> (possible values: 'i386-linux-gnu', 'x86_64-linux-gnu', 'arm-linux-gnueabihf', 'aarch64-linux-gnu')
-#  21. AREG_ARCH_NATIVE     = OFF       (possible values: ON, OFF)
-#  22. AREG_BENCHMARKS      = OFF       (possible values: ON, OFF)
+# Everything of a build goes to the build directory: the CMake cache, the objects, 'generate',
+# 'bin' and 'lib'. The standard CMake variables apply as usual: CMAKE_BUILD_TYPE (default 'Release'),
+# CMAKE_CXX_COMPILER, CMAKE_TOOLCHAIN_FILE, CMAKE_INSTALL_PREFIX, FETCHCONTENT_BASE_DIR, and
+# CMAKE_RUNTIME_OUTPUT_DIRECTORY / CMAKE_ARCHIVE_OUTPUT_DIRECTORY, which win over AREG_OUTPUT_DIR.
 #
-# Hints:
-#   - AREG_COMPILER_FAMILY is an easy way to set compilers:
-#       - 'gnu' sets g++ and gcc for C++ and C.
-#       - 'cygwin' sets g++ and gcc for C++ and C under Cygwin.
-#       - 'mingw' sets g++ and gcc for C++ and C under MinGW.
-#       - 'llvm' sets clang++, clang, and clang-cl (on Windows) for C++ and C.
-#       - 'msvc' sets Microsoft Visual C++ (cl) for C++ and C.
+# Example:
+# $ cmake -B ./build -DCMAKE_BUILD_TYPE=Debug -DAREG_COMPILER_FAMILY=llvm
+# $ cmake --build ./build -j
 #
-# Example Command:
-# $ cmake -B ./build -DCMAKE_BUILD_TYPE=Debug -DAREG_COMPILER_FAMILY=llvm -DAREG_TESTS=ON -DAREG_EXAMPLES=ON
-#
-# Notes:
-#   - To integrate manually build binaries of Areg SDK into another project, you can simply set `AREG_BUILD_DIR` to the project's root directory.
-#
-# Example Command with AREG_BUILD_DIR to output binaries in custom directory:
-# $ cmake -B ./build -DAREG_BUILD_DIR="/home/developer/projects/my_project/product"
-#
-# Example of installing Areg SDK to custom location:
-# $ cmake -B ./build -DAREG_INSTALL_DIR="/custom/install/path"
-# $ cmake --build ./build -j16 --target install
-# or if permission is required:
-# $ sudo cmake --build ./build -j16 --target install
-#
-# Hint:
-# To use Areg SDK cmake options in other project, the 'user.cmake' file should be included before first call of "project()".
-# Otherwise, Areg SDK settings uses cmake options CMAKE_CXX_COMPILER and CMAKE_BUILD_TYPE options.
-#
-# Integration:
-#   - Visit https://github.com/aregtech/areg-sdk-demo repository to see various ways of Areg Framework integration.
+# A project that sets these options includes 'user.cmake' before its first 'project()' call.
 # ---------------------------------------------------------------------------
 
 # Set variables for C++ and C compilers and their short name
@@ -97,9 +43,17 @@ if (DEFINED AREG_ARCH AND NOT "${AREG_ARCH}" STREQUAL "")
     set(CMAKE_SYSTEM_PROCESSOR ${AREG_ARCH})
 endif()
 
-if (DEFINED CMAKE_CXX_COMPILER_TARGET AND NOT "${CMAKE_CXX_COMPILER_TARGET}" STREQUAL "")
-    set(AREG_TARGET ${CMAKE_CXX_COMPILER_TARGET})
+# A target processor without a compiler or a toolchain file selects the default compiler family of the host.
+if (NOT "${AREG_ARCH}" STREQUAL "" AND "${CMAKE_CXX_COMPILER}${CMAKE_C_COMPILER}${AREG_COMPILER_FAMILY}${CMAKE_TOOLCHAIN_FILE}" STREQUAL "")
+    if ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
+        set(AREG_COMPILER_FAMILY "gnu")
+    elseif (CMAKE_HOST_APPLE)
+        set(AREG_COMPILER_FAMILY "llvm")
+    endif()
 endif()
+
+# The compiler target follows CMAKE_CXX_COMPILER_TARGET when the caller sets it.
+set(AREG_TARGET "${CMAKE_CXX_COMPILER_TARGET}")
 
 # If CMake compilers are specified, use them
 if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_CXX_COMPILER}" STREQUAL "" OR NOT "${CMAKE_C_COMPILER}" STREQUAL ""))
@@ -128,17 +82,8 @@ if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_C
             message(WARNING "Areg: >>> Selected compiler family '${AREG_COMPILER_FAMILY}' is ignored; using '${_compiler_family}'")
         endif()
 
-        # Only if AREG_COMPILER is defined, compare the short compiler name to the full path
-        if (NOT "${AREG_COMPILER}" STREQUAL "")
-            string(FIND "${AREG_COMPILER}" "${_compiler_short}" _found_pos)
-            if (_found_pos LESS 0)
-                message(WARNING "Areg: >>> Selected compiler '${AREG_COMPILER}' is ignored; using '${_compiler_short}'")
-            endif()
-        endif()
-
         # Set the relevant variables for the compiler
         set(AREG_COMPILER_FAMILY    "${_compiler_family}")
-        set(AREG_COMPILER           "${_sys_compiler}")
         set(AREG_COMPILER_SHORT     "${_compiler_short}")
         set(AREG_CXX_COMPILER       "${_sys_compiler}")
         set(AREG_C_COMPILER         "${_c_compiler}")
@@ -171,7 +116,6 @@ elseif (DEFINED AREG_COMPILER_FAMILY AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL 
 
     if (_compiler_found)
         # Set the relevant variables for the chosen compiler family
-        set(AREG_COMPILER           "${_cxx_compiler}")
         set(AREG_COMPILER_SHORT     "${_compiler_short}")
         set(AREG_CXX_COMPILER       "${_cxx_compiler}")
         set(AREG_C_COMPILER         "${_c_compiler}")
@@ -186,37 +130,6 @@ elseif (DEFINED AREG_COMPILER_FAMILY AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL 
     unset(_cxx_compiler)
     unset(_c_compiler)
     unset(_compiler_target)
-    unset(_compiler_found)
-
-# If a specific compiler is set, use that to determine compilers
-elseif (DEFINED AREG_COMPILER AND NOT "${AREG_COMPILER}" STREQUAL "")
-
-    message(STATUS "Areg: >>> Using user-specified C/C++ compiler '${AREG_COMPILER}'")
-    # Set both C and C++ compilers based on AREG_COMPILER
-    macro_setup_compilers_data("${AREG_COMPILER}" _compiler_family _compiler_short _cxx_compiler _c_compiler _sys_target _sys_process _sys_bitness _compiler_found)
-
-    if (_compiler_found)
-        # Set the relevant variables for the chosen compiler
-        set(AREG_COMPILER_FAMILY    "${_compiler_family}")
-        set(AREG_COMPILER_SHORT     "${_compiler_short}")
-        set(AREG_CXX_COMPILER       "${_cxx_compiler}")
-        set(AREG_C_COMPILER         "${_c_compiler}")
-        if("${AREG_TARGET}" STREQUAL "")
-            set(AREG_TARGET         "${_sys_target}")
-        endif()
-        if (NOT "${_sys_process}" STREQUAL "")
-            set(AREG_ARCH ${_sys_process})
-            set(AREG_BITNESS   ${_sys_bitness})
-            set(CMAKE_SYSTEM_PROCESSOR ${AREG_ARCH})
-        endif()
-    else()
-        message(WARNING "Areg: >>> Unknown compiler '${AREG_COMPILER}'; results may be unpredictable")
-    endif()
-
-    unset(_sys_compiler)
-    unset(_sys_process)
-    unset(_sys_bitness)
-    unset(_sys_target)
     unset(_compiler_found)
 
 # If no specific compiler or family is set, use the system default
@@ -240,54 +153,24 @@ elseif (NOT "${AREG_LIB_TYPE}" STREQUAL "static")
     set(AREG_LIB_TYPE "shared")
 endif()
 
-# Set the areg log observer API library type. Follows AREG_LIB_TYPE if not specified.
-if ("${AREG_LOGGER_LIB_TYPE}" STREQUAL "")
-    set(AREG_LOGGER_LIB_TYPE "${AREG_LIB_TYPE}")
-elseif (NOT "${AREG_LOGGER_LIB_TYPE}" STREQUAL "static")
-    set(AREG_LOGGER_LIB_TYPE "shared")
-endif()
+# The log observer API library 'areglogger' has the library type of 'areg'.
+set(AREG_LOGGER_LIB_TYPE "${AREG_LIB_TYPE}")
 
-# Build tests. By default it is disabled. To enable, set ON
-macro_create_option(AREG_TESTS ON "Build unit tests")
-
-# Build examples. By default it is disabled. To enable, set ON
-macro_create_option(AREG_EXAMPLES ON "Build examples")
-
-# Build benchmarks. By default it is disabled. To enable, set ON
-macro_create_option(AREG_BENCHMARKS OFF "Build benchmarks")
-
-# Generate only service files. By default it is disabled. To enable, set ON
-macro_create_option(AREG_GENERATE_ONLY OFF "Generate only service files")
-
-# Modify 'AREG_LOGGING' to enable or disable compilation with logs. By default, compile with logs
-macro_create_option(AREG_LOGGING ON "Compile with logs")
-
-# Modify 'AREG_INSTALL' to enable or disable installation of Areg SDK
-macro_create_option(AREG_INSTALL ON "Enable installation")
-
-# Modify 'AREG_ARCH_NATIVE' to enable or disable '-march=native' optimization for Release builds (GNU/Clang only)
-macro_create_option(AREG_ARCH_NATIVE OFF "Optimize Release builds for the build machine CPU (GNU/Clang only)")
-
-# Modify 'AREG_NO_EXCEPTIONS' to compile without C++ exceptions and RTTI (GNU/Clang only).
-# The sources use neither, so the option only removes the code and the tables the compiler
-# emits to support them. Required by projects that forbid both, such as MISRA C++ and AUTOSAR C++14.
-macro_create_option(AREG_NO_EXCEPTIONS OFF "Compile without exceptions and RTTI (GNU/Clang only)")
-
-# Check the request of using installed packages
-if (NOT DEFINED AREG_SYSTEM_PACKAGES)
-    # Set default values
-    macro_create_option(AREG_SYSTEM_PACKAGES      ON  "Enable using installed packages")
-    macro_create_option(AREG_SYSTEM_SQLITE    ON  "Use SQLite3 installed package")
-    macro_create_option(AREG_SYSTEM_GTEST     ON  "Use GTest installed package")
-elseif(AREG_SYSTEM_PACKAGES)
-    # Using packages is enabled by default, set values
-    macro_create_option(AREG_SYSTEM_PACKAGES      ON  "Enable using installed packages")
-    macro_create_option(AREG_SYSTEM_SQLITE    ON  "Use SQLite3 installed package")
-    macro_create_option(AREG_SYSTEM_GTEST     ON  "Use GTest installed package")
+# areg as the top-level project builds its tests and examples; areg inside another project does not.
+if ("${CMAKE_SOURCE_DIR}" STREQUAL "${AREG_SDK_ROOT}")
+    set(_areg_top_level ON)
 else()
-    # Using packages is disabled by default, set values
-    macro_create_option(AREG_SYSTEM_PACKAGES      OFF "Enable using installed packages")
-    macro_create_option(AREG_SYSTEM_SQLITE    OFF "Use SQLite3 installed package")
-    macro_create_option(AREG_SYSTEM_GTEST     OFF "Use GTest installed package")
-    macro_create_option(AREG_INSTALL           OFF "Enable installation")
+    set(_areg_top_level OFF)
 endif()
+
+macro_create_option(AREG_TESTS          ${_areg_top_level} "Build unit tests")
+macro_create_option(AREG_EXAMPLES       ${_areg_top_level} "Build examples")
+macro_create_option(AREG_BENCHMARKS     OFF "Build benchmarks")
+macro_create_option(AREG_LOGGING        ON  "Compile with logs")
+macro_create_option(AREG_INSTALL        ON  "Enable installation")
+# The sources use neither exceptions nor RTTI; required by MISRA C++ and AUTOSAR C++14 projects.
+macro_create_option(AREG_NO_EXCEPTIONS  OFF "Compile without exceptions and RTTI (GNU/Clang only)")
+macro_create_option(AREG_SYSTEM_SQLITE  OFF "Use SQLite3 installed package")
+macro_create_option(AREG_SYSTEM_GTEST   ON  "Use GTest installed package")
+
+unset(_areg_top_level)

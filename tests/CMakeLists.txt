@@ -6,7 +6,7 @@
 # local variables
 set(AREG_GTEST_INCLUDES)
 set(AREG_GTEST_LIBRARY)
-option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
+set(AREG_GTEST_FOUND FALSE)
 
 if (AREG_TESTS)
 
@@ -148,6 +148,9 @@ if (AREG_TESTS)
     # Built, not registered with ctest: it needs root and a packet filter.
     include(${AREG_TESTS_DIR}/keepalive-probe/CMakeLists.txt)
 
+    # Message ID cases and the measurement over a large interface; own generated interfaces.
+    include(${AREG_TESTS_DIR}/message-id/CMakeLists.txt)
+
     # Reuses the generated service interface of example 01, so it needs the examples.
     if (AREG_EXAMPLES AND TARGET 01_generated)
         include(${AREG_TESTS_DIR}/proxy-churn/CMakeLists.txt)
@@ -182,6 +185,4 @@ if (AREG_TESTS)
         include(${AREG_TESTS_DIR}/conn-scenario/CMakeLists.txt)
     endif()
 
-else(AREG_TESTS)
-    option(AREG_SYSTEM_GTEST  "Use GTest package" FALSE)
 endif(AREG_TESTS)

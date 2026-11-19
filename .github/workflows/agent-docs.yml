@@ -239,7 +239,7 @@ jobs:
       - name: Build the framework and the router
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Release \
-                -DAREG_TESTS=OFF -DAREG_EXAMPLES=OFF -DAREG_OUTPUT_LAYOUT=OFF
+                -DAREG_TESTS=OFF -DAREG_EXAMPLES=OFF
           cmake --build build -j $(nproc)
           cmake --build build --target mtrouter -j $(nproc)
           cmake --build build --target logcollector -j $(nproc)

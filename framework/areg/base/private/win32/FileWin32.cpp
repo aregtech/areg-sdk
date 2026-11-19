@@ -323,5 +323,10 @@ uint32_t File::_os_special_dir(char* buffer, uint32_t length, const File::Specia
     return static_cast<uint32_t>(strlen(buffer));
 }
 
+bool File::_os_copy_file(const char* srcPath, const char* newPath, bool copyForce) noexcept
+{
+    return (::CopyFileA(srcPath, newPath, copyForce ? FALSE : TRUE) != FALSE);
+}
+
 } // namespace areg
 #endif // _WIN32

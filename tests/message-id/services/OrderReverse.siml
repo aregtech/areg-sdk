@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.1.0">
+    <Overview ID="1" Name="OrderReverse" Version="1.0.0" Category="Public">
+        <Description>Order fixture: the same entries as the other order fixture, in reversed order.</Description>
+    </Overview>
+    <AttributeList>
+        <Attribute ID="11" Name="Mode" DataType="uint32" Notify="OnChange"/>
+        <Attribute ID="12" Name="Level" DataType="uint32" Notify="OnChange"/>
+        <Attribute ID="13" Name="Count" DataType="uint32" Notify="OnChange"/>
+    </AttributeList>
+    <MethodList>
+        <Method ID="14" Name="changed" MethodType="Broadcast">
+            <ParamList>
+                <Parameter ID="15" Name="bc" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="16" Name="alpha" MethodType="Broadcast">
+            <ParamList>
+                <Parameter ID="17" Name="ba" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="18" Name="gamma" MethodType="Response">
+            <ParamList>
+                <Parameter ID="19" Name="rg" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="20" Name="alpha" MethodType="Response">
+            <ParamList>
+                <Parameter ID="21" Name="ra" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="22" Name="gamma" MethodType="Request" Response="gamma">
+            <ParamList>
+                <Parameter ID="23" Name="g" DataType="uint32"/>
+                <Parameter ID="24" Name="h" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="25" Name="beta" MethodType="Request">
+            <ParamList>
+                <Parameter ID="26" Name="b" DataType="uint32"/>
+            </ParamList>
+        </Method>
+        <Method ID="27" Name="alpha" MethodType="Request" Response="alpha">
+            <ParamList>
+                <Parameter ID="28" Name="a" DataType="uint32"/>
+            </ParamList>
+        </Method>
+    </MethodList>
+</ServiceInterface>

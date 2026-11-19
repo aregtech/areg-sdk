@@ -104,7 +104,8 @@ namespace
             std::memset(data, 0xA5, bytes);
             std::memcpy(data, &seq, sizeof(seq));
             message.header()->bufHeader.biUsed = bytes;
-            message.set_message_id(areg::REQUEST_ID_FIRST);
+            message.set_message_id(areg::crc32_calculate("request_forwarded"));
+            message.set_call_type(static_cast<uint8_t>(areg::CallType::Request));
             message.set_source(static_cast<uint32_t>(from));
             message.set_target(static_cast<uint32_t>(to));
         }

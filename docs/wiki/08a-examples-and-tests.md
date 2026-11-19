@@ -161,18 +161,13 @@ cmake --build ./build -j8
 
 ### Build Output Location
 
-The binaries and artifacts will be available in the `./product/build/` directory structure:
+The binaries are in the build directory:
 
 ```
-product/
-└── build/
-    ├── <compiler>-<processor>-<config>/
-    │   └── bin/           # Executables and libraries
-    │       ├── areg        # Core library
-    │       ├── aregextend  # Extended library
-    │       ├── examples/   # Example binaries
-    │       └── tests/      # Unit test binaries
-    └── obj/               # Object files (intermediate)
+build/
+├── bin/        # Executables, shared libraries (areg, areglogger), examples, unit tests
+├── lib/        # Static libraries (aregextend, generated service libraries)
+└── generate/   # Code generated from the service interface documents
 ```
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
@@ -185,15 +180,10 @@ To execute examples:
 
 ### Step 1: Navigate to Binary Directory
 
-Navigate to the `bin` directory inside `./product/build/`:
+Navigate to the `bin` directory of the build:
 
 ```bash
-cd ./product/build/<compiler>-<processor>-<config>/bin
-```
-
-**Example**:
-```bash
-cd ./product/build/gnu-x86_64-release/bin
+cd ./build/bin
 ```
 
 ### Step 2: Locate and Run Example Binary
@@ -218,13 +208,13 @@ Projects utilizing Inter-Process Communication (IPC) require the **mtrouter** se
 
 1. **Start Message Router** (in separate terminal):
    ```bash
-   cd ./product/build/<compiler>-<processor>-<config>/bin
+   cd ./build/bin
    ./mtrouter
    ```
 
 2. **Run IPC Example** (in another terminal):
    ```bash
-   cd ./product/build/<compiler>-<processor>-<config>/bin
+   cd ./build/bin
    ./12_pubsvc
    ```
 
@@ -275,7 +265,7 @@ To execute unit tests:
 Navigate to the `bin` directory:
 
 ```bash
-cd ./product/build/<compiler>-<processor>-<config>/bin
+cd ./build/bin
 ```
 
 ### Step 2: Locate Unit Test Binary

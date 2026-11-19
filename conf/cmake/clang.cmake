@@ -34,12 +34,7 @@ if (AREG_PLATFORM_WINDOWS)
             $<$<CONFIG:Debug>:-RTC1>
         )
         if (NOT CMAKE_CROSSCOMPILING)
-            if (AREG_ARCH_NATIVE)
-                list(APPEND AREG_COMPILER_OPTIONS
-                    $<$<NOT:$<CONFIG:Debug>>:-march=native>
-                    $<$<NOT:$<CONFIG:Debug>>:-mtune=native>
-                )
-            elseif ("${_areg_cpu}" STREQUAL "${_proc_x86}" OR "${_areg_cpu}" STREQUAL "${_proc_x64}")
+            if ("${_areg_cpu}" STREQUAL "${_proc_x86}" OR "${_areg_cpu}" STREQUAL "${_proc_x64}")
                 # Portable SSE4.2 baseline, keeps hardware CRC32C (MathDefs.hpp).
                 macro_check_sse42(AREG_SSE42_HW)
                 if (AREG_SSE42_HW)
@@ -60,9 +55,7 @@ if (AREG_PLATFORM_WINDOWS)
         if (AREG_BUILD_OPTIMIZED)
             list(APPEND AREG_COMPILER_OPTIONS ${_areg_cl_opt} -Gy -Gw)
             if (NOT CMAKE_CROSSCOMPILING)
-                if (AREG_ARCH_NATIVE)
-                    list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
-                elseif ("${_areg_cpu}" STREQUAL "${_proc_x86}" OR "${_areg_cpu}" STREQUAL "${_proc_x64}")
+                if ("${_areg_cpu}" STREQUAL "${_proc_x86}" OR "${_areg_cpu}" STREQUAL "${_proc_x64}")
                     # Portable SSE4.2 baseline, keeps hardware CRC32C (MathDefs.hpp).
                     macro_check_sse42(AREG_SSE42_HW)
                     if (AREG_SSE42_HW)
@@ -99,9 +92,7 @@ else()
     if (AREG_BUILD_OPTIMIZED)
         list(APPEND AREG_COMPILER_OPTIONS ${AREG_OPTIMIZATION} -ffunction-sections -fdata-sections -fvisibility=hidden "$<$<COMPILE_LANGUAGE:CXX>:-fvisibility-inlines-hidden>")
         if (NOT CMAKE_CROSSCOMPILING)
-            if (AREG_ARCH_NATIVE)
-                list(APPEND AREG_COMPILER_OPTIONS -march=native -mtune=native)
-            elseif ("${AREG_ARCH}" STREQUAL "${_proc_x86}" OR "${AREG_ARCH}" STREQUAL "${_proc_x64}")
+            if ("${AREG_ARCH}" STREQUAL "${_proc_x86}" OR "${AREG_ARCH}" STREQUAL "${_proc_x64}")
                 # Portable SSE4.2 baseline, keeps hardware CRC32C (MathDefs.hpp).
                 macro_check_sse42(AREG_SSE42_HW)
                 if (AREG_SSE42_HW)

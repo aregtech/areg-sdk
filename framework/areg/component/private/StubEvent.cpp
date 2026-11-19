@@ -52,6 +52,9 @@ inline void StubEventConsumer::_refuse_request(ServiceRequestEvent& reqEvent)
     LOG_WARN("Provider [ %s ] is not ready, refusing request [ %u ]"
                 , StubAddress::to_path(mStubAddress).as_string(), reqEvent.request_id());
 
+    if (reqEvent.call_kind() != areg::CallType::Request)
+        return;
+
     const StubBase & stub{ *static_cast<const StubBase *>(this) };
     ServiceResponseEvent failure{ stub.create_undelivered_response(reqEvent.event_source(), reqEvent.request_id(), reqEvent.sequence_number()) };
     if (failure.is_valid())
@@ -70,7 +73,7 @@ inline void StubEventConsumer::_local_request(ServiceRequestEvent& reqEvent )
 
     ComponentThread::set_current_component(&owner_component());
 
-    if (areg::is_request_id(reqEvent.request_id()))
+    if (reqEvent.call_kind() == areg::CallType::Request)
         process_request_event(reqEvent);
     else
         process_stub_event(static_cast<StubEvent&>(reqEvent));
@@ -82,8 +85,9 @@ inline void StubEventConsumer::_local_notify_request(ServiceRequestEvent& notify
 {
     ComponentThread::set_current_component(&owner_component());
 
-    const uint32_t reqId{ notifyRequest.request_id() };
-    if (areg::is_attribute_id(reqId) || areg::is_response_id(reqId))
+    const areg::CallType kind{ notifyRequest.call_kind() };
+    if ((kind == areg::CallType::Attribute) || (kind == areg::CallType::Response) || (kind == areg::CallType::Broadcast)
+        || (notifyRequest.request_type() == areg::RequestType::RemoveAllNotify))
         process_attribute_event(notifyRequest);
     else
         process_stub_event(static_cast<StubEvent&>(notifyRequest));
