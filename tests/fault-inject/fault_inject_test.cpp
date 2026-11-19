@@ -1092,16 +1092,24 @@ TEST( FaultInjectTest, stub_listener_list_holds_its_inline_listeners_without_mem
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 0u );
 
         // Two of the three listeners of the slot fit in the inline storage.
-        AREG_CHILD_CHECK( list.append( slot ) == false );
+        const bool appended{ list.append( slot ) };
+        areg_fault::keep_allocation( list );
+        AREG_CHILD_CHECK( appended == false );
         AREG_CHILD_CHECK( (areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u) && NOT_REPLACED );
         AREG_CHILD_CHECK( (list.size( ) == inlineCount) && (list[inlineCount - 2u].mMessageId == 50u) && (list[inlineCount - 1u].mMessageId == 51u) );
 
-        AREG_CHILD_CHECK( list.add( StubListeners::Listener( 99u ) ) == false );
-        AREG_CHILD_CHECK( list.reserve( inlineCount + 1u ) == false );
+        const bool added{ list.add( StubListeners::Listener( 99u ) ) };
+        areg_fault::keep_allocation( list );
+        AREG_CHILD_CHECK( added == false );
+        const bool reserved{ list.reserve( inlineCount + 1u ) };
+        areg_fault::keep_allocation( list );
+        AREG_CHILD_CHECK( reserved == false );
         AREG_CHILD_CHECK( (list.size( ) == inlineCount) && (list.first_entry( ).mMessageId == 0u) );
         ::areg_fault_disarm_all( );
 
-        AREG_CHILD_CHECK( list.add( StubListeners::Listener( 99u ) ) );
+        const bool grown{ list.add( StubListeners::Listener( 99u ) ) };
+        areg_fault::keep_allocation( list );
+        AREG_CHILD_CHECK( grown );
         AREG_CHILD_CHECK( (list.size( ) == inlineCount + 1u) && (list[inlineCount].mMessageId == 99u) && (list[0u].mMessageId == 0u) );
     );
 }

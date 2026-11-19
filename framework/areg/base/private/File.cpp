@@ -502,6 +502,14 @@ bool File::delete_dir(const String& dirPath)
     return (!dirPath.is_empty() && std::filesystem::remove_all(dirPath.data(), err));
 }
 
+bool File::copy_file( const String& originPath, const String& newPath, bool copyForce )
+{
+    if (originPath.is_empty() || newPath.is_empty())
+        return false;
+
+    return _os_copy_file(originPath.as_string(), newPath.as_string(), copyForce);
+}
+
 bool File::move_file(const String& oldPath, const String& newPath)
 {
     if (oldPath.is_empty() || newPath.is_empty())
@@ -538,16 +546,6 @@ bool File::set_current_dir(const String& dirPath)
     std::error_code err;
     std::filesystem::current_path(dirPath.data(), err);
     return !err;
-}
-
-bool File::copy_file( const String& originPath, const String& newPath, bool copyForce )
-{
-    if (originPath.is_empty() || newPath.is_empty())
-        return false;
-
-    std::filesystem::copy_options opt = copyForce ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing;
-    std::error_code err;
-    return std::filesystem::copy_file(originPath.data(), newPath.data(), opt, err);
 }
 
 String File::temp_dir()

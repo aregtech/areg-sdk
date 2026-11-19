@@ -10,3 +10,8 @@ macro_declare_executable(30_pubconsumer 30_generated
     pubconsumer/src/main.cpp
     pubconsumer/src/LatencyConsumer.cpp
 )
+
+if (WIN32)
+    target_link_libraries(30_pubprovider PRIVATE winmm)
+    target_link_libraries(30_pubconsumer PRIVATE winmm)
+endif()

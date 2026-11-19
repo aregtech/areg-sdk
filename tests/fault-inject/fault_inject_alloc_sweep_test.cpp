@@ -891,13 +891,6 @@ TEST( FaultInjectSweepTest, argument_conversion_that_cannot_allocate_returns_nul
 namespace
 {
 #if defined(AREG_FAULT_SWEEP_TESTS)
-    //!< Publishes the address of an object so the compiler cannot elide its allocation.
-    template<typename OBJECT>
-    inline void _keep_allocation( const OBJECT & obj )
-    {
-        asm volatile( "" : : "r"( &obj ) : "memory" );
-    }
-
     //!< Fails every nothrow allocation while a fixed array is resized and copied.
     void _fixed_array_survives_failed_allocation( )
     {
@@ -909,10 +902,10 @@ namespace
 
         AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 0u ) );
         const bool resized{ values.resize( 8u ) };
-        _keep_allocation( values );
+        areg_fault::keep_allocation( values );
         AREG_CHILD_CHECK( resized == false );
         const bool copied{ values.copy( other ) };
-        _keep_allocation( values );
+        areg_fault::keep_allocation( values );
         AREG_CHILD_CHECK( copied == false );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 2u );
         AREG_CHILD_CHECK( values.size( ) == 3u && values[ 0 ] == 1 && values[ 1 ] == 2 && values[ 2 ] == 3 );
@@ -924,9 +917,9 @@ namespace
         const areg::FixedArray<int32_t> failedCopy( other );
         const areg::FixedArray<int32_t> failedList( longer, 5u );
         const areg::FixedArray<int32_t> failedCount( 4u );
-        _keep_allocation( failedCopy );
-        _keep_allocation( failedList );
-        _keep_allocation( failedCount );
+        areg_fault::keep_allocation( failedCopy );
+        areg_fault::keep_allocation( failedList );
+        areg_fault::keep_allocation( failedCount );
         AREG_CHILD_CHECK( failedCopy.size( ) == 0u && failedList.size( ) == 0u && failedCount.size( ) == 0u );
         AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 5u );
 
@@ -1650,7 +1643,7 @@ namespace
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 1u ) );
             const CountedHandle handle( 42 );
-            _keep_allocation( handle );
+            areg_fault::keep_allocation( handle );
             AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
             AREG_CHILD_CHECK( handle.has_value( ) == false );
             AREG_CHILD_CHECK( handle.value( ) == -1 );
@@ -1666,7 +1659,7 @@ namespace
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 1u ) );
             const areg::Socket::SocketHandle handle( static_cast<SOCKETHANDLE>( fd ) );
-            _keep_allocation( handle );
+            areg_fault::keep_allocation( handle );
             AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
             AREG_CHILD_CHECK( handle.has_value( ) == false );
             errno = 0;
@@ -1697,7 +1690,7 @@ namespace
             areg_fault::FaultScope faults;
             AREG_CHILD_CHECK( areg_fault::arm( areg_fault::FaultPoint::Allocation, 0, 0u, 1u ) );
             ProbeBuffer * const refused{ allocate( 64u ) };
-            _keep_allocation( refused );
+            areg_fault::keep_allocation( refused );
             AREG_CHILD_CHECK( areg_fault::failed( areg_fault::FaultPoint::Allocation ) == 1u );
             AREG_CHILD_CHECK( refused == nullptr );
         }

@@ -436,5 +436,12 @@ uint32_t File::_os_special_dir(char* buffer, uint32_t /*length*/, const File::Sp
     return static_cast<uint32_t>(strlen(buffer));
 }
 
+bool File::_os_copy_file(const char* srcPath, const char* newPath, bool copyForce) noexcept
+{
+    std::filesystem::copy_options opt = copyForce ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing;
+    std::error_code err;
+    return std::filesystem::copy_file(srcPath, newPath, opt, err);
+}
+
 } // namespace areg
 #endif //  defined(_POSIX) || defined(POSIX)
