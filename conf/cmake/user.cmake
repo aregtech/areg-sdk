@@ -13,7 +13,7 @@
 #   AREG_TESTS           -- Build the unit tests. ON when areg is the top-level project, OFF inside another project.
 #   AREG_BENCHMARKS      -- OFF (default): build the performance benchmarks.
 #   AREG_INSTALL         -- ON (default): create the install rules. The location is CMAKE_INSTALL_PREFIX.
-#   AREG_SYSTEM_SQLITE   -- ON (default): use the installed SQLite3, else build the bundled one.
+#   AREG_SYSTEM_SQLITE   -- OFF (default): build the bundled SQLite3. ON: use the installed SQLite3 when found.
 #   AREG_SYSTEM_GTEST    -- ON (default): use the installed GoogleTest, else fetch and build it.
 #   AREG_NO_EXCEPTIONS   -- OFF (default): compile without exceptions and RTTI (GNU/Clang only).
 #   AREG_OUTPUT_DIR      -- Root of the 'bin' and 'lib' output directories. Defaults to the build directory; a relative path is relative to the build directory.
@@ -170,7 +170,7 @@ macro_create_option(AREG_LOGGING        ON  "Compile with logs")
 macro_create_option(AREG_INSTALL        ON  "Enable installation")
 # The sources use neither exceptions nor RTTI; required by MISRA C++ and AUTOSAR C++14 projects.
 macro_create_option(AREG_NO_EXCEPTIONS  OFF "Compile without exceptions and RTTI (GNU/Clang only)")
-macro_create_option(AREG_SYSTEM_SQLITE  ON  "Use SQLite3 installed package")
+macro_create_option(AREG_SYSTEM_SQLITE  OFF "Use SQLite3 installed package")
 macro_create_option(AREG_SYSTEM_GTEST   ON  "Use GTest installed package")
 
 unset(_areg_top_level)

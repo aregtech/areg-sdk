@@ -73,7 +73,7 @@ sudo cmake --install ./build
 | [AREG_TESTS](#areg_tests) | `ON`, `OFF` | `ON` top level, `OFF` in another project | Build the unit tests |
 | [AREG_BENCHMARKS](#areg_benchmarks) | `ON`, `OFF` | `OFF` | Build the performance benchmarks |
 | [AREG_INSTALL](#areg_install) | `ON`, `OFF` | `ON` | Create the install rules |
-| [AREG_SYSTEM_SQLITE](#areg_system_sqlite) | `ON`, `OFF` | `ON` | Use the installed SQLite3 |
+| [AREG_SYSTEM_SQLITE](#areg_system_sqlite) | `ON`, `OFF` | `OFF` | Use the installed SQLite3 |
 | [AREG_SYSTEM_GTEST](#areg_system_gtest) | `ON`, `OFF` | `ON` | Use the installed GoogleTest |
 | [AREG_NO_EXCEPTIONS](#areg_no_exceptions) | `ON`, `OFF` | `OFF` | Compile without exceptions and RTTI (GNU/Clang) |
 | [AREG_OUTPUT_DIR](#areg_output_dir) | Directory path | The build directory | Root of `bin/` and `lib/` |
@@ -241,17 +241,17 @@ cmake --install ./build --prefix /opt/areg
 
 ### AREG_SYSTEM_SQLITE
 
-**Description:** Uses the SQLite3 installed in the system.
+**Description:** Uses the SQLite3 installed in the system instead of the bundled sources.
 **Possible Values:** `ON`, `OFF`
-**Default:** `ON`
+**Default:** `OFF`
 **Example:**
 ```bash
-cmake -B ./build -DAREG_SYSTEM_SQLITE=OFF
+cmake -B ./build -DAREG_SYSTEM_SQLITE=ON
 ```
 
 **Behavior:**
-- `ON` - The installed SQLite3 when found for the target architecture, else the sources in `thirdparty/sqlite3`
-- `OFF` - Always the sources in `thirdparty/sqlite3`
+- `OFF` - The sources in `thirdparty/sqlite3`, built as `aregsqlite3` on every platform. The log database is verified with these sources
+- `ON` - The installed SQLite3 when found for the target architecture, else the sources in `thirdparty/sqlite3`. A vendor build may behave differently: Apple's system SQLite leaves the `-shm` file beside a closed `.sqlog`, and an application that links `aregsqlite3` (Lusan) then has no such target
 
 <div align="right"><kbd><a href="#options-reference">↑ Back to options ↑</a></kbd></div>
 

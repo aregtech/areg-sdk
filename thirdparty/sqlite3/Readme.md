@@ -13,10 +13,10 @@ By default, the AREG SDK will attempt to compile with the SQLite3 package found 
 
 The `sqlite3/amalgamation` directory contains the SQLite source code, which is downloaded from the [SQLite Download Page](https://sqlite.org/download.html). These sources are not owned by Aregtech. For more details on SQLite and its licenses, refer to the [official SQLite website](https://sqlite.org/).
 
-If no SQLite3 package is found during the build process, the SDK automatically builds the static `sqlite3` library. However, you can force the use of the SQLite source with `-DAREG_SYSTEM_SQLITE=OFF`.
+By default (`AREG_SYSTEM_SQLITE` is `OFF`) the SDK builds the static `aregsqlite3` library from these sources on every platform. The log database is verified with these sources: a closed `.sqlog` is one plain file, and the window reads use the time index.
 
-- By default, `AREG_SYSTEM_SQLITE` is `ON`, meaning CMake will try to locate the SQLite3 package in your system. 
-- If the package is not found, the SDK will build and link against the static `sqlite3` library from the provided sources.
+- `-DAREG_SYSTEM_SQLITE=ON` makes CMake locate the SQLite3 package in your system instead, and build the sources only if none is found.
+- An installed SQLite3 is built by its vendor with its own options and changes. With Apple's system SQLite, for example, a closed `.sqlog` keeps its `-shm` file beside it.
 
 ---
 

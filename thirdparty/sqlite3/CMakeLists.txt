@@ -27,8 +27,12 @@ if (AREG_SQLITE_FOUND)
 
 else(AREG_SQLITE_FOUND)
 
-    message(STATUS "AREG: >>> Could not find SQLite library. Builds 'aregsqlite3' library from sources.")
-    # The SQLite3 package did not find, compile from available sources.
+    if (AREG_SYSTEM_SQLITE)
+        message(STATUS "AREG: >>> Could not find SQLite library. Builds 'aregsqlite3' library from sources.")
+    else()
+        message(STATUS "AREG: >>> Builds 'aregsqlite3' library from the bundled sources.")
+    endif()
+    # Compile the bundled sources.
     set(sqlite_BASE "${AREG_THIRDPARTY}/sqlite3")
     list(APPEND sqlite_SRC
         ${sqlite_BASE}/amalgamation/sqlite3.c
