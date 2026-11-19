@@ -139,16 +139,19 @@ your scenario needs: the consumer then reports `FAIL:` and exits non-zero.
 
 | Generated member | Use |
 |---|---|
-| `void request_<name>(params)` | **Call** it to ask the provider to do something |
+| `request_<name>(params)` | **Call** it to ask the provider to do something |
 | `void response_<name>(params)` | **Override** to receive the answer |
 | `void request_<name>_failed(areg::ResultType reason)` | **Override** to handle a request that could not run |
 | `void broadcast_<name>(params)` | **Override** to receive a broadcast |
+| `void invalid_response(<Name>::ResponseIDs)`, `invalid_broadcast(...)` | **Override** for invalid data, which `response_`/`broadcast_` never receive |
 | `void notify_on_broadcast_<name>(bool)` | **Call** to start or stop receiving that broadcast |
 | `<attribute>(state)` | **Call** to read the last known attribute value |
 | `void on_<attribute>_update(value, areg::DataState state)` | **Override** to receive attribute updates |
 | `void notify_on_<attribute>_update(bool)` | **Call** to subscribe or unsubscribe |
 | `bool is_connected()` | **Call** to test the current connection |
 | `role_name()` | **Call** for this component's own role name |
+
+Every member one document generates: `gen_skeleton.py --doc <document> --contract`.
 
 ---
 

@@ -23,6 +23,11 @@ HOLD_THE_LEAD = ('hold it there with a {"name": "...", "wait": <ms>} step in '
 HOLD_THE_LEAD_LATE = ('add a {"name": "...", "wait": 300} step in design.json '
                       'right after the step whose output the stop matches')
 
+# A router port served by a process that is not the project's own router.
+FOREIGN_ROUTER = ('a router from another areg build is not supported and the mismatch '
+                  'is not detected: stop it, or give this project another router port '
+                  'in its areg.init')
+
 # Building.
 BUILD_COMMAND = 'python3 {tools}/build_project.py'
 BUILD_AND_RUN = 'Build and run in one call with build_project.py --spec <design> --run.'

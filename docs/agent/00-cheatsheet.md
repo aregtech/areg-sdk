@@ -98,10 +98,12 @@ into a directory of your own and never under your home.
 python3 <sdk>/tools/agent/setup_project.py --name app --root . --mode local
 python3 <sdk>/tools/agent/gen_docs.py --template design.json    # every key, empty: fill it
 python3 <sdk>/tools/agent/build_project.py --spec design.json   # documents, application,
-                                                               # contract, configure, build
-python3 <sdk>/tools/agent/build_project.py --spec design.json --run  # and every scenario;
-                                                               # exit 0 means it works
+                                                               # bodies.txt, contract, configure, build
+python3 <sdk>/tools/agent/build_project.py --run    # and every scenario; exit 0 means it works
 ```
+
+Without `--spec` it reads `areg-project.json`. A `design.json` change rewrites `src/` with
+every `bodies.txt` body; code outside a marker keeps `src/` until `--regenerate` drops it.
 
 On Windows the interpreter is `python` and a binary is `build\bin\name.exe`; nothing
 else differs. Needs CMake 3.20+, a Java 17+ runtime, a C++17 compiler.

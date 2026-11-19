@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema#",
   "title": "AREG agent contract",
   "description": "Machine-readable form of the rules stated in docs/agent/. Prose remains authoritative; this file exists so a tool can check generated code mechanically instead of an agent re-reading a page. Keep in step with 20-service-interface.md section 3 and 31-consumer.md section 3.",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "language_level": "C++17",
   "namespace": "areg",
   "sdk": {
@@ -182,7 +182,8 @@
       },
       "consumer": {
         "member": "request_foo",
-        "usage": "call"
+        "usage": "call",
+        "returns": "SequenceNumber when the request declares a response, otherwise void"
       }
     },
     {
@@ -210,6 +211,44 @@
       }
     },
     {
+      "declared_as": "Response foo (subscription)",
+      "provider": null,
+      "consumer": {
+        "member": "notify_on_response_foo",
+        "usage": "call",
+        "parameters": [
+          "bool notify = true"
+        ],
+        "note": "true: response_foo runs on every response the provider sends, without a call of its own; false stops it."
+      }
+    },
+    {
+      "declared_as": "Response foo (invalid data)",
+      "provider": null,
+      "consumer": {
+        "member": "invalid_response",
+        "usage": "override",
+        "required": false,
+        "parameters": [
+          "<Name>::ResponseIDs"
+        ],
+        "note": "Runs instead of response_foo when the response arrives without its full data, or when a subscription names a response the provider does not have. The parameter is <Name>::ResponseIDs::MsgId_response_foo."
+      }
+    },
+    {
+      "declared_as": "Request foo (undeclared failure)",
+      "provider": null,
+      "consumer": {
+        "member": "invalid_request",
+        "usage": "override",
+        "required": false,
+        "parameters": [
+          "<Name>::RequestIDs"
+        ],
+        "note": "Runs for a failure of a request ID this interface does not declare. A declared request fails through request_foo_failed."
+      }
+    },
+    {
       "declared_as": "Broadcast bar",
       "provider": {
         "member": "broadcast_bar",
@@ -220,6 +259,31 @@
         "usage": "override",
         "required": false,
         "requires_subscription": "notify_on_broadcast_bar(true)"
+      }
+    },
+    {
+      "declared_as": "Broadcast bar (subscription)",
+      "provider": null,
+      "consumer": {
+        "member": "notify_on_broadcast_bar",
+        "usage": "call",
+        "parameters": [
+          "bool notify = true"
+        ],
+        "note": "true: broadcast_bar runs on every broadcast sent after; false stops it."
+      }
+    },
+    {
+      "declared_as": "Broadcast bar (invalid data)",
+      "provider": null,
+      "consumer": {
+        "member": "invalid_broadcast",
+        "usage": "override",
+        "required": false,
+        "parameters": [
+          "<Name>::BroadcastIDs"
+        ],
+        "note": "Declared only when the interface has a broadcast. Runs instead of broadcast_bar when the provider marks it invalid, it arrives without its full data, or a subscription names a broadcast the provider does not have."
       }
     },
     {
@@ -243,6 +307,18 @@
         "read_accessor": "baz(state)",
         "requires_subscription": "notify_on_baz_update(true)",
         "note": "The value is meaningful only when state == areg::DataState::DataIsOK. The first callback after subscribing may report it invalid."
+      }
+    },
+    {
+      "declared_as": "Attribute Baz (subscription)",
+      "provider": null,
+      "consumer": {
+        "member": "notify_on_baz_update",
+        "usage": "call",
+        "parameters": [
+          "bool notify = true"
+        ],
+        "note": "true: the value the provider holds arrives at once in on_baz_update, then every change; false stops it."
       }
     },
     {
@@ -338,6 +414,43 @@
       "return the base class result"
     ],
     "note": "Called again on every reconnection. Subscribe here, not in the constructor."
+  },
+  "request_failures": {
+    "description": "The reasons a request that declares a response fails with. Only the caller is told, once, and no response follows. A request without a response reports none. Keep in step with docs/wiki/06i-request-failures-and-data-validity.md section 2.",
+    "type": "areg::ResultType",
+    "handler": "void request_<name>_failed(areg::ResultType reason)",
+    "values": {
+      "RequestBusy": {
+        "cause": "the provider has not answered an earlier call of the same response yet, and has not released it with unblock_current_request()",
+        "raised_by": "provider",
+        "retry": "yes, later"
+      },
+      "RequestError": {
+        "cause": "the provider reported that it cannot complete the call",
+        "raised_by": "provider",
+        "retry": "depends on the service"
+      },
+      "RequestCanceled": {
+        "cause": "the provider canceled the call; a session released with unblock_current_request() is canceled too",
+        "raised_by": "provider",
+        "retry": "depends on the service"
+      },
+      "RequestUnsupported": {
+        "cause": "the provider has no request with this ID, or the request arrived without all its parameters: provider and consumer were not built from one definition of the interface",
+        "raised_by": "provider's generated code",
+        "retry": "no: regenerate and rebuild every process from one definition"
+      },
+      "ServiceUnavailable": {
+        "cause": "the request was sent before the service was connected, or the service went away while the call was open",
+        "raised_by": "consumer's proxy",
+        "retry": "after service_connected reports Connected"
+      },
+      "MessageUndelivered": {
+        "cause": "the message could not be passed on: the router connection is not up, a send failed, the provider is not started or already stopped, or the provider's event queue refused it",
+        "raised_by": "consumer's proxy, the router client, or the receiving process",
+        "retry": "yes, the condition may pass"
+      }
+    }
   },
   "lifecycle": {
     "header": "areg/appbase/Application.hpp",

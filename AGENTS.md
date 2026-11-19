@@ -41,7 +41,7 @@ Find your task, open that one file, and do not search the repository.
 | **Decide the services and their interfaces** | `design.json` rules; `docs/agent/05-design.md` for a doubt they leave |
 | Start a new project by hand | `docs/agent/10-new-project.md` |
 | Define an interface; what to override, what to call | `docs/agent/20-service-interface.md` (section 3: the names) |
-| Implement a provider, a consumer, or the model | no page: `tools/agent/gen_skeleton.py --app` wrote all three, compiling and running, and your code is the bodies its worksheet asks for. Open `docs/agent/30-provider.md`, `docs/agent/31-consumer.md` or `docs/agent/32-model.md` only where `docs/agent/05-design.md` or `docs/agent/51-debug.md` cites a numbered section of one; several services in one component: `docs/agent/24-component.md` |
+| Implement a provider, a consumer, or the model | no page: `gen_skeleton.py --app` wrote all three, compiling and running; write the bodies its worksheet asks for. `docs/agent/30-provider.md`, `docs/agent/31-consumer.md`, `docs/agent/32-model.md` only at a section `docs/agent/05-design.md` or `docs/agent/51-debug.md` cites; several services in one component: `docs/agent/24-component.md` |
 | Worker thread, or a plain one (which: `docs/agent/37-threads.md` section 2); watchdog, model built at run time | a provider's: `workers` of its service in design.json, `"start": false` if started on request; otherwise copy `docs/agent/recipes/07-worker-events/`; `docs/agent/38-workers.md`; `docs/agent/37-threads.md` |
 | Send a custom event between threads | `docs/agent/23-events.md` |
 | Do periodic or delayed work | `docs/agent/33-timers.md` |
@@ -84,9 +84,6 @@ and exits non-zero on a missing one.
 than composing a chain from the tools below. Scaffold, fill `design.json`, one command
 that writes the documents and the application and builds them, a worksheet for every
 body, and a scenario that proves it; return here only for section 6.
-Without Python, copy
-`docs/agent/recipes/01-local-single-process` and rename the project in its two
-`CMakeLists.txt` files; `recipes/README.md` says which recipe shows what.
 
 **The generator validates before it generates.** A refused document writes nothing and
 exits 1, so the defect is in the document, never in the build. Every finding against a
@@ -110,14 +107,9 @@ command line). Nothing else differs. `-j8` is written as `-j8` everywhere, never
 Run these instead of writing what they produce. All are Python 3 (`python` on
 Windows), live in `tools/agent/`, and have `--help`.
 
-The runbook issues these in order and says what each does where it issues it:
-`setup_project.py` (a buildable project), `gen_docs.py` (every `.dtml`, `.siml` and
-`.fsml` from one JSON description), `gen_skeleton.py` (the whole application, every
-hole one `TODO(you)` line, plus `worksheet.txt`), `fill_markers.py` (your `bodies.txt`
-into every marker and every named `expect` hole), `build_project.py` (documents,
-application, contract, configure, build, stopping at the first failure) and
-`run_scenarios.py` (runs it and checks its output; exit 0 is a pass).
-
+The runbook issues `setup_project.py`, `gen_docs.py`, `gen_skeleton.py` (the application
+and `worksheet.txt`), `fill_markers.py` (your `bodies.txt` into the markers),
+`build_project.py` and `run_scenarios.py`, each where it is needed.
 The two it does not issue, which you call yourself:
 
 | Tool | Does |

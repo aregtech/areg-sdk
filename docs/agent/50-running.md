@@ -122,6 +122,9 @@ it. After that, order is free: a consumer started before its provider waits and
 connects when the provider appears, and every process reconnects on its own after the
 router restarts.
 
+**One build.** Every process, `mtrouter` and `logcollector` included, comes from one
+areg build. A process from another build is not supported, and nothing detects it.
+
 Single process applications never need any of this.
 
 ---

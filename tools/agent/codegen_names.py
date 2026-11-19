@@ -15,6 +15,8 @@ Kinds and roles:
     request     call, failed
     response    call, notify
     broadcast   call, notify
+    invalid     call: the consumer hook for invalid data of one kind, keyed request,
+                response or broadcast, for example invalid_response
     action      call
     condition   call
     trigger     call
@@ -37,7 +39,7 @@ import xml.etree.ElementTree as ET
 HERE = os.path.dirname(os.path.abspath(__file__))
 JAR = os.path.join(os.path.dirname(HERE), 'codegen.jar')
 CACHE = os.path.join(tempfile.gettempdir(), 'areg-codegen-names')
-FORMAT = 6
+FORMAT = 7
 
 
 class CodegenError(Exception):
@@ -321,6 +323,9 @@ BLOCK = re.compile(r'^\s*\*\s+(Attribute|Request|Response|Broadcast)\s+(\w+)'
                    r'(?:\s+functions)?\s*$')
 SECTION = re.compile(r'^\s*//\s+(.*\S)\s*$')
 ATTRIBUTE_BRIEF = re.compile(r'\\brief\s+(Returns|Sets) the attribute (\w+)\.')
+# "virtual void invalid_response(HelloService::ResponseIDs respId);"
+INVALID_HOOK = re.compile(r'^\s*(?P<owner>\w+)::(?P<kind>Request|Response|Broadcast)IDs'
+                          r'\s+\w+\s*$')
 
 
 def _read(headers, suffix, owner):
@@ -405,6 +410,14 @@ def _service(doc, headers):
                 _put(entry, 'notify', returns, name, params)
             else:
                 _put(entry, 'call', returns, name, params)
+    consumer = _read(headers, 'ConsumerBase.hpp', owner)
+    for index, returns, name, params, tail in _declarations(consumer):
+        hook = INVALID_HOOK.match(params)
+        if returns == 'void' and 'virtual' in consumer[index] and hook \
+                and hook.group('owner') == owner:
+            entry = _entry(kinds, 'invalid', hook.group('kind').lower())
+            entry['all'].append(name)
+            _put(entry, 'call', returns, name, params)
     for (kind, doc_name), found in _blocks(_read(headers, 'ProviderBase.hpp', owner)).items():
         if kind != 'attribute':
             continue

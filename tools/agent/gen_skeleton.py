@@ -1973,7 +1973,10 @@ def request_failed_report(name, who=None):
     return ['        GLOBAL_ERR("{}request {} failed, reason %s%s"{}, areg::as_string(reason),'
             .format('%s: ' if who else '', name, ', ' + who if who else ''),
             '                   (reason == areg::ResultType::RequestBusy ? ": the provider '
-            'has not answered the previous {}" : ""));'.format(name)]
+            'has not answered the previous {}"'.format(name),
+            '                    : reason == areg::ResultType::RequestUnsupported ? ": provider '
+            'and consumer were not built from one definition of the interface"',
+            '                    : ""));']
 
 
 def forward_calls(machine):
@@ -2212,13 +2215,21 @@ def contract_lines(iface, document):
                .format(n=iface.name))
     for name, params in iface.requests:
         spelled = iface.spell('request', name)
-        out.append('  provider overrides {}({}); consumer calls {}(...) '
-                   'to send it'.format(spelled, iface.generated_params('request', name),
-                                       spelled))
+        line = '  provider overrides {}({}); consumer calls {} {}(...) to send it'.format(
+            spelled, iface.generated_params('request', name),
+            iface.generated().returns('request', name), spelled)
+        if iface.generated().has('request', name, 'failed'):
+            line += ', overrides {}({}) if it fails'.format(
+                iface.spell('request', name, 'failed'),
+                iface.generated_params('request', name, 'failed').strip().rsplit(' ', 1)[0])
+        out.append(line)
     for name, params in iface.responses:
-        out.append('  provider calls {}({}); consumer overrides it'
-                   .format(iface.spell('response', name),
-                           iface.generated_params('response', name)))
+        line = '  provider calls {}({}); consumer overrides it'.format(
+            iface.spell('response', name), iface.generated_params('response', name))
+        if iface.generated().has('response', name, 'notify'):
+            line += ', also without a call after {}(true)'.format(
+                iface.spell('response', name, 'notify'))
+        out.append(line)
     for name, params in iface.broadcasts:
         out.append('  provider calls {}({}); consumer overrides it, subscribed by {}(true)'
                    .format(iface.spell('broadcast', name),
@@ -2243,6 +2254,21 @@ def contract_lines(iface, document):
         if spelled == 'state':
             out.append('  in an update_ section its parameter state hides this getter: '
                        'call this->state(ds)')
+    # The hooks the consumer base declares for invalid data, read from what it generated.
+    hooks = dict((kind, '{}({})'.format(entry['names']['call'],
+                                        entry['params']['call'].strip().rsplit(' ', 1)[0]))
+                 for kind, entry in iface.generated().entries('invalid').items())
+    data = [kind for kind in ('response', 'broadcast') if kind in hooks]
+    parts = []
+    if data:
+        parts.append('{} for invalid data, which {} never receives'.format(
+            ', '.join(hooks[kind] for kind in data), ' or '.join(k + '_' for k in data)))
+    if 'request' in hooks:
+        parts.append('{} for a failed request this interface does not declare'
+                     .format(hooks['request']))
+    if parts:
+        out.append('  provider never calls these; consumer overrides {}'.format(
+            ', and '.join(parts)))
     if list(iface.attributes):
         out.append('  Only a set_ call changes an attribute and notifies; a consumer value '
                    'holds only')

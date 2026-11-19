@@ -1048,8 +1048,8 @@ def dedent(lines):
 def source_bodies(pristine, current):
     """{marker: (body lines, first, end, pad)} found in current where pristine holds the
     marker, first and end bounding an unanchored body in current (None when anchored),
-    pad the marker's indentation; and the count of pristine lines changed outside any
-    marker. A body the generator wrote filled counts as a marker, and is found only
+    pad the marker's indentation; and the count of lines changed, removed or added
+    outside every body found, blank lines not counted. A body the generator wrote filled counts as a marker, and is found only
     once it differs from what the generator wrote."""
     lines = current.splitlines()
     plain = pristine.splitlines()
@@ -1059,7 +1059,7 @@ def source_bodies(pristine, current):
         if tag == 'equal':
             for offset in range(i2 - i1):
                 mapped[i1 + offset] = j1 + offset
-    bodies, inside = {}, set()
+    bodies, inside, covered = {}, set(), set()
     for index, line in enumerate(plain):
         hit = fill_markers.MARKER.search(line) or fill_markers.BODY_OPEN.search(line)
         if not hit:
@@ -1087,8 +1087,12 @@ def source_bodies(pristine, current):
         if written and dedent(body) == dedent(plain[index + 1:last]):
             continue
         bodies[hit.group(1)] = (dedent(body), span, fill_markers.indent_of(line))
+        covered.update(range(before + 1, after))
+    kept = set(mapped.values())
     edited = sum(1 for index in range(len(plain))
-                 if index not in mapped and index not in inside)
+                 if index not in mapped and index not in inside) + \
+        sum(1 for index, text in enumerate(lines)
+            if index not in kept and index not in covered and text.strip())
     return bodies, edited
 
 
@@ -1555,7 +1559,7 @@ def main():
               .format(', '.join(os.path.basename(spec) for spec in specs)))
         print('   A request, action or step added since has no marker in it, and one')
         print('   removed still has. --regenerate writes src/ again from the design and')
-        print('   bodies.txt puts every body back.')
+        print('   bodies.txt puts every body back; code outside the markers is not kept.')
     else:
         print('== application: kept src/ as it is. --regenerate writes it again.')
 

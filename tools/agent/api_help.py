@@ -7,11 +7,12 @@
 #   python3 tools/agent/api_help.py start_timer     # every declaration of a member
 #   python3 tools/agent/api_help.py Timer --class   # what one class declares
 #   python3 tools/agent/api_help.py DataState       # a scoped enumeration
+#   python3 tools/agent/api_help.py RequestBusy     # a value, its enumeration, its contract
 #   python3 tools/agent/api_help.py --search timer  # names holding a word
 #
 # A member answer of a few declarations carries their briefs; --full adds them to every
-# answer, uncut. Everything printed is read from the headers at run time and nothing is
-# written down here, so an answer cannot disagree with the framework it describes.
+# answer, uncut. Everything printed is read at run time from the headers and from
+# docs/agent/api.json, and nothing is written down here.
 #
 # Reading a header instead costs 20 KB to 60 KB, carried in context and re-sent
 # on every later request. This answers in a few lines.
@@ -33,21 +34,8 @@ EXTENSION = os.path.join(ROOT, 'framework', 'aregextend')
 sys.path.insert(0, HERE)
 from gen_skeleton import CLASSES as DESIGN_CLASSES, CLASS_HEADERS, WORKSHEET  # noqa: E402
 
-# The methods the generator writes for a service of the design, by the shape of the name.
-GENERATED = (
-    (re.compile(r'^notify_on_broadcast_(\w+)$'),
-     'a public method the generator writes on the consumer and on every client of the '
-     'service that declares broadcast "{0}": void {1}(bool notify = true). true '
-     'subscribes and its broadcast_{0} section runs on every one sent after; false '
-     'unsubscribes.'),
-    (re.compile(r'^notify_on_(\w+)_update$'),
-     'a public method the generator writes on the consumer and on every client of the '
-     'service that declares the attribute "{0}": void {1}(bool notify = true). true '
-     'subscribes, and the value the provider holds arrives at once in its update '
-     'section, then every change; false unsubscribes. The getter reads the value held.'),
-    (re.compile(r'^(?:request|response|broadcast|set)_(\w+)$'),
-     'a method the generator writes for "{0}" of a service of the design.'),
-)
+# The stand-ins api.json spells a generated member name with: request_foo, on_baz_update.
+STAND_INS = ('foo', 'bar', 'baz')
 
 BLOCK_COMMENT = re.compile(r'/\*.*?\*/', re.S)
 LINE_COMMENT = re.compile(r'//[^\n]*')
@@ -59,6 +47,9 @@ CLASS_HEAD = re.compile(r'^\s*(?:class|struct)\s+(?:AREG_API\s+)?([A-Za-z_]\w*)'
 # "enum class DataState : uint8_t".
 ENUM_HEAD = re.compile(r'\benum\s+class\s+([A-Za-z_]\w*)')
 ENUMERATOR = re.compile(r'^([A-Za-z_]\w*)')
+
+# "    , RequestBusy = 8323 /*0x2083*/  //!< request cannot execute, it is busy.    Bits: ..."
+ENUMERATOR_BRIEF = re.compile(r'//!<\s*(.*)$')
 
 # One declaration: an optional return type, the name, and the parameter list.
 DECLARATION = re.compile(r'^(.*?\b)([A-Za-z_~]\w*)\s*\((.*)$', re.S)
@@ -90,6 +81,7 @@ noexcept explicit operator delete new
 
 
 MEMBERS = os.path.join(ROOT, 'docs', 'agent', 'members.json')
+CONTRACT = os.path.join(ROOT, 'docs', 'agent', 'api.json')
 
 # A member answer of at most this many declarations prints each one's brief, cut to BRIEF_CHARS.
 BRIEF_DECLARATIONS = 4
@@ -225,6 +217,7 @@ class Header(object):
         self.members = []        #!< (owner, signature, doc)
         self.classes = {}        #!< class name -> [signature]
         self.enums = {}          #!< enumeration name -> [enumerator]
+        self.enum_briefs = {}    #!< (enumeration name, enumerator) -> its trailing //!< comment
         self.constants = {}      #!< constant name -> (owner, signature, doc)
         self.bases = {}          #!< class name -> [public base class name]
         self.usings = {}         #!< class name -> {'constructors', 'operator='} it takes from a base
@@ -413,6 +406,19 @@ class Header(object):
                 self.enums[head.group(1)] = names
                 self.scope.setdefault(head.group(1),
                                       self._spaces[text.count('\n', 0, head.start())])
+                self._parse_enum_briefs(head.group(1), text[opening + 1:closing])
+
+    def _parse_enum_briefs(self, enum, body):
+        """The //!< comment of each enumerator that has a line of its own, up to its padding."""
+        for line in body.splitlines():
+            comment = ENUMERATOR_BRIEF.search(line)
+            entries = [entry.strip() for entry in clean(line).split(',') if entry.strip()]
+            if comment is None or len(entries) != 1:
+                continue
+            match = ENUMERATOR.match(entries[0])
+            brief = re.split(r'\s{3,}', comment.group(1).strip())[0]
+            if match and brief:
+                self.enum_briefs[(enum, match.group(1))] = brief
 
 
 def load():
@@ -637,6 +643,8 @@ def answer_qualified(headers, name, full):
     owner = owner.split('::')[-1]
     if not owner or owner == 'areg':
         return answer_member(headers, member, full)
+    if any(owner in header.enums for header in headers):
+        return answer_enumerator(headers, member, owner)
     chain = lineage(headers, owner)
     groups = []
     for base in chain:
@@ -671,6 +679,44 @@ def answer_enum(headers, name):
     return False
 
 
+def contract_of(enum, value):
+    """The api.json blocks whose "type" is this enumeration and whose "values" hold the value."""
+    try:
+        with open(CONTRACT, encoding='utf-8') as handle:
+            document = json.load(handle)
+    except (ValueError, OSError):
+        return []
+    return [(key, block) for key, block in document.items()
+            if isinstance(block, dict) and block.get('type') == enum
+            and isinstance(block.get('values'), dict) and value in block['values']]
+
+
+def answer_enumerator(headers, name, owner=None):
+    """Every scoped enumeration that holds a value of this name, with its api.json contract."""
+    found = False
+    for header in headers:
+        for enum, values in header.enums.items():
+            if name not in values or (owner and enum != owner):
+                continue
+            spelled = qualified(enum, header)
+            if found:
+                print('')
+            print('{} -- a value of enum class {}  ({}); write {}::{}'
+                  .format(name, spelled, header.relative, spelled, name))
+            brief = header.enum_briefs.get((enum, name))
+            if brief:
+                print('  {}'.format(brief))
+            for key, block in contract_of(spelled, name):
+                where = block.get('handler')
+                print('')
+                print('docs/agent/api.json "{}"{}:'.format(key, ', in ' + where if where else ''))
+                for field, text in block['values'][name].items():
+                    print('  {}: {}'.format(field, json.dumps(text) if isinstance(text, bool)
+                                            else text))
+            found = True
+    return found
+
+
 # The functions gen_skeleton.py defines beside main(), which no header declares.
 SCAFFOLD_NAMES = {
     'quit_with': 'void quit_with(int code);   // ends this program with that exit code',
@@ -693,12 +739,12 @@ REPLACED_BY = {
 
 
 def search(headers, word):
-    """Every member, class and enumeration name holding a word.
+    """Every member, class, enumeration, enumerator and constant name holding a word.
 
     "areg::Timer(" and "Timer::start_timer()" are searched as their last name.
     """
     needle = re.sub(r'\(.*$', '', word.strip()).split('::')[-1].strip().lower()
-    members, classes, enums, constants = set(), set(), set(), set()
+    members, classes, enums, values, constants = set(), set(), set(), set(), set()
     for header in headers:
         for member, _, _, _ in header.members:
             if needle in member.lower():
@@ -706,28 +752,91 @@ def search(headers, word):
         for owner in header.classes:
             if needle in owner.lower():
                 classes.add(owner)
-        for enum in header.enums:
+        for enum, enumerators in header.enums.items():
             if needle in enum.lower():
                 enums.add(enum)
+            values.update(enum + '::' + value for value in enumerators
+                          if needle in value.lower())
         for constant in header.constants:
             if needle in constant.lower():
                 constants.add(constant)
-    for label, names in (('class', classes), ('enum', enums),
+    for label, names in (('class', classes), ('enum', enums), ('enum value', values),
                          ('constant', constants), ('member', members)):
         if names:
             print('{}: {}'.format(label, ', '.join(sorted(names))))
-    return bool(members or classes or enums or constants)
+    return bool(members or classes or enums or values or constants)
+
+
+def generated_shapes():
+    """(pattern, stand-in, spelled shape, entry) of each member name api.json declares.
+
+    The most specific shape comes first, so request_foo_failed is tried before
+    request_foo.
+    """
+    try:
+        with open(CONTRACT, encoding='utf-8') as handle:
+            entries = json.load(handle).get('members') or []
+    except (ValueError, OSError):
+        return []
+    shapes = {}
+    for entry in entries:
+        for side in ('provider', 'consumer'):
+            spec = entry.get(side)
+            if not isinstance(spec, dict):
+                continue
+            names = spec.get('member')
+            for name in [names] if isinstance(names, str) else names or []:
+                parts = name.split('_')
+                if '<' in name or '(' in name or all(p in STAND_INS for p in parts):
+                    continue
+                stand_in = next((p for p in parts if p in STAND_INS), None)
+                pattern = '^{}$'.format('_'.join(r'(\w+?)' if p in STAND_INS
+                                                 else re.escape(p) for p in parts))
+                shapes.setdefault((pattern, stand_in, name), []).append((entry, side, spec))
+    ordered = sorted(shapes.items(), key=lambda item: -len(item[0][2].replace(
+        item[0][1] or '', '')))
+    return [(re.compile(pattern), stand_in, name, found)
+            for (pattern, stand_in, name), found in ordered]
+
+
+def spec_line(side, spec):
+    """One side of a generated member, as api.json states it."""
+    facts = [spec.get('usage', '')]
+    if 'required' in spec:
+        facts.append('required' if spec['required'] else 'optional')
+    if spec.get('pure_virtual'):
+        facts.append('pure virtual')
+    if spec.get('returns'):
+        facts.append('returns ' + spec['returns'])
+    if spec.get('parameters'):
+        facts.append('parameters ' + ', '.join(spec['parameters']))
+    if spec.get('requires_subscription'):
+        facts.append('needs ' + spec['requires_subscription'])
+    if spec.get('read_accessor'):
+        facts.append('read by ' + spec['read_accessor'])
+    out = ['  {}: {}'.format(side, '; '.join(fact for fact in facts if fact))]
+    if spec.get('note'):
+        out.append('    ' + spec['note'])
+    return out
 
 
 def answer_generated(name):
-    """What a name the generator writes is, and its lines in the project's worksheet."""
-    for pattern, text in GENERATED:
+    """What a name the generator writes is, from docs/agent/api.json, and its lines in
+    the project's worksheet."""
+    for pattern, stand_in, shape, found in generated_shapes():
         match = pattern.match(name)
         if match:
             break
     else:
         return False
-    print('"{}" is not in the areg headers: it is {}'.format(name, text.format(match.group(1), name)))
+    element = ', {} = {}'.format(stand_in, match.group(1)) if stand_in else ''
+    declared = dict.fromkeys(entry['declared_as'] for entry, _, _ in found)
+    print('"{}" is not in the areg headers: the generator writes it for a service '
+          'document. docs/agent/api.json "{}", shape {}{}:'
+          .format(name, '", "'.join(declared), shape, element))
+    for _, side, spec in found:
+        for line in spec_line(side, spec):
+            print(line)
     try:
         with open(WORKSHEET, encoding='utf-8') as handle:
             lines = [line.rstrip() for line in handle if name in line]
@@ -780,11 +889,12 @@ def main():
         elif '::' in name and not args.enum:
             answered = answer_qualified(headers, name, args.full)
         elif args.enum:
-            answered = answer_enum(headers, name)
+            answered = answer_enum(headers, name) or answer_enumerator(headers, name)
         else:
             answered = (answer_member(headers, name, args.full)
                         or answer_class(headers, name, args.full)
                         or answer_enum(headers, name)
+                        or answer_enumerator(headers, name)
                         or answer_constant(headers, name)
                         or answer_macro(headers, name))
         if not answered:
