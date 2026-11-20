@@ -25,7 +25,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <PreBuildEvent>
-      <Command>$(AregExamplesDir)examples_generate.bat</Command>
+      <Command>"$(AregExamplesDir)examples_generate.bat" "$(AregGenerateDir)."</Command>
       <Message>Call to generate service interface source files for all example projects.</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>

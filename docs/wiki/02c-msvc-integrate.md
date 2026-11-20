@@ -147,6 +147,9 @@ Open in text editor and update `<AregSdkRoot>`:
 ```
 
 **Optionally adjust:**
+- `AregOutputRoot` - Root of all outputs, `$(SolutionDir)product\` by default
+- `AregOutputDir` - Build directory of a configuration, `$(AregOutputRoot)build\msvc-<config>-<processor>\` by default
+- `AregGenerateDir` - Generated code directory, `$(AregOutputDir)generate\` by default
 - `AregOutputBin` - Binary output directory
 - `AregOutputLib` - Library output directory
 - `AregOutputObj` - Object files directory

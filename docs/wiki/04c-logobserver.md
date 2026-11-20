@@ -164,7 +164,7 @@ After building Areg SDK, Log Observer is available in the build output directory
 
 **Windows:**
 ```powershell
-.\product\build\msvc-v143\windows_nt-x64-release\bin\logobserver.exe
+.\product\build\msvc-release-x64\bin\logobserver.exe
 ```
 
 ---

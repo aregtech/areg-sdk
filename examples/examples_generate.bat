@@ -5,7 +5,9 @@ set EXAMPLE_ROOT=%~dp0
 
 :: set the AREG_SDK_ROOT directory here
 for %%i in ("%EXAMPLE_ROOT%..") do set AREG_SDK_ROOT=%%~fi
+:: The first argument is the generate root, '<areg-sdk>\product\generate' when not given.
 set AREG_PRODUCT=%AREG_SDK_ROOT%\product\generate
+if not "%~1"=="" set "AREG_PRODUCT=%~f1"
 set AREG_CODEGEN=%AREG_SDK_ROOT%\tools\codegen.jar
 set AREG_DOCLIST=%AREG_PRODUCT%\examples_documents.lst
 

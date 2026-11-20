@@ -91,14 +91,23 @@ Time Elapsed 00:02:15.34
 
 **Build time:** 2-5 minutes depending on configuration.
 
-**Binaries location:**
+**Output location:**
+
+Each configuration builds into its own directory, the same one `tools\build.bat` creates for a CMake build:
+
 ```
-.\product\build\msvc-{compiler}\windows-{bits}-{arch}-{config}-{linkage}\bin\
+.\product\build\{family}-{config}-{processor}\
+├── bin\        executables and DLLs
+├── lib\        static and import libraries
+├── generate\   generated service interface code
+└── obj\        intermediate files, one folder per project
 ```
+
+`{family}` is `msvc` (`llvm` with the ClangCL toolset), `{config}` is `debug` or `release`, `{processor}` is `x86` (Win32) or `x64`.
 
 **Example:**
 ```
-.\product\build\msvc-cl\windows-64-amd64-release-shared\bin\
+.\product\build\msvc-release-x64\bin\
 ```
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
