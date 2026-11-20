@@ -116,15 +116,23 @@ def report_copilot(result):
     print("== harness (GitHub Copilot)")
     print("   %-28s %s" % ("model(s)", ", ".join(sorted(models)) or
                            result.get("currentModel", "?")))
-    if nano_aiu is not None:
-        credits = format(Decimal(nano_aiu) / Decimal(1000000000), ",.9f").rstrip("0").rstrip(".")
-        print("   %-28s %s" % ("AI credits (AIC)", credits))
+    status = result.get("aiCreditsStatus")
     reported = next((key for key in USD_KEYS if key in result), None)
     if reported:
+        if nano_aiu is not None and status in (None, "complete"):
+            print("   %-28s %s" % ("AI credits (AIC)", format(
+                Decimal(nano_aiu) / Decimal(1000000000), ",.9f").rstrip("0").rstrip(".")))
         print("   %-28s %s   (as reported in %s, not converted)"
               % ("cost (USD)", result[reported], reported))
+    elif status is not None and status != "complete":
+        # The file carries a zero it did not measure.
+        print("   %-28s %s" % ("AI credits (AIC)", "--   not reported (aiCreditsStatus: %s)"
+                               % status))
+        print("   %-28s %s" % ("cost (USD)", "--   not reported; premium requests are the bill"))
     elif nano_aiu is not None:
+        credits = format(Decimal(nano_aiu) / Decimal(1000000000), ",.9f").rstrip("0").rstrip(".")
         dollars = format(Decimal(nano_aiu) * AIC_USD / Decimal(1000000000), ",.4f")
+        print("   %-28s %s" % ("AI credits (AIC)", credits))
         print("   %-28s %s   (converted from AIC at USD %s per credit)"
               % ("cost (USD)", dollars, AIC_USD))
     else:
@@ -154,7 +162,9 @@ def report_copilot(result):
     absent = "--   not reported in this usage file"
     print("   %-28s %s" % ("API requests", absent if requests is None else requests))
     if "inputTokens" in totals and "outputTokens" in totals:
-        fresh = totals["inputTokens"] + totals["outputTokens"]
+        # Copilot's inputTokens include the cache reads.
+        fresh = (totals["inputTokens"] - totals.get("cacheReadTokens", 0)
+                 + totals["outputTokens"])
         print("   %-28s %s   (uncached in + out)" % ("tokens, fresh", format(fresh, ",")))
     else:
         print("   %-28s %s" % ("tokens, fresh", absent))
@@ -289,8 +299,48 @@ def report_sources(root, sdk=None):
         print("   design.json: a line matching its output counts as generated.")
 
 
+# (case, usage file, rows the report must print, rows it must not print)
+SELF_TEST_COPILOT = (
+    ('credits unavailable, cached input', {
+        "totalPremiumRequestCost": 6, "totalNanoAiu": 0, "aiCreditsStatus": "unavailable",
+        "modelMetrics": {"m": {"requests": {"count": 16}, "usage": {
+            "inputTokens": 902623, "outputTokens": 23517, "cacheReadTokens": 809856,
+            "cacheWriteTokens": 0, "reasoningTokens": 12450}}}},
+     ["tokens, fresh                116,284", "cost (USD)                   --"],
+     ["0.0000", "AI credits (AIC)             0\n"]),
+    ('credits complete', {
+        "totalNanoAiu": 2500000000, "aiCreditsStatus": "complete",
+        "modelMetrics": {"m": {"requests": {"count": 3}, "usage": {
+            "inputTokens": 1000, "outputTokens": 10, "cacheReadTokens": 400}}}},
+     ["AI credits (AIC)             2.5", "cost (USD)                   0.0250",
+      "tokens, fresh                610"], []),
+)
+
+
+def self_test():
+    """Every Copilot case against the rows it has to print. No file is read."""
+    import contextlib
+    import io
+    failures = []
+    for name, usage, wanted, unwanted in SELF_TEST_COPILOT:
+        printed = io.StringIO()
+        with contextlib.redirect_stdout(printed):
+            report_copilot(usage)
+        text = printed.getvalue()
+        failures += ['{}: no row "{}"'.format(name, row) for row in wanted if row not in text]
+        failures += ['{}: row "{}" printed'.format(name, row.strip()) for row in unwanted
+                     if row in text]
+    for line in failures:
+        print('   FAIL  ' + line)
+    print('measure --self-test: {} case(s), {} failure(s)'.format(len(SELF_TEST_COPILOT),
+                                                                    len(failures)))
+    return 1 if failures else 0
+
+
 def main():
     args = [a for a in sys.argv[1:]]
+    if args == ['--self-test']:
+        return self_test()
     project = None
     sdk = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                        os.pardir, os.pardir))

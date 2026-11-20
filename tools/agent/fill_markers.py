@@ -437,6 +437,42 @@ def without_trailing_call(body, after):
     return methods[0], trim(kept)
 
 
+def generated_after(lines, index, extra):
+    """The code lines the generated code runs after the marker at `index`, up to the end
+    of the marker's block, whitespace folded; other bodies left out."""
+    pad = len(indent_of(lines[index]))
+    tail = []
+    inside = False
+    for line in lines[index + 1 + extra:]:
+        if BODY_OPEN.search(line) or BODY_END.search(line):
+            inside = bool(BODY_OPEN.search(line))
+            continue
+        code = line.split('//')[0].strip()
+        if inside or not code:
+            continue
+        if len(indent_of(line)) < pad:
+            break
+        tail.append(' '.join(code.split()))
+    return tail
+
+
+def repeated_tail(body, tail):
+    """How the body repeats the first generated lines after its marker: (body without
+    them, count) when it ends with one or more of them, (None, count) when it holds two
+    or more of them elsewhere, (body, 0) when it does not repeat them."""
+    code = [(number, ' '.join(text.split('//')[0].split())) for number, text in enumerate(body)]
+    code = [(number, text) for number, text in code if text]
+    texts = [text for _, text in code]
+    for count in range(min(len(tail), len(texts)), 0, -1):
+        if texts[len(texts) - count:] == tail[:count]:
+            kept = trim(body[:code[len(code) - count][0]])
+            return (kept if kept else ['//']), count
+    for count in range(len(tail), 1, -1):
+        if any(texts[at:at + count] == tail[:count] for at in range(len(texts) - count + 1)):
+            return None, count
+    return body, 0
+
+
 def indent_of(line):
     return line[:len(line) - len(line.lstrip())]
 
@@ -515,7 +551,10 @@ def main():
     planned = []
     claimed = {}
     sources = {}
+    texts = {}
     doubled = []
+    copied = []
+    trailed = []
     forwarded = []
     expected = {}
     replaced = []
@@ -556,6 +595,17 @@ def main():
                                                         for text in body))) & set(after))
         if twice:
             doubled.append('"{}" calls mOwner.{}()'.format(name, twice[0]))
+        if path not in texts:
+            with open(path, encoding='utf-8') as handle:
+                texts[path] = handle.read().splitlines()
+        tail = generated_after(texts[path], index, extra)
+        kept, count = repeated_tail(body, tail)
+        if kept is None:
+            copied.append('"{}" holds {} lines the generated code runs after it, from "{}"'
+                          .format(name, count, tail[0]))
+        elif count:
+            trailed.append('"{}" ends with {} line(s) from "{}"'.format(name, count, tail[0]))
+            body = kept
         again = any(where[:2] == (path, index)
                     for where in written.get(name.rpartition(':')[2], ()))
         if again:
@@ -570,6 +620,10 @@ def main():
              'every arrival would reach the owner twice. Leave the call out: the body '
              'holds only what the arrival means to the owner. Nothing was written'
              .format(args.bodies, '; '.join(doubled)))
+    if copied:
+        fail('{}: {}. The generated code runs those lines right after the body, so they '
+             'would run twice. Leave them out: the body holds only what is particular to '
+             'it, or one // line. Nothing was written'.format(args.bodies, '; '.join(copied)))
     stacked = stacked_lines(sections, all_expectations(args.scenarios, expected))
     if stacked:
         fail('{}: section "{}" logs {} lines of scenarios.json\'s expectations one after '
@@ -577,6 +631,10 @@ def main():
              'only when the check that compared it prints it: give each its own step '
              '(design.json "steps") or its own check, and print it after that check. '
              'Nothing was written'.format(args.bodies, stacked[0][0], stacked[0][1]))
+    if trailed:
+        print('  {} body(ies) end with the lines the generated code runs right after the '
+              'body; they are left out of each, so they run once: {}'
+              .format(len(trailed), '; '.join(trailed)))
     if forwarded:
         print('  {} body(ies) end with the mOwner call the generated code makes right '
               'after the body; that last line is left out of each, so every arrival '

@@ -224,7 +224,7 @@ the project's own `scenarios.json`, assume no framework, and the agent never see
 | `repeat` | the normal scenario passes 10 times out of 10 |
 | `start-order` | it passes with the lead started 3 s before the rest |
 | `no-peer` | the lead alone exits non-zero within 30 s |
-| `peer-loss` | with another process killed at 25%, 50% and 75% of a run, the lead exits non-zero and never hangs |
+| `peer-loss` | with another process killed at 25%, 50% and 75% of a run, the lead exits non-zero and never hangs; a run too fast for those points has the peer frozen once registered, then killed while the rest wait on it (Linux and macOS) |
 | `cpu` | a normal run averages under 0.5 cores |
 | `programs`, `lines`, `timing` | as many programs as the task asks; every line of the task's scenario printed; the timed work not skipped |
 | `sanitize` | an ASan and UBSan rebuild finds nothing (`--verify sanitize`) |

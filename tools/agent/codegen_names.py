@@ -40,7 +40,7 @@ import xml.etree.ElementTree as ET
 HERE = os.path.dirname(os.path.abspath(__file__))
 JAR = os.path.join(os.path.dirname(HERE), 'codegen.jar')
 CACHE = os.path.join(tempfile.gettempdir(), 'areg-codegen-names')
-FORMAT = 8
+FORMAT = 9
 
 
 class CodegenError(Exception):
@@ -355,6 +355,22 @@ def _declarations(lines):
                    match.group('params'), match.group('tail'))
 
 
+def _brief(lines, index):
+    """The \\brief text of the comment block right above line `index`, as one line."""
+    start = index
+    while start > 0 and lines[start - 1].strip().startswith(('*', '/**')):
+        start -= 1
+    text, inside = [], False
+    for line in lines[start:index]:
+        part = line.strip().lstrip('/*').strip()
+        if part.startswith('\\'):
+            inside = part.startswith('\\brief')
+            part = part[len('\\brief'):].strip() if inside else ''
+        if inside and part:
+            text.append(part)
+    return ' '.join(text)
+
+
 def _entry(entries, kind, doc_name):
     return entries.setdefault(kind, {}).setdefault(
         doc_name, {'names': {}, 'params': {}, 'raw': {}, 'returns': {}, 'all': []})
@@ -489,12 +505,13 @@ def _machine(doc, headers):
             entry = _entry(kinds, kind, doc_name)
             entry['all'].append(name)
             _put(entry, 'call', returns, name, params)
+    lines = _read(headers, 'FSM.hpp', machine)
     for index, (returns, name, params, tail) in machine_class.get(
             '{} State Machine imported submachine triggers'.format(machine), []):
         entry = _entry(kinds, 'forward', name)
         entry['all'].append(name)
+        entry['brief'] = _brief(lines, index)
         _put(entry, 'call', returns, name, params)
-    lines = _read(headers, 'FSM.hpp', machine)
     for returns, name, params in _handlers(lines, machine):
         _put(_entry(kinds, 'handler', name), 'call', returns, name, params)
     pending = None

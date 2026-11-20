@@ -102,8 +102,8 @@ A provider body calls `send_set_paused(paused)`; it returns false until the work
 started. No `startup`, `shutdown` or `includes` line is needed. Two roles of such a
 provider run in threads of their own.
 
-`"start": false`: a body calls `start_sampler()`; `stop_sampler()` runs `sampler_release`
-(free a handler waiting on its own `areg::SyncEvent`), stops the thread, waits;
+`"start": false`: a body calls `start_sampler()`; `stop_sampler()` ends every `hold(ms)`
+a handler waits in (true: it returns), stops the thread, waits;
 stop then start replaces a stuck worker. Shutdown stops it.
 
 ## 5. Who sends to whom

@@ -2940,6 +2940,7 @@ def run():
     check_used_clients(report)
     check_removed_marker_body(report)
     check_owner_forward(report)
+    check_tail_repeat(report)
     check_answer_file(report)
     check_peer_lost_scenario(report)
     check_peer_hold_midrun(report)
@@ -5213,6 +5214,58 @@ def check_owner_forward(report):
                   'out, one inside a brace is refused, and a second fill passes')
 
 
+def check_tail_repeat(report):
+    """fill_markers.py leaves out the generated lines a body ends with, refuses a body that
+    holds two or more of them elsewhere, and fills the same bodies twice without refusing."""
+    holder = tempfile.mkdtemp()
+    src = os.path.join(holder, 'src')
+    os.makedirs(src)
+    source = os.path.join(src, 'Client.cpp')
+    sheet = os.path.join(holder, 'bodies.txt')
+    filler = os.path.join(ROOT, 'tools', 'agent', 'fill_markers.py')
+    skeleton = ('void Client::on_lost()\n{\n'
+                '    // TODO(you) lost: what a loss means.\n'
+                '    arm_deadline(cReconnect);\n'
+                '    mPace.stop_timer();\n}\n\n'
+                'void Client::startup(Thread & thread)\n{\n'
+                '    // TODO(you) startup: what starts.\n'
+                '    Component::startup(thread);\n}\n')
+
+    def fill(lost, startup='begin();\nComponent::startup(thread);'):
+        with open(sheet, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write('== lost\n' + lost + '\n== startup\n' + startup + '\n')
+        return subprocess.run([sys.executable, filler, '--bodies', sheet, '--src', src],
+                              cwd=holder, capture_output=True, text=True)
+
+    try:
+        with open(source, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(skeleton)
+        copied = 'report();\narm_deadline(cReconnect);\nmPace.stop_timer();'
+        first, again = fill(copied), fill(copied)
+        with open(source, encoding='utf-8') as handle:
+            text = handle.read()
+        arms, starts = text.count('arm_deadline(cReconnect);'), text.count('Component::startup(')
+        with open(source, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(skeleton)
+        inside = fill('arm_deadline(cReconnect);\nmPace.stop_timer();\nreport();')
+    finally:
+        shutil.rmtree(holder, ignore_errors=True)
+    if first.returncode != 0 or 'left out' not in first.stdout or arms != 1 or starts != 1:
+        report.fail('tail-repeat', 'a body ending with the lines the generated code runs '
+                    'after it is not filled with them left out (exit {}, {} deadline(s), {} '
+                    'base call(s)): {}'.format(first.returncode, arms, starts,
+                                               (first.stderr or first.stdout)[:200]))
+    elif again.returncode != 0:
+        report.fail('tail-repeat', 'a second fill of the same bodies is refused: {}'
+                    .format((again.stderr or again.stdout).strip()[:200]))
+    elif inside.returncode == 0:
+        report.fail('tail-repeat', 'a body holding the generated lines before code of its '
+                    'own is filled instead of refused')
+    else:
+        report.ok('tail-repeat', 'generated lines a body ends with are left out, the same '
+                  'lines before code of its own are refused, and a second fill passes')
+
+
 def check_removed_marker_body(report):
     """A body of a marker the regenerated design no longer has leaves bodies.txt, named;
     a section that never was a marker stays for fill_markers.py to refuse."""
@@ -7342,8 +7395,17 @@ def check_worker_declared(report):
                   ('the thread deleted', provider,
                    'delete_worker_thread(mSampler.consumer_name());'),
                   ('the stop on shutdown', provider, '    stop_sampler();'),
-                  ('its release section', worker, 'TODO(you) sampler_release:')]
+                  ('the rearm before the thread', provider,
+                   'mSampler.rearm();\n        mSamplerThread = create_worker_thread('),
+                  ('a manual-reset hold', worker, 'areg::SyncEvent mStopping{ true, false };'),
+                  ('the release of every hold', worker, 'mStopping.set_signaled();'),
+                  ('the hold a handler waits in', worker,
+                   'inline bool hold(uint32_t ms = areg::WAIT_INFINITE)'),
+                  ('the hold named in a handler hint', worker, 'hold() until stop_sampler()'),
+                  ('the event include', worker, '#include "areg/base/SyncPrimitives.hpp"')]
         lost = [what for what, text, needle in wanted if needle not in text]
+        if 'sampler_release' in worker:
+            lost.append('no release section')
         if 'REGISTER_WORKER_THREAD' in files.get('provider/main.cpp', ''):
             lost.append('no model line')
         if 'worker_thread_consumer(' in provider:
@@ -7366,7 +7428,7 @@ def check_worker_declared(report):
             return
         report.ok('worker-declared', 'a declared worker is generated with its class, timer, '
                   'events, sections, wiring, model line and source; with "start": false, '
-                  'start/stop helpers and a release section instead of the model line; an '
+                  'start/stop helpers and a generated hold instead of the model line; an '
                   'idle one is refused')
     finally:
         shutil.rmtree(holder, ignore_errors=True)

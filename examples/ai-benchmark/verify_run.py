@@ -19,9 +19,11 @@ import copy
 import json
 import os
 import re
+import signal
 import statistics
 import subprocess
 import sys
+import threading
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -46,6 +48,12 @@ LOSS_LATENCY = 0.25
 LOSS_TEARDOWN = 3.0
 # Lines of the lead's own output a failed loss point keeps as its evidence.
 LOSS_TAIL_LINES = 8
+# Seconds the frozen-peer point gives the peer to register before it is frozen.
+FROZEN_SETTLE = 3.0
+# Seconds from the start of the rest to the kill of the frozen peer.
+FROZEN_KILL = 1.5
+# Seconds run_scenarios waits between two processes it starts.
+RUN_DELAY = 0.5
 CPU_LIMIT = run_scenarios.CPU_LIMIT
 # The least time, in seconds, a normal run of a task with stated timing can take: half
 # of what its own waits add up to, so only a run that skips the timed work falls below.
@@ -86,7 +94,7 @@ REQUIREMENTS = {
 PROGRAMS_RE = re.compile(r'\b(two|three|four|five)\s+separate\s+programs\b', re.IGNORECASE)
 PROGRAM_COUNT = {'two': 2, 'three': 3, 'four': 4, 'five': 5}
 CLAIM_RE = re.compile(r'acceptance items passing\s*\|([^|\n]*)', re.IGNORECASE)
-COUNT_RE = re.compile(r'(\d+)\s+of\s+(?:the\s+)?(\d+)')
+COUNT_RE = re.compile(r'(\d+)(?:\s+of\s+(?:the\s+)?|\s*/\s*)(\d+)')
 # The lines a task says its programs print: a fenced block with the info string "lines".
 LINES_RE = re.compile(r'^```lines[ \t]*\n(.*?)^```', re.MULTILINE | re.DOTALL)
 PLACEHOLDER_RE = re.compile(r'<[^<>]+>')
@@ -325,7 +333,8 @@ def judge_timing(least, lead_time):
 def claim_counts(cell):
     """("n of m" shown by output, "c of k" of the (code) items or None) of one report
     cell, or None when it holds no count."""
-    counts = list(COUNT_RE.finditer(cell))
+    counts = [found for found in COUNT_RE.finditer(cell)
+              if not cell[found.end():].lstrip().lower().startswith('scenario')]
     if not counts:
         return None
     code = next((found for found in counts[1:]
@@ -542,6 +551,91 @@ def judge_loss_point(label, at, name, observed):
     return True, bad, '{} {}'.format(label, ', '.join(said))
 
 
+def judge_frozen_loss(observed, kill_at, offsets):
+    """The frozen-peer point. Returns (the loss was reached, it failed, the evidence).
+
+    offsets gives each process's start, in seconds after the first; kill_at is on the
+    same clock. A process that exits 0 before the kill finished without the peer and
+    proves nothing; one still running at the kill exits non-zero, and none hangs.
+    """
+    label = 'frozen peer killed at {:.1f}s'.format(kill_at)
+    if timed_out(observed):
+        return True, True, '{}: hung'.format(label)
+    exits = observed.get('exits') or {}
+    ended_at = observed.get('ended_at') or {}
+    if not exits:
+        return True, True, '{}: did not run: {}'.format(
+            label, observed.get('verdict') or 'no exit code')
+    said, bad, reached = [], False, False
+    for who in sorted(exits):
+        code, when = exits.get(who), ended_at.get(who)
+        if code is None or when is None:
+            reached = bad = True
+            said.append('{} never exited'.format(who))
+            continue
+        when += offsets.get(who, 0.0)
+        if code == 0 and when < kill_at + LOSS_LATENCY:
+            said.append('{} finished at {:.2f}s, before the loss'.format(who, when))
+            continue
+        reached = True
+        if code == 0:
+            bad = True
+            said.append('{} exit 0 {:.2f}s after the loss'.format(who, when - kill_at))
+        else:
+            said.append('{} exit {} {:.2f}s after the loss'.format(who, code, when - kill_at))
+    return reached, bad, '{}: {}'.format(label, ', '.join(said))
+
+
+def probe_frozen_loss(scenario, build_dirs):
+    """The peer started alone, frozen once it has registered, the rest started against
+    it, and the peer killed while they wait on it: a loss in the middle of the scenario
+    however fast a normal run is. Returns (reached, failed, evidence)."""
+    if not hasattr(signal, 'SIGSTOP'):
+        return False, False, 'frozen peer: no SIGSTOP on this system'
+    procs, lead = processes(scenario, keep_checks=False)
+    peer = next(p for p in procs if p is not lead)
+    rest = [p for p in procs if p is not peer]
+    binary = run_scenarios.find_binary(peer['binary'], build_dirs)
+    if binary is None:
+        return True, True, 'frozen peer: binary not found: {}'.format(peer['binary'])
+    router, handle, killer = None, None, None
+    try:
+        port = run_scenarios.router_port(build_dirs)
+        if scenario.get('router') and not run_scenarios.is_listening(port):
+            found = run_scenarios.find_service(
+                'mtrouter', list(build_dirs) + [run_scenarios.INSTALLED_SERVICES])
+            if found is None:
+                return True, True, 'frozen peer: mtrouter not found'
+            router, why = run_scenarios.start_service(found, port)
+            if router is None:
+                return True, True, 'frozen peer: ' + why
+        handle = subprocess.Popen([binary] + list(peer.get('args', [])),
+                                  stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
+                                  stderr=subprocess.STDOUT)
+        time.sleep(FROZEN_SETTLE)
+        if handle.poll() is not None:
+            return True, True, 'frozen peer: {} exited {} on its own before the loss'.format(
+                peer['name'], handle.returncode)
+        os.kill(handle.pid, signal.SIGSTOP)
+        kill_at = FROZEN_KILL + RUN_DELAY * (len(rest) - 1)
+        killer = threading.Timer(kill_at, handle.kill)
+        killer.start()
+        timeout = kill_at + (WAIT_LIMIT + LOSS_TEARDOWN) * len(rest) + LOSS_TEARDOWN
+        observed = {}
+        run_scenarios.run_scenario(variant(scenario, 'peer-loss-frozen', rest, timeout),
+                                   build_dirs, False, True, observed, wait_all=True)
+        offsets = dict((spec['name'], RUN_DELAY * index) for index, spec in enumerate(rest))
+    finally:
+        if killer is not None:
+            killer.cancel()
+        for owned in (handle, router):
+            if owned is not None and owned.poll() is None:
+                owned.kill()
+            if owned is not None:
+                owned.wait()
+    return judge_frozen_loss(observed, kill_at, offsets)
+
+
 def probe_peer_loss(scenario, build_dirs, lead_time):
     """The normal scenario with the first other process killed at several points.
 
@@ -573,8 +667,13 @@ def probe_peer_loss(scenario, build_dirs, lead_time):
         points.insert(0, 'a normal run takes {:.2f}s, so a point within {:.2f}s of its '
                          'end is not reached'.format(lead_time, LOSS_LATENCY))
     if reached == 0:
-        return result('peer-loss', None, 'not evaluated: no run reached the loss; '
-                                         + '; '.join(points))
+        progress('peer-loss: the peer is frozen once registered, then killed')
+        hit, bad, text = probe_frozen_loss(scenario, build_dirs)
+        points.append(text)
+        if not hit:
+            return result('peer-loss', None, 'not evaluated: no run reached the loss; '
+                                             + '; '.join(points))
+        return result('peer-loss', not bad, '; '.join(points))
     return result('peer-loss', failures == 0, '; '.join(points))
 
 
@@ -784,6 +883,20 @@ SELF_TEST_TIMING = (
     ('at the least time', 0.45, 0.45, True),
 )
 
+# (case, observed, expected (reached, failed)) of the frozen-peer point
+SELF_TEST_FROZEN = (
+    ('the survivor gives up', {'exits': {'c': 1}, 'ended_at': {'c': 21.6}}, (True, False)),
+    ('the survivor claims success', {'exits': {'c': 0}, 'ended_at': {'c': 1.9}}, (True, True)),
+    ('a survivor never exits', {'exits': {'c': 1, 'd': None}, 'ended_at': {'c': 2.0, 'd': None}},
+     (True, True)),
+    ('the run hung', {'verdict': 'timed out after 30s', 'exits': {'c': None}}, (True, True)),
+    ('nothing ran', {'verdict': 'binary not found: c'}, (True, True)),
+    ('the lead finished before the loss, the other gives up',
+     {'exits': {'m': 1, 'd': 0}, 'ended_at': {'m': 21.5, 'd': 0.05}}, (True, False)),
+    ('every process finished before the loss', {'exits': {'d': 0}, 'ended_at': {'d': 0.05}},
+     (False, False)),
+)
+
 # (case, report cell, expected claim_counts)
 SELF_TEST_CLAIMS = (
     ('the old row', ' 14 of 18. Not observed: x |', ('14 of 18', None)),
@@ -793,6 +906,12 @@ SELF_TEST_CLAIMS = (
      ('12 of 13', '5 of 5')),
     ('"of the" between the numbers', ' 14 of the 14 unmarked items. 3 of the 3 (code) items ',
      ('14 of 14', '3 of 3')),
+    ('slash counts', ' **14/14** unmarked items shown by output; **2/2** code items: (1) in '
+     'src/provider/A.hpp ', ('14 of 14', '2 of 2')),
+    ('slash counts with a letter', ' **n=14/15 (unmarked, shown by output)**; not shown: x. '
+     '**c=4/4 (code)**: in `src/a.fsml` ', ('14 of 15', '4 of 4')),
+    ('a count of scenarios', ' All 11 unmarked items are shown (7/7 scenarios exit as required) ',
+     None),
     ('no count', ' none |', None),
 )
 
@@ -831,6 +950,11 @@ def self_test():
         got = judge_timing(least, lead_time)['passed']
         if got is not expected:
             failures.append('timing, {}: {} expected, got {}'.format(name, expected, got))
+    for name, observed, expected in SELF_TEST_FROZEN:
+        got = judge_frozen_loss(observed, 1.5, {'d': 0.5})[:2]
+        if got != expected:
+            failures.append('peer-loss frozen, {}: {} expected, got {}'
+                            .format(name, expected, got))
     for name, cell, expected in SELF_TEST_CLAIMS:
         if claim_counts(cell) != expected:
             failures.append('claimed, {}: {} expected, got {}'.format(
@@ -841,7 +965,7 @@ def self_test():
                             .format(name, expected, ran(observed)))
     cases = (len(SELF_TEST_NO_PEER) + len(SELF_TEST_LOSS) + len(SELF_TEST_LINES) + 1
              + len(SELF_TEST_CHECKED) + len(SELF_TEST_TIMING) + len(SELF_TEST_RAN)
-             + len(SELF_TEST_CLAIMS))
+             + len(SELF_TEST_CLAIMS) + len(SELF_TEST_FROZEN))
     for line in failures:
         print('   FAIL  ' + line)
     print('verify_run --self-test: {} case(s), {} failure(s)'.format(cases, len(failures)))

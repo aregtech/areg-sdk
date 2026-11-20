@@ -1979,10 +1979,31 @@ def request_failed_report(name, who=None):
             '                    : ""));']
 
 
+FORWARD_ACTIVE = re.compile(r'whichever instance of (\w+) is active now')
+FORWARD_STATE = re.compile(r'hosted by state (\w+)')
+
+
+def forward_reach(entry):
+    """What a forwarded trigger reaches, as codegen.jar's brief states it, or ''."""
+    brief = entry.get('brief', '')
+    active, state = FORWARD_ACTIVE.search(brief), FORWARD_STATE.search(brief)
+    if active:
+        return '   -- the {} instance active now; false if none'.format(active.group(1))
+    if state:
+        return '   -- only the one {} hosts'.format(state.group(1))
+    return ''
+
+
+def forwarded(machine):
+    """The forwarded triggers of a host machine, the one reaching the active instance first."""
+    entries = machine.generated().entries('forward').items()
+    return sorted(entries, key=lambda item: not FORWARD_ACTIVE.search(item[1].get('brief', '')))
+
+
 def forward_calls(machine):
     """How a request handler reaches the hosted instances, as comment lines."""
     lines = []
-    for name, entry in machine.generated().entries('forward').items():
+    for name, entry in forwarded(machine):
         lines.append('    //   mFsm.{}({});'.format(name, ', '.join(
             part.split()[-1].lstrip('&*') for part in
             codegen_names.split_params(entry['params']['call']))))
@@ -2183,8 +2204,9 @@ def contract_lines(iface, document):
         for name, params in iface.triggers:
             out.append('  call     bool {}({})'.format(iface.spell('trigger', name),
                                                      iface.generated_params('trigger', name)))
-        for name, entry in iface.generated().entries('forward').items():
-            out.append('  call     bool {}({})'.format(name, entry['params']['call']))
+        for name, entry in forwarded(iface):
+            out.append('  call     bool {}({}){}'.format(name, entry['params']['call'],
+                                                      forward_reach(entry)))
         for name, kind in iface.attributes:
             out.append('  call     {} {}() / void {}({})'
                        .format(iface.cpp_type(kind)[0],
@@ -2710,6 +2732,7 @@ def provider_class(iface, cls, machine=None, timers=(), workers=()):
                   '    {',
                   '        if (m{}Thread != nullptr)'.format(worker['name']),
                   '            return false;',
+                  '        m{}.rearm();'.format(worker['name']),
                   '        m{0}Thread = create_worker_thread(m{0}.consumer_name(), m{0}, '
                   'master_thread());'.format(worker['name'])]
         if listens:
@@ -2946,8 +2969,7 @@ def workers_of(specs, iface):
                         'period': period, 'description': entry.get('description') or '',
                         'events': events, 'manual': manual,
                         'start': 'start_' + snake(name) if manual else None,
-                        'stop': 'stop_' + snake(name) if manual else None,
-                        'release': snake(name) + '_release' if manual else None})
+                        'stop': 'stop_' + snake(name) if manual else None})
     return workers
 
 
@@ -2999,6 +3021,14 @@ def worker_prelude(iface, worker):
     return lines
 
 
+def hold_hint(worker):
+    """The tail of a manual worker's handler hint: how a handler waits."""
+    if not worker['manual']:
+        return ''
+    return ('; a wait is hold(ms), or hold() until {}(): it returns true when the worker '
+            'stops, and the handler returns then'.format(worker['stop']))
+
+
 def worker_class(iface, worker):
     """The worker thread consumer: its timer, the events it receives, and a helper per
     event it sends to the provider."""
@@ -3023,15 +3053,18 @@ def worker_class(iface, worker):
                      .format(cls))
     lines += ['    {   }', '']
     if worker['manual']:
-        lines += ['    //! Makes a handler of this worker that waits on an object of its own return.',
-                  '    void release()',
+        lines += ['    //! Ends every hold() of this worker until rearm(); {}() calls it on the '
+                  'provider\'s thread.'.format(worker['stop']),
+                  '    inline void release()',
                   '    {',
-                  marker(worker['release'], 'what makes a handler of {} that waits on an '
-                         'object of its own return (an areg::SyncEvent member, unsignaled and auto-reset by default, it lock()s on: '
-                         'set_signaled() here); {}() calls it on the provider\'s thread '
-                         'before it stops the thread, so it touches only what is safe across '
-                         'threads, or one // line when no handler waits'
-                         .format(cls, worker['stop'])),
+                  '        mStopping.set_signaled();',
+                  '    }',
+                  '',
+                  '    //! Lets hold() wait again; {}() calls it before the thread exists.'
+                  .format(worker['start']),
+                  '    inline void rearm()',
+                  '    {',
+                  '        mStopping.reset();',
                   '    }',
                   '']
     if inbound:
@@ -3045,6 +3078,14 @@ def worker_class(iface, worker):
                       for event in inbound]
             lines += ['    }', '']
     lines += ['protected:']
+    if worker['manual']:
+        lines += ['    //! Waits until {}() or ms pass; true when the worker stops, and the handler '
+                  'returns then.'.format(worker['stop']),
+                  '    inline bool hold(uint32_t ms = areg::WAIT_INFINITE)',
+                  '    {',
+                  '        return mStopping.lock(ms);',
+                  '    }',
+                  '']
     if worker['period']:
         lines += ['    void register_event_consumers(areg::WorkerThread & workThread, '
                   'areg::ComponentThread & /*masterThread*/) final',
@@ -3060,10 +3101,10 @@ def worker_class(iface, worker):
                   '',
                   '    void process_timer(areg::Timer & timer) final',
                   '    {',
-                  marker(worker['tick'], 'what {} does every {} ms on its own thread{}'.format(
+                  marker(worker['tick'], 'what {} does every {} ms on its own thread{}{}'.format(
                       cls, worker['period'], ': read, then {} to the provider'.format(
                           ' or '.join('send_{}(...)'.format(event['name']) for event in outbound))
-                      if outbound else '')),
+                      if outbound else '', hold_hint(worker))),
                   '    }',
                   '']
     for event in inbound:
@@ -3077,7 +3118,7 @@ def worker_class(iface, worker):
                   '    void {}({})'.format(event['slot'], worker_args(iface, event['params'])[0]),
                   '    {',
                   marker(event['slot'], 'what {} does with {} from the provider, on its own '
-                         'thread'.format(cls, event['name'])),
+                         'thread{}'.format(cls, event['name'], hold_hint(worker))),
                   '    }',
                   '']
     for event in outbound:
@@ -3100,6 +3141,9 @@ def worker_class(iface, worker):
     if worker['period']:
         lines += ['    areg::Timer mTick;    //!< Fires every {} ms on this worker\'s thread.'
                   .format(worker['period']), '']
+    if worker['manual']:
+        lines += ['    areg::SyncEvent mStopping{{ true, false }};    //!< Signaled from {}() until '
+                  '{}().'.format(worker['stop'], worker['start']), '']
     lines += ['    {}() = delete;'.format(cls),
               '    AREG_NOCOPY_NOMOVE({});'.format(cls),
               '};']
@@ -3114,7 +3158,8 @@ WORKER_INCLUDES = ['#include "areg/component/EventTemplate.hpp"',
 def worker_files(iface, worker, include_root, own=False):
     """The .hpp and .cpp of one worker thread consumer; own adds an includes marker."""
     lines = worker_class(iface, worker)
-    includes = WORKER_INCLUDES + timer_includes(lines) + \
+    includes = WORKER_INCLUDES + (['#include "areg/base/SyncPrimitives.hpp"']
+                                  if worker['manual'] else []) + timer_includes(lines) + \
         ['', '#include "{}/{}.hpp"'.format(include_root, iface.name)] + \
         ([includes_marker(worker['slot'], 'worker')] if own else [])
     return component_files(worker['name'], worker['description'] or
