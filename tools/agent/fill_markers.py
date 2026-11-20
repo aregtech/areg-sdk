@@ -564,6 +564,7 @@ def main():
     copied = []
     trailed = []
     forwarded = []
+    trimmed = {}
     expected = {}
     replaced = []
     changed = []
@@ -599,6 +600,7 @@ def main():
         if shorter is not None:
             forwarded.append('"{}" ends with mOwner.{}()'.format(name, shorter[0]))
             body = shorter[1]
+            trimmed[name] = body
         twice = sorted(set(OWNER_CALL.findall('\n'.join(text.split('//')[0]
                                                         for text in body))) & set(after))
         if twice:
@@ -614,6 +616,7 @@ def main():
         elif count:
             trailed.append('"{}" ends with {} line(s) from "{}"'.format(name, count, tail[0]))
             body = kept
+            trimmed[name] = body
         again = any(where[:2] == (path, index)
                     for where in written.get(name.rpartition(':')[2], ()))
         if again:
@@ -641,11 +644,13 @@ def main():
              'Nothing was written'.format(args.bodies, stacked[0][0], stacked[0][1]))
     if trailed:
         print('  {} body(ies) end with the lines the generated code runs right after the '
-              'body; they are left out of each, so they run once: {}'
+              'body; they are left out of each, in the source and in the bodies file, so '
+              'they run once: {}'
               .format(len(trailed), '; '.join(trailed)))
     if forwarded:
         print('  {} body(ies) end with the mOwner call the generated code makes right '
-              'after the body; that last line is left out of each, so every arrival '
+              'after the body; that last line is left out of each, in the source and in '
+              'the bodies file, so every arrival '
               'reaches the owner once: {}'.format(len(forwarded), '; '.join(forwarded)))
 
     if expected and not args.dry_run:
@@ -692,6 +697,17 @@ def main():
                                 if part)))
         for number, name, count in landed:
             print('  {:<28} line {:<5} {} line(s)'.format(name, number, count))
+
+    # A body shortened above is kept shortened in the bodies file too, so the file and
+    # the source hold the same body.
+    if trimmed:
+        patch = [line for name, body in trimmed.items() for line in ['== ' + name] + body + ['']]
+        if folded is not None:
+            folded = (fold(folded[0], patch)[0], folded[1], folded[2])
+        elif not args.dry_run:
+            lines = fold(read_lines(args.bodies), patch)[0]
+            with open(args.bodies, 'w', encoding='utf-8') as handle:
+                handle.write('\n'.join(lines).rstrip('\n') + '\n')
 
     if folded is not None:
         if not args.dry_run:

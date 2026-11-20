@@ -2353,17 +2353,17 @@ def type_lines(iface):
         spelling = '{}::{}'.format(space, type_name) if space else type_name
         out.append(type_line(space, type_name, kind, ' (from {})'.format(path),
                              iface.struct_fields.get(spelling, []),
-                             iface.containers.get(spelling, '')))
+                             iface.containers.get(spelling, ''), iface))
     for type_name, kind in iface.types:
         out.append(type_line(iface.name, type_name, kind, '',
                              iface.struct_fields.get(type_name, []),
-                             iface.containers.get(type_name, '')))
+                             iface.containers.get(type_name, ''), iface))
     for name, kind in iface.constants:
         out.append('  constant {}::{} of type {}'.format(iface.name, name, kind))
     return out
 
 
-def type_line(space, type_name, kind, origin, fields=(), container=''):
+def type_line(space, type_name, kind, origin, fields=(), container='', iface=None):
     """One declared type: its C++ spelling, its fields, and what the generator gives it."""
     scope = '{}::'.format(space) if space else ''
     full = scope + type_name
@@ -2371,9 +2371,14 @@ def type_line(space, type_name, kind, origin, fields=(), container=''):
         return ('  enum class {}, with const char * {}as_string({} value), the value\'s own '
                 'name as declared{}'.format(full, scope, full, origin))
     if kind == 'structure':
-        named = ', '.join(field for field, _ in fields)
-        return '  struct {}, public fields {}, with a field-by-field == and <<{}'.format(
-            full, named or 'none', origin)
+        if not fields:
+            return '  struct {}, public fields none, with a field-by-field == and <<{}'.format(
+                full, origin)
+        named = ', '.join('{} {}'.format(iface.cpp_type(field_type)[0], field)
+                          for field, field_type in fields)
+        return ('  struct {}, public fields {}; constructed with no argument or from every '
+                'field in this order, with a field-by-field == and <<{}'.format(
+                    full, named, origin))
     if kind == 'imported':
         return '  {} names the type your own header declares{}'.format(full, origin)
     if container:
