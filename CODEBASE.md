@@ -146,8 +146,9 @@ suffix: `.elf` on Linux, `.mac` on macOS, `.exe` on Windows. The framework libra
 and `mtrouter` are placed there too, so a multi process project needs nothing
 installed.
 
-**This repository's own build** uses the same layout: executables and shared libraries
-in `build/bin/`, static libraries in `build/lib/`.
+**This repository's own build** uses the same layout under its build directory:
+executables and shared libraries in `bin/`, static libraries in `lib/`. That is
+`build/` for `cmake -B build`, and `product/build/<configuration>/` for `tools/build.sh`.
 
 Common CMake options:
 

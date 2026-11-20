@@ -90,6 +90,9 @@ FEATURES = [
     ('consumer',      'implementing a service consumer',
      '31-consumer.md',          'service_connected',   '01-local-single-process',
      ('examples/03_helloservice',)),
+    ('failures',      'a failed request, invalid data and a rejected call',
+     '31-consumer.md',          '_failed(areg::ResultType', '01-local-single-process',
+     ()),
     ('model',         'registering components into threads',
      '32-model.md',             'BEGIN_MODEL',         '01-local-single-process',
      ('examples/03_helloservice',)),
@@ -504,7 +507,7 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # set growing one locally-justified paragraph at a time: raising this number is a
 # deliberate edit in a reviewed file, and the commit that raises it says what it bought.
 # The headroom is deliberately small: a ceiling with room in it ratchets nothing.
-CORPUS_CEILING = 204100
+CORPUS_CEILING = 204280
 
 PAGE_CEILING = 8 * KB
 # The stop the exception mechanism did not have. An entry in .budgets raises the
@@ -781,8 +784,7 @@ def claims():
         r'thirty|forty|fifty)(-\w+)?\s+(complete applications?|examples)\b',
         re.IGNORECASE)
     counted = []
-    for where in ('AGENTS.md', 'CODEBASE.md', 'docs/agent/41-examples.md',
-                  'docs/agent/51-debug.md'):
+    for where in ('AGENTS.md', 'CODEBASE.md', 'docs/agent/51-debug.md'):
         found = counting.search(read(*where.split('/')))
         if found:
             counted.append(where + ': "' + found.group(0) + '"')
@@ -2974,7 +2976,6 @@ def run():
 # not apply to an already-created project outside the SDK are named below.
 PROJECT_ROUTING_EXEMPT = {
     'docs/agent/10-new-project.md',   # the project exists; setup_project.py made it
-    'docs/agent/41-examples.md',      # in-tree SDK examples, not an outside project
     'docs/agent/35-sqlog.md',         # reached from 34-logging.md
     'docs/agent/36-config.md',        # reached from 50-running.md
 }

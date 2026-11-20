@@ -47,13 +47,4 @@ bool SocketAccepted::operator == (const SocketAccepted & other) const noexcept
     return (this == &other) || ( is_valid() && (mSocket.value() == other.handle()) );
 }
 
-bool SocketAccepted::set_address(const char * /*hostName*/, uint16_t /*portNr*/, bool /*isServer*/)
-{
-    return false;
-}
-
-void SocketAccepted::set_address(const areg::SocketAddress & /*newAddress*/)
-{
-}
-
 } // namespace areg

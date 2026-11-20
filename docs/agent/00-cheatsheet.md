@@ -3,8 +3,9 @@
 What an ordinary task still needs after the tools have run. The documents come from
 `gen_docs.py --spec`, and the components, the model and `main()` from
 `gen_skeleton.py --app`, so none of them is here: `10-new-project.md` has the layout
-those tools write, and `--contract` prints the generated names of a real document in
-a few hundred tokens. This page carries what no tool writes.
+those tools write, and `gen_skeleton.py --doc <document> --contract` prints a
+document's generated names in a few hundred tokens. This page carries what no tool
+writes.
 
 ## Generated names, from the document
 

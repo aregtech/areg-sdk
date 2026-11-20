@@ -1340,3 +1340,19 @@ TEST( OptionParserTest, word_before_options_needs_a_nameless_first_setup )
     EXPECT_EQ( parser.options( )[ 0u ].inCommand, 1 );
     EXPECT_EQ( parser.options( )[ 1u ].inCommand, 2 );
 }
+
+//!< A setup entry left at its defaults has no names, no command, no valid fields and empty ranges.
+TEST( OptionParserTest, default_setup_entry_declares_nothing )
+{
+    const areg::ext::OptionParser::OptionSetup setup{ };
+    EXPECT_TRUE( setup.optShort.empty( ) );
+    EXPECT_TRUE( setup.optLong.empty( ) );
+    EXPECT_EQ( setup.optCmmand, -1 );
+    EXPECT_EQ( setup.optField, 0u );
+    EXPECT_EQ( setup.optRangeInt.valMin, 0 );
+    EXPECT_EQ( setup.optRangeInt.valMax, 0 );
+    EXPECT_EQ( setup.optRangeFloat.valMin, 0.0f );
+    EXPECT_EQ( setup.optRangeFloat.valMax, 0.0f );
+    EXPECT_TRUE( setup.optRangeStrings.empty( ) );
+    EXPECT_FALSE( areg::ext::OptionParser::has_range( setup.optField ) );
+}

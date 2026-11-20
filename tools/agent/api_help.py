@@ -32,7 +32,8 @@ FRAMEWORK = os.path.join(ROOT, 'framework', 'areg')
 EXTENSION = os.path.join(ROOT, 'framework', 'aregextend')
 
 sys.path.insert(0, HERE)
-from gen_skeleton import CLASSES as DESIGN_CLASSES, CLASS_HEADERS, WORKSHEET  # noqa: E402
+from gen_skeleton import CLASSES as DESIGN_CLASSES, CLASS_HEADERS, WORKSHEET, snake  # noqa: E402
+import check_contract  # noqa: E402
 
 # The stand-ins api.json spells a generated member name with: request_foo, on_baz_update.
 STAND_INS = ('foo', 'bar', 'baz')
@@ -738,6 +739,54 @@ REPLACED_BY = {
 }
 
 
+def noted_shapes(name):
+    """The api.json member entries whose note names this word, as (entry, side, spec)."""
+    try:
+        with open(CONTRACT, encoding='utf-8') as handle:
+            entries = json.load(handle).get('members') or []
+    except (ValueError, OSError):
+        return []
+    word = re.compile(r'(?<![\w.]){}\b'.format(re.escape(name)))
+    found = []
+    for entry in entries:
+        for side in ('provider', 'consumer'):
+            spec = entry.get(side)
+            if isinstance(spec, dict) and word.search(spec.get('note') or ''):
+                found.append((entry, side, spec))
+    return found
+
+
+def answer_recalled(headers, name, full):
+    """A camelCase name of areg 1.x: what api.json says replaced it, or the snake_case
+    member the headers declare. False when neither knows it."""
+    if not re.search(r'[a-z0-9][A-Z]', name) or '_' in name:
+        return False
+    noted = noted_shapes(name)
+    if noted:
+        declared = dict.fromkeys(entry['declared_as'] for entry, _, _ in noted)
+        print('"{}" is gone; areg 1.x spelled members camelCase. docs/agent/api.json "{}" '
+              'names what replaces it:'.format(name, '", "'.join(declared)))
+        for _, side, spec in noted:
+            for line in spec_line(side, spec):
+                print(line)
+        return True
+    for instead in dict.fromkeys((check_contract.LEGACY_ACCESSORS.get(name), snake(name))):
+        if instead and (declares(headers, instead) or catalogued(instead)):
+            print('"{}" is gone; areg 1.x spelled members camelCase. areg declares "{}":'
+                  .format(name, instead))
+            print('')
+            if not answer_member(headers, instead, full):
+                print('docs/agent/members.json lists it; a macro declares it.')
+            return True
+    instead = snake(name)
+    if any(pattern.match(instead) for pattern, _, _, _ in generated_shapes()):
+        print('"{}" is gone; areg 1.x spelled members camelCase. Its snake_case form:'
+              .format(name))
+        print('')
+        return answer_generated(instead)
+    return False
+
+
 def search(headers, word):
     """Every member, class, enumeration, enumerator and constant name holding a word.
 
@@ -937,6 +986,9 @@ def main():
                 print('')
                 print('{}  ({})'.format(where, path))
                 print('  {}'.format(signature))
+                continue
+            if answer_recalled(headers, name, args.full):
+                missing += 1
                 continue
             print('"{}" is not a member, a class, an enumeration, a constant or a macro in the '
                   'public areg headers, and appears in no declaration they carry.'

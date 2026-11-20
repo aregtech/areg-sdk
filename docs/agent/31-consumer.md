@@ -56,10 +56,8 @@ protected:
 
     void request_hello_service_failed(areg::ResultType reason) final
     {
-        if (is_connected())
-        {
-            request_hello_service(role_name());         // retry
-        }
+        GLOBAL_ERR("%s", areg::as_string(reason)); // retry? api_help.py <reason>
+        areg::Application::signal_quit();
     }
 };
 ```

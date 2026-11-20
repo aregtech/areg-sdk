@@ -600,15 +600,22 @@ void StubBase::error_all_requests()
 void StubBase::cancel_all_requests()
 {
     const uint32_t numOfReqs= number_of_requests();
-    const uint32_t* reqIds  = request_ids();
     for ( uint32_t i = 0; i < numOfReqs; ++ i )
     {
         error_request( areg::CallType::Request, i, true );
-        const uint32_t respIndex{ mInterface.response_index(i) };
-        if (respIndex != areg::RESPONSE_INDEX_NONE)
-        {
-            _cancel_sessions(reqIds[i], _slot(areg::CallType::Response, respIndex));
-        }
+        cancel_sessions(i);
+    }
+}
+
+void StubBase::cancel_sessions( uint32_t reqIndex )
+{
+    if (reqIndex >= number_of_requests())
+        return;
+
+    const uint32_t respIndex{ mInterface.response_index(reqIndex) };
+    if (respIndex != areg::RESPONSE_INDEX_NONE)
+    {
+        _cancel_sessions(request_ids()[reqIndex], _slot(areg::CallType::Response, respIndex));
     }
 }
 

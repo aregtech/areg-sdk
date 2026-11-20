@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema#",
   "title": "AREG agent contract",
   "description": "Machine-readable form of the rules stated in docs/agent/. Prose remains authoritative; this file exists so a tool can check generated code mechanically instead of an agent re-reading a page. Keep in step with 20-service-interface.md section 3 and 31-consumer.md section 3.",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "language_level": "C++17",
   "namespace": "areg",
   "sdk": {
@@ -197,6 +197,18 @@
           "areg::ResultType"
         ]
       }
+    },
+    {
+      "declared_as": "Request foo (provider failure)",
+      "provider": {
+        "member": [
+          "request_foo_reject",
+          "request_foo_cancel"
+        ],
+        "usage": "call",
+        "note": "Declared only when the request has a response. request_foo_reject(): the caller the next response would answer receives RequestError; a session released by unblock_current_request() stays valid. request_foo_cancel(): every open call, released sessions included, receives RequestCanceled, and prepare_response(session) then returns false. Both reach the consumer in request_foo_failed. For all at once: error_all_requests() fails every pending call and invalidates every attribute, cancel_all_requests() cancels every open call. errorRequest(msgId, cancel) of areg 1.x is gone."
+      },
+      "consumer": null
     },
     {
       "declared_as": "Response foo",
@@ -438,7 +450,7 @@
       "RequestUnsupported": {
         "cause": "the provider has no request with this ID, or the request arrived without all its parameters: provider and consumer were not built from one definition of the interface",
         "raised_by": "provider's generated code",
-        "retry": "no: regenerate and rebuild every process from one definition"
+        "retry": "no: build_project.py, then restart every process, all from one definition"
       },
       "ServiceUnavailable": {
         "cause": "the request was sent before the service was connected, or the service went away while the call was open",

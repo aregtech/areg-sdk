@@ -338,11 +338,7 @@ set(AREG_LIB_TYPE "static")
 cmake_minimum_required(VERSION 3.20)
 project(myapp)
 
-# Configure Areg SDK
-option(AREG_EXAMPLES "Build examples" OFF)
-option(AREG_TESTS "Build tests" OFF)
-
-# Fetch Areg SDK
+# Fetch Areg SDK; its examples and tests are OFF when it is fetched
 include(FetchContent)
 FetchContent_Declare(areg-sdk
     GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
@@ -595,17 +591,17 @@ cmake -B ./build -DAREG_ARCH=x86
 
 ### Options Not Applied
 
-**Problem:** `AREG_EXAMPLES=OFF` but examples still build.  
+**Problem:** `AREG_LOGGING=OFF` but logging is still compiled in.  
 **Solution:**  
-*Set options BEFORE fetching:*
+*Set options BEFORE areg is made available:*
 ```cmake
 # Correct order
-option(AREG_EXAMPLES "Build examples" OFF)
-FetchContent_Declare(areg-sdk ...)
+option(AREG_LOGGING "Enable logging" OFF)
+FetchContent_MakeAvailable(areg-sdk)
 
 # Wrong order - options ignored
-FetchContent_Declare(areg-sdk ...)
-option(AREG_EXAMPLES "Build examples" OFF)  # Too late
+FetchContent_MakeAvailable(areg-sdk)
+option(AREG_LOGGING "Enable logging" OFF)  # Too late
 ```
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>

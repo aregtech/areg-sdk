@@ -162,11 +162,56 @@ def find_service(name, directories):
 def port_owner(port):
     """The executable that listens on the TCP port, or None where the system does not tell.
 
-    Linux only: the listening socket in /proc/net/tcp*, then the process holding it.
-    A process of another user is not readable and gives None.
+    Linux: the listening socket in /proc/net/tcp*, then the process holding it.
+    Windows: Get-NetTCPConnection and Get-Process. Elsewhere: lsof. A process of
+    another user is often not readable and gives None.
     """
-    if not sys.platform.startswith('linux'):
+    if sys.platform.startswith('linux'):
+        return linux_port_owner(port)
+    if sys.platform == 'win32':
+        return windows_port_owner(port)
+    return lsof_port_owner(port)
+
+
+def windows_port_owner(port):
+    """port_owner() from Get-NetTCPConnection and Get-Process."""
+    script = ('(Get-Process -ErrorAction Stop -Id (Get-NetTCPConnection -ErrorAction Stop '
+              '-State Listen -LocalPort {} | Select-Object -First 1).OwningProcess).Path'
+              .format(int(port)))
+    found = command_output(['powershell', '-NoProfile', '-NonInteractive', '-Command', script])
+    return (found or '').strip() or None
+
+
+def lsof_port_owner(port):
+    """port_owner() from lsof: the listening process, then the program its txt entry names."""
+    found = command_output(['lsof', '-nP', '-a', '-iTCP:{}'.format(int(port)),
+                            '-sTCP:LISTEN', '-Fp'])
+    pid = next((line[1:] for line in (found or '').splitlines()
+                if line.startswith('p') and line[1:].isdigit()), None)
+    if pid is None:
         return None
+    return lsof_executable(command_output(['lsof', '-nP', '-a', '-p', pid, '-d', 'txt',
+                                           '-Fn']))
+
+
+def lsof_executable(fields):
+    """The first file name of lsof -Fn field output: the program a txt query lists first."""
+    return next((line[1:] for line in (fields or '').splitlines()
+                 if line.startswith('n') and len(line) > 1), None)
+
+
+def command_output(command, timeout=10):
+    """The standard output of a command that exited 0, or None."""
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=timeout,
+                                stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return result.stdout if result.returncode == 0 else None
+
+
+def linux_port_owner(port):
+    """port_owner() from /proc: the listening socket's inode, then the process holding it."""
     sockets = set()
     for table in ('/proc/net/tcp', '/proc/net/tcp6'):
         try:
@@ -204,7 +249,8 @@ def foreign_router(port, searched):
     if owner.endswith(' (deleted)'):
         return ' by {}, whose binary was replaced or deleted after it started'.format(
             owner[:-len(' (deleted)')].replace(os.sep, '/')), False
-    if own is not None and os.path.realpath(own) == owner:
+    if own is not None and os.path.normcase(os.path.realpath(own)) == \
+            os.path.normcase(os.path.realpath(owner)):
         return " by this project's {}".format(owner.replace(os.sep, '/')), True
     return ' by {}'.format(owner.replace(os.sep, '/')), False
 
@@ -1414,11 +1460,20 @@ def self_test():
                                                      listener.close()),
                                      daemon=True).start()
                 passed, _, detail = run_scenario(foreign, [root], False, True)
+                by_lsof = lsof_port_owner(ROUTER_PORT) if not stops and \
+                    sys.platform.startswith('linux') and shutil.which('lsof') else None
                 if not stops:
                     listener.close()
                 stopped = ', and it stopped during the scenario' in detail
-                named = not sys.platform.startswith('linux') or stops or \
-                    os.path.realpath(sys.executable).replace(os.sep, '/') in detail
+                interpreters = {os.path.realpath(path).replace(os.sep, '/') for path in
+                                (sys.executable, getattr(sys, '_base_executable', ''))
+                                if path}
+                identified = sys.platform == 'win32' or sys.platform.startswith('linux')
+                named = stops or not identified or \
+                    any(path in detail for path in interpreters)
+                if by_lsof is not None and by_lsof != os.path.realpath(sys.executable):
+                    named = False
+                    detail += ' / lsof named {}'.format(by_lsof)
                 if passed or 'was not started by this run' not in detail \
                         or FOREIGN_ROUTER_HINT not in detail \
                         or stopped != stops or not named:

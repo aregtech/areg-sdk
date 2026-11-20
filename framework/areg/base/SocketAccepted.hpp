@@ -79,23 +79,12 @@ private:
     bool create() final;
 
     /**
-     * \brief   Sets socket address via hostname resolution. No-op for accepted sockets; address is
-     *          set automatically when accepting the connection.
-     *
-     * \param   hostName    Host name or IP address to set. If a name is specified, it will be
-     *                      resolved to an IP address.
-     * \param   portNr      Valid port number for the socket connection.
-     * \param   isServer    Flag indicating whether the name should be resolved for a server or client.
-     * \return  Returns true if the address was successfully resolved and set.
+     * \brief   The address of an accepted socket is the peer's, set when the connection is accepted.
+     *          It cannot be set.
      **/
-    bool set_address( const char * hostName, uint16_t portNr, bool isServer );
-
-    /**
-     * \brief   Sets socket address. Address should be invalid or already resolved.
-     *
-     * \param   newAddress      The new address to set.
-     **/
-    void set_address( const areg::SocketAddress & newAddress );
+    bool set_address( const char * hostName, uint16_t portNr, bool isServer ) = delete;
+    bool set_address( const String & hostName, uint16_t portNr, bool isServer ) = delete;
+    void set_address( const areg::SocketAddress & newAddress ) = delete;
 };
 
 } // namespace areg

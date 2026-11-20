@@ -75,6 +75,7 @@ namespace
         std::string     workerName;
         bool            started{ false };
         bool            workerStarted{ false };
+        bool            boundToHost{ false };   //!< The worker's binding component is its host.
         bool            workerStopped{ false };
         int             processed{ 0 };
         std::thread::id componentThread{};
@@ -204,9 +205,11 @@ namespace
                 WtWorkEvent::add_listener(static_cast<WtWorkEventConsumer &>(mWorker), workerThread);
                 const std::string name{ workerThread.name().as_string() };
                 const uint32_t watchdog{ workerThread.watchdog_timeout() };
-                observed().update(mRole, [name, watchdog](Seen & seen)
+                const bool bound{ &workerThread.binding_component() == static_cast<areg::Component *>(this) };
+                observed().update(mRole, [name, watchdog, bound](Seen & seen)
                     {
                         seen.workerStarted = true;
+                        seen.boundToHost = bound;
                         seen.workerName = name;
                         seen.watchdog = watchdog;
                     });
@@ -423,6 +426,7 @@ TEST(WorkerThreadTest, EntryNameStartsTheWorker)
         const Seen seen{ observed().copy("WtEntry") };
         EXPECT_EQ(seen.askedName, "WtEntry:WtAnyRegisteredName");
         EXPECT_TRUE(seen.workerStarted);
+        EXPECT_TRUE(seen.boundToHost);
         EXPECT_EQ(seen.workerName, "WtEntryThread:WtWorkerThread");
         EXPECT_EQ(seen.watchdog, areg::WATCHDOG_IGNORE);
         EXPECT_NE(seen.workerThread, std::thread::id{});

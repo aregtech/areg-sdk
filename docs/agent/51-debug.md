@@ -31,7 +31,7 @@ of what the tool printed.
 | an action on a nested `Final` state sees the composite's data, not the state the machine goes to | the `Final` entry runs before the `OnFinal` event leaves the composite | `22-state-machine.md`, and `check_contract.py` rule `108` |
 | a component with several timers where `process_timer` runs but every branch is skipped | the branches compare `timer.name()` to the constructor string; the name is generated from it and never equal. Compare `&timer` to the member | `33-timers.md` section 2 |
 | `RequestBusy` in a `request_*_failed` handler | the provider answers later without releasing the request first | `30-provider.md` section 3 |
-| `RequestUnsupported` in a `request_*_failed` handler | provider and consumer were not built from one definition of the interface | regenerate, then rebuild every process |
+| `RequestUnsupported` in a `request_*_failed` handler | provider and consumer were not built from one definition of the interface | `build_project.py`; restart every process |
 | `MessageUndelivered` in a `request_*_failed` handler | the request did not reach the provider: the router connection is not up, a send failed, or the provider is not started, already stopped, or its queue refused it | "The consumer never connects" below |
 | any other reason in a `request_*_failed` handler | -- | `api_help.py <reason>`: its cause, and whether to retry |
 | a run that is correct up to one step and then stalls there, waiting for an attribute update | the value waited for is the one already held, or the phase waited for is not a value of the attribute at all: `OnChange` sent nothing | "An attribute update that is never sent" below |

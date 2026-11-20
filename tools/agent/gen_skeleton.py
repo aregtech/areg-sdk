@@ -2222,6 +2222,10 @@ def contract_lines(iface, document):
             line += ', overrides {}({}) if it fails'.format(
                 iface.spell('request', name, 'failed'),
                 iface.generated_params('request', name, 'failed').strip().rsplit(' ', 1)[0])
+        if iface.generated().has('request', name, 'reject'):
+            line += '; provider calls {}() to reject it (RequestError), {}() to cancel every ' \
+                    'open call (RequestCanceled)'.format(iface.spell('request', name, 'reject'),
+                                                         iface.spell('request', name, 'cancel'))
         out.append(line)
     for name, params in iface.responses:
         line = '  provider calls {}({}); consumer overrides it'.format(

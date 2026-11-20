@@ -15,10 +15,12 @@
 #include "areg/component/Model.hpp"
 #include "areg/component/ProxyBase.hpp"
 #include "areg/component/ProxyListener.hpp"
+#include "areg/component/RemoteEventConsumer.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/component/StubBase.hpp"
 #include "areg/component/private/ServiceManagerEvents.hpp"
+#include "areg/component/private/TimerEventData.hpp"
 
 #if defined(AREG_TEST_PRIVATE_POSIX)
     #include "areg/component/private/ServiceManagerEventProcessor.hpp"
@@ -1006,3 +1008,30 @@ TEST(ComponentCoreCoverageTest, processor_unregisters_providers_by_thread_number
     );
 }
 #endif  // defined(AREG_TEST_PRIVATE_POSIX)
+
+//!< A remote event consumer hands on only remote requests, notify requests and responses; any other event reaches no handler.
+TEST(RemoteEventConsumerCoverageTest, an_event_of_another_type_reaches_no_handler)
+{
+    class Counting final : public areg::RemoteEventConsumer
+    {
+    public:
+        uint32_t calls{ 0u };
+
+    protected:
+        void process_request_event(areg::ServiceRequestEvent & /*reqEvent*/) final { ++calls; }
+        void process_notify_request(areg::ServiceRequestEvent & /*reqNotifyEvent*/) final { ++calls; }
+        void process_response_event(areg::ServiceResponseEvent & /*respEvent*/) final { ++calls; }
+    };
+
+    Counting consumer;
+    areg::Event custom(areg::EventType::EventCustomExternal);
+    static_cast<areg::EventConsumer &>(consumer).start_event_processing(custom);
+    EXPECT_EQ(consumer.calls, 0u);
+}
+
+//!< An event that is not a timer event names no timer.
+TEST(TimerEventCoverageTest, an_event_that_is_no_timer_event_names_no_timer)
+{
+    const areg::Event custom(areg::EventType::EventCustomExternal);
+    EXPECT_EQ(areg::TimerEvent::timer_from_event(custom), nullptr);
+}

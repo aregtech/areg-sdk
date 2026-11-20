@@ -84,6 +84,7 @@ namespace
         using StubBase::attribute_ids;
         using StubBase::broadcast_ids;
         using StubBase::cancel_current_request;
+        using StubBase::cancel_sessions;
         using StubBase::clear_all_listeners;
         using StubBase::impl_version;
         using StubBase::number_of_attributes;
@@ -198,6 +199,8 @@ namespace
             StubListenerList listeners;
             if (find_listeners(response, listeners) > 0)
                 send_error_notification(listeners, LocalResponseEvent(listeners[0].proxy(), result, request, CallType::Request, SEQUENCE_NUMBER_NOTIFY, 0));
+            else if (result == ResultType::RequestCanceled)
+                cancel_sessions(mInterface.find(CallType::Request, request));
         }
 
         //!< Returns how many times a response with the result was created for the message.
@@ -843,6 +846,45 @@ TEST_F(StubBaseContractTest, cancel_all_requests_cancels_sessions_without_waitin
     EXPECT_EQ(1u, mStub.attempts(REQUESTS[1], ResultType::RequestCanceled));
     EXPECT_FALSE(mStub.prepare_response(session));
     EXPECT_FALSE(mStub.prepare_response(other));
+}
+
+//!< A cancel of one request with nothing left in its response slot cancels the released sessions of that request only.
+TEST_F(StubBaseContractTest, request_cancel_cancels_released_sessions_without_waiting_listeners)
+{
+    ASSERT_TRUE(mStub.begin_request(mFirst, 41));
+    const SessionID session = mStub.unblock_current_request();
+    ASSERT_TRUE(mStub.begin_request(mSecond, 43, RESPONSES[1]));
+    const SessionID other = mStub.unblock_current_request();
+    mStub.fail_request(ResultType::RequestCanceled);
+    EXPECT_EQ(1u, mStub.attempts(REQUESTS[0], ResultType::RequestCanceled));
+    EXPECT_EQ(0u, mStub.attempts(REQUESTS[1], ResultType::RequestCanceled));
+    EXPECT_FALSE(mStub.prepare_response(session));
+    EXPECT_TRUE(mStub.begin_request(mFirst, 42));
+    EXPECT_TRUE(mStub.prepare_response(other));
+}
+
+//!< A response sent with its data answers the waiting caller, frees the response and keeps the subscription; with no waiting caller it is dropped.
+TEST_F(StubBaseContractTest, response_event_answers_the_waiting_caller_and_keeps_subscriptions)
+{
+    ASSERT_TRUE(mStub.add_notification_listener(RESPONSES[0], mSecond));
+    ASSERT_TRUE(mStub.begin_request(mFirst, 41));
+    ASSERT_TRUE(mStub.is_busy(RESPONSES[0]));
+    mStub.send_response_event(RESPONSES[0], SharedBuffer{});
+    EXPECT_EQ(1u, mStub.attempts(RESPONSES[0], ResultType::RequestOK));
+    EXPECT_FALSE(mStub.is_busy(RESPONSES[0]));
+    EXPECT_TRUE(mStub.exist(RESPONSES[0], mSecond));
+    mStub.send_response_event(RESPONSES[0], SharedBuffer{});
+    EXPECT_EQ(1u, mStub.attempts(RESPONSES[0], ResultType::RequestOK));
+}
+
+//!< An index past the requests cancels nothing.
+TEST_F(StubBaseContractTest, cancel_sessions_ignores_an_unknown_request_index)
+{
+    ASSERT_TRUE(mStub.begin_request(mFirst, 41));
+    const SessionID session = mStub.unblock_current_request();
+    mStub.cancel_sessions(mStub.number_of_requests());
+    EXPECT_EQ(0u, mStub.attempts(REQUESTS[0], ResultType::RequestCanceled));
+    EXPECT_TRUE(mStub.prepare_response(session));
 }
 
 TEST_F(StubBaseContractTest, response_error_fails_waiting_callers_and_spares_subscribers)

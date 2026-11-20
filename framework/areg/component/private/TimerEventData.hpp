@@ -53,15 +53,6 @@ public:
     /**
      * \brief   Creates and sends a timer event to the specified dispatcher thread.
      *
-     * \param   timer       The expired timer object.
-     * \param   threadNum   The unique number of the dispatcher thread to receive the event.
-     * \return  Returns true if the event was sent successfully; false otherwise.
-     **/
-    static bool send_event( Timer & timer, UniqueNumber threadNum);
-
-    /**
-     * \brief   Creates and sends a timer event to the specified dispatcher thread.
-     *
      * \param   timer               The expired timer object.
      * \param   dispatchThread      The dispatcher thread object to receive the event.
      * \param   prio                The event priority (default: NormalPrio).

@@ -231,10 +231,10 @@ private:
     LtScoped& operator = (const LtScoped&) = delete;
 };
 
-    #define AREG_LT_CONCAT_(a, b)   a ## b
-    #define AREG_LT_CONCAT(a, b)    AREG_LT_CONCAT_(a, b)
-    #define AREG_LT_SCOPE(stage)    areg::LtScoped AREG_LT_CONCAT(_areg_lt_scope_, __LINE__) { stage }
-    #define AREG_LT_NOW()           areg::lt_now_ns()
+    #define AREG_LT_CONCAT_IMPL(a, b)   a ## b
+    #define AREG_LT_CONCAT(a, b)        AREG_LT_CONCAT_IMPL(a, b)
+    #define AREG_LT_SCOPE(stage)        areg::LtScoped AREG_LT_CONCAT(_aregLtScope, __LINE__) { stage }
+    #define AREG_LT_NOW()               areg::lt_now_ns()
     #define AREG_LT_SAMPLE(stage, ns) areg::lt_add_sample((stage), (ns))
 
 #else   // !AREG_LATENCY_TRACE
@@ -436,9 +436,9 @@ private:
     StScoped& operator = (const StScoped&) = delete;
 };
 
-    #define AREG_ST_CONCAT_(a, b)   a ## b
-    #define AREG_ST_CONCAT(a, b)    AREG_ST_CONCAT_(a, b)
-    #define AREG_ST_SCOPE(stage)    areg::StScoped AREG_ST_CONCAT(_areg_st_scope_, __LINE__) { stage }
+    #define AREG_ST_CONCAT_IMPL(a, b)   a ## b
+    #define AREG_ST_CONCAT(a, b)        AREG_ST_CONCAT_IMPL(a, b)
+    #define AREG_ST_SCOPE(stage)        areg::StScoped AREG_ST_CONCAT(_aregStScope, __LINE__) { stage }
 
 #else   // !AREG_STALL_TRACE
 

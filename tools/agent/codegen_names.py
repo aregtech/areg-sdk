@@ -12,7 +12,8 @@ and the names are read out of the headers written there.
 Kinds and roles:
     attribute   valid, get, notify, on_update (consumer); set, invalidate, updated
                 (provider) -- a .fsml attribute has get and set only
-    request     call, failed
+    request     call, failed (consumer); reject, cancel (provider) -- only a request
+                with a response has the provider two
     response    call, notify
     broadcast   call, notify
     invalid     call: the consumer hook for invalid data of one kind, keyed request,
@@ -39,7 +40,7 @@ import xml.etree.ElementTree as ET
 HERE = os.path.dirname(os.path.abspath(__file__))
 JAR = os.path.join(os.path.dirname(HERE), 'codegen.jar')
 CACHE = os.path.join(tempfile.gettempdir(), 'areg-codegen-names')
-FORMAT = 7
+FORMAT = 8
 
 
 class CodegenError(Exception):
@@ -419,6 +420,14 @@ def _service(doc, headers):
             entry['all'].append(name)
             _put(entry, 'call', returns, name, params)
     for (kind, doc_name), found in _blocks(_read(headers, 'ProviderBase.hpp', owner)).items():
+        if kind == 'request':
+            entry = _entry(kinds, kind, doc_name)
+            plain = [(returns, name, params) for returns, name, params, tail in found
+                     if returns == 'void' and not params.strip()]
+            for role, declared in zip(('reject', 'cancel'), plain):
+                entry['all'].append(declared[1])
+                _put(entry, role, *declared)
+            continue
         if kind != 'attribute':
             continue
         entry = _entry(kinds, kind, doc_name)
