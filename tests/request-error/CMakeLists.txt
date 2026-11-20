@@ -14,7 +14,7 @@ addExecutableEx(${AREG_REQUEST_ERROR_PROJECT} ""
     "${AREG_TESTS_DIR}/request-error/request_error_test.cpp"
     "24_generated")
 
-foreach(_error_case error error-unblocked cancel cancel-session response-error error-all subscribed-caller busy)
+foreach(_error_case error error-unblocked cancel cancel-session request-cancel-session response-error error-all subscribed-caller busy)
     add_test(NAME ${AREG_REQUEST_ERROR_PROJECT}.${_error_case} COMMAND ${AREG_REQUEST_ERROR_PROJECT} ${_error_case})
     set_tests_properties(${AREG_REQUEST_ERROR_PROJECT}.${_error_case} PROPERTIES TIMEOUT 300)
 endforeach()

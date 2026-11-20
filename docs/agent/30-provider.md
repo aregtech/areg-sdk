@@ -78,6 +78,7 @@ state machine -- which runs after every base.
 |---|---|
 | `void request_<name>(params)` | **Must override.** It is pure virtual: the class does not compile until every request is implemented. |
 | `void response_<name>(params)` | Call it to answer a request. |
+| `void request_<name>_reject()` | Reject the call: the consumer's `request_<name>_failed` gets `RequestError`; `request_<name>_cancel()` cancels every open call (`RequestCanceled`). Only for a request with a response. |
 | `void broadcast_<name>(params)` | Call it to notify every subscriber. |
 | `void set_<attribute>(value)` | Call it to publish a new attribute value. |
 | `bool is_<attribute>_valid()` | Ask whether the attribute has been set at least once. |

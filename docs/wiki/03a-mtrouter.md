@@ -40,7 +40,7 @@ cd areg-sdk
 **Windows:**
 ```powershell
 cd areg-sdk
-.\product\build\msvc-v143\windows_nt-x64-release\bin\mtrouter.exe --console
+.\product\build\msvc-release-x64\bin\mtrouter.exe --console
 ```
 
 **Expected output:**
@@ -155,7 +155,7 @@ After building Areg SDK, `mtrouter` is available in the build output directory.
 
 **Windows:**
 ```powershell
-.\product\build\msvc-v143\windows_nt-x64-release\bin\mtrouter.exe
+.\product\build\msvc-release-x64\bin\mtrouter.exe
 ```
 
 > [!NOTE]
@@ -247,7 +247,7 @@ cmake --install ./build --prefix /opt/areg
 
 **Windows:**
 ```powershell
-.\product\build\msvc-v143\windows_nt-x64-release\bin\mtrouter.exe --console
+.\product\build\msvc-release-x64\bin\mtrouter.exe --console
 ```
 
 **From installed location:**
@@ -630,8 +630,8 @@ dir "C:\Program Files\areg\share\areg\service\mtrouter.service.install.bat"
 New-Item -Path "C:\Program Files\areg\tools\areg" -ItemType Directory -Force
 
 # Copy binaries
-Copy-Item .\product\build\msvc-v143\windows_nt-x64-release\bin\mtrouter.exe "C:\Program Files\areg\tools\areg\"
-Copy-Item .\product\build\msvc-v143\windows_nt-x64-release\bin\areg.dll "C:\Program Files\areg\tools\areg\"
+Copy-Item .\product\build\msvc-release-x64\bin\mtrouter.exe "C:\Program Files\areg\tools\areg\"
+Copy-Item .\product\build\msvc-release-x64\bin\areg.dll "C:\Program Files\areg\tools\areg\"
 ```
 
 **Verify:**

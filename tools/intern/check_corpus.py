@@ -90,6 +90,9 @@ FEATURES = [
     ('consumer',      'implementing a service consumer',
      '31-consumer.md',          'service_connected',   '01-local-single-process',
      ('examples/03_helloservice',)),
+    ('failures',      'a failed request, invalid data and a rejected call',
+     '31-consumer.md',          '_failed(areg::ResultType', '01-local-single-process',
+     ()),
     ('model',         'registering components into threads',
      '32-model.md',             'BEGIN_MODEL',         '01-local-single-process',
      ('examples/03_helloservice',)),
@@ -504,7 +507,7 @@ TOOLS = ['setup_project.py', 'gen_skeleton.py', 'fsml_layout.py', 'run_scenarios
 # set growing one locally-justified paragraph at a time: raising this number is a
 # deliberate edit in a reviewed file, and the commit that raises it says what it bought.
 # The headroom is deliberately small: a ceiling with room in it ratchets nothing.
-CORPUS_CEILING = 203746
+CORPUS_CEILING = 204280
 
 PAGE_CEILING = 8 * KB
 # The stop the exception mechanism did not have. An entry in .budgets raises the
@@ -781,8 +784,7 @@ def claims():
         r'thirty|forty|fifty)(-\w+)?\s+(complete applications?|examples)\b',
         re.IGNORECASE)
     counted = []
-    for where in ('AGENTS.md', 'CODEBASE.md', 'docs/agent/41-examples.md',
-                  'docs/agent/51-debug.md'):
+    for where in ('AGENTS.md', 'CODEBASE.md', 'docs/agent/51-debug.md'):
         found = counting.search(read(*where.split('/')))
         if found:
             counted.append(where + ': "' + found.group(0) + '"')
@@ -2974,7 +2976,6 @@ def run():
 # not apply to an already-created project outside the SDK are named below.
 PROJECT_ROUTING_EXEMPT = {
     'docs/agent/10-new-project.md',   # the project exists; setup_project.py made it
-    'docs/agent/41-examples.md',      # in-tree SDK examples, not an outside project
     'docs/agent/35-sqlog.md',         # reached from 34-logging.md
     'docs/agent/36-config.md',        # reached from 50-running.md
 }
@@ -3259,6 +3260,7 @@ def check_worksheet_names_update_order(report):
     """
     sys.path.insert(0, os.path.join(ROOT, 'tools', 'agent'))
     try:
+        import codegen_names
         import gen_skeleton
     except Exception as failure:
         report.fail('worksheet-attr-order',
@@ -3288,6 +3290,9 @@ def check_worksheet_names_update_order(report):
 
         def generated_params(self, kind, name, role='call'):
             return ''
+
+        def generated(self):
+            return codegen_names.Names('probe.siml', {})
 
     class Sends(Iface):
         broadcasts = [('alarm', [])]
@@ -6975,10 +6980,28 @@ def check_bodies_read_back(report):
             report.fail('read-back', 'a generated line edited outside every marker still '
                                      'calls src/ regenerable')
             return
+        with open(os.path.join(holder, 'build', build_project.APPLIED), 'w') as out:
+            json.dump({'alpha': ['x += 2;'], 'beta': ['call_beta();']}, out)
+        helper = '\nstatic int helper() { return 1; }\n'
+        for extra, regenerable in (('', True), (helper, False)):
+            with open(os.path.join(holder, 'src', 'a.cpp'), 'w') as out:
+                out.write(current + extra)
+            with open(os.path.join(holder, 'bodies.txt'), 'w') as out:
+                out.write('== alpha\nx += 2;\n== beta\ncall_beta();\n')
+            with contextlib.redirect_stdout(io.StringIO()):
+                clean = build_project.read_back(holder, 'build', 'bodies.txt')
+            if clean != regenerable:
+                report.fail('read-back', 'src/ holding {} is called {}'.format(
+                    'a function added outside every marker' if extra else
+                    'only generated code and bodies.txt bodies',
+                    'regenerable, so the next design change discards it' if clean
+                    else 'edited, so a design change never reaches it'))
+                return
     finally:
         shutil.rmtree(holder, ignore_errors=True)
     report.ok('read-back', 'source bodies come back into bodies.txt, anchored or over '
-                           'their marker; both edited is refused; a generated edit is kept')
+                           'their marker; both edited is refused; a generated edit or an '
+                           'added line is kept')
 
 
 def check_peer_lost_named(report):

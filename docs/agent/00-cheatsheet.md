@@ -3,8 +3,9 @@
 What an ordinary task still needs after the tools have run. The documents come from
 `gen_docs.py --spec`, and the components, the model and `main()` from
 `gen_skeleton.py --app`, so none of them is here: `10-new-project.md` has the layout
-those tools write, and `--contract` prints the generated names of a real document in
-a few hundred tokens. This page carries what no tool writes.
+those tools write, and `gen_skeleton.py --doc <document> --contract` prints a
+document's generated names in a few hundred tokens. This page carries what no tool
+writes.
 
 ## Generated names, from the document
 
@@ -98,10 +99,12 @@ into a directory of your own and never under your home.
 python3 <sdk>/tools/agent/setup_project.py --name app --root . --mode local
 python3 <sdk>/tools/agent/gen_docs.py --template design.json    # every key, empty: fill it
 python3 <sdk>/tools/agent/build_project.py --spec design.json   # documents, application,
-                                                               # contract, configure, build
-python3 <sdk>/tools/agent/build_project.py --spec design.json --run  # and every scenario;
-                                                               # exit 0 means it works
+                                                               # bodies.txt, contract, configure, build
+python3 <sdk>/tools/agent/build_project.py --run    # and every scenario; exit 0 means it works
 ```
+
+Without `--spec` it reads `areg-project.json`. A `design.json` change rewrites `src/` with
+every `bodies.txt` body; code outside a marker keeps `src/` until `--regenerate` drops it.
 
 On Windows the interpreter is `python` and a binary is `build\bin\name.exe`; nothing
 else differs. Needs CMake 3.20+, a Java 17+ runtime, a C++17 compiler.

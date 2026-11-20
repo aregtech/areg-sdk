@@ -425,6 +425,10 @@ tools\build.bat -c llvm -t debug               # clang-cl with Visual Studio
 The exit code is 0 when done, 1 for a bad argument, 2 for a missing tool, 3 when the
 configure, the build, the tests or the install failed.
 
+The agent tools (`build_project.py`, `run_scenarios.py`, `check_contract.py`) read
+`<project-root>/build/bin`, the layout `cmake -B build` gives. For a project they
+work on, run the script from the project root with `-B build`.
+
 ---
 
 ## 7. Examples and Advanced Usage

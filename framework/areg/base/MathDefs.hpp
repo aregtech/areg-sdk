@@ -877,7 +877,7 @@ struct ArRegUniqueCRC32
  **/
 #ifdef DEBUG
 #define AREG_ASSERT_UNIQUE_CRC32(names_array)                   \
-    using AREG_CRC32_UNIQUE_ ## __LINE__ = ArRegUniqueCRC32<    \
+    using AregUniqueCrc32 ## __LINE__ = ArRegUniqueCRC32<       \
           (sizeof(names_array) / sizeof((names_array)[0]))      \
         , crc32_first_collision(names_array)                    \
     >

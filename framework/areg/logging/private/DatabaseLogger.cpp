@@ -82,16 +82,6 @@ bool DatabaseLogger::is_logger_opened() const noexcept
     return mIsOpened && (mDatabase != nullptr) && mDatabase->is_operable();
 }
 
-bool DatabaseLogger::create_layouts()
-{
-    // no need to crate layouts for log DB
-    return true;
-}
-
-void DatabaseLogger::release_layouts()
-{
-}
-
 void DatabaseLogger::flush_logs()
 {
     if (mIsOpened && is_valid())

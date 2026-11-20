@@ -7,6 +7,8 @@
  *   error-unblocked    error_request(request, false) of an unblocked request fails nobody
  *   cancel             cancel_all_requests() fails the waiting caller with RequestCanceled
  *   cancel-session     cancel_all_requests() fails an unblocked caller and invalidates its session
+ *   request-cancel-session  request_hello_ublock_cancel() with no subscriber fails an unblocked
+ *                      caller and invalidates its session
  *   response-error     error_request(response, false) fails the waiting caller with RequestError
  *   error-all          error_all_requests() fails the waiting caller once with RequestError
  *   subscribed-caller  a caller that also subscribed is failed once, then answered once
@@ -54,7 +56,7 @@ namespace
     constexpr uint32_t      TAG_A           { 1 };
     constexpr uint32_t      TAG_C           { 3 };
 
-    enum class Case : uint32_t { Error, ErrorUnblocked, Cancel, CancelSession, ResponseError, ErrorAll, SubscribedCaller, Busy };
+    enum class Case : uint32_t { Error, ErrorUnblocked, Cancel, CancelSession, RequestCancelSession, ResponseError, ErrorAll, SubscribedCaller, Busy };
 
     std::atomic<Case>       gCase           { Case::Error };
 
@@ -96,6 +98,9 @@ namespace
     uint32_t subscribers()
     {
         const Case which{ gCase.load() };
+        if (which == Case::RequestCancelSession)
+            return 0u;
+
         return (which == Case::SubscribedCaller) || (which == Case::Busy) ? 3u : 2u;
     }
 
@@ -146,7 +151,8 @@ protected:
 
         mHeld = true;
         mTag  = clientId;
-        if ((gCase.load() == Case::ErrorUnblocked) || (gCase.load() == Case::CancelSession))
+        const Case which{ gCase.load() };
+        if ((which == Case::ErrorUnblocked) || (which == Case::CancelSession) || (which == Case::RequestCancelSession))
         {
             mSession = unblock_current_request();
         }
@@ -186,6 +192,12 @@ private:
 
         case Case::CancelSession:
             cancel_all_requests();
+            gPrepareAfterCancel.store(prepare_response(mSession) ? 1 : 0);
+            response_hello_unblock(mTag, 0);
+            break;
+
+        case Case::RequestCancelSession:
+            request_hello_ublock_cancel();
             gPrepareAfterCancel.store(prepare_response(mSession) ? 1 : 0);
             response_hello_unblock(mTag, 0);
             break;
@@ -244,9 +256,10 @@ protected:
 
         const Case which{ gCase.load() };
         const bool caller{ (mRole == _callerA) || ((mRole == _callerC) && (which == Case::Busy)) };
-        const bool subscriber{ (mRole == _subscriberB) || (mRole == _subscriberD)
+        bool subscriber{ (mRole == _subscriberB) || (mRole == _subscriberD)
                             || ((mRole == _subscriberE) && (which == Case::Busy))
                             || ((mRole == _callerA) && (which == Case::SubscribedCaller)) };
+        subscriber = subscriber && (which != Case::RequestCancelSession);
         if (subscriber)
         {
             notify_on_response_hello_unblock(true);
@@ -380,6 +393,20 @@ static bool run_error_case(areg::ResultType expected)
         && subscriber_ok(gD, answers);
 }
 
+//!< Runs the case whose only waiting caller A is cancelled after it was unblocked, with no subscriber.
+static bool run_request_cancel_case()
+{
+    const bool done{ wait_until([] { return (gA.failures.load() == 1) && (gA.lastSeq.load() == 2); }) };
+    areg::Application::unload_model(_model);
+    print("A", gA);
+    print("B", gB);
+    print("D", gD);
+    return done
+        && (gA.reason.load() == static_cast<uint32_t>(areg::ResultType::RequestCanceled))
+        && (gA.responses.load() == 1) && (gA.otherFailed.load() == 0)
+        && subscriber_ok(gB, 0) && subscriber_ok(gD, 0);
+}
+
 static bool run_busy_case()
 {
     const bool done{ wait_until([] { return ((gA.failures.load() + gC.failures.load()) == 1)
@@ -411,6 +438,7 @@ int main(int argc, char * argv[])
         , { "error-unblocked"   , Case::ErrorUnblocked  , areg::ResultType::RequestOK       }
         , { "cancel"            , Case::Cancel          , areg::ResultType::RequestCanceled }
         , { "cancel-session"    , Case::CancelSession   , areg::ResultType::RequestCanceled }
+        , { "request-cancel-session", Case::RequestCancelSession, areg::ResultType::RequestCanceled }
         , { "response-error"    , Case::ResponseError   , areg::ResultType::RequestError    }
         , { "error-all"         , Case::ErrorAll        , areg::ResultType::RequestError    }
         , { "subscribed-caller" , Case::SubscribedCaller, areg::ResultType::RequestError    }
@@ -436,8 +464,10 @@ int main(int argc, char * argv[])
     bool ok{ areg::Application::load_model(_model) };
     if (ok)
     {
-        ok = (selected->which == Case::Busy) ? run_busy_case() : run_error_case(selected->expected);
-        if (selected->which == Case::CancelSession)
+        ok = (selected->which == Case::Busy) ? run_busy_case()
+           : (selected->which == Case::RequestCancelSession) ? run_request_cancel_case()
+           : run_error_case(selected->expected);
+        if ((selected->which == Case::CancelSession) || (selected->which == Case::RequestCancelSession))
         {
             printf("prepare after cancel .....: %d\n", gPrepareAfterCancel.load());
             ok = ok && (gPrepareAfterCancel.load() == 0);

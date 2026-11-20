@@ -34,7 +34,7 @@ Log collector is available when building Areg SDK sources. The `logcollector` bi
 
 **Windows:**
 ```powershell
-.\product\build\msvc-v143\windows_nt-x64-release\bin\logcollector.exe
+.\product\build\msvc-release-x64\bin\logcollector.exe
 ```
 
 
@@ -212,7 +212,7 @@ After building Areg SDK, Log Collector is available in build output.
 
 **Windows:**
 ```powershell
-.\product\build\msvc-v143\windows_nt-x64-release\bin\logcollector.exe
+.\product\build\msvc-release-x64\bin\logcollector.exe
 ```
 
 ---
@@ -395,8 +395,8 @@ sudo journalctl -u logcollector.service -f
 New-Item -Path "C:\Program Files\areg\tools\areg" -ItemType Directory -Force
 
 # Copy binaries
-Copy-Item .\product\build\msvc-v143\windows_nt-x64-release\bin\logcollector.exe "C:\Program Files\areg\tools\areg\"
-Copy-Item .\product\build\msvc-v143\windows_nt-x64-release\bin\areg.dll "C:\Program Files\areg\tools\areg\"
+Copy-Item .\product\build\msvc-release-x64\bin\logcollector.exe "C:\Program Files\areg\tools\areg\"
+Copy-Item .\product\build\msvc-release-x64\bin\areg.dll "C:\Program Files\areg\tools\areg\"
 ```
 
 **Step 2: Install service**  

@@ -910,6 +910,25 @@
         "rule": "P-13"
       },
       "teaches": "a response sent from an event, a timer or another callback answers a request whose handler has returned; that handler must call unblock_current_request() and the answer goes through prepare_response()"
+    },
+    {
+      "id": "r36-legacy-error-request",
+      "kind": "repair",
+      "prompt": "The provider must reject a request from a client without a name. That branch was written from memory of an older areg and does not compile. Make the provider reject the call the way this areg does.",
+      "expect": [
+        "provider: hello,",
+        "consumer: greeted"
+      ],
+      "reference": "01-local-single-process",
+      "defect": {
+        "file": "src/main.cpp",
+        "find": "        GLOBAL_INFO(\"provider: hello, %s\", client.as_string());",
+        "replace": "        if (client.is_empty())\n        {\n            errorRequest(HelloService::eMessageIDs::MsgId_requestHelloService, false);\n            return;\n        }\n\n        GLOBAL_INFO(\"provider: hello, %s\", client.as_string());"
+      },
+      "detect": {
+        "by": "compiler"
+      },
+      "teaches": "a provider rejects one call with the generated request_<name>_reject(), which the consumer receives in request_<name>_failed as RequestError, and cancels every open call with request_<name>_cancel(); errorRequest(msgId, cancel) of areg 1.x is gone"
     }
   ]
 }

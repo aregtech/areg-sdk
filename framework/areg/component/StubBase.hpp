@@ -772,6 +772,14 @@ protected:
     void send_error_notification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
 
     /**
+     * \brief   Cancels the sessions of the request that unblock_current_request() released: each
+     *          caller receives RequestCanceled and its session ID becomes invalid. Nothing else changes.
+     *
+     * \param   reqIndex    The index of the request. A request without a response has no session.
+     **/
+    void cancel_sessions( uint32_t reqIndex );
+
+    /**
      * \brief   Broadcasts an attribute update to all specified listeners.
      *          Ownership of masterEvent is transferred to the dispatcher
      *

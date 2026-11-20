@@ -54,12 +54,12 @@
  **/
 #define BEGIN_MODEL(model_name)                                                                             \
     /*  Declare Load model method and give name of model                            */                      \
-    static areg::Model _createdModelData( const char * _model_name_ )                                       \
+    static areg::Model _createdModelData( const char * _modelName )                                         \
     {                                                                                                       \
-        areg::Model areg_model_(_model_name_);
+        areg::Model _aregModel(_modelName);
 
 #define END_MODEL(model_name)                                                                               \
-        return areg_model_;                                                                                 \
+        return _aregModel;                                                                                  \
     }                                                                                                       \
     /*  End of Model, call component loader to pass application model object        */                      \
     static areg::ModelDataCreator _modelData(&_createdModelData, model_name);
@@ -69,11 +69,11 @@
 
 #define BEGIN_MODEL_LOCAL(model_name)                                                                       \
     /*  Declare local Model object and give name of model. The name should be unique */                     \
-        areg::Model areg_model_((model_name));
+        areg::Model _aregModel((model_name));
 
 #define END_MODEL_LOCAL(model_name)                                                                         \
     /*  End of local Model. This will add model to model list of Loader             */                      \
-    areg::ModelDataCreator _modelData( areg_model_ );
+    areg::ModelDataCreator _modelData( _aregModel );
 
 /**
  * \brief   Register thread to start component thread.
@@ -132,7 +132,7 @@
  **/
 #define END_REGISTER_THREAD(thread_name)                                                                    \
             /*  End registering component thread, add to model                      */                      \
-            areg_model_.add_thread(thrEntry);                                                               \
+            _aregModel.add_thread(thrEntry);                                                                \
         }
 
  /**

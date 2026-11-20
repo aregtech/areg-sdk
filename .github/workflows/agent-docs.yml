@@ -156,10 +156,23 @@ jobs:
           $init = 'build\bin\config\areg.init'
           (Get-Content $init) -replace '^log::mtrouter::enable::file\s*=\s*false', 'log::mtrouter::enable::file = true' -replace '^log::mtrouter::scope::\*\s*=\s*NOTSET', 'log::mtrouter::scope::* = DEBUG | SCOPE' | Set-Content $init
 
+      # Reads the Debug C++ runtime from the system drive once and prints how long
+      # each file took. Nothing on the runner has read these files before this step.
+      - name: Read the Debug C++ runtime once
+        run: |
+          foreach ($name in 'ucrtbased.dll', 'VCRUNTIME140D.dll', 'VCRUNTIME140_1D.dll', 'MSVCP140D.dll') {
+            $path = Join-Path $env:SystemRoot "System32\$name"
+            if (-not (Test-Path $path)) { Write-Host "$name is not installed"; continue }
+            $clock = [Diagnostics.Stopwatch]::StartNew()
+            $size = [IO.File]::ReadAllBytes($path).Length
+            Write-Host ('{0,-20} {1,9} bytes in {2,6:N2} s' -f $name, $size, $clock.Elapsed.TotalSeconds)
+          }
+
       # Starts a real binary: the consumer alone, ended by its generated connect
       # deadline with exit 1. This is the first start of the freshly built router.
-      # A watcher beside it records a router that does not listen within 5 s: a
-      # memory dump and the stacks of every thread, taken before the runner stops it.
+      # A watcher beside it records a router that does not listen within 5 s of its
+      # creation: a memory dump and the stacks of every thread, taken before the
+      # runner stops it.
       - name: Run the consumer alone to its connect deadline
         id: consumer_alone
         working-directory: ${{ runner.temp }}\gatecheck

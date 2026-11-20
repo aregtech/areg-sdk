@@ -159,6 +159,102 @@ def find_service(name, directories):
     return None
 
 
+def port_owner(port):
+    """The executable that listens on the TCP port, or None where the system does not tell.
+
+    Linux: the listening socket in /proc/net/tcp*, then the process holding it.
+    Windows: Get-NetTCPConnection and Get-Process. Elsewhere: lsof. A process of
+    another user is often not readable and gives None.
+    """
+    if sys.platform.startswith('linux'):
+        return linux_port_owner(port)
+    if sys.platform == 'win32':
+        return windows_port_owner(port)
+    return lsof_port_owner(port)
+
+
+def windows_port_owner(port):
+    """port_owner() from Get-NetTCPConnection and Get-Process."""
+    script = ('(Get-Process -ErrorAction Stop -Id (Get-NetTCPConnection -ErrorAction Stop '
+              '-State Listen -LocalPort {} | Select-Object -First 1).OwningProcess).Path'
+              .format(int(port)))
+    found = command_output(['powershell', '-NoProfile', '-NonInteractive', '-Command', script])
+    return (found or '').strip() or None
+
+
+def lsof_port_owner(port):
+    """port_owner() from lsof: the listening process, then the program its txt entry names."""
+    found = command_output(['lsof', '-nP', '-a', '-iTCP:{}'.format(int(port)),
+                            '-sTCP:LISTEN', '-Fp'])
+    pid = next((line[1:] for line in (found or '').splitlines()
+                if line.startswith('p') and line[1:].isdigit()), None)
+    if pid is None:
+        return None
+    return lsof_executable(command_output(['lsof', '-nP', '-a', '-p', pid, '-d', 'txt',
+                                           '-Fn']))
+
+
+def lsof_executable(fields):
+    """The first file name of lsof -Fn field output: the program a txt query lists first."""
+    return next((line[1:] for line in (fields or '').splitlines()
+                 if line.startswith('n') and len(line) > 1), None)
+
+
+def command_output(command, timeout=10):
+    """The standard output of a command that exited 0, or None."""
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=timeout,
+                                stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return result.stdout if result.returncode == 0 else None
+
+
+def linux_port_owner(port):
+    """port_owner() from /proc: the listening socket's inode, then the process holding it."""
+    sockets = set()
+    for table in ('/proc/net/tcp', '/proc/net/tcp6'):
+        try:
+            with open(table, encoding='ascii', errors='replace') as handle:
+                rows = handle.read().splitlines()[1:]
+        except OSError:
+            continue
+        for row in rows:
+            fields = row.split()
+            if len(fields) > 9 and fields[3] == '0A' \
+                    and int(fields[1].rsplit(':', 1)[1], 16) == port:
+                sockets.add('socket:[{}]'.format(fields[9]))
+    if not sockets:
+        return None
+    for pid in os.listdir('/proc'):
+        if not pid.isdigit():
+            continue
+        folder = os.path.join('/proc', pid, 'fd')
+        try:
+            for fd in os.listdir(folder):
+                if os.readlink(os.path.join(folder, fd)) in sockets:
+                    return os.readlink(os.path.join('/proc', pid, 'exe'))
+        except OSError:
+            continue
+    return None
+
+
+def foreign_router(port, searched):
+    """Names the process serving the router port, and whether it is the router the run
+    would start itself: (' by <who>', own)."""
+    owner = port_owner(port)
+    if owner is None:
+        return ' by a process', False
+    own = find_service('mtrouter', searched)
+    if owner.endswith(' (deleted)'):
+        return ' by {}, whose binary was replaced or deleted after it started'.format(
+            owner[:-len(' (deleted)')].replace(os.sep, '/')), False
+    if own is not None and os.path.normcase(os.path.realpath(own)) == \
+            os.path.normcase(os.path.realpath(owner)):
+        return " by this project's {}".format(owner.replace(os.sep, '/')), True
+    return ' by {}'.format(owner.replace(os.sep, '/')), False
+
+
 def start_service(binary, port, args=(), cwd=None, timeout=ROUTER_READY_SECONDS):
     """Starts a long-lived service and waits for the process it started to listen.
 
@@ -273,6 +369,13 @@ DIALECT = _load_dialect()
 def dialect(name, neutral):
     """The framework's wording for one remedy, or the neutral one."""
     return getattr(DIALECT, name, neutral) if DIALECT is not None else neutral
+
+
+# A router port served by a process that is not the project's own router.
+FOREIGN_ROUTER_HINT = dialect('FOREIGN_ROUTER',
+                              'a router from another build is not supported and the '
+                              'mismatch is not detected: stop it, or give this project '
+                              'another router port')
 
 
 # A binary older than the sources it was built from is the previous program. Its
@@ -719,11 +822,13 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
     # A router port another process already serves is used as it is; no second
     # router is started.
     foreign = bool(scenario.get('router')) and is_listening(port)
+    searched = list(build_dirs) + [INSTALLED_SERVICES]
+    who, own = foreign_router(port, searched) if foreign else ('', True)
     if foreign and not quiet:
-        sys.stdout.write('      port {} is already served by a process this run did not '
-                         'start; the scenario uses it\n'.format(port))
+        sys.stdout.write('      port {} is already served{}, which this run did not '
+                         'start; the scenario uses it{}\n'.format(
+                             port, who, '' if own else '. ' + FOREIGN_ROUTER_HINT))
     if scenario.get('router') and not foreign:
-        searched = list(build_dirs) + [INSTALLED_SERVICES]
         router = find_service('mtrouter', searched)
         if router is None:
             return False, name, 'mtrouter not found in ' + ', '.join(searched)
@@ -867,9 +972,10 @@ def run_scenario(scenario, build_dirs, verbose, quiet, observed=None, reader_cla
             sys.stdout.write('      full output of every process: {}\n'.format(
                 ', '.join(path.replace(os.sep, '/') for path in logs) or spool))
         if foreign:
-            detail += ('; the router on port {} was not started by this run{}'.format(
-                port, '' if is_listening(port)
-                else ', and it stopped during the scenario'))
+            detail += ('; the router on port {} was not started by this run but{}{}{}'.format(
+                port, who, '' if is_listening(port)
+                else ', and it stopped during the scenario',
+                '' if own else '; ' + FOREIGN_ROUTER_HINT))
         return False, name, detail
 
     if verdict is not None:
@@ -1335,7 +1441,7 @@ def self_test():
             return 1
 
         # A router port another process serves is used, no router is started, and a
-        # failure names it, and whether it stopped.
+        # failure names it, whether it stopped, and that another build is not detected.
         global ROUTER_PORT
         saved_port = ROUTER_PORT
         foreign = {
@@ -1354,11 +1460,23 @@ def self_test():
                                                      listener.close()),
                                      daemon=True).start()
                 passed, _, detail = run_scenario(foreign, [root], False, True)
+                by_lsof = lsof_port_owner(ROUTER_PORT) if not stops and \
+                    sys.platform.startswith('linux') and shutil.which('lsof') else None
                 if not stops:
                     listener.close()
                 stopped = ', and it stopped during the scenario' in detail
+                interpreters = {os.path.realpath(path).replace(os.sep, '/') for path in
+                                (sys.executable, getattr(sys, '_base_executable', ''))
+                                if path}
+                identified = sys.platform == 'win32' or sys.platform.startswith('linux')
+                named = stops or not identified or \
+                    any(path in detail for path in interpreters)
+                if by_lsof is not None and by_lsof != os.path.realpath(sys.executable):
+                    named = False
+                    detail += ' / lsof named {}'.format(by_lsof)
                 if passed or 'was not started by this run' not in detail \
-                        or stopped != stops:
+                        or FOREIGN_ROUTER_HINT not in detail \
+                        or stopped != stops or not named:
                     print('self-test FAILED: a router this run did not start was not '
                           'used and named: {}'.format(detail))
                     return 1

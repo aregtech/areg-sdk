@@ -271,11 +271,10 @@ void RouterClient::failed_process_message( const MessageEnvelope & msgUnprocesse
 
     if (Application::is_servicing_ready())
     {
-        uint32_t msgId{ msgUnprocessed.message_id() };
         if ( areg::is_interface_call(msgUnprocessed.call_type()) )
         {
             LOG_DBG("The message [ %u ] for target [ %u ] and from source [ %u ] is unprocessed, replying with failed message"
-                      , msgId
+                      , msgUnprocessed.message_id()
                       , msgUnprocessed.target()
                       , msgUnprocessed.source());
 
@@ -330,7 +329,7 @@ namespace
     }
 
     // Logs a registration notice of the router whose service address is not valid.
-    void _report_invalid_notice(const MessageEnvelope & msgReceived, areg::CallType action)
+    void _report_invalid_notice([[maybe_unused]] const MessageEnvelope & msgReceived, [[maybe_unused]] areg::CallType action)
     {
         LOG_SCOPE( areg_ipc_private_RouterClient, report_invalid_notice );
         LOG_WARN("Ignoring the registration notice [ %s ] from source [ %u ]: its service address is not valid"

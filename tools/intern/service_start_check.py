@@ -148,6 +148,36 @@ def record_stuck(pid, name, seconds, out_dir, symbols):
     sys.stdout.flush()
 
 
+def process_age(pid):
+    """Seconds since the Windows process was created, or None when it cannot be read."""
+    if not IS_WINDOWS:
+        return None
+    from ctypes import wintypes
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.OpenProcess.restype = wintypes.HANDLE
+    kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel.GetProcessTimes.argtypes = [wintypes.HANDLE] + [ctypes.POINTER(wintypes.FILETIME)] * 4
+    kernel.GetSystemTimeAsFileTime.argtypes = [ctypes.POINTER(wintypes.FILETIME)]
+    times = [wintypes.FILETIME() for _ in range(4)]
+    now = wintypes.FILETIME()
+    # PROCESS_QUERY_LIMITED_INFORMATION
+    process = kernel.OpenProcess(0x1000, False, pid)
+    if not process:
+        return None
+    try:
+        if not kernel.GetProcessTimes(process, *[ctypes.byref(each) for each in times]):
+            return None
+    finally:
+        kernel.CloseHandle(process)
+    kernel.GetSystemTimeAsFileTime(ctypes.byref(now))
+
+    def ticks(value):
+        return (value.dwHighDateTime << 32) | value.dwLowDateTime
+
+    return (ticks(now) - ticks(times[0])) / 1e7
+
+
 def process_ids(name):
     """The PIDs of the running processes with this executable name."""
     if IS_WINDOWS:
@@ -224,12 +254,16 @@ def watch(args):
         now = time.time()
         for pid in process_ids(args.name):
             seen.setdefault(pid, now)
-            if pid in handled or now - seen[pid] < args.within:
+            if pid in handled:
+                continue
+            age = process_age(pid)
+            age = now - seen[pid] if age is None else age
+            if age < args.within:
                 continue
             handled.add(pid)
             if not is_listening(args.port):
                 stuck += 1
-                record_stuck(pid, args.name, now - seen[pid], args.out, args.symbols)
+                record_stuck(pid, args.name, age, args.out, args.symbols)
         time.sleep(0.25)
     return 1 if stuck else 0
 

@@ -47,11 +47,6 @@ TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target, areg::EventPrio
 // TimerEvent static methods
 //////////////////////////////////////////////////////////////////////////
 
-bool TimerEvent::send_event( Timer & timer, UniqueNumber threadNum)
-{
-    return TimerEvent::send_event(timer, DispatcherThread::dispatcher_thread(threadNum));
-}
-
 bool TimerEvent::send_event(Timer & timer, DispatcherThread & dispatchThread, areg::EventPriority prio /*= areg::EventPriority::NormalPrio*/)
 {
     if (!dispatchThread.is_running())

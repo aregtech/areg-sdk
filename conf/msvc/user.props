@@ -38,8 +38,14 @@
         <AregOutputRoot Condition="'$(AregOutputRoot)'==''">$(SolutionDir)product\</AregOutputRoot>
         <!-- ****************************************************************************************************************************** -->
         <!-- Check and set AregOutputDir, AregOutputLib, AregOutputBin and AregOutputObj.                                                   -->
+        <!-- The default AregOutputDir is 'build\<family>-<configuration>-<processor>\' in lower case, for example 'build\msvc-debug-x64\'. -->
         <!-- ****************************************************************************************************************************** -->
-        <AregOutputBuild>build\msvc-$(VCCompilerVersion)\$(OS)-$(Platform)-$(Configuration)</AregOutputBuild>
+        <AregOutputFamily>msvc</AregOutputFamily>
+        <AregOutputFamily Condition="'$(PlatformToolset)'=='ClangCL'">llvm</AregOutputFamily>
+        <AregOutputArch>$(Platform)</AregOutputArch>
+        <AregOutputArch Condition="'$(Platform)'=='Win32'">x86</AregOutputArch>
+        <AregOutputArch Condition="'$(Platform)'=='ARM64'">aarch64</AregOutputArch>
+        <AregOutputBuild>build\$(AregOutputFamily)-$(Configuration)-$(AregOutputArch)</AregOutputBuild>
         <AregOutputBuild>$(AregOutputBuild.ToLower())</AregOutputBuild>
         <AregOutputDir Condition="'$(AregOutputDir)'==''">$(AregOutputRoot)$(AregOutputBuild)\</AregOutputDir>
         <AregOutputLib Condition="'$(AregOutputLib)'==''">$(AregOutputDir)lib\</AregOutputLib>
@@ -63,7 +69,7 @@
         <!-- ****************************************************************************************************************************** -->
 
         <!-- Set the directory for generated source files.                                                                                  -->
-        <AregGenerateDir Condition="'$(AregGenerateDir)'==''">$(AregOutputRoot)generate\</AregGenerateDir>
+        <AregGenerateDir Condition="'$(AregGenerateDir)'==''">$(AregOutputDir)generate\</AregGenerateDir>
         <!-- Set the directory to download thirdparty packages. If change, also change the location in nuget.config file.                   -->
         <AregPackages Condition="'$(AregPackages)'==''">$(AregOutputRoot)packages\</AregPackages>
         <!-- Set the Areg Framework path.                                                                                                   -->
@@ -82,7 +88,7 @@
         <!-- ****************************************************************************************************************************** -->
 
         <!-- Areg Framework specific includes. The value may change when integrate in other projects.                                       -->
-        <AregCommonIncludes>$(AregFramewor);$(AregOutputRoot);$(AregGenerateDir);$(AregFrameworkResources);$(AregThirdpartyDir)</AregCommonIncludes>
+        <AregCommonIncludes>$(AregFramewor);$(AregOutputDir);$(AregGenerateDir);$(AregFrameworkResources);$(AregThirdpartyDir)</AregCommonIncludes>
         <!-- Areg Framework specific library search paths. The value may change when integrate in other projects.                           -->
         <AregCommonLibs>$(AregOutputLib);$(AregOutputBin)</AregCommonLibs>
 

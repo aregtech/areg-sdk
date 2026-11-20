@@ -2856,3 +2856,17 @@ TEST(LogSqliteDatabaseTest, test_queriesOfDroppedTablesReturnNothing)
     db.disconnect();
     EXPECT_FALSE(db.remove_marker(1u));
 }
+
+//!< A scope filter and a refused span left at their defaults name scope 0 with no priority, and a span with zero times covers the whole file and is still open.
+TEST(LogSqliteDatabaseTypesTest, default_filter_and_span_are_empty_and_open)
+{
+    const areg::ext::LogSqliteDatabase::ScopeFilter filter{ };
+    EXPECT_EQ(filter.scopeId, 0u);
+    EXPECT_EQ(filter.scopePrio, 0u);
+
+    const areg::ext::LogSqliteDatabase::RefusedSpan span{ };
+    EXPECT_EQ(span.scopeId, 0u);
+    EXPECT_EQ(span.targetId, 0u);
+    EXPECT_EQ(span.fromTime, 0);
+    EXPECT_EQ(span.toTime, 0);
+}
