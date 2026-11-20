@@ -5216,7 +5216,8 @@ def check_owner_forward(report):
 
 def check_tail_repeat(report):
     """fill_markers.py leaves out the generated lines a body ends with, refuses a body that
-    holds two or more of them elsewhere, and fills the same bodies twice without refusing."""
+    holds two or more of them elsewhere or a copy of the declaration that follows it, and
+    fills the same bodies twice without refusing."""
     holder = tempfile.mkdtemp()
     src = os.path.join(holder, 'src')
     os.makedirs(src)
@@ -5229,11 +5230,16 @@ def check_tail_repeat(report):
                 '    mPace.stop_timer();\n}\n\n'
                 'void Client::startup(Thread & thread)\n{\n'
                 '    // TODO(you) startup: what starts.\n'
-                '    Component::startup(thread);\n}\n')
+                '    Component::startup(thread);\n}\n\n'
+                'void Client::on_value()\n{\n'
+                '    // TODO(you) value: what the value means.\n'
+                '    Arrival arrival(*this, "value");\n'
+                '    mark("no step awaits it");\n}\n')
 
-    def fill(lost, startup='begin();\nComponent::startup(thread);'):
+    def fill(lost, startup='begin();\nComponent::startup(thread);', value='keep();'):
         with open(sheet, 'w', encoding='utf-8', newline='\n') as handle:
-            handle.write('== lost\n' + lost + '\n== startup\n' + startup + '\n')
+            handle.write('== lost\n' + lost + '\n== startup\n' + startup
+                         + '\n== value\n' + value + '\n')
         return subprocess.run([sys.executable, filler, '--bodies', sheet, '--src', src],
                               cwd=holder, capture_output=True, text=True)
 
@@ -5248,6 +5254,9 @@ def check_tail_repeat(report):
         with open(source, 'w', encoding='utf-8', newline='\n') as handle:
             handle.write(skeleton)
         inside = fill('arm_deadline(cReconnect);\nmPace.stop_timer();\nreport();')
+        with open(source, 'w', encoding='utf-8', newline='\n') as handle:
+            handle.write(skeleton)
+        declared = fill(copied, value='Arrival arrival(*this, "value");\nkeep();')
     finally:
         shutil.rmtree(holder, ignore_errors=True)
     if first.returncode != 0 or 'left out' not in first.stdout or arms != 1 or starts != 1:
@@ -5261,9 +5270,13 @@ def check_tail_repeat(report):
     elif inside.returncode == 0:
         report.fail('tail-repeat', 'a body holding the generated lines before code of its '
                     'own is filled instead of refused')
+    elif declared.returncode == 0:
+        report.fail('tail-repeat', 'a body declaring the local the generated line after it '
+                    'declares is filled instead of refused')
     else:
         report.ok('tail-repeat', 'generated lines a body ends with are left out, the same '
-                  'lines before code of its own are refused, and a second fill passes')
+                  'lines or a copied declaration before code of its own are refused, and a '
+                  'second fill passes')
 
 
 def check_removed_marker_body(report):

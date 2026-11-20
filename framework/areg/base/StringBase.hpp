@@ -671,98 +671,93 @@ public:
 
     /**
      * \brief   Find the first occurrence of any of the characters in string buffer 'chars'. The
-     *          search starts at given 'startPos'. Returns valid position if found any. Otherwise,
-     *          returns areg::INVALID_POS.
+     *          search starts at given 'startPos'.
      *
-     * \return  Returns valid string position value, if any occurrence of given characters found.
-     *          Otherwise, returns areg::INVALID_POS value.
+     * \return  Returns the position found, areg::END_POS if none is found, or areg::INVALID_POS
+     *          if 'startPos' is not a position in the string or 'chars' is empty.
      **/
     [[nodiscard]]
     areg::CharPos find_one_of( const CharType * chars, areg::CharPos startPos = areg::START_POS ) const noexcept;
 
     /**
-     * \brief   Find the first occurrence of given character in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
+     * \brief   Find the first occurrence of given character in the string.
      *
      * \param   chSearch            The character to search in the string.
      * \param   caseSensitive       If true, the character match should be by exact, i.e.
      *                              case-sensitive. Otherwise, the search is by upper and lower case.
-     * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          areg::INVALID_POS value.
+     * \return  Returns the position found, areg::END_POS if not found, or areg::INVALID_POS if
+     *          'startPos' is not a position in the string.
      **/
     [[nodiscard]]
     areg::CharPos find_first( CharType chSearch, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true ) const noexcept;
 
     /**
-     * \brief   Find the first occurrence of given phrase in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
+     * \brief   Find the first occurrence of given phrase in the string.
      *
      * \param   caseSensitive   If true, the search of phrase should be exact, i.e.
      *                          case-sensitive. Otherwise, the search is by upper and lower case.
      * \param   wholeWord       If true, the search of phrase should be the whole word.
      *                          Otherwise, searches by any match. By default, the search is by any match.
-     * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          areg::INVALID_POS value.
+     * \return  Returns the position found, areg::END_POS if not found, or areg::INVALID_POS if
+     *          'startPos' is not a position in the string or the phrase is empty.
      **/
     [[nodiscard]]
     areg::CharPos find_first( const CharType * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false ) const noexcept;
     /**
-     * \brief   Find the first occurrence of given phrase in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
+     * \brief   Find the first occurrence of given phrase in the string.
      *
      * \param   caseSensitive   If true, the search of phrase should be exact, i.e.
      *                          case-sensitive. Otherwise, the search is by upper and lower case.
      * \param   wholeWord       If true, the search of phrase should be the whole word.
      *                          Otherwise, searches by any match. By default, the search is by any match.
-     * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          areg::INVALID_POS value.
+     * \return  Returns the position found, areg::END_POS if not found, or areg::INVALID_POS if
+     *          'startPos' is not a position in the string or the phrase is empty.
      **/
     [[nodiscard]]
     areg::CharPos find_first( const StringBase & phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false ) const noexcept;
 
     /**
-     * \brief   Find the last occurrence of given character in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
+     * \brief   Find the last occurrence of given character in the string.
      *
      * \param   chSearch            The character to search in the string.
      * \param   caseSensitive       If true, the character match should be by exact, i.e.
      *                              case-sensitive. Otherwise, the search is by upper and lower case.
-     * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          areg::INVALID_POS value.
+     * \return  Returns the position found, areg::END_POS if not found, or areg::INVALID_POS if
+     *          the string is empty.
      **/
     [[nodiscard]]
     areg::CharPos find_last( CharType chSearch, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true ) const noexcept;
 
     /**
-     * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
+     * \brief   Find the last occurrence of given phrase in the string.
      *
      * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
      *                              case-sensitive. Otherwise, the search is by upper and lower case.
-     * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          areg::INVALID_POS value.
+     * \return  Returns the position found, areg::END_POS if not found, or areg::INVALID_POS if
+     *          'startPos' is neither areg::END_POS nor a position in the string, or the phrase
+     *          is empty.
      **/
     [[nodiscard]]
     areg::CharPos find_last( const CharType * phrase, areg::CharCount phraseCount, areg::CharPos startPos, bool caseSensitive) const noexcept;
 
     /**
-     * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
+     * \brief   Find the last occurrence of given phrase in the string.
      *
      * \param   caseSensitive   If true, the search of phrase should be exact, i.e. case-sensitive.
-     * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          areg::INVALID_POS value.
+     * \return  Returns the position found, areg::END_POS if not found, or areg::INVALID_POS if
+     *          'startPos' is neither areg::END_POS nor a position in the string, or the phrase
+     *          is empty.
      **/
     [[nodiscard]]
     inline areg::CharPos find_last( const CharType* phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept;
 
     /**
-     * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns areg::INVALID_POS value.
+     * \brief   Find the last occurrence of given phrase in the string.
      *
      * \param   caseSensitive   If true, the search of phrase should be exact, i.e. case-sensitive.
-     * \return  Returns valid string position value, if found given character. Otherwise, returns
-     *          areg::INVALID_POS value.
+     * \return  Returns the position found, areg::END_POS if not found, or areg::INVALID_POS if
+     *          'startPos' is neither areg::END_POS nor a position in the string, or the phrase
+     *          is empty.
      **/
     [[nodiscard]]
     inline areg::CharPos find_last( const StringBase & phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true ) const noexcept;

@@ -41,17 +41,16 @@ declared on that base. That is an implementation detail; you call them all on a
 | `is_empty()` | `bool is_empty() const noexcept` | `StringBase.hpp:565` |
 | `clear()` | `void clear() noexcept` | `StringBase.hpp:640` |
 | `length()` | `areg::CharCount length() const noexcept` | `StringBase.hpp:571` |
-| `compare(...)` | `areg::Ordering compare(const String & other, bool caseSensitive = true) const noexcept` | `StringBase.hpp:784` |
-| `find_first(...)` | `areg::CharPos find_first(const char * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false) const noexcept` | `StringBase.hpp:708` |
-| `find_last(...)` | `areg::CharPos find_last(const char * phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:757` |
+| `compare(...)` | `areg::Ordering compare(const String & other, bool caseSensitive = true) const noexcept` | `StringBase.hpp:779` |
+| `find_first(...)` | `areg::CharPos find_first(const char * phrase, areg::CharPos startPos = areg::START_POS, bool caseSensitive = true, bool wholeWord = false) const noexcept` | `StringBase.hpp:705` |
+| `find_last(...)` | `areg::CharPos find_last(const char * phrase, areg::CharPos startPos = areg::END_POS, bool caseSensitive = true) const noexcept` | `StringBase.hpp:752` |
 
 `find_first` and `find_last` also take a `char`; `compare`, `==` and `!=` also take
 `std::string` and `std::string_view`, and `==` / `!=` a `char`. **This is the substring
 search**; `find_phrase` and `find_first_phrase` are protected and will not compile.
 
-**A search that found nothing returns `areg::END_POS`, not `areg::INVALID_POS`**, whose
-Doxygen in the header says otherwise. Test with `s.is_valid_position(pos)`, which is
-right for both.
+**A search that found nothing returns `areg::END_POS`**; a bad start or an empty phrase
+`areg::INVALID_POS`. Test with `s.is_valid_position(pos)`, which is right for both.
 
 `compare` returns `areg::Ordering`: `Smaller` (-1), `Equal` (0), `Bigger` (1),
 `MathDefs.hpp:64`.
@@ -63,9 +62,9 @@ static form writes into a buffer you own. Both exist and both are correct.
 
 | Call | Signature | Header |
 |---|---|---|
-| `format(...)` | `String & format(const char * format, ...)` | `StringBase.hpp:1438` |
-| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `StringBase.hpp:1448` |
-| `String::format_string(...)` | `static int32_t format_string(char * strDst, int32_t count, const char * format, ...)` | `StringBase.hpp:1401` |
+| `format(...)` | `String & format(const char * format, ...)` | `StringBase.hpp:1433` |
+| `format_list(...)` | `String & format_list(const char * format, va_list argptr)` | `StringBase.hpp:1443` |
+| `String::format_string(...)` | `static int32_t format_string(char * strDst, int32_t count, const char * format, ...)` | `StringBase.hpp:1396` |
 
 ```cpp
 areg::String reason;

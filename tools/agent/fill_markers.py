@@ -456,10 +456,16 @@ def generated_after(lines, index, extra):
     return tail
 
 
+# A line declaring a local object: a type, a name, then its initialiser or ";".
+DECLARATION = re.compile(r'^(?:const\s+)?(?!(?:return|delete|throw|goto|case|else|new)\b)'
+                         r'[A-Za-z_][\w:]*(?:<[^;]*>)?[\s*&]+[A-Za-z_]\w*\s*[({=;]')
+
+
 def repeated_tail(body, tail):
     """How the body repeats the first generated lines after its marker: (body without
     them, count) when it ends with one or more of them, (None, count) when it holds two
-    or more of them elsewhere, (body, 0) when it does not repeat them."""
+    or more of them elsewhere, or the first one elsewhere when it declares a local,
+    (body, 0) when it does not repeat them."""
     code = [(number, ' '.join(text.split('//')[0].split())) for number, text in enumerate(body)]
     code = [(number, text) for number, text in code if text]
     texts = [text for _, text in code]
@@ -470,6 +476,8 @@ def repeated_tail(body, tail):
     for count in range(len(tail), 1, -1):
         if any(texts[at:at + count] == tail[:count] for at in range(len(texts) - count + 1)):
             return None, count
+    if tail and DECLARATION.match(tail[0]) and tail[0] in texts:
+        return None, 1
     return body, 0
 
 
@@ -601,7 +609,7 @@ def main():
         tail = generated_after(texts[path], index, extra)
         kept, count = repeated_tail(body, tail)
         if kept is None:
-            copied.append('"{}" holds {} lines the generated code runs after it, from "{}"'
+            copied.append('"{}" holds {} line(s) the generated code runs after it, from "{}"'
                           .format(name, count, tail[0]))
         elif count:
             trailed.append('"{}" ends with {} line(s) from "{}"'.format(name, count, tail[0]))

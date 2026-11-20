@@ -1171,11 +1171,13 @@ def worksheet_lines(produced, out, iface, document, machine, machine_doc,
     # A type or a rule two documents share is listed under the first.
     listed = set()
     names = set(name for name, _, _, _, _ in sections)
-    for spec, doc in contracts or ((iface, document), (machine, machine_doc)):
-        if spec is None:
-            continue
+    pairs = [pair for pair in contracts or ((iface, document), (machine, machine_doc))
+             if pair[0] is not None]
+    serviced = set(spec.spell('attribute', name, 'get') for spec, doc in pairs
+                   if doc.lower().endswith('.siml') for name, _ in spec.attributes)
+    for spec, doc in pairs:
         folded = False
-        for line in contract_lines(spec, doc):
+        for line in contract_lines(spec, doc, serviced):
             if len(line) >= 30 and line.startswith('  '):
                 if line in listed:
                     continue
@@ -2180,7 +2182,7 @@ def renamed(first, first_cls, second, second_cls):
     return next(iter(pairs), ())
 
 
-def contract_lines(iface, document):
+def contract_lines(iface, document, serviced=()):
     """The names a document generates, and nothing about how it was written.
 
     This is what a caller needs from whoever authored the document: the class to
@@ -2208,11 +2210,14 @@ def contract_lines(iface, document):
             out.append('  call     bool {}({}){}'.format(name, entry['params']['call'],
                                                       forward_reach(entry)))
         for name, kind in iface.attributes:
-            out.append('  call     {} {}() / void {}({})'
-                       .format(iface.cpp_type(kind)[0],
-                               iface.spell('attribute', name, 'get'),
+            getter = iface.spell('attribute', name, 'get')
+            out.append('  call     {} {}() / void {}({}){}'
+                       .format(iface.cpp_type(kind)[0], getter,
                                iface.spell('attribute', name, 'set'),
-                               iface.attribute_setter(kind, True)))
+                               iface.attribute_setter(kind, True),
+                               '   -- a service attribute too: {g}() alone in its provider '
+                               'reads the service\'s, mFsm.{g}() this one'.format(g=getter)
+                               if getter in serviced else ''))
         for name, params in iface.actions:
             out.append('  override void {}({})'
                        .format(iface.spell('action', name),
