@@ -2383,7 +2383,12 @@ def check_sequences(project):
                     allowed = entry.get('values')
                     given = args.get(entry.get('name'))
                     if isinstance(allowed, list) and allowed and given not in allowed:
-                        fail('{} sends {}({}={}), and "{}" takes only {}'
+                        fail('{} sends {}({}={}), and "{}" takes only {}. '
+                             '"values" lists every legal value of a set: a range '
+                             '(1 to 100) is no set, so leave "values" out and the '
+                             'provider refuses what is out of range, which a step may '
+                             'then send to see it refused. Never add an illegal value '
+                             'to "values"'
                              .format(here, send, entry.get('name'), json.dumps(given),
                                      entry.get('name'),
                                      ', '.join(json.dumps(one) for one in allowed)))
